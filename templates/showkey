@@ -1,0 +1,27 @@
+<html>
+ <head></head>
+<body>
+ <h2>Keyhash [% keyhash %]</h2>
+
+   [% FOREACH v IN keydata %]
+
+	[% IF v.key == 'key' %]
+           <div id="key">Keydata: [% v.value %]</div>
+        [% END %]
+
+	[% IF v.key == 'shortname' %]
+           <div id="name">Shortname: [% v.value %]</div>
+        [% END %]
+
+	[% IF v.key == 'name' %]
+           <div id="shortname">Name: [% v.value %]</div>
+        [% END %]
+
+   [% END %]
+
+
+   <a href="/lsmsgs/[% keyhash %]">List Messages</a><br>
+   <a href="/msg/[% keyhash %]">Compose Message</a>
+
+</body>
+</html>

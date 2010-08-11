@@ -1,0 +1,30 @@
+<html>
+ <head></head>
+<body>
+ <h2>Keys</h2>
+
+ [% FOREACH k IN keys %]
+	<div id="keyhash"> keyhash: <a href="/show/[% k.key %]">[% k.key %]</a>
+   [% FOREACH v IN k.value %]
+
+<!--
+	[% IF v.key == 'key' %]
+           <div id="key"><textarea cols="40" rows="20">[% v.value %]</textarea></div>
+        [% END %] 
+-->
+
+	[% IF v.key == 'shortname' %]
+           <div id="name">Short name: [% v.value %]</div>
+        [% END %]
+
+	[% IF v.key == 'name' %]
+           <div id="shortname">Name: [% v.value %]</div>
+        [% END %]
+
+   [% END %]
+       </div>
+	<hr>
+ [% END %]
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+#!/nix/var/nix/profiles/default/bin/perl
+
+use HTTP::Daemon;
+use HTTP::Status;
+use Getopt::Std;
+use YAML;
+use Template;
+use IPC::Open2;
+use Data::Dumper;
+use URI::Escape;
+
+# this is a prototype client web daemon for aftff
+
+# options:
+# device: -d - device holding keystore
+# server: -h - home server
+# password: -p - password for keystore device
+
+my %opts;
+getopt('d:p:', \%opts);
+our $device = $opts{'d'};
+our $password = $opts{'p'};
+
+
+# globals
+my $client = 'protoclient';
+my $tt = new Template({
+		INCLUDE_PATH => 'templates',
+	}) || die "$Template::ERROR\n";
+
+
+# URLs
+# show (default)
+# show/KEYHASH
+# lsmsgs/KEYHASH
+# msg/KEYHASH
+# rmsg/KEYHASH/ID
+
+
+if (!$device || !$password) {
+	print usage();
+}
+
+
+# main logic
+############
+my $daemon = new HTTP::Daemon( LocalPort => 9051, Debug => 1 );
+
+print "Please contact me at: <URL:", $daemon->url, ">\n";
+while (my $c = $daemon->accept) {
+  my $child = fork();
+  if (!$child) {
+    while (my $r = $c->get_request) {
+	print "New Request\n";
+	print "------------\n";
+	print "PATH: " . $r->url->path . "\n";
+	print "METHOD: " . $r->method . "\n";
+        if ($r->method eq 'GET') {
+	    handleGet($r->url->path,$c,$r->uri);
+	} elsif ($r->method eq 'POST') {
+	   handlePost($r->url->path,$c);
+        } else {
+            $c->send_error(RC_FORBIDDEN);
+        }
+    }
+    $c->close;
+    undef($c);
+    exit;
+  }
+}
+########
+
+
+sub handleGet {
+	my $path = shift;
+	my $conn = shift;
+	my $uri = shift;
+
+	my (undef,$cmd,$arg1,$arg2) = split('/', $path);
+	print "PATH: $path\n";
+	print "URI: $uri\n";
+	print "CMD: $cmd\n";
+	print "ARG1: $arg1\n";
+	print "ARG2: $arg2\n";
+
+	if ($cmd eq 'show' || !$cmd) {
+		my $content = show($arg1);
+		my $res = new HTTP::Response (200);
+		$res->content($content);
+		$res->header( 'Content-type' => 'text/html' );
+		$conn->send_response($res);
+	} elsif ($cmd eq 'lsmsgs') {
+		my $content = lsmsgs($arg1);
+		my $res = new HTTP::Response (200);
+		$res->header( 'Content-type' => 'text/html' );
+		$res->content($content);
+		$conn->send_response($res);
+	} elsif ($cmd eq 'msg' && $uri !~ /\?/) {
+		my $content = msg($arg1);
+		my $res = new HTTP::Response (200);
+		$res->header( 'Content-type' => 'text/html' );
+		$res->content($content);
+		$conn->send_response($res);
+	} elsif ($cmd eq 'msg' && $uri =~ /\?/) {
+		my $content = submitMsg($arg1,$uri);
+		my $res = new HTTP::Response (200);
+		$res->header( 'Content-type' => 'text/html' );
+		$res->content($content);
+		$conn->send_response($res);
+	} elsif ($cmd eq 'rmsg') {
+		my $content = rmsg($arg1,$arg2);
+		my $res = new HTTP::Response (200);
+		$res->header( 'Content-type' => 'text/html' );
+		$res->content($content);
+		$conn->send_response($res);
+	} else {
+	   $conn->send_response(500);
+	}
+}
+
+sub handlePost {
+	my $path = shift;
+	my $conn = shift;
+	print "Argh, can't handle post!\n";
+
+	#my $req = $conn->get_request();
+	#my $cgi = new CGI($req->content);
+
+	print Dumper($req);
+
+	$conn->send_response(500);
+}
+
+sub show {
+  my $arg1 = shift;
+
+  my $content;
+  my %vars;
+
+  my $yaml = get_yaml_content('show');
+  my $keys = Load($yaml);
+
+  $vars{'keys'} = $keys;
+
+
+  if ($arg1) {
+    $vars{'keyhash'} = $arg1;
+    $vars{'keydata'} = $$keys{$arg1};
+    $tt->process('showkey',\%vars,\$content);
+  } else {
+    $tt->process('show',\%vars,\$content);
+  }
+
+  return($content);
+}
+
+sub lsmsgs {
+  my $keyhash = shift;
+
+  my $content;
+
+  my %vars;
+
+  my $yaml = get_yaml_content('lsmsgs',$keyhash);
+  my @msgs = Load($yaml);
+
+  $vars{'msgs'} = \@msgs;
+  $vars{'keyhash'} = $keyhash;
+  $tt->process('lsmsgs',\%vars,\$content);
+
+  return($content);
+
+}
+
+sub msg {
+
+  my $keyhash = shift;
+  my %vars;
+  my $content;
+
+  $vars{'keyhash'} = $keyhash;
+
+  $tt->process('msg',\%vars,\$content);
+
+  return($content);
+
+}
+
+sub submitMsg {
+  my $keyhash = shift;
+  my $uri = shift;
+
+  my $content;
+  my %vars;
+
+  $uri =~ /\?msg=(.*)/;
+  my $msg = uri_unescape($1);
+  $msg =~ s/\+/ /g;
+  #print "Add message: $msg\n";
+
+  submit_message($keyhash,$msg);
+  $vars{'msg'} = $msg;
+  $vars{'keyhash'} = $keyhash;
+
+  $tt->process('submitmessage',\%vars,\$content);
+
+  return($content);
+
+}
+
+sub rmsg {
+  my $keyhash = shift;
+  my $msgid = shift;
+
+  my $content;
+  my %vars;
+
+  my $yaml = get_yaml_content('rmsg',$keyhash,$msgid);
+  my $msg = Load($yaml);
+
+  $vars{'msg'} = $msg;
+  $vars{'keyhash'} = $keyhash;
+  $vars{'msgid'} = $msgid;
+
+  $tt->process('rmsg',\%vars,\$content);
+
+  return($content);
+
+}
+
+sub usage {
+	print "protoclientd -d device -p password\n";
+	exit;
+}
+
+sub submit_message {
+  my $keyhash = shift;
+  my $msg = shift;
+
+  my $content;
+
+  my $pid = open2($out,$in,"./$client -d $device msg $keyhash") || die "Can't open pipe to protoclient\n";
+  print $in "$password\n\r";
+  print $in "$msg\n";
+  print $in ".\n";
+  close($in);
+  
+  while(<$out>) {
+   print $_;
+   $content .= $_;
+  }
+  close($out);
+  waitpid($pid,0);
+
+}
+
+sub get_yaml_content {
+  my $arg1 = shift;
+  my $arg2 = shift;
+  my $arg3 = shift;
+  my $content;
+
+  my $in = undef;
+  my $out = undef;
+
+  print "CLIENTCMD: ./$client -d $device $arg1 $arg2 $arg3\n";
+  my $pid = open2($out,$in,"./$client -d $device $arg1 $arg2 $arg3") || die "Can't open pipe to protoclient\n";
+  print $in "$password\n\r";
+  close($in);
+  while(<$out>) {
+   print $_;
+   $content .= $_;
+  }
+  close($out);
+  waitpid($pid, 0);
+  return($content);
+
+}

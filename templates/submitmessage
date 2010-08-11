@@ -1,0 +1,9 @@
+<html>
+ <head></head>
+<body>
+ <h2>Message submitted for [% keyhash %]</h2>
+
+ [% msg %]
+
+</body>
+</html>
