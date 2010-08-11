@@ -1,0 +1,132 @@
+#!/nix/var/nix/profiles/default/bin/perl
+
+use HTTP::Daemon;
+use HTTP::Status;
+use Getopt::Std;
+use YAML;
+use Digest::SHA qw(sha256_hex);
+
+
+# this is a prototype server for aftff (anonymous front, trusted face to face)
+
+# options:
+# directory: -d - directory to store data
+
+my %opts;
+getopt('d:', \%opts);
+our $directory = $opts{'d'};
+
+my $seed = rand(2**32);
+mkdir("$directory/ex");
+
+
+# main logic
+############
+my $daemon = new HTTP::Daemon LocalPort => 80;
+print "Please contact me at: <URL:", $daemon->url, ">\n";
+while (my $c = $daemon->accept) {
+
+    my $pid = fork();
+
+    if (!$pid) {
+
+      while (my $r = $c->get_request) {
+	print $r->method . " " . $r->url->path . "\n";
+        if ($r->method eq 'GET') {
+	    handleGet($r->url->path,$c);
+        } elsif ($r->method eq 'PUT') {
+	    handlePut($r,$c);
+        } else {
+            $c->send_error(RC_FORBIDDEN);
+        }
+      }
+      $c->close;
+      undef($c);
+      exit;
+
+    }
+}
+########
+
+
+sub handleGet {
+	my $path = shift;
+	my $conn = shift;
+
+        if ($path =~ /^\/(\w+)?$/) {
+		my $index = getIndex($1);
+		my $res = new HTTP::Response ( 200 );
+		$res->content($index);
+		$conn->send_response($res);
+	# send a file
+	} else {
+		$conn->send_file_response($directory . "/" . $path);
+	}
+	exit;
+}
+
+sub handlePut {
+   my $r = shift;
+   my $c = shift;
+
+
+
+   if ( -f "$directory/" . $r->url->path  && ! -d "$directory/" . $r->url->path) {
+	print "File exists, forbidden.\n";
+        $c->send_error(RC_FORBIDDEN);
+   } elsif ($r->url->path =~ /^\/(\w+)?$/) {
+	my $msgid = addMessage($1,$r->content());
+	my $res = new HTTP::Response( 200 );
+	$res->content("Added message: $msgid\n");
+	$c->send_response($res);
+    } else {
+        $c->send_error(RC_FORBIDDEN);
+    }
+
+}
+
+
+sub addMessage {
+
+	my $keyhash = shift;
+	my $msg = shift;
+
+	if ( ! -d $keyhash ) {
+		mkdir("$directory/$keyhash");
+	}
+
+	print "Add message for $keyhash\n";
+	my @msgs = getMsgs($keyhash);
+	my $last_message = pop(@msgs);
+	if (!$last_message) {
+		$last_message = 0;
+	}
+
+	my $msg_id = ++$last_message;
+	open(MSG,">$directory/" . $keyhash . "/" . $msg_id);
+	print MSG $msg;
+	close(MSG);
+
+	print "Added message $msg_id\n";
+
+	return($msg_id);
+
+}
+
+sub getIndex {
+	my $keyhash = shift;
+	my @msgs = getMsgs($keyhash);
+	my @msgs2 = reverse(@msgs);
+	my $index = Dump(@msgs2);
+	return($index);
+}
+
+
+# utility functions
+sub getMsgs {
+	my $keyhash = shift;
+	opendir(DIR,"$directory/" . $keyhash);
+	my @msgs = sort {$a <=> $b} grep { !/^\.$/ && !/^\.\.$/ } readdir(DIR);
+	closedir(DIR);
+	return(@msgs);
+}
