@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hi, this is aftff. Click the button below to scan a qrcode and start using a ring. If no qrcode is read, the default test ring will be used.</string>
+    <string name="msgprompt">Please write your message below.</string>
+    <string name="showmsgprompt">Message</string>
+    
+    <string name="msglistprompt">Message List</string>
+    <string name="foundkeys">Found keys...</string>
+    
+    <string name="app_name">aftffclient</string>
+    <string name="newMsgTextDefault">...</string>
+</resources>
