@@ -6,12 +6,12 @@
 
 <h2> Introduction </h2>
 <p>
-Aftff is a pseudo anonymous instant message system. It is pseudo anonymous in
-the sense that the protocol maintains strict anonymity but message access is
-dependent upon face to face human trust relationships.  The intention is to
-provide a simple messaging service that is 1) reasonably protected from
-surveillance with encryption, 2) protects sender identity and 3) protects
-receiver identity. Aftff adopts the notion of a "ring": a collection of
+Aftff is an experimental pseudo anonymous instant message system. It is pseudo
+anonymous in the sense that the protocol maintains strict anonymity but message
+access is dependent upon face to face human trust relationships.  The intention
+is to provide a simple messaging service that is <ol><li> reasonably protected from
+surveillance with encryption, </li><li> protects sender identity and </li><li> protects
+receiver identity.</li></ol> Aftff adopts the notion of a "ring": a collection of
 individuals that share a single symmetric key. Users share their keys with
 other individuals face to face, in person. An aftff client in possession of a
 symmetric key can send and receive messages to other people who possess the
@@ -54,7 +54,7 @@ Aftff rests on a few operating assumptions and requirements:
 <ol>
 	<li>Trust and identity are not always so closely related. There is more
 need today to be able to trust information without knowing the identity/origin
-of the information. Aftff should facilitate this where it is possible.</li>
+of the information explicitly. Aftff should facilitate this where it is possible.</li>
 
 	<li>Identity must always be protected. Both senders and receivers must
 have plausible deniability. Users must have complete control over their
@@ -315,6 +315,13 @@ This daemon is probably not appropriate for large volumes but given the
 simplicity of aftff it should be usable to test and develop.
 </p>
 
+<p>
+Protoserver is available at:
+<a href="http://unionoftheother.org/aftff/trunk/protoserver">http://unionoftheother.org/aftff/trunk/protoserver</a>
+</p>
+
+
+
 <h3> 2. Perl prototype cmdline tool </h3>
 <p>
 An aftff client is also available for the unix cmdline. It is 100% perl and
@@ -330,6 +337,12 @@ with a private password. After this you can run individual commands, such as to
 create a ring.
 </p>
 
+<p>
+Protoclient is available at:
+<a href="http://unionoftheother.org/aftff/trunk/protoclient">http://unionoftheother.org/aftff/trunk/protoclient</a>
+</p>
+
+
 <h3> 3. Web interface to cmdline tool </h3>
 <p>
 A demonstration client was also built as a wrapper around the cmdline tool.
@@ -343,6 +356,12 @@ As long as the cmdline tool works, the web interface is runable by doing:<br>
 Then access the server by going to <code>localhost:9051</code>
 </p>
 
+<p>
+Protoclientd is available at:
+<a href="http://unionoftheother.org/aftff/trunk/protoclientd">http://unionoftheother.org/aftff/trunk/protoclientd</a>
+</p>
+
+
 <h3> 4. Android client </h3>
 <p>
 An client for Google's Android OS is functional at this point. This is the most
@@ -354,6 +373,11 @@ the service on one's phone is ideal.
 The Android client can currently scan qrcodes, send/receive messages, browse
 message indexes, store saved keys and post messages to rings. However, the UI
 leaves much to be desired.
+</p>
+
+<p>
+The latest Android client is available at:
+<a href="http://unionoftheother.org/android/aftff.apk">http://unionoftheother.org/android/aftff.apk</a>
 </p>
 
 </body>

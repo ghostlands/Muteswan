@@ -14,7 +14,7 @@ use GD::Barcode::QRcode;
 
 
 
-# this is a prototype client for aftff (anonymous front, trusted face to face)
+# this is a prototype client for aftff
 
 # options:
 # home server: -h - set home server

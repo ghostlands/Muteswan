@@ -7,7 +7,7 @@ use YAML;
 use Digest::SHA qw(sha256_hex);
 
 
-# this is a prototype server for aftff (anonymous front, trusted face to face)
+# this is a prototype server for aftff
 
 # options:
 # directory: -d - directory to store data
