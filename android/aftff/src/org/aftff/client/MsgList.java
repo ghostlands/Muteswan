@@ -67,9 +67,7 @@ public class MsgList extends ListActivity {
     	  msgList[newIndex] = mStrings[i];
     	  newIndex++;
       }
-//      List<String> list = Arrays.asList(mStrings);
-//      Collections.reverse(list);
-//      mStrings = (String[]) list.toArray();
+
       
        if (mStrings == null || mStrings.length == 0) {
            msglistPrompt.setText("No messages for " + aftff.activeRing.getShortname());
@@ -88,10 +86,6 @@ public class MsgList extends ListActivity {
        setListAdapter(listAdapter);
     }
 	
-	//@Override
-	//public void onContentChanged() {
-	//  
-	//}
 	
 	
 	@Override
@@ -207,10 +201,7 @@ public class MsgList extends ListActivity {
 			setContentView(txt);
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//TextView txt = new TextView(this);
-			//txt.setText("IO exception");
-			//setContentView(txt);
+			
 			Toast.makeText(this,
 					"IO error: " + e.toString() + " for " + ring.getShortname() + "\n", 
 					  Toast.LENGTH_SHORT).show();
