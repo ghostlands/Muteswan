@@ -81,26 +81,7 @@ public class aftff extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //TextView txt = new TextView(this);
-        //txt.setText("Hi, this is aftff. Click me to demo.");
-        //txt.setOnClickListener(mScan);
-        //setContentView(txt);
-        
-        
-    	
-//    	SharedPreferences prefs = getSharedPreferences(PREFS,0);
-//        String storeString = prefs.getString("store", null);
-//    	SharedPreferences.Editor prefEd = prefs.edit();
-//    	prefEd.clear();
-//    	prefEd.commit();
-//        
-//        
-//    	TextView txt = new TextView(this);
-//        txt.setText("Got prefs: " + storeString);
-//        setContentView(txt);
-//        txt.setOnClickListener(mScan);
-//    
-//        
+  
         
         
         
@@ -109,8 +90,6 @@ public class aftff extends Activity {
         setContentView(R.layout.main);
         final Button button = (Button) findViewById(R.id.mScan);
         button.setOnClickListener(mScan);
-//        
-//        
                                 
     }
     
@@ -119,22 +98,7 @@ public class aftff extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.clear();
         store = getStore();
-        
-//        
-//        SharedPreferences prefs = getSharedPreferences(PREFS,0);
-//        int numKeys = prefs.getInt("numKeys",0);
-//        //Toast.makeText(this, "numKeys: " + numKeys, Toast.LENGTH_LONG);
-//        for (int i=1; i<=numKeys; i++) {
-//        	SharedPreferences keyPref = getSharedPreferences("AftffKey-" + i,0);
-//        	String key = keyPref.getString("key",null);
-//        	String shortname = keyPref.getString("shortname",null);
-//        	String server = keyPref.getString("server",null);
-//        	if (server != null && key != null && shortname != null) {
-//        		Ring newRing = new Ring(key,shortname,server);
-//        		store.add(newRing);
-//        	}
-//        }
-    	
+           	
     	
     	
     	MenuInflater inflater = getMenuInflater();
@@ -142,12 +106,9 @@ public class aftff extends Activity {
         
         for (Ring r : store) {
         	MenuItem menuItem = menu.add(r.getShortname());
-        	//activeRing = r;
-        	//menuItem.setIntent(new Intent( this, MsgList.class));
-        }
+         }
         
         menu.add("Clear Saved Keys");
-        //menu.
         
         return true;
     }
@@ -171,9 +132,6 @@ public class aftff extends Activity {
 			  aftff.activeRing = r;
 			}
 		}
-		
-		//Toast.makeText(this,aftff.activeRing.getServer(), Toast.LENGTH_LONG);
-		//selectMsg();
 		TextView txt = new TextView(this);
 		txt.setText("Loading..." + aftff.activeRing.getShortname());
 		setContentView(txt);
@@ -182,29 +140,7 @@ public class aftff extends Activity {
 		startActivity(new Intent( this, MsgList.class));
 
 		return true;
-//		
-//		if (store == null) {
-//			Toast.makeText(this, "Null store...", Toast.LENGTH_LONG);
-//		}
-//	    for (Ring r : store) {
-//	    	if (r == null) {
-//	    		Toast.makeText(this, "Null ring...", Toast.LENGTH_LONG);
-//	    	} else {
-//	    		Toast.makeText(this, "ring " + r.getShortname(), Toast.LENGTH_LONG);
-//	    		
-//	    	}
-//	    	//if (r.getShortname().equals(item.toString())) {
-//	    		//aftff.activeRing = r;
-//	    		//if (r != null) {
-//	    		  //startActivity(new Intent(this,MsgList.class));
-//	    		//} 
-//	    		//selectMsg();
-//	    		//break;
-//	    	//}
-//	    }
-//		
-//	    
-//	    return true;
+
 	}
     
     
