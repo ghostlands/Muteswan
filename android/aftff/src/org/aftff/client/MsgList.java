@@ -37,7 +37,7 @@ public class MsgList extends ListActivity {
 	private ArrayAdapter listAdapter;
 	private EditText msgPostField;
 	
-	private String[] msgList = new String[MAX_MESSAGES];
+	private String[] msgList;
 	
 	private List<Integer> seenMsgs = new LinkedList();
 
@@ -56,6 +56,12 @@ public class MsgList extends ListActivity {
        }
        
       mStrings = aftff.activeRing.getMsgIndex();
+      if (mStrings.length < MAX_MESSAGES) {
+    	  msgList = new String[mStrings.length-1];
+      } else {
+    	  msgList = new String[MAX_MESSAGES];
+      }
+      
       int newIndex = 0;
       for (int i = 0; i<mStrings.length;i++) {
     	  if (mStrings[i] == null || mStrings[i].getBytes().length == 0) {
@@ -106,7 +112,7 @@ public class MsgList extends ListActivity {
     	  try {
 			aftff.activeRing.postMsg(txtData);
 			Toast.makeText(this, 
-					"Posted message to " + aftff.activeRing.getShortname(), 
+				"Posted message to " + aftff.activeRing.getShortname(), 
 					  Toast.LENGTH_LONG).show();
 			newMsgText.setText("");
 			return true;
