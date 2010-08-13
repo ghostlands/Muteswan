@@ -85,8 +85,8 @@ public class aftff extends Activity {
         
         
         
-        
-        store = getStore();
+        SharedPreferences prefs = getSharedPreferences(PREFS,0);
+        store = getStore(prefs);
         setContentView(R.layout.main);
         final Button button = (Button) findViewById(R.id.mScan);
         button.setOnClickListener(mScan);
@@ -97,7 +97,8 @@ public class aftff extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.clear();
-        store = getStore();
+    	SharedPreferences prefs = getSharedPreferences(PREFS,0);
+        store = getStore(prefs);
            	
     	
     	
@@ -109,6 +110,8 @@ public class aftff extends Activity {
          }
         
         menu.add("Clear Saved Keys");
+        menu.add("Create Ring");
+       
         
         return true;
     }
@@ -124,6 +127,9 @@ public class aftff extends Activity {
 			TextView txt = new TextView(this);
 			txt.setText("Saved keys cleared.");
 			setContentView(txt);
+			return true;
+		} else if (item.toString().equals("Create Ring")) {
+			startActivity(new Intent(this, CreateRing.class));
 			return true;
 		}
 		
@@ -231,11 +237,10 @@ public class aftff extends Activity {
 
     }
 
-    private Store getStore() {
+    public static Store getStore(SharedPreferences prefs) {
     	
     	Store newStore = new Store();    	
     	
-    	SharedPreferences prefs = getSharedPreferences(PREFS,0);
         String storeString = prefs.getString("store", null);
         if (storeString == null || storeString.equals(""))
         	return newStore;
@@ -256,30 +261,7 @@ public class aftff extends Activity {
     	
     }
     
-    private void updateStore(String contents) {
-    	boolean haveRing = false;
-        for (Ring r : store) {
-        	if (r.getFullText().equals(contents)) {
-        		haveRing = true;
-        		return;
-        	}
-        }
   
-        String storeString;
-        if (haveRing == false) {
-        	SharedPreferences prefs = getSharedPreferences(PREFS,0);
-        	
-        	if (store.isEmpty()) {
-        		 storeString = contents + "---";
-        	} else {
-        	     storeString = store.getAsString() + contents + "---";
-        	}
-        	
-        	SharedPreferences.Editor prefEd = prefs.edit();
-        	prefEd.putString("store", storeString);
-        	prefEd.commit();
-        }
-    }
     
     
     
@@ -301,7 +283,7 @@ public class aftff extends Activity {
     	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
     	            
     	            Ring ring = new Ring(contents);
-    	            updateStore(contents);
+    	            store.updateStore(contents,getSharedPreferences(PREFS,0));
     	            
     	            
     	            
@@ -316,7 +298,9 @@ public class aftff extends Activity {
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
             	Ring ring = new Ring(testSite);
- 	            updateStore(testSite);
+ 	            //updateStore(testSite);
+	            store.updateStore(testSite,getSharedPreferences(PREFS,0));
+
             	            	
             	this.activeRing = ring;
             	selectMsg();

@@ -3,4 +3,8 @@
    
     <item android:id="@+id/newmessage"
         android:title="New Message" />
+        
+    <item android:id="@+id/exportring"
+        android:title="Export Ring" />
+            
 </menu>

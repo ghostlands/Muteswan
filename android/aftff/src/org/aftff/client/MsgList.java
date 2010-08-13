@@ -104,11 +104,22 @@ public class MsgList extends ListActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
         //setContentView(R.layout.writemsg);
-				
-		EditText newMsgText = (EditText) findViewById(R.id.android_newMsgTextInline);
-		Editable txt = newMsgText.getText();
-    	String txtData = txt.toString();
-    	if (txtData.getBytes().length != 0) {	
+		
+		
+		//export ring to jpg using zxing
+		if (item.getTitle().toString().equals("Export Ring")) {
+			Intent showQrcode = new Intent("com.google.zxing.client.android.ENCODE");
+			showQrcode.putExtra("ENCODE_DATA",aftff.activeRing.getFullText());
+			showQrcode.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+			startActivity(showQrcode);
+			return true;
+		} else {
+			
+		 // new message / FIXME: should be clearer
+		 EditText newMsgText = (EditText) findViewById(R.id.android_newMsgTextInline);
+		 Editable txt = newMsgText.getText();
+    	 String txtData = txt.toString();
+    	 if (txtData.getBytes().length != 0) {	
     	  try {
 			aftff.activeRing.postMsg(txtData);
 			Toast.makeText(this, 
@@ -134,10 +145,11 @@ public class MsgList extends ListActivity {
 			e.printStackTrace();
 			return true;
 		  }
-    	} else {
+    	 } else {
 		   startActivity(new Intent( this, WriteMsg.class));
 		   return true;
-	    }
+	     }
+		}
 	}
 	
 	 public void onListItemClick(

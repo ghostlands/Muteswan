@@ -17,6 +17,8 @@
                   android:label="@string/app_name" />
         <activity android:name=".WriteMsg"
                   android:label="@string/app_name" />
+        <activity android:name=".CreateRing"
+                  android:label="@string/app_name" />
         
 
     </application>
