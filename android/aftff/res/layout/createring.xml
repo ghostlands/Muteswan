@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    
+     <TextView
+    android:id="@+id/newRingPrompt"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:text="@string/newringprompt"
+    />
+    
+     <TextView
+    android:id="@+id/newRingNamePrompt"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="Name"
+    />
+     
+    <EditText android:text="" android:id="@+id/newRingName" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
+    
+    <TextView android:text="Key" android:id="@+id/newRingKeyPrompt" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    
+    <TextView  
+    android:id="@+id/newRingKey"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:text="(new key)"
+    /> 
+    
+   
+    <TextView android:text="Server" android:id="@+id/newRingServerPrompt" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <EditText android:text="tckwndlytrphlpyo.onion" android:id="@+id/newRingServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
+
+    <Button android:text="Create Ring" android:id="@+id/genRingButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+<TextView android:text="" android:id="@+id/newRingResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+</LinearLayout>
