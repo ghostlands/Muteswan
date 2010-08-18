@@ -1,6 +1,7 @@
-package org.aftff.client;
+package org.aftff.client.data;
 
 import java.util.LinkedList;
+
 
 import android.content.SharedPreferences;
 

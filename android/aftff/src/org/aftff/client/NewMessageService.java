@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.aftff.client.data.Ring;
+import org.aftff.client.data.Store;
+
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;

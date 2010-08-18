@@ -1,4 +1,8 @@
-package org.aftff.client;
+package org.aftff.client.ui;
+
+import org.aftff.client.R;
+import org.aftff.client.R.id;
+import org.aftff.client.R.layout;
 
 import android.app.Activity;
 import android.os.Bundle;

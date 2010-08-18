@@ -24,6 +24,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.aftff.client.data.Ring;
+import org.aftff.client.data.Store;
+import org.aftff.client.ui.CreateRing;
+import org.aftff.client.ui.MsgList;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestFactory;
@@ -72,10 +76,10 @@ import org.apache.http.entity.BasicHttpEntity;
 
 public class aftff extends Activity {
 	Store store = null;
-	static Ring activeRing = null;
+	public static Ring activeRing = null;
 	
 	
-	final static String PREFS = "AftffPrefs"; 
+	public final static String PREFS = "AftffPrefs"; 
 	
 	
 	

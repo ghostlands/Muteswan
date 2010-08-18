@@ -1,4 +1,4 @@
-package org.aftff.client;
+package org.aftff.client.data;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +22,10 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.aftff.client.Base64;
+import org.aftff.client.Crypto;
+import org.aftff.client.MyThreadSafeClientConnManager;
+import org.aftff.client.SocksSocketFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

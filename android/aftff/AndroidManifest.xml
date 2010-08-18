@@ -22,11 +22,11 @@
            </receiver>
         
         
-        <activity android:name=".MsgList"
+        <activity android:name=".ui.MsgList"
                   android:label="@string/app_name" />
-        <activity android:name=".WriteMsg"
+        <activity android:name=".ui.WriteMsg"
                   android:label="@string/app_name" />
-        <activity android:name=".CreateRing"
+        <activity android:name=".ui.CreateRing"
                   android:label="@string/app_name" />
         <service android:name=".NewMessageService"/>
 

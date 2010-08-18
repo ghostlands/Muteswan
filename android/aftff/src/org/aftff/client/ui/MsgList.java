@@ -1,4 +1,4 @@
-package org.aftff.client;
+package org.aftff.client.ui;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +11,14 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.aftff.client.R;
+import org.aftff.client.aftff;
+import org.aftff.client.R.id;
+import org.aftff.client.R.layout;
+import org.aftff.client.R.menu;
+import org.aftff.client.data.Message;
+import org.aftff.client.data.Ring;
+import org.aftff.client.data.Store;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 

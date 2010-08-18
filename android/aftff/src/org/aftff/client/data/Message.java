@@ -1,4 +1,4 @@
-package org.aftff.client;
+package org.aftff.client.data;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -8,6 +8,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.aftff.client.Base64;
+import org.aftff.client.Crypto;
 import org.json.JSONException;
 import org.json.JSONObject;
 

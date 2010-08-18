@@ -1,4 +1,4 @@
-package org.aftff.client;
+package org.aftff.client.ui;
 
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
@@ -6,6 +6,12 @@ import java.security.SecureRandom;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+
+import org.aftff.client.R;
+import org.aftff.client.aftff;
+import org.aftff.client.R.id;
+import org.aftff.client.R.layout;
+import org.aftff.client.data.Store;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
