@@ -19,7 +19,7 @@
     android:text="Name"
     />
      
-    <EditText android:text="" android:id="@+id/newRingName" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
+    <EditText android:text="" android:id="@+id/newRingName" android:layout_width="80sp" android:layout_height="wrap_content"></EditText>
     
     <TextView android:text="Key" android:id="@+id/newRingKeyPrompt" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
     

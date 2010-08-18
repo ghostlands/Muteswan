@@ -14,6 +14,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -45,6 +46,8 @@ import org.apache.http.util.EntityUtils;
 import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
@@ -70,6 +73,7 @@ import org.apache.http.entity.BasicHttpEntity;
 public class aftff extends Activity {
 	Store store = null;
 	static Ring activeRing = null;
+	
 	
 	final static String PREFS = "AftffPrefs"; 
 	
@@ -111,6 +115,27 @@ public class aftff extends Activity {
         
         menu.add("Clear Saved Keys");
         menu.add("Create Ring");
+    
+        boolean serviceRunning = false;
+        ActivityManager actMan = (ActivityManager) getSystemService( ACTIVITY_SERVICE );
+        List<RunningServiceInfo> runningServices = actMan.getRunningServices(50);
+        for (RunningServiceInfo service : runningServices) {
+        	//menu.add("srvc: " + service.service.getClassName());
+        	//menu.add("msgservc: " + NewMessageService.class.getName());
+        	if (service.service.getClassName().equals(NewMessageService.class.getName())) {
+        		serviceRunning = true;
+        		break;
+        	}
+        }
+        
+        
+        if (serviceRunning == false) {
+        	menu.add("Start Service");
+        	// argh service detection borked
+        	//menu.add("Stop Service");
+        } else {
+        	menu.add("Stop Service");
+        }
        
         
         return true;
@@ -130,6 +155,12 @@ public class aftff extends Activity {
 			return true;
 		} else if (item.toString().equals("Create Ring")) {
 			startActivity(new Intent(this, CreateRing.class));
+			return true;
+		} else if (item.toString().equals("Start Service")) {
+			startService(new Intent(this,NewMessageService.class));
+			return true;
+		} else if (item.toString().equals("Stop Service")) {
+			stopService(new Intent(this,NewMessageService.class));
 			return true;
 		}
 		
@@ -161,82 +192,7 @@ public class aftff extends Activity {
     	return;
     }
     
-    private void testEncrypt(Ring ring) {
-
-
-		String encMsg = "";
-
-        try {
-        	byte[] keyBytes;
-			try {
-				keyBytes = ring.getKey().getBytes("UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
-		    
-	        
-	        
-	        try {
-
-	        	String[] msg = ring.getMsg("1");
-		        
-				TextView txt2 = new TextView(this);
-		        txt2.setText("We got this: " + msg[1]);
-		        setContentView(txt2);
-		        
-		        //setContentView(new MsgList());
-				
-			} catch (UnknownHostException e1) {
-				// TODO Auto-generated catch block
-				//e1.printStackTrace();
-				TextView txt2 = new TextView(this);
-		        txt2.setText("Unknown host exception: " + ring.getServer());
-		        setContentView(txt2);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				//e1.printStackTrace();
-				TextView txt2 = new TextView(this);
-		        txt2.setText("IO exception to host: " + ring.getServer() + " " + e1.toString());
-		        setContentView(txt2);
-			}
-
-	
-	        
-	        
-			
-		} catch (IllegalBlockSizeException e) {
-			TextView txt = new TextView(this);
-            txt.setText("Illegal block size exception: " + e.toString() + " data:\n-" + encMsg + " with length of " + encMsg.length());
-            setContentView(txt);
-            
-            DataOutputStream fh;
-			try {
-				fh = new DataOutputStream(new FileOutputStream("/sdcard/encMessage.txt"));
-			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-				return;
-			}
-			
-            try {
-				fh.writeBytes(encMsg);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-            
-            
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-    }
-
+    
     public static Store getStore(SharedPreferences prefs) {
     	
     	Store newStore = new Store();    	

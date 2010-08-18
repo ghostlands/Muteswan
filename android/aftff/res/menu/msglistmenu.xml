@@ -6,5 +6,7 @@
         
     <item android:id="@+id/exportring"
         android:title="Export Ring" />
+     <item android:id="@+id/deletering"
+        android:title="Delete Ring" />
             
 </menu>

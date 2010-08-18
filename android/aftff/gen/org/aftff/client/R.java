@@ -16,6 +16,7 @@ public final class R {
     public static final class id {
         public static final int android_msglistprompt=0x7f06000a;
         public static final int android_newMsgTextInline=0x7f06000b;
+        public static final int deletering=0x7f060011;
         public static final int exportring=0x7f060010;
         public static final int genRingButton=0x7f060007;
         public static final int mScan=0x7f060009;
@@ -52,6 +53,7 @@ public final class R {
         public static final int msgprompt=0x7f040001;
         public static final int newMsgTextDefault=0x7f040006;
         public static final int newringprompt=0x7f040007;
+        public static final int service_run_message=0x7f040008;
         public static final int showmsgprompt=0x7f040002;
     }
 }

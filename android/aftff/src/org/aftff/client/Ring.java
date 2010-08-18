@@ -29,6 +29,7 @@ import org.apache.http.HttpVersion;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
@@ -40,6 +41,8 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Entity;
 
 import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
@@ -180,21 +183,50 @@ public class Ring {
 		
 	}
 	
-	public void postMsg(String Msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	
+	public void postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException {
+		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
+		byte[] encData = crypto.encrypt();
+		
+		String base64EncData = Base64.encodeBytes(encData);
+		JSONObject jsonObj = new JSONObject();
+		jsonObj.put("message", base64EncData);
+		
+		HttpPost httpPost = new HttpPost("http://" + server + "/" + keyHash);
+		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
+		httpPost.setEntity(entity);
+		
+		try {
+			httpClient.execute(httpPost);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return;
+		}
+		
+		
+		
+	}
+	
+	public void postMsgOld(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		//initHttp();
 		
 
-		Crypto crypto = new Crypto(getKey().getBytes(), Msg.getBytes());
+		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
 		
 		
-		HttpPut httpPut = new HttpPut("http://" + server + "/" + keyHash);
+		HttpPost httpPost = new HttpPost("http://" + server + "/" + keyHash);
 		ByteArrayEntity entity = new ByteArrayEntity(encData);
-		httpPut.setEntity(entity);
+		httpPost.setEntity(entity);
 		
 		
 		try {
-			httpClient.execute(httpPut);
+			httpClient.execute(httpPost);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -208,47 +240,121 @@ public class Ring {
 		
 	}
 	
-	public String[] getMsgIndex() {
-	   String[] msgs = {};
+	public String getMsgIndexRaw() {
+		 HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
+		   try {
+		    HttpResponse resp = httpClient.execute(httpGet);
+			
+			String yamlRaw = EntityUtils.toString(resp.getEntity());
+			return(yamlRaw);
+		   } catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			return(null);
+			
+		}
 		
-	//   initHttp();
+	
+	
+	public Integer getMsgIndex() {
+	   //String[] msgs = {};
+		//String[] msgs = null;
+		
+	  // initHttp();
 		
 	   HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
 	   try {
 	    HttpResponse resp = httpClient.execute(httpGet);
-		
-		String yamlRaw = EntityUtils.toString(resp.getEntity());
-		
-		//BufferedReader list = new BufferedReader(new StringReader(yamlRaw));
-		msgs = yamlRaw.split("--- ");
-		//String line;
-		//int i=0;
-		//while ((line = list.readLine()) != null) {
-	       //String[] chars = line.split(" ");
-	       //msgs[i] = chars[1];
-		   //msgs[i] = line;
-		   //i++;
-		//}
-		return(msgs);
+	    Header lastMessage = resp.getFirstHeader("Last-Message");
+	    
+	    if (lastMessage == null)
+	    	return 0;
+	    
+	    
+	    Integer result = Integer.parseInt(lastMessage.getValue());
+	    if (result == null)
+	    	return 0;
+	    	
+		return(result);
+//
+//	    for (int i = Integer.parseInt(lastMessage[0].getValue()); i>0; i--) {
+//	    	//msgs[i] = new String();
+//	    	
+//	    }
+//	
+//	    
+//	    return(msgs);
+//		
+//		String yamlRaw = EntityUtils.toString(resp.getEntity());
+//		
+//		//BufferedReader list = new BufferedReader(new StringReader(yamlRaw));
+//		msgs = yamlRaw.split("--- ");
+//		//String line;
+//		//int i=0;
+//		//while ((line = list.readLine()) != null) {
+//	       //String[] chars = line.split(" ");
+//	       //msgs[i] = chars[1];
+//		   //msgs[i] = line;
+//		   //i++;
+//		//}
+//		return(msgs);
 	} catch (ClientProtocolException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (IOException e) {
 		// TODO Auto-generated catch block
-		//e.printStackTrace();
-		//TextView txt = new TextView(this);
-		//txt.setText("Error getting message index: " + e.toString());
-		//msgs[0] = "error";
-		//msgs[1] = e.toString();
-		String[] error = { "error", e.toString() };
-		return(error);
+//		//e.printStackTrace();
+//		//TextView txt = new TextView(this);
+//		//txt.setText("Error getting message index: " + e.toString());
+//		//msgs[0] = "error";
+//		//msgs[1] = e.toString();
+//		String[] error = { "error", e.toString() };
+//		return(error);
 	}
 	
-	return(msgs);
+	return(0);
+//	return(msgs);
 	
 	}
 	
-	public String[] getMsg(String id) throws IllegalBlockSizeException, BadPaddingException, ClientProtocolException, IOException {
+	
+	public Message getMsg(String id) throws ClientProtocolException, IOException {
+		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
+    	HttpResponse resp = httpClient.execute(httpGet);
+    	
+    	String jsonString = EntityUtils.toString(resp.getEntity());
+    	Header lastModified = resp.getFirstHeader("Last-Modified");
+    	Message msg = null;
+    	try {
+			msg = new Message(this,jsonString,lastModified.getValue());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+		
+		
+    	return(msg);
+	}
+	
+	
+	public String[] getMsgOld(String id) throws IllegalBlockSizeException, BadPaddingException, ClientProtocolException, IOException {
 		
 		String[] result = new String[2];
 		if (httpClient == null) {

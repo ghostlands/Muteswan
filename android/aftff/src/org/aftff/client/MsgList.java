@@ -12,10 +12,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.apache.http.client.ClientProtocolException;
+import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -33,7 +35,7 @@ public class MsgList extends ListActivity {
 
 	private static final int MAX_MESSAGES = 50;
 	
-	private String[] mStrings = { "1", "2", "3", "4", "5", "6","7","8","9","10","11","12","13" };
+	//private String[] mStrings = { "1", "2", "3", "4", "5", "6","7","8","9","10","11","12","13" };
 	private ArrayAdapter listAdapter;
 	private EditText msgPostField;
 	
@@ -55,35 +57,39 @@ public class MsgList extends ListActivity {
     	 return;
        }
        
-      mStrings = aftff.activeRing.getMsgIndex();
-      if (mStrings.length < MAX_MESSAGES) {
-    	  msgList = new String[mStrings.length-1];
+       
+      
+      Integer lastMessage = aftff.activeRing.getMsgIndex();
+
+      if (lastMessage == 0 || lastMessage == null) {
+          msglistPrompt.setText("No messages for " + aftff.activeRing.getShortname());
+  	       return;
+      }
+      
+//      } else {
+//        msglistPrompt.setText(aftff.activeRing.getShortname());
+//      }
+//      
+      
+      msglistPrompt.setText(aftff.activeRing.getShortname());
+      if (lastMessage < MAX_MESSAGES) {
+    	  msgList = new String[lastMessage];
       } else {
     	  msgList = new String[MAX_MESSAGES];
       }
       
       int newIndex = 0;
-      for (int i = 0; i<mStrings.length;i++) {
-    	  if (mStrings[i] == null || mStrings[i].getBytes().length == 0) {
-    	  	  continue;
-    	  }
+      for (Integer i = lastMessage; i>0; i--) {
+    	  
     	  if (newIndex == MAX_MESSAGES) {
     		  break;
     	  }
-    	  msgList[newIndex] = mStrings[i];
+    	  
+    	  msgList[newIndex] = i.toString();
     	  newIndex++;
       }
 
       
-       if (mStrings == null || mStrings.length == 0) {
-           msglistPrompt.setText("No messages for " + aftff.activeRing.getShortname());
-   	       return;
-       } else if (mStrings[0].equals("error")) {
-    	   msglistPrompt.setText("Error: " + mStrings[1]);
-   	       return;
-       } else {
-         msglistPrompt.setText(aftff.activeRing.getShortname());
-       }
        
        // Use an existing ListAdapter that will map an array
        // of strings to TextViews
@@ -112,6 +118,14 @@ public class MsgList extends ListActivity {
 			showQrcode.putExtra("ENCODE_DATA",aftff.activeRing.getFullText());
 			showQrcode.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(showQrcode);
+			return true;
+		} else if (item.getTitle().toString().equals("Delete Ring")) {
+			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
+			Store store = aftff.getStore(prefs);
+			store.deleteRing(aftff.activeRing, prefs);
+			Toast.makeText(this,
+					"Deleted ring " + aftff.activeRing.getShortname() + " from saved keys.", 
+						  Toast.LENGTH_LONG).show();
 			return true;
 		} else {
 			
@@ -144,7 +158,11 @@ public class MsgList extends ListActivity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return true;
-		  }
+		  } catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return true;
+		}
     	 } else {
 		   startActivity(new Intent( this, WriteMsg.class));
 		   return true;
@@ -168,8 +186,8 @@ public class MsgList extends ListActivity {
 	      Ring ring = aftff.activeRing;
 	      try {
 	    	String msgId = msgList[position].replace("\n", "");
-			String[] msg = ring.getMsg(msgId);
-			msgList[position] = msgId + " - " + msg[0] + "\n" + msg[1];
+			Message msg = ring.getMsg(msgId);
+			msgList[position] = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
 			seenMsgs.add(position);
 			//v.requestLayout();
 			//v.forceLayout();
@@ -200,18 +218,6 @@ public class MsgList extends ListActivity {
 			//Toast.makeText(this,msg,120).show();
 			//setContentView(txt);
 			//aftff.showMsg(msg);
-		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			TextView txt = new TextView(this);
-			txt.setText("Illegal blocksize exception");
-			setContentView(txt);
-		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			TextView txt = new TextView(this);
-			txt.setText("Bad Padding Exception");
-			setContentView(txt);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			TextView txt = new TextView(this);

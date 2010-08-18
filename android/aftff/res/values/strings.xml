@@ -10,4 +10,6 @@
     <string name="app_name">aftffclient</string>
     <string name="newMsgTextDefault">...</string>
     <string name="newringprompt">Create Ring</string>
+    <string name="service_run_message">Service running...</string>
+    
 </resources>

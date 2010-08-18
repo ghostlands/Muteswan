@@ -38,5 +38,19 @@ public class Store extends LinkedList<Ring> {
 	        	prefEd.commit();
 	        }
 	    }
+	  
+	  public void deleteRing(Ring ring, SharedPreferences prefs) {
+		  String storeString = "";
+		  for (Ring r : this) {
+			  if (r.getFullText().equals(ring.getFullText())) {
+				  continue;
+			  } else {
+				  storeString = storeString + r.getFullText() + "---";
+			  }
+		  }
+		  SharedPreferences.Editor prefEd = prefs.edit();
+		  prefEd.putString("store",storeString);
+		  prefEd.commit();
+	  }
 
 }
