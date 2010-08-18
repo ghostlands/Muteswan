@@ -11,6 +11,8 @@ use Digest::SHA qw(sha1_hex);
 use LWP::UserAgent;
 use LWP::Protocol::socks;
 use GD::Barcode::QRcode;
+use MIME::Base64;
+use JSON;
 
 
 
@@ -256,7 +258,8 @@ sub showmsgs_sub {
 	  print "Error, unable to get data.\n";
 	} else {
 	  #print "# Message index:\n";
-	  print "\n" . $res->content() . "\n";
+	  #print "\n" . $res->content() . "\n";
+	  print $res->header( 'Last-Message' ) . "\n";
 	}
 }
 
@@ -336,7 +339,10 @@ sub rmsg_sub {
 	  open(DB,">/tmp/debug.txt");
 	  print DB $res->content();
 	  close(DB);
-	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},$res->content());
+	  
+	  my $json = new JSON( 'allow_nonref' => 1 );
+	  my $jsonObj = $json->decode($res->content());
+	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}));
 	  print Dump($plaintext);
 	}
 
@@ -463,9 +469,14 @@ sub submit_message {
 	my $key = shift;
 	my $message = shift;
 
+
+	my $json = new JSON( 'allow_nonref' => 1 );
+	my $json_txt = $json->encode( { 'message' => encode_base64($message)} );
+
+
 	my $ua = new LWP::UserAgent( agent => 'aftff 0.1' );
 	$ua->proxy('http' => 'socks://127.0.0.1:9050');
-	my $req = new HTTP::Request("PUT" => "http://$server/$key",undef,$message);
+	my $req = new HTTP::Request("POST" => "http://$server/$key",undef,$json_txt);
 	my $res = $ua->request($req);
 	print $res->code . ": " . $res->content . "\n";
 }
