@@ -7,7 +7,7 @@ use YAML;
 use Digest::SHA qw(sha256_hex);
 
 
-# this is a prototype server for aftff
+# this is a prototype server for aftff (anonymous front, trusted face to face)
 
 # options:
 # directory: -d - directory to store data
@@ -34,8 +34,8 @@ while (my $c = $daemon->accept) {
 	print $r->method . " " . $r->url->path . "\n";
         if ($r->method eq 'GET') {
 	    handleGet($r->url->path,$c);
-        } elsif ($r->method eq 'PUT') {
-	    handlePut($r,$c);
+        } elsif ($r->method eq 'POST' || $r->method eq 'PUT') {
+	    handlePost($r,$c);
         } else {
             $c->send_error(RC_FORBIDDEN);
         }
@@ -56,7 +56,8 @@ sub handleGet {
         if ($path =~ /^\/(\w+)?$/) {
 		my $index = getIndex($1);
 		my $res = new HTTP::Response ( 200 );
-		$res->content($index);
+		#$res->content($index);
+		$res->header( 'Last-Message' => $index );
 		$conn->send_response($res);
 	# send a file
 	} else {
@@ -65,7 +66,7 @@ sub handleGet {
 	exit;
 }
 
-sub handlePut {
+sub handlePost {
    my $r = shift;
    my $c = shift;
 
@@ -116,9 +117,9 @@ sub addMessage {
 sub getIndex {
 	my $keyhash = shift;
 	my @msgs = getMsgs($keyhash);
-	my @msgs2 = reverse(@msgs);
-	my $index = Dump(@msgs2);
-	return($index);
+	#my @msgs2 = reverse(@msgs);
+	#my $index = Dump(@msgs2);
+	return(pop(@msgs));
 }
 
 
