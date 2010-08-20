@@ -22,6 +22,8 @@ import org.aftff.client.data.Store;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 
+import com.google.zxing.client.a.r;
+
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
@@ -50,36 +52,41 @@ public class MsgList extends ListActivity {
 	private String[] msgList;
 	
 	private List<Integer> seenMsgs = new LinkedList();
+	Ring ring;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
        super.onCreate(savedInstanceState);
+       
+       Bundle extras = getIntent().getExtras();
+       ring = new Ring(getApplicationContext(),extras.getString("ring"));
+       
 
        setContentView(R.layout.msglist);
        
        EditText msgPostField = (EditText) findViewById(R.id.android_newMsgTextInline);
        
        TextView msglistPrompt = (TextView) findViewById(R.id.android_msglistprompt);
-       if (aftff.activeRing == null) {
+       if (ring == null) {
     	 msglistPrompt.setText("active ring is null...");
     	 return;
        }
        
        
       
-      Integer lastMessage = aftff.activeRing.getMsgIndex();
+      Integer lastMessage = ring.getMsgIndex();
 
       if (lastMessage == 0 || lastMessage == null) {
-          msglistPrompt.setText("No messages for " + aftff.activeRing.getShortname());
+          msglistPrompt.setText("No messages for " + ring.getShortname());
   	       return;
       }
       
 //      } else {
-//        msglistPrompt.setText(aftff.activeRing.getShortname());
+//        msglistPrompt.setText(ring.getShortname());
 //      }
 //      
       
-      msglistPrompt.setText(aftff.activeRing.getShortname());
+      msglistPrompt.setText(ring.getShortname());
       if (lastMessage < MAX_MESSAGES) {
     	  msgList = new String[lastMessage];
       } else {
@@ -93,7 +100,7 @@ public class MsgList extends ListActivity {
     		  break;
     	  }
     	  
-    	  Message msg = aftff.activeRing.getMsgFromDb(i.toString());
+    	  Message msg = ring.getMsgFromDb(i.toString());
     	  if (msg != null) {
     		  msgList[newIndex] = i.toString() + " - " + msg.getDate() + "\n" + msg.getMsg();
     	  } else {
@@ -128,16 +135,16 @@ public class MsgList extends ListActivity {
 		//export ring to jpg using zxing
 		if (item.getTitle().toString().equals("Export Ring")) {
 			Intent showQrcode = new Intent("com.google.zxing.client.android.ENCODE");
-			showQrcode.putExtra("ENCODE_DATA",aftff.activeRing.getFullText());
+			showQrcode.putExtra("ENCODE_DATA",ring.getFullText());
 			showQrcode.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(showQrcode);
 			return true;
 		} else if (item.getTitle().toString().equals("Delete Ring")) {
 			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
 			Store store = new Store(prefs);
-			store.deleteRing(aftff.activeRing, prefs);
+			store.deleteRing(ring, prefs);
 			Toast.makeText(this,
-					"Deleted ring " + aftff.activeRing.getShortname() + " from saved keys.", 
+					"Deleted ring " + ring.getShortname() + " from saved keys.", 
 						  Toast.LENGTH_LONG).show();
 			return true;
 		} else {
@@ -148,9 +155,9 @@ public class MsgList extends ListActivity {
     	 String txtData = txt.toString();
     	 if (txtData.getBytes().length != 0) {	
     	  try {
-			aftff.activeRing.postMsg(txtData);
+			ring.postMsg(txtData);
 			Toast.makeText(this, 
-				"Posted message to " + aftff.activeRing.getShortname(), 
+				"Posted message to " + ring.getShortname(), 
 					  Toast.LENGTH_LONG).show();
 			newMsgText.setText("");
 			return true;
@@ -177,7 +184,10 @@ public class MsgList extends ListActivity {
 			return true;
 		}
     	 } else {
-		   startActivity(new Intent( this, WriteMsg.class));
+    	   Intent intent = new Intent(this,WriteMsg.class);
+    	   Bundle extr = intent.getExtras();
+    	   extr.putString("ring",ring.getFullText());
+		   startActivity(intent);
 		   return true;
 	     }
 		}
@@ -196,7 +206,7 @@ public class MsgList extends ListActivity {
 	      // Toast.makeText(this,
 		  //	"Fetching msg " + msgList[position] + " for ring " + aftff.activeRing.getShortname(), 
 		  //	  Toast.LENGTH_LONG).show();
-	      Ring ring = aftff.activeRing;
+	      //Ring ring = aftff.activeRing;
 	      try {
 	    	String msgId = msgList[position].replace("\n", "");
 			Message msg = ring.getMsg(msgId);

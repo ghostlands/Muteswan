@@ -91,7 +91,7 @@ public class Ring {
 		private static final int DATABASE_VERSION = 2;
 		private static final String DATABASE_NAME = "aftffdb";
 		private static final String TABLE = "messages";
-		  
+
 		
 	     
 	      public OpenHelper(Context context) {
@@ -148,6 +148,9 @@ public class Ring {
 	//public void setNotes(String notes) {
 	//	this.notes = notes;
 	//}
+	public String toString() {
+		return getShortname();
+	}
 	
 	public Ring(Context context, String contents) {
 		Integer plusIndx = contents.indexOf("+");

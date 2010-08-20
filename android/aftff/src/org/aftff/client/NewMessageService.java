@@ -181,8 +181,8 @@ public class NewMessageService extends Service {
 					return;
 				
 				
-				aftff.activeRing = r;
 				Intent msgIntent = new Intent(context, MsgList.class);
+				msgIntent.putExtra("ring", r.getFullText());
 				PendingIntent pendingMsgIntent = PendingIntent.getActivity(context, 0, msgIntent, 0);
 				
 				notify.setLatestEventInfo(context, contentTitle, contentText, pendingMsgIntent);

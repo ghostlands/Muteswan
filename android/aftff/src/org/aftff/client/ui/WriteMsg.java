@@ -26,10 +26,14 @@ import android.widget.Toast;
 
 public class WriteMsg extends Activity {
 
+	Ring ring;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
+	       Bundle extras = getIntent().getExtras();
+	       ring = new Ring(this,extras.getString("ring"));
+	       
 	       setContentView(R.layout.writemsg);
 	       final Button button = (Button) findViewById(R.id.submitMsg);
 	       button.setOnClickListener(submitMsg);
@@ -43,9 +47,7 @@ public class WriteMsg extends Activity {
 	    	Editable txt = newMsgText.getText();
 	    	String txtData = txt.toString();
 	    	
-	    	
-	    	Ring ring = aftff.activeRing;
-	    	
+	    		    	
 	    	try {
 				ring.postMsg(txtData);
 				TextView txt2 = new TextView(v.getContext());

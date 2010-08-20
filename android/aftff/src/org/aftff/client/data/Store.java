@@ -7,8 +7,12 @@ import org.aftff.client.aftff;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.DataSetObserver;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
 
-public class Store extends LinkedList<Ring> {
+final public class Store extends LinkedList<Ring> {
 	
 	public Context context;
 
@@ -56,7 +60,7 @@ public class Store extends LinkedList<Ring> {
         }
 	}
 
-	public String getAsString() {
+	final public String getAsString() {
 		String returnString = "";
 		
 		for (Ring r : this) {
@@ -89,7 +93,7 @@ public class Store extends LinkedList<Ring> {
 	        }
 	    }
 	  
-	  public void deleteRing(Ring ring, SharedPreferences prefs) {
+	  final public void deleteRing(Ring ring, SharedPreferences prefs) {
 		  String storeString = "";
 		  for (Ring r : this) {
 			  if (r.getFullText().equals(ring.getFullText())) {
@@ -101,6 +105,85 @@ public class Store extends LinkedList<Ring> {
 		  SharedPreferences.Editor prefEd = prefs.edit();
 		  prefEd.putString("store",storeString);
 		  prefEd.commit();
+	  }
+	  
+	  
+	  
+	  
+	  public class ringListAdapter implements ListAdapter {
+
+		@Override
+		public boolean areAllItemsEnabled() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean isEnabled(int arg0) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getItemViewType(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public void registerDataSetObserver(DataSetObserver observer) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void unregisterDataSetObserver(DataSetObserver observer) {
+			// TODO Auto-generated method stub
+			
+		}
+		  
 	  }
 
 }

@@ -28,6 +28,7 @@ import org.aftff.client.data.Ring;
 import org.aftff.client.data.Store;
 import org.aftff.client.ui.CreateRing;
 import org.aftff.client.ui.MsgList;
+import org.aftff.client.ui.RingList;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestFactory;
@@ -77,7 +78,7 @@ import org.apache.http.entity.BasicHttpEntity;
 
 public class aftff extends Activity {
 	Store store = null;
-	public static Ring activeRing = null;
+	//public static Ring activeRing = null;
 
 	
 	
@@ -96,11 +97,24 @@ public class aftff extends Activity {
         
         
         SharedPreferences prefs = getSharedPreferences(PREFS,0);
-        //store = getStore(prefs);
         store = new Store(this,prefs);
         setContentView(R.layout.main);
+        
+        
         final Button button = (Button) findViewById(R.id.mScan);
         button.setOnClickListener(mScan);
+        
+        final Button shareButton = (Button) findViewById(R.id.mShare);
+        shareButton.setOnClickListener(mShare);
+        
+        final Button readMsgsButton = (Button) findViewById(R.id.mReadMsgs);
+        readMsgsButton.setOnClickListener(mReadMsgs);
+        
+        final Button writeMsgButton = (Button) findViewById(R.id.mWriteMsg);
+        writeMsgButton.setOnClickListener(mWriteMsg);
+        
+        final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
+        createRingButton.setOnClickListener(mCreateRing);
                                 
     }
     
@@ -118,12 +132,12 @@ public class aftff extends Activity {
     	MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.mainmenu, menu);
         
-        for (Ring r : store) {
-        	MenuItem menuItem = menu.add(r.getShortname());
-         }
+      //  for (Ring r : store) {
+      //  	MenuItem menuItem = menu.add(r.getShortname());
+      //   }
         
         menu.add("Clear Saved Keys");
-        menu.add("Create Ring");
+        //menu.add("Create Ring");
     
         boolean serviceRunning = false;
         ActivityManager actMan = (ActivityManager) getSystemService( ACTIVITY_SERVICE );
@@ -140,8 +154,6 @@ public class aftff extends Activity {
         
         if (serviceRunning == false) {
         	menu.add("Start Service");
-        	// argh service detection borked
-        	//menu.add("Stop Service");
         } else {
         	menu.add("Stop Service");
         }
@@ -166,26 +178,28 @@ public class aftff extends Activity {
 			startActivity(new Intent(this, CreateRing.class));
 			return true;
 		} else if (item.toString().equals("Start Service")) {
+			//Intent intent = new Intent(this,NewMessageService.class));
 			startService(new Intent(this,NewMessageService.class));
 			return true;
 		} else if (item.toString().equals("Stop Service")) {
 			stopService(new Intent(this,NewMessageService.class));
 			return true;
 		}
-		
+	
+		Ring selectedRing = null;
 		for (Ring r : store) {
 			if (r.getShortname().equals(item.toString())) {
-			  aftff.activeRing = r;
+			  selectedRing = r;
 			}
 		}
 		TextView txt = new TextView(this);
 		String contextInfo;
-		if (aftff.activeRing.context == null) {
+		if (selectedRing.context == null) {
 			contextInfo = " is null.";
 		} else {
 			contextInfo = " is not null.";
 		}
-		txt.setText("Loading..." + aftff.activeRing.getShortname() + " context " + contextInfo);
+		txt.setText("Loading..." + selectedRing.getShortname() + " context " + contextInfo);
 		setContentView(txt);
 		
 		
@@ -202,10 +216,29 @@ public class aftff extends Activity {
     	
     }
     
-    private void selectMsg() {
-    	startActivity(new Intent( this, MsgList.class));
+    private void selectMsg(Ring r) {
+    	Intent intent = new Intent(this,MsgList.class);
+    	intent.putExtra("ring",r.getFullText());
     	return;
     }
+    
+    private void showRings(Integer action) {
+    	Intent intent = new Intent(this,RingList.class);
+    	intent.putExtra("action", action);
+    	//Bundle bundle = new Bundle();
+    	//Bundle extr = intent.getExtras();
+    	//extr.putInt("action", action);
+    	
+    	startActivity(intent);
+    	return;
+    }
+    
+    private void createRing() {
+    	startActivity(new Intent(this,CreateRing.class));
+    	return;
+    
+    }
+    
     
     
     
@@ -245,6 +278,32 @@ public class aftff extends Activity {
     	 }
     };
     
+    public Button.OnClickListener mShare = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	        showRings(RingList.SHARE);
+	 }
+    };
+    
+    public Button.OnClickListener mReadMsgs = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	        
+	        showRings(RingList.READ);
+
+	 }
+    };
+    
+    public Button.OnClickListener mWriteMsg = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	        showRings(RingList.WRITE);
+	 }
+    };
+    
+    public Button.OnClickListener mCreateRing = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	        createRing();
+	 }
+    };
+    
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -259,8 +318,8 @@ public class aftff extends Activity {
     	            
     	            
     	            
-    	            this.activeRing = ring;
-    	            selectMsg();
+    	            //this.activeRing = ring;
+    	            selectMsg(ring);
     	            
     	            
     	            
@@ -274,8 +333,8 @@ public class aftff extends Activity {
 	            store.updateStore(testSite,getSharedPreferences(PREFS,0));
 
             	            	
-            	this.activeRing = ring;
-            	selectMsg();
+            	//this.activeRing = ring;
+            	selectMsg(ring);
             
             }
     	  }

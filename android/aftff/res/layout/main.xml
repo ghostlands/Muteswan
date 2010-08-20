@@ -7,22 +7,45 @@
 <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:text="@string/hello"
+    android:text="aftff"
+    android:textSize="24sp"
+    android:gravity="center"
+    
     />
+    
+    
     
     
     
     <!--   <EditText android:text="@+id/EditText01" android:id="@+id/EditText01" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText> -->
     
     
-    <ListView  
+    <!--   <ListView  
          android:id="@android:id/list"
          android:layout_width="fill_parent" 
          android:layout_height="wrap_content" 
-         />
+         /> -->
     
-    <Button android:id="@+id/mScan" android:text="Scan" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+    <Button android:id="@+id/mScan" 
+    		android:text="Scan Code" 
+    		android:layout_width="fill_parent" 
+    		android:layout_height="80sp" />
     
- 
+ 	<Button android:id="@+id/mShare"
+ 			android:text="Share Ring" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="80sp" />
+ 	<Button android:id="@+id/mReadMsgs"
+ 			android:text="Read Messages" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="80sp" />
+ 	<Button android:id="@+id/mWriteMsg"
+ 			android:text="Write Message" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="80sp" />
+ 	<Button android:id="@+id/mCreateRing"
+ 			android:text="Create Ring" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="80sp" />
 
 </LinearLayout>
