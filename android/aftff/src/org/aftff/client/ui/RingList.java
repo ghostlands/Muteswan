@@ -23,9 +23,10 @@ import android.widget.Toast;
 public class RingList extends ListActivity {
 
 
-	public static int SHARE = 1;
-	public static int READ = 2;
-	public static int WRITE = 3;
+	public static int SHARE = 0;
+	public static int READ = 1;
+	public static int WRITE = 2;
+	public static String[] actionPrompts = new String[] { "Select a ring to share.", "Select a ring to read messages.", "Select a ring to write a message." };
 	public Integer action;
 	Bundle extra;
 	public Ring[] ringList;
@@ -46,6 +47,10 @@ public class RingList extends ListActivity {
     	store = new Store(this,prefs);
 
         setContentView(R.layout.ringlist);
+        
+        TextView txt = (TextView) findViewById(R.id.android_ringlistprompt);
+        txt.setText(actionPrompts[extra.getInt("action")]);
+        
         
         ringList = getArray();
         //String[] ringList = new String[] { "first", "second" };

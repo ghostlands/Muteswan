@@ -77,7 +77,7 @@ import org.apache.http.entity.BasicHttpEntity;
 
 
 public class aftff extends Activity {
-	Store store = null;
+	//Store store = null;
 	//public static Ring activeRing = null;
 
 	
@@ -97,7 +97,7 @@ public class aftff extends Activity {
         
         
         SharedPreferences prefs = getSharedPreferences(PREFS,0);
-        store = new Store(this,prefs);
+      //  store = new Store(this,prefs);
         setContentView(R.layout.main);
         
         
@@ -122,10 +122,10 @@ public class aftff extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.clear();
-    	if (store == null) {
-    	  SharedPreferences prefs = getSharedPreferences(PREFS,0);
-          store = new Store(this,prefs);
-    	}
+    //	if (store == null) {
+    //	  SharedPreferences prefs = getSharedPreferences(PREFS,0);
+     //     store = new Store(this,prefs);
+    //	}
            	
     	
     	
@@ -186,24 +186,24 @@ public class aftff extends Activity {
 			return true;
 		}
 	
-		Ring selectedRing = null;
-		for (Ring r : store) {
-			if (r.getShortname().equals(item.toString())) {
-			  selectedRing = r;
-			}
-		}
-		TextView txt = new TextView(this);
-		String contextInfo;
-		if (selectedRing.context == null) {
-			contextInfo = " is null.";
-		} else {
-			contextInfo = " is not null.";
-		}
-		txt.setText("Loading..." + selectedRing.getShortname() + " context " + contextInfo);
-		setContentView(txt);
+//		Ring selectedRing = null;
+//		for (Ring r : store) {
+//			if (r.getShortname().equals(item.toString())) {
+//			  selectedRing = r;
+//			}
+//		}
+//		TextView txt = new TextView(this);
+//		String contextInfo;
+//		if (selectedRing.context == null) {
+//			contextInfo = " is null.";
+//		} else {
+//			contextInfo = " is not null.";
+//		}
+//		txt.setText("Loading..." + selectedRing.getShortname() + " context " + contextInfo);
+//		setContentView(txt);
+//		
 		
-		
-		startActivity(new Intent( this, MsgList.class));
+	//	startActivity(new Intent( this, MsgList.class));
 
 		return true;
 
@@ -314,6 +314,7 @@ public class aftff extends Activity {
     	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
     	            
     	            Ring ring = new Ring(getApplicationContext(),contents);
+    	            Store store = new Store(getApplicationContext(),getSharedPreferences(PREFS,0));
     	            store.updateStore(contents,getSharedPreferences(PREFS,0));
     	            
     	            
@@ -330,6 +331,7 @@ public class aftff extends Activity {
 
             	Ring ring = new Ring(getApplicationContext(),testSite);
  	            //updateStore(testSite);
+	            Store store = new Store(getApplicationContext(),getSharedPreferences(PREFS,0));
 	            store.updateStore(testSite,getSharedPreferences(PREFS,0));
 
             	            	
