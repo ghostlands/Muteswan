@@ -67,7 +67,7 @@ public class CreateRing extends Activity {
 	    	//aftff.updateStore(ringFullText);
 	    	
         	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-        	Store newStore = aftff.getStore(prefs);
+        	Store newStore = new Store(prefs);
         	newStore.updateStore(ringFullText, prefs);
 
 	    	newRingResult.setText("Create ring " + name.getText().toString());

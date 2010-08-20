@@ -52,6 +52,7 @@ import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
@@ -77,6 +78,7 @@ import org.apache.http.entity.BasicHttpEntity;
 public class aftff extends Activity {
 	Store store = null;
 	public static Ring activeRing = null;
+
 	
 	
 	public final static String PREFS = "AftffPrefs"; 
@@ -94,7 +96,8 @@ public class aftff extends Activity {
         
         
         SharedPreferences prefs = getSharedPreferences(PREFS,0);
-        store = getStore(prefs);
+        //store = getStore(prefs);
+        store = new Store(this,prefs);
         setContentView(R.layout.main);
         final Button button = (Button) findViewById(R.id.mScan);
         button.setOnClickListener(mScan);
@@ -105,8 +108,10 @@ public class aftff extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.clear();
-    	SharedPreferences prefs = getSharedPreferences(PREFS,0);
-        store = getStore(prefs);
+    	if (store == null) {
+    	  SharedPreferences prefs = getSharedPreferences(PREFS,0);
+          store = new Store(this,prefs);
+    	}
            	
     	
     	
@@ -174,9 +179,15 @@ public class aftff extends Activity {
 			}
 		}
 		TextView txt = new TextView(this);
-		txt.setText("Loading..." + aftff.activeRing.getShortname());
+		String contextInfo;
+		if (aftff.activeRing.context == null) {
+			contextInfo = " is null.";
+		} else {
+			contextInfo = " is not null.";
+		}
+		txt.setText("Loading..." + aftff.activeRing.getShortname() + " context " + contextInfo);
 		setContentView(txt);
-			
+		
 		
 		startActivity(new Intent( this, MsgList.class));
 
@@ -197,29 +208,30 @@ public class aftff extends Activity {
     }
     
     
-    public static Store getStore(SharedPreferences prefs) {
-    	
-    	Store newStore = new Store();    	
-    	
-        String storeString = prefs.getString("store", null);
-        if (storeString == null || storeString.equals(""))
-        	return newStore;
-        
-        String[] storeArr = storeString.split("---");
-      
-        
-        for (String keyStr : storeArr) {
-        	if (keyStr == null)
-        		continue;
-        	Ring r = new Ring(keyStr);
-        	if (r == null)
-        		continue;
-        	newStore.add(r);
-        }
-        
-        return(newStore);
-    	
-    }
+    
+    //FIXME: get rid of this duplication in Store.java
+//    public static Store getStore(SharedPreferences prefs) {
+//    	
+//    	Store newStore = new Store();   	
+//    	
+//        String storeString = prefs.getString("store", null);
+//        if (storeString == null || storeString.equals(""))
+//        	return newStore;
+//        
+//        String[] storeArr = storeString.split("---");
+//      
+//        
+//        for (String keyStr : storeArr) {
+//        	if (keyStr == null)
+//        		continue;
+//        	Ring r = new Ring(keyStr);
+//        	if (r == null)
+//        		continue;
+//        	newStore.add(r);
+//        }
+//        return(newStore);
+//    	
+//    }
     
   
     
@@ -242,7 +254,7 @@ public class aftff extends Activity {
     	            String contents = intent.getStringExtra("SCAN_RESULT");
     	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
     	            
-    	            Ring ring = new Ring(contents);
+    	            Ring ring = new Ring(getApplicationContext(),contents);
     	            store.updateStore(contents,getSharedPreferences(PREFS,0));
     	            
     	            
@@ -257,7 +269,7 @@ public class aftff extends Activity {
             	//final String testSite = "2ndset+1522c03e8b9bae5d@tckwndlytrphlpyo.onion";
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
-            	Ring ring = new Ring(testSite);
+            	Ring ring = new Ring(getApplicationContext(),testSite);
  	            //updateStore(testSite);
 	            store.updateStore(testSite,getSharedPreferences(PREFS,0));
 

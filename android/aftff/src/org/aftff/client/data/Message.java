@@ -19,9 +19,16 @@ public class Message {
 	private String msgData;
 	private String date;
 	private Ring ring;
+	private Integer id;
 	Crypto cryptoDec;
 
 
+	public Message(Ring ring, Integer id, String date, String msg) {
+		this.date = date;
+		this.ring = ring;
+		this.msgData = msg;
+		this.id = id;
+	}
 	
 	public Message(Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
 		jsonObj = new JSONObject(jsonString);
@@ -53,4 +60,7 @@ public class Message {
 	public String getDate() {
 		return date;
 	}
+	
+	
+	
 }

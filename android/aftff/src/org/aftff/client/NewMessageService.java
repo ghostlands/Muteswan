@@ -1,11 +1,15 @@
 package org.aftff.client;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.aftff.client.data.Message;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.Store;
+import org.aftff.client.ui.MsgList;
+import org.apache.http.client.ClientProtocolException;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -101,13 +105,13 @@ public class NewMessageService extends Service {
 
 	public void poll() {
 		
-		
 		new Thread() {
 			
 			@Override
 			public void run() {
 				SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-				Store store = aftff.getStore(prefs);
+				Store store = new Store(getApplicationContext(),prefs);
+				
 				
 				for (Ring r : store) {
 					
@@ -118,7 +122,7 @@ public class NewMessageService extends Service {
 						ed.putInt("lastMessage" + r.getFullText(), curIndex);
 						ed.commit();
 						notifyIds.put(r.getFullText(), notifyIdLast++);
-						showNotification(r);
+						showNotification(r,lastIndex,curIndex);
 					} else if (lastIndex == 0) {
 						SharedPreferences.Editor ed = prefs.edit();
 						ed.putInt("lastMessage" + r.getFullText(), curIndex);
@@ -130,7 +134,7 @@ public class NewMessageService extends Service {
 				
 			}
 		
-			private void showNotification(Ring r) {
+			private void showNotification(Ring r, Integer lastIndex, Integer curIndex) {
 				// TODO Auto-generated method stub
 				CharSequence txt = "New message(s) in " + r.getShortname();
 				long when = System.currentTimeMillis();
@@ -138,12 +142,50 @@ public class NewMessageService extends Service {
 				Notification notify = new Notification(icon,txt,when);
 				notify.flags |= Notification.DEFAULT_LIGHTS;
 				
+				Integer diff = curIndex - lastIndex;
+				
 				Context context = getApplicationContext();
-				CharSequence contentTitle = "New aftff Message(s)";
-				CharSequence contentText = r.getShortname() + " has new message(s).";
+				CharSequence contentTitle = null;
+				//"New aftff Message(s)";
+				CharSequence contentText = null;
+				//= r.getShortname() + " has new message(s).";
+				
+				// download and show latest message, don't set read
+				if (diff == 1) {
+					Message msg = null;
+					try {
+						msg = r.getMsg(curIndex.toString());
+					} catch (ClientProtocolException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
+					contentTitle = "New aftff Message";
+					contentText = "New message in " + r.getShortname() + ":\n" + msg.getMsg();
+				} else {
+					contentTitle = "New aftff Messages";
+					contentText = "New messages in " + r.getShortname() + "\n";
+				}
+				
+				//else if (diff > 1 && diff <= 5) {
+				//	for (int i = curIndex; i>(curIndex-diff); i--) {
+				//		
+				//	}
+				//}
+				
+				if (contentText == null)
+					return;
 				
 				
-				notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+				aftff.activeRing = r;
+				Intent msgIntent = new Intent(context, MsgList.class);
+				PendingIntent pendingMsgIntent = PendingIntent.getActivity(context, 0, msgIntent, 0);
+				
+				notify.setLatestEventInfo(context, contentTitle, contentText, pendingMsgIntent);
 				mNM.notify((Integer) notifyIds.get(r.getFullText()), notify);
 			}
 			

@@ -93,7 +93,12 @@ public class MsgList extends ListActivity {
     		  break;
     	  }
     	  
-    	  msgList[newIndex] = i.toString();
+    	  Message msg = aftff.activeRing.getMsgFromDb(i.toString());
+    	  if (msg != null) {
+    		  msgList[newIndex] = i.toString() + " - " + msg.getDate() + "\n" + msg.getMsg();
+    	  } else {
+    	      msgList[newIndex] = i.toString();
+    	  }
     	  newIndex++;
       }
 
@@ -129,7 +134,7 @@ public class MsgList extends ListActivity {
 			return true;
 		} else if (item.getTitle().toString().equals("Delete Ring")) {
 			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-			Store store = aftff.getStore(prefs);
+			Store store = new Store(prefs);
 			store.deleteRing(aftff.activeRing, prefs);
 			Toast.makeText(this,
 					"Deleted ring " + aftff.activeRing.getShortname() + " from saved keys.", 
@@ -188,9 +193,9 @@ public class MsgList extends ListActivity {
 				 return;
 			 }
 		 }
-	      Toast.makeText(this,
-			"Fetching msg " + msgList[position] + " for ring " + aftff.activeRing.getShortname(), 
-			  Toast.LENGTH_LONG).show();
+	      // Toast.makeText(this,
+		  //	"Fetching msg " + msgList[position] + " for ring " + aftff.activeRing.getShortname(), 
+		  //	  Toast.LENGTH_LONG).show();
 	      Ring ring = aftff.activeRing;
 	      try {
 	    	String msgId = msgList[position].replace("\n", "");

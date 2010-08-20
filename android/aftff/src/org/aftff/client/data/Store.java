@@ -2,10 +2,59 @@ package org.aftff.client.data;
 
 import java.util.LinkedList;
 
+import org.aftff.client.aftff;
 
+
+import android.content.Context;
 import android.content.SharedPreferences;
 
 public class Store extends LinkedList<Ring> {
+	
+	public Context context;
+
+	
+    // FIXME: fix duplication
+	public Store(Context applicationContext, SharedPreferences prefs) {
+		// TODO Auto-generated constructor stub
+		context = applicationContext;
+		String storeString = prefs.getString("store", null);
+        if (storeString == null || storeString.equals(""))
+        	return;
+        initStore(storeString);
+        
+	}
+
+	public Store() {
+		// TODO Auto-generated constructor stub
+		context = null;
+	}
+
+	public Store(SharedPreferences prefs) {
+		// TODO Auto-generated constructor stub
+		context = null;
+		String storeString = prefs.getString("store", null);
+        if (storeString == null || storeString.equals(""))
+        	return;
+        initStore(storeString);
+	}
+	
+	private void initStore(String storeString) {
+        String[] storeArr = storeString.split("---");
+        
+        for (String keyStr : storeArr) {
+        	if (keyStr == null)
+        		continue;
+        	Ring r;
+        	if (context == null) {
+        		r = new Ring(keyStr);
+        	} else {
+        		r = new Ring(context,keyStr);
+        	}
+        	if (r == null)
+        		continue;
+        	add(r);
+        }
+	}
 
 	public String getAsString() {
 		String returnString = "";
