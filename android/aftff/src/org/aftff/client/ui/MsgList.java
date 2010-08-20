@@ -103,6 +103,8 @@ public class MsgList extends ListActivity {
     	  Message msg = ring.getMsgFromDb(i.toString());
     	  if (msg != null) {
     		  msgList[newIndex] = i.toString() + " - " + msg.getDate() + "\n" + msg.getMsg();
+  			seenMsgs.add(newIndex);
+
     	  } else {
     	      msgList[newIndex] = i.toString();
     	  }

@@ -41,7 +41,7 @@ public class RingList extends ListActivity {
         //action = savedInstanceState.getInt("action");
 
         extra = getIntent().getExtras();
-        
+        action = extra.getInt("action");
         
     	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
     	store = new Store(this,prefs);
@@ -49,7 +49,7 @@ public class RingList extends ListActivity {
         setContentView(R.layout.ringlist);
         
         TextView txt = (TextView) findViewById(R.id.android_ringlistprompt);
-        txt.setText(actionPrompts[extra.getInt("action")]);
+        txt.setText(actionPrompts[action]);
         
         
         ringList = getArray();
@@ -92,11 +92,11 @@ public class RingList extends ListActivity {
 	private void dispatchActivity(int position) {
 		// TODO Auto-generated method stub
 		Intent intent = null;
-		if (extra.getInt("action") == RingList.WRITE) {
+		if (action == WRITE) {
 			intent = new Intent(getApplicationContext(),WriteMsg.class);
-		} else if (extra.getInt("action") == RingList.READ) {
+		} else if (action == READ) {
 			intent = new Intent(getApplicationContext(),MsgList.class);
-	    } else if (extra.getInt("action") == RingList.SHARE) {
+	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",ringList[position].getFullText());;
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");;
