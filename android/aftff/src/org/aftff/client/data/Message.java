@@ -3,6 +3,8 @@ package org.aftff.client.data;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.util.LinkedList;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -21,6 +23,11 @@ public class Message {
 	private Ring ring;
 	private Integer id;
 	Crypto cryptoDec;
+	
+	// FIXME: define max signatures per message
+	private String[] signatures = new String[50];
+	
+	LinkedList<Identity> validSigs;
 
 
 	public Message(Ring ring, Integer id, String date, String msg) {
@@ -51,6 +58,17 @@ public class Message {
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
 		
+		//FIXME: only one signature
+		String sigStr = jsonObj.getString("signature");
+		this.signatures[0] = sigStr;
+		
+		
+		
+		
+	}
+	
+	public String getFirstSignature() {
+		return(signatures[0]);
 	}
 	
 	public String getMsg() {
@@ -59,6 +77,22 @@ public class Message {
 	
 	public String getDate() {
 		return date;
+	}
+
+	public void addValidSig(Identity identity) {
+		// TODO Auto-generated method stub
+		if (validSigs == null) {
+			validSigs = new LinkedList();
+		}
+		validSigs.add(identity);
+	}
+	
+	public Identity getFirstValidSig() {
+		if (validSigs != null) {
+		  return(validSigs.getFirst());
+		} else {
+			return(null);
+		}
 	}
 	
 	

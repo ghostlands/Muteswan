@@ -12,13 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
-final public class Store extends LinkedList<Ring> {
+final public class RingStore extends LinkedList<Ring> {
 	
 	public Context context;
 
 	
     // FIXME: fix duplication
-	public Store(Context applicationContext, SharedPreferences prefs) {
+	public RingStore(Context applicationContext, SharedPreferences prefs) {
 		// TODO Auto-generated constructor stub
 		context = applicationContext;
 		String storeString = prefs.getString("store", null);
@@ -28,12 +28,12 @@ final public class Store extends LinkedList<Ring> {
         
 	}
 
-	public Store() {
+	public RingStore() {
 		// TODO Auto-generated constructor stub
 		context = null;
 	}
 
-	public Store(SharedPreferences prefs) {
+	public RingStore(SharedPreferences prefs) {
 		// TODO Auto-generated constructor stub
 		context = null;
 		String storeString = prefs.getString("store", null);

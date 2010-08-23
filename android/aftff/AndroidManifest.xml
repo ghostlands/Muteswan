@@ -30,6 +30,10 @@
                   android:label="@string/app_name" />
         <activity android:name=".ui.RingList"
                   android:label="@string/app_name" />
+        <activity android:name=".ui.GenerateIdentity"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.IdentityList"
+                  android:label="@string/app_name" />        
         <service android:name=".NewMessageService"/>
 
     </application>

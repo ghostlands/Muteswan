@@ -12,4 +12,6 @@
     <string name="newringprompt">Create Ring</string>
     <string name="service_run_message">Service running...</string>
     
+    <string name="keyselectspinnerprompt">Send without signing</string>
+    
 </resources>

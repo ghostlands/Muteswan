@@ -25,8 +25,10 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.aftff.client.data.Ring;
-import org.aftff.client.data.Store;
+import org.aftff.client.data.RingStore;
 import org.aftff.client.ui.CreateRing;
+import org.aftff.client.ui.GenerateIdentity;
+import org.aftff.client.ui.IdentityList;
 import org.aftff.client.ui.MsgList;
 import org.aftff.client.ui.RingList;
 import org.apache.http.HttpEntity;
@@ -137,6 +139,8 @@ public class aftff extends Activity {
       //   }
         
         menu.add("Clear Saved Keys");
+        menu.add("Generate Identity");
+        menu.add("List Identities");
         //menu.add("Create Ring");
     
         boolean serviceRunning = false;
@@ -183,6 +187,12 @@ public class aftff extends Activity {
 			return true;
 		} else if (item.toString().equals("Stop Service")) {
 			stopService(new Intent(this,NewMessageService.class));
+			return true;
+		} else if (item.toString().equals("List Identities")) {
+			startActivity(new Intent(this,IdentityList.class));
+			return true;
+		} else if (item.toString().equals("Generate Identity")) {
+			startActivity(new Intent(this,GenerateIdentity.class));
 			return true;
 		}
 	
@@ -314,7 +324,7 @@ public class aftff extends Activity {
     	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
     	            
     	            Ring ring = new Ring(getApplicationContext(),contents);
-    	            Store store = new Store(getApplicationContext(),getSharedPreferences(PREFS,0));
+    	            RingStore store = new RingStore(getApplicationContext(),getSharedPreferences(PREFS,0));
     	            store.updateStore(contents,getSharedPreferences(PREFS,0));
     	            
     	            
@@ -331,7 +341,7 @@ public class aftff extends Activity {
 
             	Ring ring = new Ring(getApplicationContext(),testSite);
  	            //updateStore(testSite);
-	            Store store = new Store(getApplicationContext(),getSharedPreferences(PREFS,0));
+	            RingStore store = new RingStore(getApplicationContext(),getSharedPreferences(PREFS,0));
 	            store.updateStore(testSite,getSharedPreferences(PREFS,0));
 
             	            	
@@ -361,6 +371,33 @@ public class aftff extends Activity {
     
     
     
+	public static String genHexHash(String data) {
+		MessageDigest sha = null;
+		try {
+			sha = MessageDigest.getInstance("SHA");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		sha.reset();
+		
+		
+		sha.update(data.getBytes());
+		byte messageDigest[] = sha.digest();
+		
+	            
+		StringBuffer hexString = new StringBuffer();
+		for (int i=0;i<messageDigest.length;i++) {
+			String hex = Integer.toHexString(0xFF & messageDigest[i]); 
+			if(hex.length()==1)
+			  hexString.append('0');
+			hexString.append(hex);
+		}
+	    return(new String(hexString));
+		
+	}
+
+
 	// BLECH! not used
     static public String getGetBody(String host, String getline) throws UnknownHostException, IOException {
     	  // Get the proxy port

@@ -11,7 +11,7 @@ import org.aftff.client.R;
 import org.aftff.client.aftff;
 import org.aftff.client.R.id;
 import org.aftff.client.R.layout;
-import org.aftff.client.data.Store;
+import org.aftff.client.data.RingStore;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -67,7 +67,7 @@ public class CreateRing extends Activity {
 	    	//aftff.updateStore(ringFullText);
 	    	
         	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-        	Store newStore = new Store(prefs);
+        	RingStore newStore = new RingStore(prefs);
         	newStore.updateStore(ringFullText, prefs);
 
 	    	newRingResult.setText("Create ring " + name.getText().toString());

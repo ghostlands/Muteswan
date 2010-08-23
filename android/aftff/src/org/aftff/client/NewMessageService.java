@@ -7,7 +7,7 @@ import java.util.TimerTask;
 
 import org.aftff.client.data.Message;
 import org.aftff.client.data.Ring;
-import org.aftff.client.data.Store;
+import org.aftff.client.data.RingStore;
 import org.aftff.client.ui.MsgList;
 import org.apache.http.client.ClientProtocolException;
 
@@ -65,6 +65,30 @@ public class NewMessageService extends Service {
 		super.onCreate();
 		AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),300000,NewMessageReceiver.getPendingIntent(this));
+		
+		
+		notificationIntent = new Intent(this, aftff.class);
+	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		notifyIds = new HashMap();
+		notifyIdLast = 0;
+		
+		
+		CharSequence txt = "aftff checking for messages";
+		long when = System.currentTimeMillis();
+		int icon = R.drawable.icon;
+		Notification notify = new Notification(icon,txt,when);
+		//notify.flags |= Notification.FLAG_NO_CLEAR;
+
+		
+		Context context = getApplicationContext();
+		CharSequence contentTitle = "aftff message check";
+		CharSequence contentText = "aftff polling at 5 minute intervals";
+		
+		
+		notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+		mNM.notify(PERSISTANT_NOTIFICATION, notify);
+
 	}
 	
 	@Override
@@ -78,28 +102,7 @@ public class NewMessageService extends Service {
 	private void start() {
 		
 		//timer.cancel();
-		notificationIntent = new Intent(this, aftff.class);
-	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		notifyIds = new HashMap();
-		notifyIdLast = 0;
-		
-		
-		CharSequence txt = "aftff polling";
-		long when = System.currentTimeMillis();
-		int icon = R.drawable.icon;
-		Notification notify = new Notification(icon,txt,when);
-		notify.flags |= Notification.FLAG_NO_CLEAR;
-
-		
-		Context context = getApplicationContext();
-		CharSequence contentTitle = "aftff message check";
-		CharSequence contentText = "aftff polling at 5 minute intervals";
-		
-		
-		notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-		mNM.notify(PERSISTANT_NOTIFICATION, notify);
-		
+				
 		poll();
 	}
 
@@ -110,7 +113,7 @@ public class NewMessageService extends Service {
 			@Override
 			public void run() {
 				SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-				Store store = new Store(getApplicationContext(),prefs);
+				RingStore store = new RingStore(getApplicationContext(),prefs);
 				
 				
 				for (Ring r : store) {

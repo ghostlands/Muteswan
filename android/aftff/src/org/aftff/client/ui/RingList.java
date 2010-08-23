@@ -6,7 +6,7 @@ import org.aftff.client.R;
 import org.aftff.client.aftff;
 import org.aftff.client.data.Message;
 import org.aftff.client.data.Ring;
-import org.aftff.client.data.Store;
+import org.aftff.client.data.RingStore;
 import org.apache.http.client.ClientProtocolException;
 
 import android.app.ListActivity;
@@ -32,7 +32,7 @@ public class RingList extends ListActivity {
 	public Ring[] ringList;
 
 	
-	private Store store;
+	private RingStore store;
 	
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +44,7 @@ public class RingList extends ListActivity {
         action = extra.getInt("action");
         
     	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-    	store = new Store(this,prefs);
+    	store = new RingStore(this,prefs);
 
         setContentView(R.layout.ringlist);
         

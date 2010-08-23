@@ -12,8 +12,12 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.security.MessageDigest;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,6 +64,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 import android.text.format.DateFormat;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Ring {
      
@@ -73,7 +78,7 @@ public class Ring {
 		this.server = server;
 		this.context = context;
 
-		this.keyHash = genHex(key);
+		this.keyHash = aftff.genHexHash(key);
 	}
 	
 	public Ring(String key, String shortname, String server) {
@@ -82,7 +87,7 @@ public class Ring {
 		this.shortname = shortname;
 		this.server = server;
 
-		this.keyHash = genHex(key);
+		this.keyHash = aftff.genHexHash(key);
 	}
 	
 	
@@ -181,7 +186,7 @@ public class Ring {
 		this.key = key;
 		this.shortname = name;
 		this.server = srv;
-		this.keyHash = genHex(key);
+		this.keyHash = aftff.genHexHash(key);
 		this.context = context;
 		initHttp();
 		
@@ -220,7 +225,7 @@ public class Ring {
 		this.key = key;
 		this.shortname = name;
 		this.server = srv;
-		this.keyHash = genHex(key);
+		this.keyHash = aftff.genHexHash(key);
 		this.context = null;
 		initHttp();
 		
@@ -233,31 +238,6 @@ public class Ring {
 		return(getShortname()+"+"+getKey()+"@"+getServer());
 	}
 	
-	private String genHex(String data) {
-		MessageDigest sha = null;
-		try {
-			sha = MessageDigest.getInstance("SHA");
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	sha.reset();
-    	
-    	
-    	sha.update(data.getBytes());
-    	byte messageDigest[] = sha.digest();
-    	
-                
-    	StringBuffer hexString = new StringBuffer();
-    	for (int i=0;i<messageDigest.length;i++) {
-    		String hex = Integer.toHexString(0xFF & messageDigest[i]); 
-    		if(hex.length()==1)
-    		  hexString.append('0');
-    		hexString.append(hex);
-    	}
-        return(new String(hexString));
-    	
-	}
 	
 	private void initHttp() {
 		
@@ -282,6 +262,37 @@ public class Ring {
 	}
 	
 	
+
+	public void postMsg(String msg, Identity[] identities) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, InvalidKeyException, SignatureException, InvalidKeySpecException, IOException {
+		// TODO Auto-generated method stub
+		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
+		byte[] encData = crypto.encrypt();
+		
+		String base64EncData = Base64.encodeBytes(encData);
+		JSONObject jsonObj = new JSONObject();
+		jsonObj.put("message", base64EncData);
+		
+		//FIXME: only one supported right now
+		Identity identity = identities[0];
+		
+		    Signature sig = Signature.getInstance("MD5WithRSA");
+		
+		    RSAPrivateKey rsaPrivKey = identity.getPrivateKey();
+		    //if (rsaPrivKey == null) {
+		    //	return;
+		    //}
+			//Toast.makeText(context, "Signing...", Toast.LENGTH_LONG);
+			sig.initSign(rsaPrivKey);
+			sig.update(msg.getBytes("UTF8"));
+			byte[] sigBytes = sig.sign();
+			jsonObj.put("signature", Base64.encodeBytes(sigBytes));
+		
+		
+		
+		postMsg(jsonObj);
+		
+	}
+	
 	public void postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException {
 		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
@@ -289,6 +300,11 @@ public class Ring {
 		String base64EncData = Base64.encodeBytes(encData);
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("message", base64EncData);
+		
+		postMsg(jsonObj);
+	}
+	
+	public void postMsg(JSONObject jsonObj) {
 		
 		HttpPost httpPost = new HttpPost("http://" + server + "/" + keyHash);
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
@@ -307,54 +323,8 @@ public class Ring {
 		}
 		
 		
-		
 	}
 	
-	public void postMsgOld(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		//initHttp();
-		
-
-		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
-		byte[] encData = crypto.encrypt();
-		
-		
-		HttpPost httpPost = new HttpPost("http://" + server + "/" + keyHash);
-		ByteArrayEntity entity = new ByteArrayEntity(encData);
-		httpPost.setEntity(entity);
-		
-		
-		try {
-			httpClient.execute(httpPost);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			return;
-		}
-		
-		
-	}
-	
-	public String getMsgIndexRaw() {
-		 HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
-		   try {
-		    HttpResponse resp = httpClient.execute(httpGet);
-			
-			String yamlRaw = EntityUtils.toString(resp.getEntity());
-			return(yamlRaw);
-		   } catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			return(null);
-			
-		}
 		
 	
 	
@@ -427,7 +397,7 @@ public class Ring {
 			return(null);
 		
 		
-		String ringHash = "r" + genHex(this.getFullText());
+		String ringHash = "r" + aftff.genHexHash(this.getFullText());
 		
 		OpenHelper openHelper = new OpenHelper(context);
 		SQLiteDatabase db = openHelper.getWritableDatabase();
@@ -452,7 +422,7 @@ public class Ring {
 			return;
 		
 		
-		String ringHash = "r" + genHex(getFullText());
+		String ringHash = "r" + aftff.genHexHash(getFullText());
 		OpenHelper openHelper = new OpenHelper(context);
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
@@ -505,6 +475,39 @@ public class Ring {
     	
     	try {
 			msg = new Message(this,jsonString,date);
+			
+			Signature sig = Signature.getInstance("MD5WithRSA");
+
+			byte[] sigBytes = null;
+			try {
+				sigBytes = Base64.decode(msg.getFirstSignature());
+				IdentityStore idStore = new IdentityStore(context);
+				for (Identity identity : idStore) {
+					try {
+						sig.initVerify(identity.getPublicKey());
+					} catch (InvalidKeyException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvalidKeySpecException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						sig.update(msg.getMsg().getBytes("UTF8"));
+						if (sig.verify(sigBytes)) {
+							msg.addValidSig(identity);
+						}
+					} catch (SignatureException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -571,6 +574,8 @@ public class Ring {
 		return(null);
     	        
 	}
+
+	
 
 //	public boolean isMsgRead(Integer i) {
 //		// TODO Auto-generated method stub

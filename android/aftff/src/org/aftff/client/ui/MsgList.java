@@ -16,9 +16,10 @@ import org.aftff.client.aftff;
 import org.aftff.client.R.id;
 import org.aftff.client.R.layout;
 import org.aftff.client.R.menu;
+import org.aftff.client.data.Identity;
 import org.aftff.client.data.Message;
 import org.aftff.client.data.Ring;
-import org.aftff.client.data.Store;
+import org.aftff.client.data.RingStore;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 
@@ -104,7 +105,6 @@ public class MsgList extends ListActivity {
     	  if (msg != null) {
     		  msgList[newIndex] = i.toString() + " - " + msg.getDate() + "\n" + msg.getMsg();
   			seenMsgs.add(newIndex);
-
     	  } else {
     	      msgList[newIndex] = i.toString();
     	  }
@@ -143,7 +143,7 @@ public class MsgList extends ListActivity {
 			return true;
 		} else if (item.getTitle().toString().equals("Delete Ring")) {
 			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-			Store store = new Store(prefs);
+			RingStore store = new RingStore(prefs);
 			store.deleteRing(ring, prefs);
 			Toast.makeText(this,
 					"Deleted ring " + ring.getShortname() + " from saved keys.", 
@@ -212,7 +212,13 @@ public class MsgList extends ListActivity {
 	      try {
 	    	String msgId = msgList[position].replace("\n", "");
 			Message msg = ring.getMsg(msgId);
-			msgList[position] = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
+			
+			Identity validSig = msg.getFirstValidSig();
+			if (validSig != null) {
+				msgList[position] = msgId + " - " + msg.getDate() + " from " + validSig.getName() + "\n" + msg.getMsg();
+			} else {
+				msgList[position] = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
+	        }
 			seenMsgs.add(position);
 			//v.requestLayout();
 			//v.forceLayout();
