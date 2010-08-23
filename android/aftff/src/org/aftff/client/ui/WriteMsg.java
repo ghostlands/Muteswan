@@ -21,10 +21,14 @@ import org.aftff.client.data.Ring;
 import org.json.JSONException;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -36,6 +40,9 @@ import android.widget.Toast;
 public class WriteMsg extends Activity {
 
 	Ring ring;
+	boolean[] signSelections;
+	CharSequence[] signIdentities;
+	Identity[] identities;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
@@ -46,11 +53,20 @@ public class WriteMsg extends Activity {
 	       setContentView(R.layout.writemsg);
 	       
 	       IdentityStore idStore = new IdentityStore(getApplicationContext());
+	       identities = idStore.asArray();
+	       signIdentities = new CharSequence[identities.length];
+	       for (int i=0; i<idStore.asArray().length;i++) {
+	    	   signIdentities[i] = identities[i].getName();
+	       }
+	       signSelections = new boolean[signIdentities.length];
+	       for(int i=0; i<signSelections.length; i++) {
+	    	   signSelections[i] = false;
+	       }
 	       
-	       Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
-	       ArrayAdapter adapter = new ArrayAdapter<Identity>(
-	    		   this, android.R.layout.simple_spinner_item, idStore.asArray());
-	       selectSignSpinner.setAdapter(adapter);
+	       //Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
+	       //ArrayAdapter adapter = new ArrayAdapter<Identity>(
+	       //	   this, android.R.layout.simple_spinner_item, idStore.asArray());
+	       //selectSignSpinner.setAdapter(adapter);
 	       
 
 	       
@@ -58,7 +74,52 @@ public class WriteMsg extends Activity {
 	       final Button button = (Button) findViewById(R.id.submitMsg);
 	       button.setOnClickListener(submitMsg);
 	       
+	       final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
+	       selectSigButton.setOnClickListener(selectSigButtonHandler);
+	       
 	}
+	
+	 @Override
+     protected Dialog onCreateDialog( int id )
+     {
+             return
+             new AlertDialog.Builder( this )
+             .setTitle( "Sign message with identity" )
+             .setMultiChoiceItems(signIdentities, signSelections, new DialogSelectionClickHandler() )
+             .setPositiveButton( "OK", new DialogButtonClickHandler() )
+             .create();
+     }
+
+	 public class DialogSelectionClickHandler implements DialogInterface.OnMultiChoiceClickListener
+     {
+             public void onClick( DialogInterface dialog, int clicked, boolean selected )
+             {
+            	 signSelections[clicked] = selected;
+            	 Log.v("WriteMsg", "Set " + clicked + " to " + selected);
+             }
+     }
+	 
+	 public class DialogButtonClickHandler implements DialogInterface.OnClickListener
+     {
+             public void onClick( DialogInterface dialog, int clicked )
+             {
+                     switch( clicked )
+                     {
+                             case DialogInterface.BUTTON_POSITIVE:
+                                     break;
+                     }
+             }
+     }
+
+
+   
+	 public Button.OnClickListener selectSigButtonHandler  = new View.OnClickListener() {
+        public void onClick( View v ) {
+        		Log.v("WriteMsg", "select sig button clicked.\n");
+                 showDialog( 0 );
+         }
+     };
+
 	
 	
 	public Button.OnClickListener submitMsg = new Button.OnClickListener() {
@@ -70,13 +131,25 @@ public class WriteMsg extends Activity {
 	    		    	
 	    	try {
 	    		
-	    		Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
-	    		Identity identity = (Identity) selectSignSpinner.getSelectedItem();
+	    		//Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
+	    		//Identity identity = (Identity) selectSignSpinner.getSelectedItem();
+	    		
+	    		//FIXME: max sigs?
+	    		Identity[] signIds = new Identity[50];
+	    		int j = 0;
+	    		for(int i=0; i<signSelections.length; i++) {
+	    			if (signSelections[i] == true) {
+	    				signIds[j] = identities[i];
+	    				j++;
+	    			}
+	    		}
+	    		
 	    		TextView txt2 = new TextView(v.getContext());
-	    		if (identity != null) {
+	    		if (signIds[0] != null) {
 				    try {
-						ring.postMsg(txtData,new Identity[] { identity });
-			            txt2.setText("Posted message to " + ring.getShortname() + " with signature.");
+				    	Log.v("WriteMsg", "Posting with signatures...");
+						ring.postMsg(txtData,signIds);
+			            txt2.setText("Posted message to " + ring.getShortname() + " with signature(s).");
 
 					} catch (InvalidKeyException e) {
 						// TODO Auto-generated catch block

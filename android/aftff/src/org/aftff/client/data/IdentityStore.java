@@ -60,6 +60,9 @@ public class IdentityStore extends LinkedList<Identity> {
 			Identity identity = new Identity(name,publicKeyEnc,privateKeyEnc,pubKeyHash,privKeyHash);
 			this.add(identity);
 			
+			if (cursor.isLast()) 
+				break;
+			
 		}
 		cursor.close();
 		

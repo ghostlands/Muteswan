@@ -50,6 +50,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Entity;
@@ -63,6 +64,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -93,9 +95,10 @@ public class Ring {
 	
 	private class OpenHelper extends SQLiteOpenHelper {
 
-		private static final int DATABASE_VERSION = 2;
+		private static final int DATABASE_VERSION = 3;
 		private static final String DATABASE_NAME = "aftffdb";
 		private static final String TABLE = "messages";
+		private static final String SIGTABLE = "signatures";
 
 		
 	     
@@ -107,11 +110,13 @@ public class Ring {
 		@Override
 	      public void onCreate(SQLiteDatabase db) {
 	         db.execSQL("CREATE TABLE " + TABLE + " (ringHash TEXT, id INTEGER, date TEXT, message TEXT)");
+	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
 	      }
 
 	      @Override
 	      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	         db.execSQL("DROP TABLE IF EXISTS " + TABLE);
+	         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
 	         onCreate(db);
 	      }
 	      
@@ -272,21 +277,32 @@ public class Ring {
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("message", base64EncData);
 		
-		//FIXME: only one supported right now
-		Identity identity = identities[0];
+		String[] encodedSigs = new String[identities.length];
+		JSONArray jsonArray = new JSONArray();
 		
+		
+		
+		for (int i=0; i<identities.length; i++) {
 		    Signature sig = Signature.getInstance("MD5WithRSA");
+		    
+		    if (identities[i] == null) {
+		    	Log.v("Ring", "Wtf, identities is null\n");
+		    	break;
+		    }
+		    
+		    Log.v("Ring", "Signing with " + identities[i].getName() + "\n");
 		
-		    RSAPrivateKey rsaPrivKey = identity.getPrivateKey();
-		    //if (rsaPrivKey == null) {
-		    //	return;
-		    //}
-			//Toast.makeText(context, "Signing...", Toast.LENGTH_LONG);
+		    RSAPrivateKey rsaPrivKey = identities[i].getPrivateKey();
+		   
 			sig.initSign(rsaPrivKey);
 			sig.update(msg.getBytes("UTF8"));
 			byte[] sigBytes = sig.sign();
-			jsonObj.put("signature", Base64.encodeBytes(sigBytes));
+			jsonArray.put(identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes));
+			//encodedSigs[i] = identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes);
+		}
 		
+		//jsonObj.put("signatures", encodedSigs);
+		jsonObj.put("signatures", jsonArray);
 		
 		
 		postMsg(jsonObj);
@@ -348,40 +364,13 @@ public class Ring {
 	    	return 0;
 	    	
 		return(result);
-//
-//	    for (int i = Integer.parseInt(lastMessage[0].getValue()); i>0; i--) {
-//	    	//msgs[i] = new String();
-//	    	
-//	    }
-//	
-//	    
-//	    return(msgs);
-//		
-//		String yamlRaw = EntityUtils.toString(resp.getEntity());
-//		
-//		//BufferedReader list = new BufferedReader(new StringReader(yamlRaw));
-//		msgs = yamlRaw.split("--- ");
-//		//String line;
-//		//int i=0;
-//		//while ((line = list.readLine()) != null) {
-//	       //String[] chars = line.split(" ");
-//	       //msgs[i] = chars[1];
-//		   //msgs[i] = line;
-//		   //i++;
-//		//}
-//		return(msgs);
+
 	} catch (ClientProtocolException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (IOException e) {
 		// TODO Auto-generated catch block
-//		//e.printStackTrace();
-//		//TextView txt = new TextView(this);
-//		//txt.setText("Error getting message index: " + e.toString());
-//		//msgs[0] = "error";
-//		//msgs[1] = e.toString();
-//		String[] error = { "error", e.toString() };
-//		return(error);
+
 	}
 	
 	return(0);
@@ -406,21 +395,43 @@ public class Ring {
 		if (cursor.moveToFirst()) {
 			String date = cursor.getString(0);
 			String msgData = cursor.getString(1);
-			msg = new Message(this,Integer.parseInt(id),date,msgData);
+			
+			Cursor cursorSig = db.query(OpenHelper.SIGTABLE, new String[] { "signature" }, "msgId = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "signature desc" );
+			
+			//FIXME: max signatures?
+			String[] signatures = new String[50];
+			int i=0;
+			SIG: while (cursorSig != null && cursorSig.moveToNext()) {
+				String sigTxt = cursorSig.getString(0);
+				signatures[i] = sigTxt;
+				i++;
+				if (cursor.isLast()) 
+					break SIG;
+			}
+			cursorSig.close();
+			
+			if (signatures[0] != null) {
+			   msg = new Message(this,Integer.parseInt(id),date,msgData,signatures);
+			} else {
+			   msg = new Message(this,Integer.parseInt(id),date,msgData);
+
+			}
+			
 			
 			return(msg);
 		}
-		
 		cursor.close();
+		
 		
 		
 		return(msg);
 	}
 	
+	
+	// FIXME: should refactor
 	public void saveMsgToDb(Integer id, String date, String msg) {
 		if (context == null) 
-			return;
-		
+			return;	
 		
 		String ringHash = "r" + aftff.genHexHash(getFullText());
 		OpenHelper openHelper = new OpenHelper(context);
@@ -433,8 +444,39 @@ public class Ring {
 		insrt.bindString(4, msg);
 		insrt.executeInsert();
 		
+	}
+	
+	//FIXME: should refactor
+	public void saveMsgToDb(Integer id, String date, String msg, String[] signatures) {
+		if (context == null) 
+			return;	
+		
+		String ringHash = "r" + aftff.genHexHash(getFullText());
+		OpenHelper openHelper = new OpenHelper(context);
+		SQLiteDatabase db = openHelper.getWritableDatabase();
+		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
+		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.TABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
+		insrt.bindString(1, ringHash);
+		insrt.bindLong(2, id);
+		insrt.bindString(3, date);
+		insrt.bindString(4, msg);
+		insrt.executeInsert();
+	
+		for (int i=0; i<signatures.length; i++) {	
+		  //FIXME: length for signatures
+		  if (signatures[i] == null)
+			  break;
+		
+		  insrt = db.compileStatement("INSERT INTO " + openHelper.SIGTABLE + " (msgId,ringHash,signature) VALUES (?,?,?)");
+		  insrt.bindLong(1, id);
+		  insrt.bindString(2, ringHash);
+		  insrt.bindString(3,signatures[i]);
+		  insrt.executeInsert();
+		}
 		
 	}
+	
+	
 	
 	public Message getMsg(String id) throws ClientProtocolException, IOException {
 		Message msg = null;
@@ -444,15 +486,18 @@ public class Ring {
 			msg = getMsgFromTor(id);
 			
 			if (context != null) {
-				saveMsgToDb(Integer.parseInt(id),msg.getDate(),msg.getMsg());
+				if (msg.signatures[0] != null) {
+				   saveMsgToDb(Integer.parseInt(id),msg.getDate(),msg.getMsg(),msg.signatures);
+				} else {
+				   saveMsgToDb(Integer.parseInt(id),msg.getDate(),msg.getMsg());
+				}
 			}
-			
 		}
-			
-		
 		
 		return(msg);
+		
 	}
+	
 	
 	public Message getMsgFromTor(String id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
@@ -475,39 +520,6 @@ public class Ring {
     	
     	try {
 			msg = new Message(this,jsonString,date);
-			
-			Signature sig = Signature.getInstance("MD5WithRSA");
-
-			byte[] sigBytes = null;
-			try {
-				sigBytes = Base64.decode(msg.getFirstSignature());
-				IdentityStore idStore = new IdentityStore(context);
-				for (Identity identity : idStore) {
-					try {
-						sig.initVerify(identity.getPublicKey());
-					} catch (InvalidKeyException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InvalidKeySpecException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
-						sig.update(msg.getMsg().getBytes("UTF8"));
-						if (sig.verify(sigBytes)) {
-							msg.addValidSig(identity);
-						}
-					} catch (SignatureException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

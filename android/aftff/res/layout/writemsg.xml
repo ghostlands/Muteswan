@@ -15,15 +15,17 @@
     
     <EditText  android:id="@+id/newMsgText" android:layout_width="fill_parent" android:layout_height="220sp"></EditText>
     
-    <Spinner 
+   <!--   <Spinner 
         android:id="@+id/keySelectSpinner"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:drawSelectorOnTop="true"
         android:prompt="@string/keyselectspinnerprompt"
-    />
+    /> -->
     
-    
+    <Button android:id="@+id/selectSigButton" android:text="Sign Message"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"/>
     
     <Button android:id="@+id/submitMsg" android:text="Post Message" android:layout_width="fill_parent" android:layout_height="wrap_content" />
     

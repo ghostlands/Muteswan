@@ -22,7 +22,6 @@ public final class R {
         public static final int exportring=0x7f06001b;
         public static final int genIdentityButton=0x7f06000c;
         public static final int genRingButton=0x7f060007;
-        public static final int keySelectSpinner=0x7f060019;
         public static final int mCreateRing=0x7f060012;
         public static final int mReadMsgs=0x7f060010;
         public static final int mScan=0x7f06000e;
@@ -42,6 +41,7 @@ public final class R {
         public static final int newRingServer=0x7f060006;
         public static final int newRingServerPrompt=0x7f060005;
         public static final int newmessage=0x7f06001a;
+        public static final int selectSigButton=0x7f060019;
         public static final int submitMsg=0x7f060017;
     }
     public static final class layout {

@@ -17,6 +17,7 @@ import org.aftff.client.R.id;
 import org.aftff.client.R.layout;
 import org.aftff.client.R.menu;
 import org.aftff.client.data.Identity;
+import org.aftff.client.data.IdentityStore;
 import org.aftff.client.data.Message;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
@@ -54,6 +55,8 @@ public class MsgList extends ListActivity {
 	
 	private List<Integer> seenMsgs = new LinkedList();
 	Ring ring;
+	
+	IdentityStore idStore;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,6 +68,7 @@ public class MsgList extends ListActivity {
 
        setContentView(R.layout.msglist);
        
+       idStore = new IdentityStore(getApplicationContext());
        EditText msgPostField = (EditText) findViewById(R.id.android_newMsgTextInline);
        
        TextView msglistPrompt = (TextView) findViewById(R.id.android_msglistprompt);
@@ -102,9 +106,25 @@ public class MsgList extends ListActivity {
     	  }
     	  
     	  Message msg = ring.getMsgFromDb(i.toString());
+    	  
+    	  
+    	  
     	  if (msg != null) {
-    		  msgList[newIndex] = i.toString() + " - " + msg.getDate() + "\n" + msg.getMsg();
-  			seenMsgs.add(newIndex);
+    		  String msgStr;
+    		  
+    		  LinkedList<Identity> validSigs = msg.verifySignatures(idStore);
+  			  if (validSigs != null && validSigs.size() != 0) {
+  				msgStr = i + " - " + msg.getDate() + "\n" + msg.getMsg();
+  				for (Identity identity : validSigs) {
+  					msgStr = msgStr + "\n" + "s: " + identity.getName();
+  				}
+  				msgList[newIndex] = msgStr;
+  			   } else {
+  				msgList[newIndex] = i.toString() + " - " + msg.getDate() + "\n" + msg.getMsg();
+  	           }
+    		  
+    		  
+  			  seenMsgs.add(newIndex);
     	  } else {
     	      msgList[newIndex] = i.toString();
     	  }
@@ -213,9 +233,13 @@ public class MsgList extends ListActivity {
 	    	String msgId = msgList[position].replace("\n", "");
 			Message msg = ring.getMsg(msgId);
 			
-			Identity validSig = msg.getFirstValidSig();
-			if (validSig != null) {
-				msgList[position] = msgId + " - " + msg.getDate() + " from " + validSig.getName() + "\n" + msg.getMsg();
+			LinkedList<Identity> validSigs = msg.verifySignatures(idStore);
+			if (validSigs != null && validSigs.size() != 0) {
+				String msgStr = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
+				for (Identity identity : validSigs) {
+					msgStr = msgStr + "\n" + "s: " + identity.getName();
+				}
+				msgList[position] = msgStr;
 			} else {
 				msgList[position] = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
 	        }

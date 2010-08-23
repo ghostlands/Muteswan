@@ -2,8 +2,11 @@ package org.aftff.client.data;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.LinkedList;
 
 import javax.crypto.BadPaddingException;
@@ -12,8 +15,11 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.aftff.client.Base64;
 import org.aftff.client.Crypto;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.util.Log;
 
 public class Message {
 
@@ -25,7 +31,7 @@ public class Message {
 	Crypto cryptoDec;
 	
 	// FIXME: define max signatures per message
-	private String[] signatures = new String[50];
+	public String[] signatures = new String[50];
 	
 	LinkedList<Identity> validSigs;
 
@@ -37,12 +43,25 @@ public class Message {
 		this.id = id;
 	}
 	
+	public Message(Ring ring, Integer id, String date, String msg, String[] signatures) {
+		this.date = date;
+		this.ring = ring;
+		this.msgData = msg;
+		this.id = id;
+		this.signatures = signatures;
+	}
+	
 	public Message(Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
 		jsonObj = new JSONObject(jsonString);
 		this.date = date;
 		this.ring = ring;
 		
 		String base64Msg = jsonObj.getString("message");
+		JSONArray sigs = jsonObj.getJSONArray("signatures");
+		for (int i=0; i<sigs.length(); i++) {
+			this.signatures[i] = sigs.getString(i);
+		}
+		
 		byte[] rawMsgBytes = null;
 		try {
 			rawMsgBytes = Base64.decode(base64Msg);
@@ -59,8 +78,8 @@ public class Message {
 		this.msgData = new String(msg);
 		
 		//FIXME: only one signature
-		String sigStr = jsonObj.getString("signature");
-		this.signatures[0] = sigStr;
+		//String sigStr = jsonObj.getString("signature");
+		//this.signatures[0] = sigStr;
 		
 		
 		
@@ -82,7 +101,7 @@ public class Message {
 	public void addValidSig(Identity identity) {
 		// TODO Auto-generated method stub
 		if (validSigs == null) {
-			validSigs = new LinkedList();
+			validSigs = new LinkedList<Identity>();
 		}
 		validSigs.add(identity);
 	}
@@ -95,6 +114,73 @@ public class Message {
 		}
 	}
 	
+	
+	public LinkedList<Identity> verifySignatures(IdentityStore idStore) {
+		Log.v("Message", "In verifySignatures");
+		
+		Signature sig;
+		try {
+			sig = Signature.getInstance("MD5WithRSA");
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return(null);
+		}
+		
+		
+		for (int i=0; i<signatures.length; i++) {
+			if (signatures[i] == null)
+				break;
+			
+			String[] signComponents = signatures[i].split(":");
+			for (Identity identity : idStore) {
+				if (identity.pubKeyHash.equals(signComponents[0])) {
+					Log.v("Message", "checking identity " + identity.getName() + " hash " + identity.pubKeyHash);
+					
+					
+					try {
+						Log.v("Message", "signComponents[0]:" + signComponents[0]);
+						Log.v("Message", "signComponents[1]:" + signComponents[1]);
+
+						
+						byte[] sigBytes = Base64.decode(signComponents[1]);
+						sig.initVerify(identity.getPublicKey());
+					    sig.update(getMsg().getBytes("UTF8"));
+					    if (sig.verify(sigBytes)) {
+							addValidSig(identity);
+							Log.v("Message", "Verified identity " + identity.getName());
+					      } else {
+					    	  Log.v("Message", "Failed to verify signature.");
+					      }
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (SignatureException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvalidKeyException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (NoSuchAlgorithmException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvalidKeySpecException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				  
+						
+					
+				}
+			}
+			
+			
+			
+		}
+		
+	
+		return(validSigs);
+	}
 	
 	
 }
