@@ -21,8 +21,8 @@ import org.aftff.client.aftff;
 public class Identity {
 	
 	String name;
-	String publicKeyEnc;
-	String privateKeyEnc;
+	public String publicKeyEnc;
+	public String privateKeyEnc;
 	String pubKeyHash;
 	String privKeyHash;
 	
@@ -90,7 +90,15 @@ public class Identity {
 		this.privateKeyEnc = privateKeyEnc;
 		this.pubKeyHash = pubKeyHash;
 		this.privKeyHash = privKeyHash;
-		
+	}
+	
+	// constructor when import public key
+	public Identity(String name, String publicKeyEnc, String privKeyHash) {
+		this.name = name;
+		this.publicKeyEnc = publicKeyEnc;
+		this.privateKeyEnc = "";
+		this.pubKeyHash = getPubKeyHash();
+		this.privKeyHash = privKeyHash;
 	}
 	
 	
@@ -121,6 +129,14 @@ public class Identity {
 	
 	public String getPrivKeyHash() {
 		return(aftff.genHexHash(privateKeyEnc.toString()));
+	}
+
+
+	public String getShareableString() {
+		//return(name + ":" + Base64.encodeBytes(publicKeyEnc.getBytes()) + ":" + privKeyHash );
+		return(name + ":" + publicKeyEnc + ":" + privKeyHash );
+
+		
 	}
 	
 	//public void initHash() {

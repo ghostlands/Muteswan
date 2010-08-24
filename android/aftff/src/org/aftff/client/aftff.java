@@ -24,6 +24,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.aftff.client.data.Identity;
+import org.aftff.client.data.IdentityStore;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
 import org.aftff.client.ui.CreateRing;
@@ -323,14 +325,25 @@ public class aftff extends Activity {
     	            String contents = intent.getStringExtra("SCAN_RESULT");
     	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
     	            
-    	            Ring ring = new Ring(getApplicationContext(),contents);
-    	            RingStore store = new RingStore(getApplicationContext(),getSharedPreferences(PREFS,0));
-    	            store.updateStore(contents,getSharedPreferences(PREFS,0));
+    	            int atIndex = contents.indexOf("@");
     	            
+    	            // RING
+    	            if (atIndex != -1) {
     	            
+    	              Ring ring = new Ring(getApplicationContext(),contents);
+    	              RingStore store = new RingStore(getApplicationContext(),getSharedPreferences(PREFS,0));
+    	              store.updateStore(contents,getSharedPreferences(PREFS,0));
+    	               
+    	              //this.activeRing = ring;
+    	              selectMsg(ring);
     	            
-    	            //this.activeRing = ring;
-    	            selectMsg(ring);
+    	            // IDENTITY
+    	            } else {
+    	            	String[] parts = contents.split(":");
+    	            	Identity identity = new Identity(parts[0],parts[1],parts[2]);
+    	            	IdentityStore idStore = new IdentityStore(getApplicationContext());
+    	            	idStore.addToDb(identity);
+    	            }
     	            
     	            
     	            

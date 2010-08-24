@@ -57,10 +57,17 @@ public class Message {
 		this.ring = ring;
 		
 		String base64Msg = jsonObj.getString("message");
-		JSONArray sigs = jsonObj.getJSONArray("signatures");
-		for (int i=0; i<sigs.length(); i++) {
-			this.signatures[i] = sigs.getString(i);
+		JSONArray sigs = null;
+		try {
+		  sigs = jsonObj.getJSONArray("signatures");
+		  for (int i=0; i<sigs.length(); i++) {
+				this.signatures[i] = sigs.getString(i);
+		  }
+		} catch (JSONException e) {
+			
 		}
+		
+		
 		
 		byte[] rawMsgBytes = null;
 		try {
