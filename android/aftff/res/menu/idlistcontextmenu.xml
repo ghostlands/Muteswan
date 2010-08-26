@@ -4,6 +4,6 @@
         android:title="Share" />
     <item android:id="@+id/identityDelete"
         android:title="Delete" />
-     <item android:id="@+id/identityView"
-        android:title="View" />
+     <!-- <item android:id="@+id/identityView"
+        android:title="View" /> -->
 </menu>

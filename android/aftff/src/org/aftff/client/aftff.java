@@ -33,6 +33,7 @@ import org.aftff.client.ui.GenerateIdentity;
 import org.aftff.client.ui.IdentityList;
 import org.aftff.client.ui.MsgList;
 import org.aftff.client.ui.RingList;
+import org.aftff.client.ui.TorNotAvailable;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestFactory;
@@ -56,15 +57,24 @@ import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ProgressDialog;
+import android.app.Service;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 
 
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.RemoteException;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -76,34 +86,131 @@ import android.widget.Toast;
 
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.entity.BasicHttpEntity;
+import org.torproject.android.service.ITorService;
 
 
 
 
-public class aftff extends Activity {
+public class aftff extends Activity implements Runnable {
 	//Store store = null;
 	//public static Ring activeRing = null;
 
-	
+	public final static int TOR_STATUS_OFF = -1;
+	public final static int TOR_STATUS_READY = 0;
+	public final static int TOR_STATUS_ON = 1;
+	public final static int TOR_STATUS_CONNECTING = 2;
+
 	
 	public final static String PREFS = "AftffPrefs"; 
+	private ProgressDialog dialog;
+	
+	
+	ITorService torService;
+	
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		while (torService == null) {
+			try {
+				Thread.currentThread().sleep(300);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.v("AFTFF", "Tor service still null.");
+		}
+		Log.v("AFTFF", "Tor is not null.");
+		
+		
+//		try {
+//			if (torService.getStatus() != TOR_STATUS_ON) {
+//				//startActivity(new Intent("org.torproject.android.START_TOR"));
+//				//return;
+//				dialogHandler.sendEmptyMessage(0);
+//
+//			}
+//		} catch (RemoteException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		try {
+//			while (torService.getStatus() != TOR_STATUS_ON) {
+//				dialog.setMessage("Waiting for Tor to become available...");
+//				Thread.currentThread().sleep(500);
+//				Log.v("AFTFF", "Tor is not at status on: " + torService.getStatus());
+//			}
+//			Log.v("AFTFF", "Tor is now at status on: " + torService.getStatus());
+//		} catch (RemoteException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+	  try {
+		if (torService.getStatus() != TOR_STATUS_ON) {
+		       dialog.dismiss();
+		       startActivity(new Intent(this,TorNotAvailable.class));
+		  } else {
+		       dialog.dismiss();
+		  }
+	} catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	}
 	
 	
 	
+	private Handler dialogHandler = new Handler() {
 	
+	        @Override
+	        public void handleMessage(Message msg) {
+	              	dialog.dismiss();
+	              	Intent intent = new Intent();
+	              	intent.setAction("org.torproject.android.Orbot");
+	              	startActivity(intent);
+	              	//.setAction("org.torproject.android.START_TOR"));
+	        }
+	 };
+	 
+	 
+	 public void onResume() {
+		 super.onResume();
+		 Thread thread = new Thread(this);
+		 thread.start();
+	 }
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-  
+        
+        
+        // Check tor status
+        //Intent torServiceIntent = new Intent("org.torproject.android.service.ITorService");
+        Intent torServiceIntent = new Intent();
+        //torServiceIntent.setClassName("org.torproject.android.service", "ITorService");
+        torServiceIntent.setAction("org.torproject.android.service.ITorService");
+        boolean isBound = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
+        
         
         
         
         SharedPreferences prefs = getSharedPreferences(PREFS,0);
       //  store = new Store(this,prefs);
-        setContentView(R.layout.main);
         
+        
+        
+        
+        
+        dialog = ProgressDialog.show(this, "", "Checking Tor connection...", true);
+        Thread thread = new Thread(this); 
+        thread.start();
+        
+        
+        
+        setContentView(R.layout.main);
         
         final Button button = (Button) findViewById(R.id.mScan);
         button.setOnClickListener(mScan);
@@ -119,7 +226,15 @@ public class aftff extends Activity {
         
         final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
         createRingButton.setOnClickListener(mCreateRing);
-                                
+        
+        if (!isBound) {
+        	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
+        } else if (torService == null) {
+        	Log.v("AFTFF", "Service is bound but torService is null.");
+        } else {
+        	Log.v("AFTFF", "Hey, we are bound to the tor service\n");
+        }
+        
     }
     
     
@@ -163,6 +278,8 @@ public class aftff extends Activity {
         } else {
         	menu.add("Stop Service");
         }
+        
+       // menu.add("Check Tor Connectivity");
        
         
         return true;
@@ -197,6 +314,33 @@ public class aftff extends Activity {
 			startActivity(new Intent(this,GenerateIdentity.class));
 			return true;
 		}
+//		} else if (item.toString().equals("Check Tor Connectivity")) {
+//			if (torService != null) {
+//				TextView txt = new TextView(this);
+//				try {
+//					if (torService.getStatus() == TOR_STATUS_READY) {
+//					  txt.setText("Tor is connected with status ready.");
+//					} else if (torService.getStatus() == TOR_STATUS_OFF) {
+//					  txt.setText("Tor is disconnected.");
+//					} else if (torService.getStatus() == TOR_STATUS_CONNECTING) {
+//						txt.setText("Tor is currently establishing a connection.");
+//					} else if (torService.getStatus() == TOR_STATUS_ON) {
+//						txt.setText("Tor is connected with status on.");
+//					}
+//				} catch (RemoteException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				setContentView(txt);
+//				//Toast.makeText(getApplicationContext(), "Tor connected.", Toast.LENGTH_LONG);
+//			
+//			} else {
+//				TextView txt = new TextView(this);
+//				txt.setText("Not connected to tor service.");
+//				setContentView(txt);
+//				//Toast.makeText(getApplicationContext(),"Tor is not connected.", Toast.LENGTH_LONG);
+//			}
+		
 	
 //		Ring selectedRing = null;
 //		for (Ring r : store) {
@@ -376,6 +520,22 @@ public class aftff extends Activity {
     
     
     
+    private ServiceConnection mTorConn = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+        	torService = ITorService.Stub.asInterface(service);
+        	if (torService == null) {
+        		Log.e("AFTFF", "torService is null in mTorConn Service Connection callback.");
+        	}
+
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+           torService = null;
+        }
+    };
+
+    
     
     
     
@@ -453,5 +613,8 @@ public class aftff extends Activity {
         
         //return(result.toString());
     }
+
+
+	
     
 }

@@ -21,7 +21,7 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-public class Message {
+public class AftffMessage {
 
 	private JSONObject jsonObj;
 	private String msgData;
@@ -36,14 +36,14 @@ public class Message {
 	LinkedList<Identity> validSigs;
 
 
-	public Message(Ring ring, Integer id, String date, String msg) {
+	public AftffMessage(Ring ring, Integer id, String date, String msg) {
 		this.date = date;
 		this.ring = ring;
 		this.msgData = msg;
 		this.id = id;
 	}
 	
-	public Message(Ring ring, Integer id, String date, String msg, String[] signatures) {
+	public AftffMessage(Ring ring, Integer id, String date, String msg, String[] signatures) {
 		this.date = date;
 		this.ring = ring;
 		this.msgData = msg;
@@ -51,7 +51,7 @@ public class Message {
 		this.signatures = signatures;
 	}
 	
-	public Message(Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
+	public AftffMessage(Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
 		jsonObj = new JSONObject(jsonString);
 		this.date = date;
 		this.ring = ring;
@@ -79,17 +79,11 @@ public class Message {
 		
 		
 			
-		//cryptoDec = new Crypto(ring.getKey().getBytes(),jsonObj.getString("message").getBytes("ISO-8859-1"));
 		cryptoDec = new Crypto(ring.getKey().getBytes(),rawMsgBytes);
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
-		
-		//FIXME: only one signature
-		//String sigStr = jsonObj.getString("signature");
-		//this.signatures[0] = sigStr;
-		
-		
-		
+				
+				
 		
 	}
 	
@@ -123,7 +117,7 @@ public class Message {
 	
 	
 	public LinkedList<Identity> verifySignatures(IdentityStore idStore) {
-		Log.v("Message", "In verifySignatures");
+		//Log.v("Message", "In verifySignatures");
 		
 		Signature sig;
 		try {
@@ -142,12 +136,12 @@ public class Message {
 			String[] signComponents = signatures[i].split(":");
 			for (Identity identity : idStore) {
 				if (identity.pubKeyHash.equals(signComponents[0])) {
-					Log.v("Message", "checking identity " + identity.getName() + " hash " + identity.pubKeyHash);
+					//Log.v("Message", "checking identity " + identity.getName() + " hash " + identity.pubKeyHash);
 					
 					
 					try {
-						Log.v("Message", "signComponents[0]:" + signComponents[0]);
-						Log.v("Message", "signComponents[1]:" + signComponents[1]);
+						//Log.v("Message", "signComponents[0]:" + signComponents[0]);
+						//Log.v("Message", "signComponents[1]:" + signComponents[1]);
 
 						
 						byte[] sigBytes = Base64.decode(signComponents[1]);
@@ -155,9 +149,9 @@ public class Message {
 					    sig.update(getMsg().getBytes("UTF8"));
 					    if (sig.verify(sigBytes)) {
 							addValidSig(identity);
-							Log.v("Message", "Verified identity " + identity.getName());
+							//Log.v("Message", "Verified identity " + identity.getName());
 					      } else {
-					    	  Log.v("Message", "Failed to verify signature.");
+					    	  //Log.v("Message", "Failed to verify signature.");
 					      }
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -180,7 +174,6 @@ public class Message {
 					
 				}
 			}
-			
 			
 			
 		}

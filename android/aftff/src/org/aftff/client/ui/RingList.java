@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.aftff.client.R;
 import org.aftff.client.aftff;
-import org.aftff.client.data.Message;
+import org.aftff.client.data.AftffMessage;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
 import org.apache.http.client.ClientProtocolException;

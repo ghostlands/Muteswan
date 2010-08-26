@@ -24,6 +24,8 @@
         
         <activity android:name=".ui.MsgList"
                   android:label="@string/app_name" />
+        <activity android:name=".ui.TorNotAvailable"
+                  android:label="@string/app_name" />
         <activity android:name=".ui.WriteMsg"
                   android:label="@string/app_name" />
         <activity android:name=".ui.CreateRing"

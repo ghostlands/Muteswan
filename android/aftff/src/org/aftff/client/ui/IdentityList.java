@@ -22,16 +22,18 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 public class IdentityList extends ListActivity {
 
 	public Identity[] identityList;
+	private IdentityStore idStore;
 	
 	 public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
 	        
 	        setContentView(R.layout.identitylist);
 	        
-	        IdentityStore idStore = new IdentityStore(getApplicationContext());
+	        idStore = new IdentityStore(getApplicationContext());
 	        //Identity[] identityList = (Identity[]) idStore.toArray();
 	        
 	        identityList = idStore.asArray();
+	        
 	        
 	        
 
@@ -50,7 +52,6 @@ public class IdentityList extends ListActivity {
 	   super.onCreateContextMenu(menu, v, menuInfo);
 	   MenuInflater inflater = getMenuInflater();
 	  inflater.inflate(R.menu.idlistcontextmenu, menu);
-	  //menu.add("wtf");
 	 }
 	 
 	 public boolean onContextItemSelected(MenuItem item) {
@@ -62,6 +63,11 @@ public class IdentityList extends ListActivity {
 					  //Base64.encodeBytes(identityList[info.position].publicKeyEnc.getBytes()));
 			  intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			  startActivity(intent);
+		  }
+		  
+		  if (item.getTitle().equals("Delete")) {
+			  Toast.makeText(getApplicationContext(), "Deleted identity " + identityList[info.position], Toast.LENGTH_LONG);
+			  idStore.delete(identityList[info.position]);
 		  }
 		  
 		  return super.onContextItemSelected(item);

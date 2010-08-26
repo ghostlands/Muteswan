@@ -67,7 +67,11 @@ public class Identity {
 	 }
 	 
 	 public String toString() {
-		 return name;
+		 if (privateKeyEnc.length() > 1) {
+			 return name + " (pub/priv)";
+		 } else {
+			 return name + " (pub)";
+		 }
 	 }
 	 
 	 public Identity() {

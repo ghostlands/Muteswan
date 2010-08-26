@@ -379,8 +379,8 @@ public class Ring {
 	}
 	
 	
-	public Message getMsgFromDb(String id) {
-		Message msg = null;
+	public AftffMessage getMsgFromDb(String id) {
+		AftffMessage msg = null;
 		
 		if (context == null)
 			return(null);
@@ -411,9 +411,9 @@ public class Ring {
 			cursorSig.close();
 			
 			if (signatures[0] != null) {
-			   msg = new Message(this,Integer.parseInt(id),date,msgData,signatures);
+			   msg = new AftffMessage(this,Integer.parseInt(id),date,msgData,signatures);
 			} else {
-			   msg = new Message(this,Integer.parseInt(id),date,msgData);
+			   msg = new AftffMessage(this,Integer.parseInt(id),date,msgData);
 
 			}
 			
@@ -478,8 +478,8 @@ public class Ring {
 	
 	
 	
-	public Message getMsg(String id) throws ClientProtocolException, IOException {
-		Message msg = null;
+	public AftffMessage getMsg(String id) throws ClientProtocolException, IOException {
+		AftffMessage msg = null;
 		msg = getMsgFromDb(id);
 		if (msg == null) {
 			
@@ -499,13 +499,13 @@ public class Ring {
 	}
 	
 	
-	public Message getMsgFromTor(String id) throws ClientProtocolException, IOException {
+	public AftffMessage getMsgFromTor(String id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
     	HttpResponse resp = httpClient.execute(httpGet);
     	
     	String jsonString = EntityUtils.toString(resp.getEntity());
     	Header lastModified = resp.getFirstHeader("Last-Modified");
-    	Message msg = null;
+    	AftffMessage msg = null;
     	String date = null;
     	
     	SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
@@ -519,7 +519,7 @@ public class Ring {
 		}
     	
     	try {
-			msg = new Message(this,jsonString,date);
+			msg = new AftffMessage(this,jsonString,date);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

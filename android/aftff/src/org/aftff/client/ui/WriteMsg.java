@@ -53,9 +53,9 @@ public class WriteMsg extends Activity {
 	       setContentView(R.layout.writemsg);
 	       
 	       IdentityStore idStore = new IdentityStore(getApplicationContext());
-	       identities = idStore.asArray();
+	       identities = idStore.asArray(true);
 	       signIdentities = new CharSequence[identities.length];
-	       for (int i=0; i<idStore.asArray().length;i++) {
+	       for (int i=0; i<identities.length;i++) {
 	    	   signIdentities[i] = identities[i].getName();
 	       }
 	       signSelections = new boolean[signIdentities.length];
@@ -196,18 +196,7 @@ public class WriteMsg extends Activity {
 				e.printStackTrace();
 			}
 	    	
-	    	//TextView txt2 = new TextView(v.getContext());
-	        //txt2.setText("We got this: " + txt);
-	        //setContentView(txt2);
 	    	
-	    	//startActivity(new Intent(v.getContext(), MsgList.class));
-	    	
-	    	
-	    	//Toast.makeText(v.getContext(), "Should post message.", 5);
-	    	//TextView txt = new TextView(v.getContext());
-    	    //    Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-    	    //    intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-    	    //    startActivityForResult(intent, 0);
     	 
 	    	
 	 }

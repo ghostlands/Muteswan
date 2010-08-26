@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 public class IdentityStore extends LinkedList<Identity> {
 	
@@ -65,6 +66,7 @@ public class IdentityStore extends LinkedList<Identity> {
 			
 		}
 		cursor.close();
+		openHelper.close();
 		
 	}
 
@@ -81,21 +83,55 @@ public class IdentityStore extends LinkedList<Identity> {
 		insrt.bindString(5, identity.getPrivKeyHash());
 		insrt.execute();
 		
-		
+		openHelper.close();
+
 		
 		return(true);
 	}
 
-	public Identity[] asArray() {
-		// TODO Auto-generated method stub
-		Identity[] identityList = new Identity[this.size()];
+	public Identity[] asArray(LinkedList<Identity> identityList) {
+		Identity[] identityArr = new Identity[identityList.size()];
         int i = 0;
-        for (Identity id : this) {
-        	identityList[i] = id;
+        for (Identity id : identityList) {
+        	Log.v("IdentityStore", "id is " + id.name);
+        	identityArr[i] = id;
         	i++;
         }
-		return identityList;
+		return identityArr;
 	}
+	
+	
+	// only return identities with both public/private key pairs
+	public Identity[] asArray(boolean signable) {
+		if (signable) {
+			LinkedList<Identity> signedIds = new LinkedList<Identity>();
+			for (Identity id : this) {
+				if (id.privateKeyEnc != null && id.privateKeyEnc.length() > 1) {
+					signedIds.add(id);
+				}
+			}
+			return asArray(signedIds);
+		} else {
+		  return asArray(this);
+	    }
+	}
+	
+	public Identity[] asArray() {
+		return asArray(this);
+	}
+	
+	public void delete(Identity identity) {
+		OpenHelper openHelper = new OpenHelper(context);
+		SQLiteDatabase db = openHelper.getWritableDatabase();
+		
+		SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.TABLE + " WHERE name=?");
+		//(name,publicKey,privateKey,pubKeyHash,privKeyHash) VALUES (?,?,?,?,?)");
+		delete.bindString(1, identity.name);
+		delete.execute();
+		this.remove(identity);
+	}
+
+	
 
 	//public void save() {
 	//	

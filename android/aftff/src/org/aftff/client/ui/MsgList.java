@@ -18,7 +18,7 @@ import org.aftff.client.R.layout;
 import org.aftff.client.R.menu;
 import org.aftff.client.data.Identity;
 import org.aftff.client.data.IdentityStore;
-import org.aftff.client.data.Message;
+import org.aftff.client.data.AftffMessage;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
 import org.apache.http.client.ClientProtocolException;
@@ -28,10 +28,13 @@ import com.google.zxing.client.a.r;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,7 +46,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MsgList extends ListActivity {
+public class MsgList extends ListActivity implements Runnable {
 
 	private static final int MAX_MESSAGES = 50;
 	
@@ -57,7 +60,55 @@ public class MsgList extends ListActivity {
 	Ring ring;
 	
 	IdentityStore idStore;
+	ProgressDialog loadIndexDialog;
+	ProgressDialog loadMsgDialog;
+	Integer lastMessage;
+	TextView msglistPrompt;
 
+	private AftffMessage lastMsg;
+
+	
+	public void run() {
+		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {  
+		   lastMessage = ring.getMsgIndex();
+		   dialogIndexHandler.sendEmptyMessage(0);
+		} else if (loadMsgDialog != null && loadMsgDialog.isShowing()) {
+			// FIXME: fix msgId garbage
+			String msgId = msgList[lastPosition].replace("\n", "");
+			try {
+				lastMsg = ring.getMsg(msgId);
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    dialogMsgHandler.sendEmptyMessage(0);
+		}
+	}
+	
+	private Handler dialogIndexHandler = new Handler() {
+		
+        @Override
+        public void handleMessage(Message msg) {
+              	loadIndexDialog.dismiss();
+              	renderList();
+        }
+    };
+    
+    private Handler dialogMsgHandler = new Handler() {
+		
+        @Override
+        public void handleMessage(Message msg) {
+              	loadMsgDialog.dismiss();
+              	renderMsg();
+        }
+    };
+
+	private int lastPosition;
+	
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
        super.onCreate(savedInstanceState);
@@ -65,22 +116,28 @@ public class MsgList extends ListActivity {
        Bundle extras = getIntent().getExtras();
        ring = new Ring(getApplicationContext(),extras.getString("ring"));
        
+       loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
+       Thread thread = new Thread(this);
+       thread.start();
 
        setContentView(R.layout.msglist);
        
        idStore = new IdentityStore(getApplicationContext());
        EditText msgPostField = (EditText) findViewById(R.id.android_newMsgTextInline);
        
-       TextView msglistPrompt = (TextView) findViewById(R.id.android_msglistprompt);
+       msglistPrompt = (TextView) findViewById(R.id.android_msglistprompt);
+       msglistPrompt.setText(ring.getShortname());
+
        if (ring == null) {
     	 msglistPrompt.setText("active ring is null...");
     	 return;
        }
        
        
-      
-      Integer lastMessage = ring.getMsgIndex();
-
+      //lastMessage = ring.getMsgIndex();
+	}
+     
+	private void renderList() {
       if (lastMessage == 0 || lastMessage == null) {
           msglistPrompt.setText("No messages for " + ring.getShortname());
   	       return;
@@ -91,7 +148,6 @@ public class MsgList extends ListActivity {
 //      }
 //      
       
-      msglistPrompt.setText(ring.getShortname());
       if (lastMessage < MAX_MESSAGES) {
     	  msgList = new String[lastMessage];
       } else {
@@ -105,7 +161,7 @@ public class MsgList extends ListActivity {
     		  break;
     	  }
     	  
-    	  Message msg = ring.getMsgFromDb(i.toString());
+    	  AftffMessage msg = ring.getMsgFromDb(i.toString());
     	  
     	  
     	  
@@ -225,67 +281,31 @@ public class MsgList extends ListActivity {
 				 return;
 			 }
 		 }
-	      // Toast.makeText(this,
-		  //	"Fetching msg " + msgList[position] + " for ring " + aftff.activeRing.getShortname(), 
-		  //	  Toast.LENGTH_LONG).show();
-	      //Ring ring = aftff.activeRing;
-	      try {
-	    	String msgId = msgList[position].replace("\n", "");
-			Message msg = ring.getMsg(msgId);
-			
-			LinkedList<Identity> validSigs = msg.verifySignatures(idStore);
-			if (validSigs != null && validSigs.size() != 0) {
-				String msgStr = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
-				for (Identity identity : validSigs) {
-					msgStr = msgStr + "\n" + "s: " + identity.getName();
-				}
-				msgList[position] = msgStr;
-			} else {
-				msgList[position] = msgId + " - " + msg.getDate() + "\n" + msg.getMsg();
-	        }
-			seenMsgs.add(position);
-			//v.requestLayout();
-			//v.forceLayout();
-			//v.refreshDrawableState();
-			
-			listAdapter.notifyDataSetChanged();
-			
-			
-			
-			//parent.requestLayout();
-			
-			//setListAdapter(new ArrayAdapter<String>(this,
-		      //      android.R.layout.simple_list_item_1, mStrings));
-		       
-			//TextView txt = new TextView(this);
-			//txt.setText(msg);
-			
-			
-			//Intent showMsgIntent = new Intent(this,ShowMsg.class);
-			//showMsgIntent.putExtra("msg",msg);
-			//startActivity(showMsgIntent);
-			
-			//startActivity(new Intent( this, ShowMsg.class));
-			//return;
-			
-			//startActivity(new Intent( this, ShowMsg.class));
-		    
-			//Toast.makeText(this,msg,120).show();
-			//setContentView(txt);
-			//aftff.showMsg(msg);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			TextView txt = new TextView(this);
-			txt.setText("client protocol exception");
-			setContentView(txt);
-			e.printStackTrace();
-		} catch (IOException e) {
-			
-			Toast.makeText(this,
-					"IO error: " + e.toString() + " for " + ring.getShortname() + "\n", 
-					  Toast.LENGTH_SHORT).show();
-			//e.printStackTrace();
+		 
+		  lastPosition = position;
+	      loadMsgDialog = ProgressDialog.show(this, "", "Downloading message " + msgList[position].replace("\n", ""), true);
+	      Thread thread = new Thread(this);
+	      thread.start();
+		 
+	 	}
+	 
+	 private void renderMsg() {
+	      String msgId = msgList[lastPosition].replace("\n", "");
+
+		LinkedList<Identity> validSigs = lastMsg.verifySignatures(idStore);
+		if (validSigs != null && validSigs.size() != 0) {
+			String msgStr = msgId + " - " + lastMsg.getDate() + "\n" + lastMsg.getMsg();
+			for (Identity identity : validSigs) {
+				msgStr = msgStr + "\n" + "s: " + identity.getName();
+			}
+			msgList[lastPosition] = msgStr;
+		} else {
+			msgList[lastPosition] = msgId + " - " + lastMsg.getDate() + "\n" + lastMsg.getMsg();
 		}
+		seenMsgs.add(lastPosition);
+		
+		
+		listAdapter.notifyDataSetChanged();
 	 }  
 
 }
