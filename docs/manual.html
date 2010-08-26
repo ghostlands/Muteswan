@@ -10,22 +10,28 @@ Aftff is an experimental pseudo anonymous instant message system. It is pseudo
 anonymous in the sense that the protocol maintains strict anonymity but message
 access is dependent upon face to face human trust relationships.  The intention
 is to provide a simple messaging service that is <ol><li> reasonably protected from
-surveillance with encryption, </li><li> protects sender identity and </li><li> protects
-receiver identity.</li></ol> Aftff adopts the notion of a "ring": a collection of
-individuals that share a single symmetric key. Users share their keys with
-other individuals face to face, in person. An aftff client in possession of a
-symmetric key can send and receive messages to other people who possess the
-same key. The identity of both sender and receiver are completely protected.
+surveillance with encryption, </li><li> protects sender identity and </li><li>
+protects receiver identity.</li></ol> Aftff adopts the notion of a "ring": a
+collection of individuals that share a single symmetric key. Users share their
+keys with other individuals face to face, in person using QR codes (2
+dimensional bar codes). An aftff client in possession of a symmetric key can
+send and receive messages to other people who possess the same key. The
+identity of both sender and receiver are completely protected.
+
+It is also possible, and in some cases desirable, to prove authorship of a
+message to a subset of users on a ring. To achieve this, aftff uses RSA
+public/private key pairs to establish identity. Identities can also be
+exchanged using QR codes, like rings.
 </p>
 
 <p>
-The hope is that this framework is flexible enough to be used on the one hand
+The idea is that this framework is flexible enough to be used on the one hand
 as a private, secure communication platform and on the other hand as an
 information dissemination tool. For example, two individuals sharing a key with
 no other people in possession of the key enables private and trusted
-communication. Another case, such as in whistle blowing situations, the
-identity protection of both the sender and receivers are crucial while knowing
-who, in particular, received the information is not.
+communication. In other cases, such as in whistle blowing situations, identity
+protection is paramount but access to the ring may be very widespread.  Between
+these two extremes, it is hoped, are a wide variety of use cases.
 </p>
 
 <p>
@@ -35,18 +41,17 @@ the server does not know the identity of who is making the request nor does the
 client know the identity of the hidden service serving the response. A very
 simple RESTful protocol is used to post, read and list messages. Messages are
 encrypted using AES and sent to the server. Messages are addressable on the
-server by issuing a GET on the SHA1 hash of the AES key. This ensures that a
-receiver of a message has the AES key prior to accessing encrypted data.
+server by issuing a GET on the SHA1 hash of the AES key. 
 </p>
 
 
 <h2> Intentions, Assumptions and Goals </h2>
 
 <p>
-This document is intended to be a technical reference. The background
-assumptions, project goals and potential uses of aftff are outside the scope of
-this document. However, it is difficult to continue without some overall frame
-to help contextualize the impetus and goals of the project.
+This document is intended to be a technical and design reference. The
+background assumptions, project goals and potential uses of aftff are outside
+the scope of this document. However, it is difficult to continue without some
+overall frame to help contextualize the impetus and goals of the project.
 </p>
 
 <p>
@@ -57,21 +62,37 @@ need today to be able to trust information without knowing the identity/origin
 of the information explicitly. Aftff should facilitate this where it is possible.</li>
 
 	<li>Identity must always be protected. Both senders and receivers must
-have plausible deniability. Users must have complete control over their
-identities.</li>
+have plausible deniability.</li>
 
 	<li>Simple and secure: protocol must be designed such that success of
 any operation requires maximum anonymity. It should be impossible to use aftff
 in such a way that leaks your identity. The server should be as small and
-stateless as possible, without any logging features.</li> 
-	<li>The user should always have control of her/her identity and risk.</li>
+stateless as possible, without any logging features.</li>
+	<li>The user should always have control of her identity and risk.</li>
 </ol>
 
 The goal of the aftff project is to create an experimental communication tool
 that is literally "embedded" in the social and geographic space of its users.
-That is, the dissemination of information and trust networks, though anonymous,
-may perhaps map more closely to actual real world social relations and thus
-provide a level of trust.
+The dissemination of information and trust networks, though anonymous, may
+perhaps map more closely to real world social relations and thus provide some
+level of trust. This (perhaps limited) level of trust is augmented with the
+protection of message senders/receivers. Together these two properties (limited
+but existent trust and very little individual risk) are desirable, especially
+in contexts where communication is associated with legal or political risk.
+</p>
+
+<p>
+In terms of hard and fast use cases, not very much has been developed. Below is a list of ideas that have been brought up. If you have more, please contact me.
+<ul>
+  <li>Protests, demonstrations and civil disobedience.<br> aftff should be useful in organization demonstrations and protests. For example, an ad-hoc protest at a military recruitment center could be organized using an aftff ring.</li>
+  <li>Small group communication.<br> aftff could be used for something as simple as a book club or community garden. QR codes can be easily posted and communication is quick and easy, requiring no online registration, websites or the like.</li>
+   <li>Whistle blowing or information dissemenation.<br> Rings that are extensively shared could be used to disseminate sensitive information.</li>
+   <li>Private communication.<br> A ring with a distribution of two people provides a secure and private communication system.</li>
+   <li>Geocaching.<br>Leaving a QR code for a ring or public key at a geocache site might be interesting.</li>
+   <li>Workers organization at a workplace.<br> A system that protect anonymity yet allows dialog/discussion is ideal when workers organize against an employer or for a union. For example, leaders among the workers may be identified and communicate using identities while many more people, not comfortable with public support of the workers efforts, would be able to participate.</li>
+   <li>Communication among illegal immigrants.<br> <li>aftff would enable illegal immigrants to both communicate securely and privately as well as organize in larger rings.</li>
+</ul>
+
 
 </p>
 
@@ -120,21 +141,46 @@ Since aftff uses symmetric keys, accessing a ring simply involves knowing the
 key and the server. Consequently, the text representation of a ring should
 never be displayed and the key should be treated as any cryptographic secret is
 treated.  Aftff rings are intended to be shared in person, typically via
-qrcode. The rings should be trivial to communicate via qrcode but there should
+QR code. The rings should be trivial to communicate via QR code but there should
 be absolutely no reason to transfer them digitally, ever. It should be
-mentioned that perhaps one would desire to distribute qrcodes openly if the
+mentioned that perhaps one would desire to distribute QR codes openly if the
 intention was to attract a large amount of users to a ring.
 </p>
 
-<h3> 2. Technical components </h3>
+<h3> 2. Identities </h3>
+
+Identities are RSA public/private key pairs. A user can generate a
+public/private key pair, provide it with a name, and share the public key with
+any number of people, just as they would a ring. The user can then optionally
+sign any outgoing message thus proving their identity to whoever has the
+appropriate public key. Like rings, public keys are communicate face to face
+using QR codes.
+
+Identities allow individuals to prove authorship at the risk of potentially
+reducing anonymity. However, how a public is distributed is up to the
+individual. If they share it with a few trusted people who do not redistribute
+the key, someone may be able to post messages that to most people are
+anonymous.
+
+A public key can also be anonymously distributed and used to prove authorship,
+whether or not the person who generated the key is known.
+
+<h3> 3. Technical components </h3>
 
 <p>
-Now that rings have been briefly introduced, the individual technical
-components can be discussed. In some cases, more detail will be provided in
-later sections, but this section outlines the core operative components.
+The individual technical components described below. In some cases, more detail
+will be provided in later sections, but this section outlines the core
+operative components.
 </p>
 
-<h4> 2.2 Tor hidden server </h4>
+<h4> 3.1 Tor client </h4>
+<p>
+Tor acts as a SOCKS proxy on the client node. Tor runs on many platforms,
+including mobile ones. All aftff clients need a running local Tor proxy in
+order to function.
+</p>
+
+<h4> 3.2 Tor hidden server </h4>
 <p>
 A Tor hidden service is made available on the Tor network using an RSA key. It
 is accessible from a special address, e.g, tckwndlytrphlpyo.onion. This is
@@ -154,7 +200,7 @@ nothing about Tor: it simply sees HTTP requests originating from localhost.
 </p>
 
 
-<h4> 2.3 aftff client</h4>
+<h4> 3.3 aftff client</h4>
 <p>
 The aftff client queries the Tor hidden service address to fetch message
 indexes, individual messages and to post messages. It provides the only
@@ -168,7 +214,7 @@ requires storing key and server information.
 </p>
 
 
-<h4> 2.4 aftff server </h4>
+<h4> 3.4 aftff server </h4>
 <p>
 The aftff server is a simple HTTP server using RESTful principles. The server
 is essentially stateless: only POST and GET methods are implemented with the
@@ -183,21 +229,21 @@ server could reveal other rings hosted on the hidden service but would not
 expose any identities.
 </p>
 
-<h5> 2.5 qrcodes </h5>
+<h3> 4. QR codes </h3>
 <p>
-qrcodes are used to transmit ring information to other users. Qrcodes were
+QR codes are used to transmit ring information to other users. Qrcodes were
 chosen because they provide a very flexible, convenient and most importantly
 they are "embedded in the physical world."
 </p>
 
 <p>
-To transmit a ring to another user, a qrcode needs to be generated using the
+To transmit a ring to another user, a QR code needs to be generated using the
 full text description of a ring (shortname+key@server). The individual
-receiving the key scans the qrcode and imports the ring information into their
+receiving the key scans the QR code and imports the ring information into their
 client.
 </p>
 
-<h3> 4. Cryptography </h3>
+<h3> 5. Cryptography </h3>
 <p>
 Aftff uses standard AES CBC symmetric key cryptography. Every message is
 encrypted with the ring key before it is sent. It is posted to the server based
@@ -220,11 +266,19 @@ attacker that somehow gains control of the tor hidden server.
 </p>
 
 
-<h3> 5. HTTP/REST </h3>
+<h3> 6. HTTP/REST </h3>
 <p>
 Aftff uses a simple RESTful scheme on top of HTTP. Only GET and POST methods are
 used and their URLs are well defined.  </p>
 
+<p>
+There are a few operational contraints of the server that help keep things simple and secure.
+<ol>
+ <li>The server should never alter the contents of a message.</li>
+ <li>The server may verify message length and return a 400 series error if too long.</li>
+ <li>All information the server provides the client must be in HTTP headers.</li>
+</ol>
+</p>
 
 <p>
 JSON is used to encode the message formats. All messages must have a key name
@@ -232,11 +286,25 @@ of "message" which contains the base64 encoded encrypted data. For example:<br>
 <code>
 {"message":"X6h9V7Ynlz974yj5o+nE+Q=="}
 </code>
+</p>
+
+<h4> 6.1 Headers </h4>
+<p>
+There are 2 headers currently used.
+</p>
+
+<p>
+<b>Last-Message</b> An integer value that represents that last message on a ring. This is returned when a client issues a GET on a ring SHA1 hash.</p>
+
+<p>
+<b>Last-Modified</b> Standard HTTP field that indicates when a message was posted.
+</p>
+
 
 
 </p>
 
-<h4> 5.1 POST msg </h4>
+<h4> 6.2 POST msg </h4>
 <p>
 To post a message to a ring, an aftff client uses the POST method with the SHA1
 hash of the ring in the request URI. No other argument is allowed on the URI.
@@ -254,6 +322,7 @@ Connection: Keep-Alive
 </pre>
 </p>
 
+
 <p>
 If the container (usually a file system directory) does not exist (that is, no
 messages exist yet), than the container is created and the first message is
@@ -265,7 +334,38 @@ All POST requests, if accepted, increment the new message index by one and
 create a file of the same name in the SHA1 hash directory.
 </p>
 
-<h4> 5.2 GET msg </h4>
+
+
+<p>
+A message may optionally be signed. If a message is signed, the client must put a JSON array with the key 'signatures' into the payload. Each signature is composed of two colon separated fields. The first field is a SHA1 hash of the RSA public key used to sign the message. The second is the base64 encoded X509 encoded RSA signature. An example signed POST message (newlines introduced for readability):
+<pre>
+POST /f573fe7d4a34186b00bcab2b38e52122afe04d83
+Content-Length: 1465
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+
+
+{"message":"YaDTBo9nZBiG+gVt5cQMvCNhY3hdJ3JrVkgxE/x6jhjRW0PBGrrtvrLwXuiP2qigzOVlrm7Thq
+jMe8QXqMNeQDbIso2u8mT+4TzJxtvRYq8mUM9vrZV+6fmRTaz3rkSeqN6XW6Y7MAJxMqK9UM4MF4ZNlDdTy8p9
+e8a06fIx2KkzL1CipEkxS6ocp5+R+Hb1w4JVCsH8F1/QvNZfK+DujuDZCFRq7SDrcfKxtAorTKG33+o3BdHSK1
+7VXLpLdOm/xp7tVq2q6LDRtMpMRYD86ALCTjwI6btmyfPA34LaIYdsUp+BuMswRI1v/MBUrrvN+SLcAoMisJHH
+Ul/tD7/J03FD08zBElNllKnOIuAEt06sYlTzpaU4gw4jKongYHqNB+3eCNerMzkzJOGI9OWfbHD5vQZxmMo+Fb
+KNU9emUcB2QypPP6mRJO4xYrTX0laRMmE826CvmjBDEO9YRXlaU784vtl5J3rmZUjaSis63nDHF4jGcvXqHRpe
+5HNfgnXsbOB6CbRHPeDyJRtxHNtOMkpBoqhDj2ANBd8w2ROrdDC/RxT2Wv6CTbUZSmMo6yeU+Z/1KHRXqr776H
+S+SKKIjrQA1Qla+5q+ZmofcXDliE/pMY0Bma7qRIGXx9Sh+NrSmKzvzTF1X+US4uCPllXZiM0rLf7bx4PjWuSF
+9AOyQ6UGs0itZdLHAJRDDSgPwVwZ0rxkDjsya3126Sk/mKdzRTJ1u6/SZe4gB9fU9Nj9ZB3O+BL6fvqS3V4VU3
+WdvJB4lrUU9gUJ7HwiJqT9AQbCzBgE3PoTdYq5j8wKEliUFwk1pjnnLAI+zRYymwfYlZ70yMEMZpFuAL1Rd7Ll
+QE9M6x1XHowYz4CtKlzpRXE1dMEiCP+VZZQRjxHj4Vt/zaCkdBXzBjyLY/Sp7dMHm8de2Y8gfxcczEPsnmacTP
+VbbPay3DyBn5ISkoSoT5Zx0mzDdfNUXXehMrngkm+QMhJtF8oHzZW8tiuYYh8HqxOJVUNwZSgobfRh+sEnEwnf
+z/3tJN8HXcRl88kZa+/PTUQIV61DdWk/vFVD5giUU2cjEFKbEHZdBybmn1lNUuSM9gUjqi7JUOiFbvSoP4mpU+
+in86WEd8/0+1pRYgV48uOrSmk82bJtVYkH7MX5BKn0fI4P0W/3G4302uHqMlOY74TNwuhKVzyx8vTdwRo+pxbd
+JXUdiDDNBb+Mb1u+ZZOf4rx+3bK7qROWDn+VuWjEC3d+42IOKk3ZhzEVtMrTc255Rs2Mm8DOKcCz8W+Hk7jVHt
+aInz7E4alS5NX3cd8O6VJ4cg==","signatures":["f0181a304e7c98090006bd2f7ceb6effd7ff1c1d:j0
+3n2uQ5G6yrkGmHKwQID1EuRf9K3sl1bvb5KsIO0UnRCorAiD22qx1G7bxNX7Vnnd8wKhFPWNB/XifgkYp8tw=="]}
+</pre>
+</p>
+
+<h4> 6.3 GET msg </h4>
 <p>
 Fetching a message is as simple as requesting the message id in the URI. For example, the request to fetch message 53 from the 'testsite' ring would be:
 <pre>
@@ -277,7 +377,7 @@ Connection: Keep-Alive
 </pre>
 </p>
 
-<h4> 5.3 GET msg index</h4>
+<h4> 6.4 GET msg index</h4>
 <p>
 A list of all available messages can be accessed by issuing a GET request on the SHA1 hash alone:
 <pre>
@@ -326,7 +426,7 @@ Protoserver is available at:
 <p>
 An aftff client is also available for the unix cmdline. It is 100% perl and
 works on OS X as well as other Unixes. It is not particularly user friendly but
-it can send/receive messages, generate keys, produce qrcodes and manages its
+it can send/receive messages, generate keys, produce QR codes and manages its
 own data store.
 </p>
 
@@ -370,7 +470,7 @@ the service on one's phone is ideal.
 </p>
 
 <p>
-The Android client can currently scan qrcodes, send/receive messages, browse
+The Android client can currently scan QR codes, send/receive messages, browse
 message indexes, store saved keys and post messages to rings. However, the UI
 leaves much to be desired.
 </p>
