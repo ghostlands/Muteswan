@@ -275,7 +275,7 @@ used and their URLs are well defined.  </p>
 There are a few operational contraints of the server that help keep things simple and secure.
 <ol>
  <li>The server should never alter the contents of a message.</li>
- <li>The server may verify message length and return a 400 series error if too long.</li>
+ <li>The server may verify message length and return a 413 Request Entity Too Large error if the message content is more than 10MB. FIXME: what should this be?</li>
  <li>All information the server provides the client must be in HTTP headers.</li>
 </ol>
 </p>
