@@ -470,9 +470,21 @@ the service on one's phone is ideal.
 </p>
 
 <p>
-The Android client can currently scan QR codes, send/receive messages, browse
-message indexes, store saved keys and post messages to rings. However, the UI
-leaves much to be desired.
+The Android leaves much to be desired in the realm of user interface, code quality and error reporting, but it does work at this early stage. It can currently perform all the envisioned operations:
+<ul>
+	<li>Share rings and identities as QR codes</li>
+	<li>Import rings and identities from QR codes</li>
+	<li>Create a new ring</li>
+	<li>Generate personal identity (RSA public/private key pair)</li>
+	<li>Post message with or without signatures to rings</li>
+	<li>Read messages from rings</li>
+	<li>A persistent service is available to check and download new messages at interval.</li>
+</ul>
+</p>
+
+<p>
+The Android client depends on two other Android applications: Barcode Scanner and Orbot. Orbot is the official Tor port for Android. Barcode Scanner is used to offload QR code generation and scanning. You can download Barcode Scanner from the Market. You can get the latest Orbot 
+<a href="http://www.torproject.org/docs/android.html.en">here.</a>
 </p>
 
 <p>
@@ -484,6 +496,7 @@ The latest Android client is available at:
 You can also point a barcode scanner to this QRCode to download the apk easier.<br>
 <img src="aftff.png">
 </p>
+
 
 <h2>Example QR Code Sheet</h2>
 A set of example QR Codes are available <a href="example.html">here.</a>
