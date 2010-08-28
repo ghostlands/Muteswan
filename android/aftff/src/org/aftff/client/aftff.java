@@ -32,6 +32,7 @@ import org.aftff.client.ui.CreateRing;
 import org.aftff.client.ui.GenerateIdentity;
 import org.aftff.client.ui.IdentityList;
 import org.aftff.client.ui.MsgList;
+import org.aftff.client.ui.Preferences;
 import org.aftff.client.ui.RingList;
 import org.aftff.client.ui.TorNotAvailable;
 import org.apache.http.HttpEntity;
@@ -280,6 +281,7 @@ public class aftff extends Activity implements Runnable {
         }
         
        // menu.add("Check Tor Connectivity");
+        menu.add("Options");
        
         
         return true;
@@ -312,6 +314,9 @@ public class aftff extends Activity implements Runnable {
 			return true;
 		} else if (item.toString().equals("Generate Identity")) {
 			startActivity(new Intent(this,GenerateIdentity.class));
+			return true;
+		} else if (item.toString().equals("Options")) {
+			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}
 //		} else if (item.toString().equals("Check Tor Connectivity")) {

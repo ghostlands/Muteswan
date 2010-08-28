@@ -35,7 +35,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.Editable;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -62,15 +64,16 @@ public class MsgList extends ListActivity implements Runnable {
 	IdentityStore idStore;
 	ProgressDialog loadIndexDialog;
 	ProgressDialog loadMsgDialog;
-	Integer lastMessage;
+	Integer lastMessageIndex;
 	TextView msglistPrompt;
 
 	private AftffMessage lastMsg;
 
 	
 	public void run() {
-		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {  
-		   lastMessage = ring.getMsgIndex();
+		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {
+		   lastMessageIndex = ring.getMsgIndex();
+		   ring.updateLastMessagePref(lastMessageIndex);
 		   dialogIndexHandler.sendEmptyMessage(0);
 		} else if (loadMsgDialog != null && loadMsgDialog.isShowing()) {
 			// FIXME: fix msgId garbage
@@ -116,12 +119,11 @@ public class MsgList extends ListActivity implements Runnable {
        Bundle extras = getIntent().getExtras();
        ring = new Ring(getApplicationContext(),extras.getString("ring"));
        
-       loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
-       Thread thread = new Thread(this);
-       thread.start();
-
-       setContentView(R.layout.msglist);
+       SharedPreferences defPref = PreferenceManager.getDefaultSharedPreferences(this);
+       boolean alwaysUseLastMessage = defPref.getBoolean("alwaysUseLastMessage", false);
        
+       setContentView(R.layout.msglist);
+
        idStore = new IdentityStore(getApplicationContext());
        EditText msgPostField = (EditText) findViewById(R.id.android_newMsgTextInline);
        
@@ -134,11 +136,29 @@ public class MsgList extends ListActivity implements Runnable {
        }
        
        
+       if (!alwaysUseLastMessage) {
+         loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
+         Thread thread = new Thread(this);
+         thread.start();
+       } else {
+    	   lastMessageIndex = ring.getLastMessagePref();
+    	   renderList();
+       }
+
+       
+       
+       
+       
       //lastMessage = ring.getMsgIndex();
 	}
      
 	private void renderList() {
-      if (lastMessage == 0 || lastMessage == null) {
+		if (lastMessageIndex == null) {
+			Log.v("MsgList", "lastMessageIndex is null");
+		}
+		
+		Log.v("MsgList", "lastMessageIndex: " + lastMessageIndex);
+      if (lastMessageIndex == 0 || lastMessageIndex == null) {
           msglistPrompt.setText("No messages for " + ring.getShortname());
   	       return;
       }
@@ -148,14 +168,14 @@ public class MsgList extends ListActivity implements Runnable {
 //      }
 //      
       
-      if (lastMessage < MAX_MESSAGES) {
-    	  msgList = new String[lastMessage];
+      if (lastMessageIndex < MAX_MESSAGES) {
+    	  msgList = new String[lastMessageIndex];
       } else {
     	  msgList = new String[MAX_MESSAGES];
       }
       
       int newIndex = 0;
-      for (Integer i = lastMessage; i>0; i--) {
+      for (Integer i = lastMessageIndex; i>0; i--) {
     	  
     	  if (newIndex == MAX_MESSAGES) {
     		  break;
@@ -224,6 +244,11 @@ public class MsgList extends ListActivity implements Runnable {
 			Toast.makeText(this,
 					"Deleted ring " + ring.getShortname() + " from saved keys.", 
 						  Toast.LENGTH_LONG).show();
+			return true;
+		} else if (item.getTitle().toString().equals("Refresh")) {
+			loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
+		    Thread thread = new Thread(this);
+		    thread.start();
 			return true;
 		} else {
 			

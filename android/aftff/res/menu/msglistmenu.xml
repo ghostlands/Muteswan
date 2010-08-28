@@ -8,5 +8,7 @@
         android:title="Export Ring" />
      <item android:id="@+id/deletering"
         android:title="Delete Ring" />
+    <item android:id="@+id/msglistefresh"
+        android:title="Refresh" />
             
 </menu>

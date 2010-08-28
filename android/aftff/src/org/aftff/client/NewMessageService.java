@@ -22,6 +22,8 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class NewMessageService extends Service {
 
@@ -32,10 +34,14 @@ public class NewMessageService extends Service {
 	int notifyIdLast;
 	final int PERSISTANT_NOTIFICATION = 220;
 	private final IBinder mBinder = new MyBinder();
-
+	private boolean backgroundMessageCheck;
+	private int checkMsgInterval;
+	private int numMsgDownload;
+	private SharedPreferences defPrefs;
+	private boolean justLaunched = false;
     
 	@Override
-	public IBinder onBind(Intent intent) {		
+	public IBinder onBind(Intent intent) {
 		return mBinder;
 	}
 
@@ -63,8 +69,16 @@ public class NewMessageService extends Service {
 	//private Timer timer;
 	public void onCreate() {
 		super.onCreate();
+		
+		defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		
+		checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
+		
+		int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
+		
 		AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),300000,NewMessageReceiver.getPendingIntent(this));
+		alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
+		
 		
 		
 		notificationIntent = new Intent(this, aftff.class);
@@ -82,13 +96,15 @@ public class NewMessageService extends Service {
 
 		
 		Context context = getApplicationContext();
-		CharSequence contentTitle = "aftff message check";
-		CharSequence contentText = "aftff polling at 5 minute intervals";
+		CharSequence contentTitle = "aftff background service";
+		CharSequence contentText = "aftff polling at " + checkMsgInterval + " minute intervals";
 		
 		
 		notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
 		mNM.notify(PERSISTANT_NOTIFICATION, notify);
 
+		
+		justLaunched = true;
 	}
 	
 	@Override
@@ -102,7 +118,14 @@ public class NewMessageService extends Service {
 	private void start() {
 		
 		//timer.cancel();
-				
+		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
+		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","1"));
+	
+		if (justLaunched == true) {
+			justLaunched = false;
+			return;
+		}
+		
 		poll();
 	}
 
@@ -113,23 +136,80 @@ public class NewMessageService extends Service {
 			@Override
 			public void run() {
 				SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-				RingStore store = new RingStore(getApplicationContext(),prefs);
 				
+				
+				if (!backgroundMessageCheck) {
+					Log.v("Service", "backgroundMessageCheck is false, not polling.");
+					return;
+				}
+				
+				
+				
+				RingStore store = new RingStore(getApplicationContext(),prefs);
 				
 				for (Ring r : store) {
 					
+					// FIXME: use sqlite for this
 					Integer lastIndex = prefs.getInt("lastMessage" + r.getFullText(), 0);
 					Integer curIndex = r.getMsgIndex();
+					Integer diff = curIndex - lastIndex;
+					
+					CharSequence notifTitle = null;
+					CharSequence notifText = null;
+					
 					if (lastIndex != 0 && curIndex != 0 && lastIndex != curIndex) {
-						SharedPreferences.Editor ed = prefs.edit();
-						ed.putInt("lastMessage" + r.getFullText(), curIndex);
-						ed.commit();
+						r.updateLastMessagePref(curIndex);
 						notifyIds.put(r.getFullText(), notifyIdLast++);
-						showNotification(r,lastIndex,curIndex);
+						
+						if (numMsgDownload == 0) {
+							continue;
+						} else if (diff == 1) {
+							AftffMessage msg = null;
+							try {
+								msg = r.getMsg(curIndex.toString());
+							} catch (ClientProtocolException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							notifTitle = "New message in " + r.getShortname();
+							notifText = msg.getMsg();
+							
+						} else {
+							
+							int dCount = 0;
+						    Log.v("Service","numMsgDownload is " + numMsgDownload + " and diff is " + diff);
+							int start = curIndex;
+							int end = curIndex - diff;
+							
+							if (diff > numMsgDownload) {
+								end = curIndex - numMsgDownload;
+							}
+						    
+							Log.v("Service", "start is " + start + " and end is " + end);
+						    for (Integer i = start; i>end; i--) {
+						    	try {
+									AftffMessage msg = r.getMsg(i.toString());
+									dCount++;
+								} catch (ClientProtocolException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+						    }
+						    notifTitle = "New messages in " + r.getShortname();
+							notifText = dCount + " messages downloaded.";
+							
+
+						}
+						
+						showNotification(r,notifTitle,notifText);
 					} else if (lastIndex == 0) {
-						SharedPreferences.Editor ed = prefs.edit();
-						ed.putInt("lastMessage" + r.getFullText(), curIndex);
-						ed.commit();
+						r.updateLastMessagePref(curIndex);
 					}
 				}
 				
@@ -137,58 +217,26 @@ public class NewMessageService extends Service {
 				
 			}
 		
-			private void showNotification(Ring r, Integer lastIndex, Integer curIndex) {
+			private void showNotification(Ring r, CharSequence title, CharSequence content) {
 				// TODO Auto-generated method stub
-				CharSequence txt = "New message(s) in " + r.getShortname();
 				long when = System.currentTimeMillis();
 				int icon = R.drawable.icon;
-				Notification notify = new Notification(icon,txt,when);
-				notify.flags |= Notification.DEFAULT_LIGHTS;
+				Notification notify = new Notification(icon,title,when);
+				//notify.flags |= Notification.DEFAULT_LIGHTS;
 				
-				Integer diff = curIndex - lastIndex;
 				
-				Context context = getApplicationContext();
-				CharSequence contentTitle = null;
-				//"New aftff Message(s)";
-				CharSequence contentText = null;
-				//= r.getShortname() + " has new message(s).";
 				
-				// download and show latest message, don't set read
-				if (diff == 1) {
-					AftffMessage msg = null;
-					try {
-						msg = r.getMsg(curIndex.toString());
-					} catch (ClientProtocolException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-					contentTitle = "New aftff Message";
-					contentText = "New message in " + r.getShortname() + ":\n" + msg.getMsg();
-				} else {
-					contentTitle = "New aftff Messages";
-					contentText = "New messages in " + r.getShortname() + "\n";
-				}
 				
-				//else if (diff > 1 && diff <= 5) {
-				//	for (int i = curIndex; i>(curIndex-diff); i--) {
-				//		
-				//	}
-				//}
 				
-				if (contentText == null)
+				if (content == null)
 					return;
 				
 				
-				Intent msgIntent = new Intent(context, MsgList.class);
+				Intent msgIntent = new Intent(getApplicationContext(), MsgList.class);
 				msgIntent.putExtra("ring", r.getFullText());
-				PendingIntent pendingMsgIntent = PendingIntent.getActivity(context, 0, msgIntent, 0);
+				PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
 				
-				notify.setLatestEventInfo(context, contentTitle, contentText, pendingMsgIntent);
+				notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
 				mNM.notify((Integer) notifyIds.get(r.getFullText()), notify);
 			}
 			

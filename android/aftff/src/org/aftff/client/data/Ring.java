@@ -26,6 +26,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.aftff.client.AftffHttp;
 import org.aftff.client.Base64;
 import org.aftff.client.Crypto;
 import org.aftff.client.MyThreadSafeClientConnManager;
@@ -58,6 +59,7 @@ import org.w3c.dom.Entity;
 import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -71,7 +73,7 @@ import android.widget.Toast;
 public class Ring {
      
 	
-	
+	OpenHelper openHelper;
 	
 	public Ring(Context context, String key, String shortname, String server) {
 		super();
@@ -81,6 +83,8 @@ public class Ring {
 		this.context = context;
 
 		this.keyHash = aftff.genHexHash(key);
+	    openHelper = new OpenHelper(context);
+
 	}
 	
 	public Ring(String key, String shortname, String server) {
@@ -90,6 +94,7 @@ public class Ring {
 		this.server = server;
 
 		this.keyHash = aftff.genHexHash(key);
+		//openHelper = new OpenHelper(context);
 	}
 	
 	
@@ -131,33 +136,29 @@ public class Ring {
 	final private String keyHash;
 
 	
-	private DefaultHttpClient httpClient;
+	private AftffHttp aftffHttp;
 	public Context context;
 	
 	public String getKey() {
 		return key;
 	}
-	//public void setKey(String key) {
-	//	this.key = key;
-	//}
+	
+	
 	public String getShortname() {
 		return shortname;
 	}
-	//public void setShortname(String shortname) {
-	//	this.shortname = shortname;
-	//}
+	
+	
 	public String getServer() {
 		return server;
 	}
-	//public void setServer(String server) {
-	//	this.server = server;
-	//}
+	
+	
 	public String getNotes() {
 		return notes;
 	}
-	//public void setNotes(String notes) {
-	//	this.notes = notes;
-	//}
+	
+	
 	public String toString() {
 		return getShortname();
 	}
@@ -194,6 +195,7 @@ public class Ring {
 		this.keyHash = aftff.genHexHash(key);
 		this.context = context;
 		initHttp();
+		openHelper = new OpenHelper(context);
 		
 		
 		//this.add(newRing);
@@ -246,23 +248,22 @@ public class Ring {
 	
 	private void initHttp() {
 		
-		SocksSocketFactory socksFactory = new SocksSocketFactory("127.0.0.1",9050); 
-		
-		SchemeRegistry supportedSchemes = new SchemeRegistry();
-		supportedSchemes.register(new Scheme("http", socksFactory, 80));
-		
-		HttpParams params = new BasicHttpParams();
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setContentCharset(params, "UTF-8");
-        HttpProtocolParams.setUseExpectContinue(params,false);
+//		SocksSocketFactory socksFactory = new SocksSocketFactory("127.0.0.1",9050); 
+//		
+//		SchemeRegistry supportedSchemes = new SchemeRegistry();
+//		supportedSchemes.register(new Scheme("http", socksFactory, 80));
+//		
+//		HttpParams params = new BasicHttpParams();
+//        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+//        HttpProtocolParams.setContentCharset(params, "UTF-8");
+//        HttpProtocolParams.setUseExpectContinue(params,false);
+//
+//        ClientConnectionManager	ccm = new MyThreadSafeClientConnManager(params,
+//                    supportedSchemes);
+//        
 
-        ClientConnectionManager	ccm = new MyThreadSafeClientConnManager(params,
-                    supportedSchemes);
-        
-
-        this.httpClient = new DefaultHttpClient(ccm, params);
-		
-		
+		this.aftffHttp = new AftffHttp();
+       // this.httpClient = new DefaultHttpClient(ccm, params);	
 		
 	}
 	
@@ -327,7 +328,7 @@ public class Ring {
 		httpPost.setEntity(entity);
 		
 		try {
-			httpClient.execute(httpPost);
+			aftffHttp.httpClient.execute(httpPost);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -338,7 +339,6 @@ public class Ring {
 			return;
 		}
 		
-		
 	}
 	
 		
@@ -348,11 +348,10 @@ public class Ring {
 	   //String[] msgs = {};
 		//String[] msgs = null;
 		
-	  // initHttp();
 		
 	   HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
 	   try {
-	    HttpResponse resp = httpClient.execute(httpGet);
+	    HttpResponse resp = aftffHttp.httpClient.execute(httpGet);
 	    Header lastMessage = resp.getFirstHeader("Last-Message");
 	    
 	    if (lastMessage == null)
@@ -370,7 +369,6 @@ public class Ring {
 		e.printStackTrace();
 	} catch (IOException e) {
 		// TODO Auto-generated catch block
-
 	}
 	
 	return(0);
@@ -388,8 +386,7 @@ public class Ring {
 		
 		String ringHash = "r" + aftff.genHexHash(this.getFullText());
 		
-		OpenHelper openHelper = new OpenHelper(context);
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteDatabase db = openHelper.getReadableDatabase();
 		
 		Cursor cursor = db.query(openHelper.TABLE, new String[] { "date", "message" }, "id = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "id desc" );
 		if (cursor.moveToFirst()) {
@@ -415,14 +412,15 @@ public class Ring {
 			} else {
 			   msg = new AftffMessage(this,Integer.parseInt(id),date,msgData);
 
-			}
-			
-			
+			}		
+			cursor.close();
+			db.close();
 			return(msg);
 		}
 		cursor.close();
 		
-		
+		db.close();
+		openHelper.close();
 		
 		return(msg);
 	}
@@ -434,7 +432,6 @@ public class Ring {
 			return;	
 		
 		String ringHash = "r" + aftff.genHexHash(getFullText());
-		OpenHelper openHelper = new OpenHelper(context);
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.TABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
@@ -443,7 +440,8 @@ public class Ring {
 		insrt.bindString(3, date);
 		insrt.bindString(4, msg);
 		insrt.executeInsert();
-		
+		db.close();
+		openHelper.close();
 	}
 	
 	//FIXME: should refactor
@@ -452,7 +450,6 @@ public class Ring {
 			return;	
 		
 		String ringHash = "r" + aftff.genHexHash(getFullText());
-		OpenHelper openHelper = new OpenHelper(context);
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.TABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
@@ -473,7 +470,7 @@ public class Ring {
 		  insrt.bindString(3,signatures[i]);
 		  insrt.executeInsert();
 		}
-		
+		db.close();
 	}
 	
 	
@@ -501,7 +498,7 @@ public class Ring {
 	
 	public AftffMessage getMsgFromTor(String id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
-    	HttpResponse resp = httpClient.execute(httpGet);
+    	HttpResponse resp = aftffHttp.httpClient.execute(httpGet);
     	
     	String jsonString = EntityUtils.toString(resp.getEntity());
     	Header lastModified = resp.getFirstHeader("Last-Modified");
@@ -543,48 +540,23 @@ public class Ring {
 	}
 	
 	
-	public String[] getMsgOld(String id) throws IllegalBlockSizeException, BadPaddingException, ClientProtocolException, IOException {
-		
-		String[] result = new String[2];
-		if (httpClient == null) {
-			initHttp();
-		}
-		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
-    	HttpResponse resp = httpClient.execute(httpGet);
-    	
-    	String encMsg = EntityUtils.toString(resp.getEntity());
+	
 
-    	Crypto cryptoDec;
-		try {
-			cryptoDec = new Crypto(key.getBytes(),encMsg.getBytes("ISO-8859-1"));
-			Header[] lastModified = resp.getHeaders("Last-Modified");
-			result[0] = lastModified[0].getValue();
-			String dateString = lastModified[0].getValue();
-			SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-			try {
-				Date d = format.parse(dateString);
-				result[0] = d.getMonth()+1 + "/" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-			}
-			
-			byte[] msgData = cryptoDec.decrypt();
-			result[1] = new String(msgData);
-	        return(result);
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void updateLastMessagePref(Integer curIndex) {
+		// TODO Auto-generated method stub
+		SharedPreferences prefs = context.getSharedPreferences(aftff.PREFS,0);
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putInt("lastMessage" + getFullText(), curIndex);
+		ed.commit();
+	}
+
+	public Integer getLastMessagePref() {
+		// TODO Auto-generated method stub
+		SharedPreferences prefs = context.getSharedPreferences(aftff.PREFS,0);
+		Integer lastMessage = prefs.getInt("lastMessage" + getFullText(), 0);
+		Log.v("Ring", "lastMesagePref: " + lastMessage);
+		return(lastMessage);
 		
-		return(null);
-    	        
 	}
 
 	
