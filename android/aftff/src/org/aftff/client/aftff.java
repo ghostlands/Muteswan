@@ -43,6 +43,7 @@ import org.apache.http.HttpVersion;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -153,7 +154,14 @@ public class aftff extends Activity implements Runnable {
 		       dialog.dismiss();
 		       startActivity(new Intent(this,TorNotAvailable.class));
 		  } else {
-		       dialog.dismiss();
+			   dialog.dismiss();
+			   migratePrefRings();
+			   primeTor();
+			   //AftffHttp aHttp = new AftffHttp();
+			   //HttpHead httpHead = new HttpHead("http://www.google.com");
+		       //HttpResponse resp = aHttp.httpClient.execute(httpHead);
+			   //dialog.setMessage("Poking tor...");
+		       
 		  }
 	} catch (RemoteException e) {
 		// TODO Auto-generated catch block
@@ -163,6 +171,39 @@ public class aftff extends Activity implements Runnable {
 	
 	
 	
+	private void primeTor() {
+		RingStore rs = new RingStore(getApplicationContext(),true);
+		for (Ring r : rs) {
+			Log.v("PrimeTor", r.getShortname() + ": fetching last message.");
+			Integer lastMessage = r.getMsgIndex();
+			if (lastMessage != null) {
+				Log.v("PrimeTor", r.getShortname() + ": updating lastMessage.");
+				r.updateLastMessage(lastMessage);
+			}
+		}
+	}
+	
+	// destroy soon, used to automatically migrate rings to sql
+	private void migratePrefRings() {
+		
+        SharedPreferences prefs = getSharedPreferences(PREFS,0);
+        RingStore rs = new RingStore(getApplicationContext(),true);
+        String[] storeArr = prefs.getString("store", "").split("---");
+        
+        for (String keyStr : storeArr) {
+        	if (keyStr == null)
+        		continue;
+        	Ring r;
+        	r = new Ring(getApplicationContext(),rs.getOpenHelper(),keyStr);
+        	if (r == null)
+        		continue;
+        	rs.updateStore(keyStr);
+        }
+		
+	}
+
+
+
 	private Handler dialogHandler = new Handler() {
 	
 	        @Override
@@ -176,11 +217,11 @@ public class aftff extends Activity implements Runnable {
 	 };
 	 
 	 
-	 public void onResume() {
+	/* public void onResume() {
 		 super.onResume();
 		 Thread thread = new Thread(this);
 		 thread.start();
-	 }
+	 }*/
 	
     /** Called when the activity is first created. */
     @Override
@@ -201,16 +242,7 @@ public class aftff extends Activity implements Runnable {
         SharedPreferences prefs = getSharedPreferences(PREFS,0);
       //  store = new Store(this,prefs);
         
-        
-        
-        
-        
-        dialog = ProgressDialog.show(this, "", "Checking Tor connection...", true);
-        Thread thread = new Thread(this); 
-        thread.start();
-        
-        
-        
+       
         setContentView(R.layout.main);
         
         final Button button = (Button) findViewById(R.id.mScan);
@@ -228,6 +260,16 @@ public class aftff extends Activity implements Runnable {
         final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
         createRingButton.setOnClickListener(mCreateRing);
         
+        
+        
+        
+        dialog = ProgressDialog.show(this, "", "Checking Tor connection...", true);
+        Thread thread = new Thread(this); 
+        thread.start();
+        
+        
+        
+       
         if (!isBound) {
         	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
         } else if (torService == null) {
@@ -242,21 +284,14 @@ public class aftff extends Activity implements Runnable {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.clear();
-    //	if (store == null) {
-    //	  SharedPreferences prefs = getSharedPreferences(PREFS,0);
-     //     store = new Store(this,prefs);
-    //	}
-           	
+    
     	
     	
     	MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.mainmenu, menu);
         
-      //  for (Ring r : store) {
-      //  	MenuItem menuItem = menu.add(r.getShortname());
-      //   }
+     
         
-        menu.add("Clear Saved Keys");
         menu.add("Generate Identity");
         menu.add("List Identities");
         //menu.add("Create Ring");
@@ -290,16 +325,7 @@ public class aftff extends Activity implements Runnable {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
     	
-		if (item.toString().equals("Clear Saved Keys")) {
-			SharedPreferences prefs = getSharedPreferences(PREFS,0);
-			SharedPreferences.Editor prefsEd = prefs.edit();
-			prefsEd.clear();
-			prefsEd.commit();
-			TextView txt = new TextView(this);
-			txt.setText("Saved keys cleared.");
-			setContentView(txt);
-			return true;
-		} else if (item.toString().equals("Create Ring")) {
+		if (item.toString().equals("Create Ring")) {
 			startActivity(new Intent(this, CreateRing.class));
 			return true;
 		} else if (item.toString().equals("Start Service")) {
@@ -479,9 +505,9 @@ public class aftff extends Activity implements Runnable {
     	            // RING
     	            if (atIndex != -1) {
     	            
-    	              Ring ring = new Ring(getApplicationContext(),contents);
-    	              RingStore store = new RingStore(getApplicationContext(),getSharedPreferences(PREFS,0));
-    	              store.updateStore(contents,getSharedPreferences(PREFS,0));
+      	              RingStore store = new RingStore(getApplicationContext());
+    	              Ring ring = new Ring(getApplicationContext(),store.getOpenHelper(),contents);
+    	              store.updateStore(contents);
     	               
     	              //this.activeRing = ring;
     	              selectMsg(ring);
@@ -501,10 +527,10 @@ public class aftff extends Activity implements Runnable {
             	//final String testSite = "2ndset+1522c03e8b9bae5d@tckwndlytrphlpyo.onion";
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
-            	Ring ring = new Ring(getApplicationContext(),testSite);
+	            RingStore store = new RingStore(getApplicationContext());
+            	Ring ring = new Ring(getApplicationContext(),store.getOpenHelper(),testSite);
  	            //updateStore(testSite);
-	            RingStore store = new RingStore(getApplicationContext(),getSharedPreferences(PREFS,0));
-	            store.updateStore(testSite,getSharedPreferences(PREFS,0));
+	            store.updateStore(testSite);
 
             	            	
             	//this.activeRing = ring;

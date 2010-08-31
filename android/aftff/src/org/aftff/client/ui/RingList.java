@@ -44,7 +44,7 @@ public class RingList extends ListActivity {
         action = extra.getInt("action");
         
     	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-    	store = new RingStore(this,prefs);
+    	store = new RingStore(this,true);
 
         setContentView(R.layout.ringlist);
         

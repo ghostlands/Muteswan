@@ -4,6 +4,8 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.LinkedList;
 
+import org.aftff.client.AftffHttp;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -45,6 +47,9 @@ public class IdentityStore extends LinkedList<Identity> {
 	
 	public IdentityStore(Context context) {
 		this.context = context;
+
+		
+		
 		OpenHelper openHelper = new OpenHelper(context);
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		

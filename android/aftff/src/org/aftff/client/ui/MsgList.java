@@ -73,7 +73,7 @@ public class MsgList extends ListActivity implements Runnable {
 	public void run() {
 		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {
 		   lastMessageIndex = ring.getMsgIndex();
-		   ring.updateLastMessagePref(lastMessageIndex);
+		   ring.updateLastMessage(lastMessageIndex);
 		   dialogIndexHandler.sendEmptyMessage(0);
 		} else if (loadMsgDialog != null && loadMsgDialog.isShowing()) {
 			// FIXME: fix msgId garbage
@@ -117,7 +117,8 @@ public class MsgList extends ListActivity implements Runnable {
        super.onCreate(savedInstanceState);
        
        Bundle extras = getIntent().getExtras();
-       ring = new Ring(getApplicationContext(),extras.getString("ring"));
+       RingStore rs = new RingStore(getApplicationContext());
+       ring = new Ring(getApplicationContext(),rs.getOpenHelper(),extras.getString("ring"));
        
        SharedPreferences defPref = PreferenceManager.getDefaultSharedPreferences(this);
        boolean alwaysUseLastMessage = defPref.getBoolean("alwaysUseLastMessage", false);
@@ -136,12 +137,12 @@ public class MsgList extends ListActivity implements Runnable {
        }
        
        
-       if (!alwaysUseLastMessage) {
+       lastMessageIndex = ring.getLastMessage();
+       if (!alwaysUseLastMessage || lastMessageIndex == null) {
          loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
          Thread thread = new Thread(this);
          thread.start();
        } else {
-    	   lastMessageIndex = ring.getLastMessagePref();
     	   renderList();
        }
 
@@ -239,8 +240,8 @@ public class MsgList extends ListActivity implements Runnable {
 			return true;
 		} else if (item.getTitle().toString().equals("Delete Ring")) {
 			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-			RingStore store = new RingStore(prefs);
-			store.deleteRing(ring, prefs);
+			RingStore store = new RingStore(getApplicationContext());
+			store.deleteRing(ring);
 			Toast.makeText(this,
 					"Deleted ring " + ring.getShortname() + " from saved keys.", 
 						  Toast.LENGTH_LONG).show();
@@ -317,6 +318,9 @@ public class MsgList extends ListActivity implements Runnable {
 	 private void renderMsg() {
 	      String msgId = msgList[lastPosition].replace("\n", "");
 
+	      if (lastMsg == null)
+	    	  return;
+	      
 		LinkedList<Identity> validSigs = lastMsg.verifySignatures(idStore);
 		if (validSigs != null && validSigs.size() != 0) {
 			String msgStr = msgId + " - " + lastMsg.getDate() + "\n" + lastMsg.getMsg();

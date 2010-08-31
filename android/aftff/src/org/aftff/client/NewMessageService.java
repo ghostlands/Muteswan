@@ -135,7 +135,6 @@ public class NewMessageService extends Service {
 			
 			@Override
 			public void run() {
-				SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
 				
 				
 				if (!backgroundMessageCheck) {
@@ -145,12 +144,11 @@ public class NewMessageService extends Service {
 				
 				
 				
-				RingStore store = new RingStore(getApplicationContext(),prefs);
+				RingStore store = new RingStore(getApplicationContext(),true);
 				
 				for (Ring r : store) {
 					
-					// FIXME: use sqlite for this
-					Integer lastIndex = prefs.getInt("lastMessage" + r.getFullText(), 0);
+					Integer lastIndex = r.getLastMessage();
 					Integer curIndex = r.getMsgIndex();
 					Integer diff = curIndex - lastIndex;
 					
@@ -158,7 +156,8 @@ public class NewMessageService extends Service {
 					CharSequence notifText = null;
 					
 					if (lastIndex != 0 && curIndex != 0 && lastIndex != curIndex) {
-						r.updateLastMessagePref(curIndex);
+						r.updateLastMessage(curIndex);
+						Log.v("NewMessageService", r.getShortname() + ": just updated curIndex to " + curIndex);
 						notifyIds.put(r.getFullText(), notifyIdLast++);
 						
 						if (numMsgDownload == 0) {
@@ -209,7 +208,7 @@ public class NewMessageService extends Service {
 						
 						showNotification(r,notifTitle,notifText);
 					} else if (lastIndex == 0) {
-						r.updateLastMessagePref(curIndex);
+						r.updateLastMessage(curIndex);
 					}
 				}
 				

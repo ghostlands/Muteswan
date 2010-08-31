@@ -18,6 +18,7 @@ import org.aftff.client.R.layout;
 import org.aftff.client.data.Identity;
 import org.aftff.client.data.IdentityStore;
 import org.aftff.client.data.Ring;
+import org.aftff.client.data.RingStore;
 import org.json.JSONException;
 
 import android.app.Activity;
@@ -48,7 +49,8 @@ public class WriteMsg extends Activity {
 	       super.onCreate(savedInstanceState);
 
 	       Bundle extras = getIntent().getExtras();
-	       ring = new Ring(this,extras.getString("ring"));
+	       RingStore rs = new RingStore(getApplicationContext());
+	       ring = new Ring(this,rs.getOpenHelper(),extras.getString("ring"));
 	       
 	       setContentView(R.layout.writemsg);
 	       

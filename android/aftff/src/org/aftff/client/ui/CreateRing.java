@@ -4,13 +4,10 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
 import org.aftff.client.R;
 import org.aftff.client.aftff;
-import org.aftff.client.R.id;
-import org.aftff.client.R.layout;
+
 import org.aftff.client.data.RingStore;
 
 import android.app.Activity;
@@ -20,7 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 public class CreateRing extends Activity {
 
@@ -67,8 +64,8 @@ public class CreateRing extends Activity {
 	    	//aftff.updateStore(ringFullText);
 	    	
         	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-        	RingStore newStore = new RingStore(prefs);
-        	newStore.updateStore(ringFullText, prefs);
+        	RingStore newStore = new RingStore(getApplicationContext());
+        	newStore.updateStore(ringFullText);
 
 	    	newRingResult.setText("Create ring " + name.getText().toString());
 	    	

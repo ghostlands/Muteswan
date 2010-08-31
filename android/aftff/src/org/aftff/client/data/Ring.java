@@ -72,10 +72,9 @@ import android.widget.Toast;
 
 public class Ring {
      
+	RingStore.OpenHelper openHelper;
 	
-	OpenHelper openHelper;
-	
-	public Ring(Context context, String key, String shortname, String server) {
+	public Ring(Context context, RingStore.OpenHelper openHelper, String key, String shortname, String server) {
 		super();
 		this.key = key;
 		this.shortname = shortname;
@@ -83,50 +82,13 @@ public class Ring {
 		this.context = context;
 
 		this.keyHash = aftff.genHexHash(key);
-	    openHelper = new OpenHelper(context);
-
-	}
-	
-	public Ring(String key, String shortname, String server) {
-		super();
-		this.key = key;
-		this.shortname = shortname;
-		this.server = server;
-
-		this.keyHash = aftff.genHexHash(key);
-		//openHelper = new OpenHelper(context);
+	    this.openHelper = openHelper;
+	    aftffHttp = new AftffHttp();
 	}
 	
 	
-	private class OpenHelper extends SQLiteOpenHelper {
-
-		private static final int DATABASE_VERSION = 3;
-		private static final String DATABASE_NAME = "aftffdb";
-		private static final String TABLE = "messages";
-		private static final String SIGTABLE = "signatures";
-
-		
-	     
-	      public OpenHelper(Context context) {
-			// TODO Auto-generated constructor stub
-	    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		}
-
-		@Override
-	      public void onCreate(SQLiteDatabase db) {
-	         db.execSQL("CREATE TABLE " + TABLE + " (ringHash TEXT, id INTEGER, date TEXT, message TEXT)");
-	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
-	      }
-
-	      @Override
-	      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-	         db.execSQL("DROP TABLE IF EXISTS " + TABLE);
-	         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
-	         onCreate(db);
-	      }
-	      
-	   }
-
+	
+	
 	
 	
 	final private String key;
@@ -163,7 +125,7 @@ public class Ring {
 		return getShortname();
 	}
 	
-	public Ring(Context context, String contents) {
+	public Ring(Context context, RingStore.OpenHelper openHelper, String contents) {
 		Integer plusIndx = contents.indexOf("+");
 		Integer atIndx = contents.indexOf("@");
 		
@@ -195,51 +157,14 @@ public class Ring {
 		this.keyHash = aftff.genHexHash(key);
 		this.context = context;
 		initHttp();
-		openHelper = new OpenHelper(context);
+		this.openHelper = openHelper;
 		
+	    aftffHttp = new AftffHttp();
+
 		
 		//this.add(newRing);
 	}
-	
-	// yuck fix this duplication
-	public Ring(String contents) {
-		// TODO Auto-generated constructor stub
-		Integer plusIndx = contents.indexOf("+");
-		Integer atIndx = contents.indexOf("@");
 		
-		if (plusIndx == -1 || atIndx == -1) {
-			this.key = null;
-		    this.shortname = null;
-		    this.server = null;
-		    this.keyHash = null;
-			return;
-		}
-		
-		String name = contents.substring(0,plusIndx);
-		String key = contents.substring(plusIndx+1,atIndx);
-		String srv = contents.substring(atIndx+1,contents.length());
-		
-		if (name == null || key == null || srv == null) {
-			this.key = null;
-	        this.shortname = null;
-	        this.server = null;
-	        this.keyHash = null;
-			return;
-		}
-		
-		
-		
-		this.key = key;
-		this.shortname = name;
-		this.server = srv;
-		this.keyHash = aftff.genHexHash(key);
-		this.context = null;
-		initHttp();
-		
-	
-	}
-	
-	
 	
 	final public String getFullText() {
 		return(getShortname()+"+"+getKey()+"@"+getServer());
@@ -388,12 +313,12 @@ public class Ring {
 		
 		SQLiteDatabase db = openHelper.getReadableDatabase();
 		
-		Cursor cursor = db.query(openHelper.TABLE, new String[] { "date", "message" }, "id = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "id desc" );
+		Cursor cursor = db.query(openHelper.MESSAGESTABLE, new String[] { "date", "message" }, "id = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "id desc" );
 		if (cursor.moveToFirst()) {
 			String date = cursor.getString(0);
 			String msgData = cursor.getString(1);
 			
-			Cursor cursorSig = db.query(OpenHelper.SIGTABLE, new String[] { "signature" }, "msgId = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "signature desc" );
+			Cursor cursorSig = db.query(openHelper.SIGTABLE, new String[] { "signature" }, "msgId = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "signature desc" );
 			
 			//FIXME: max signatures?
 			String[] signatures = new String[50];
@@ -434,7 +359,7 @@ public class Ring {
 		String ringHash = "r" + aftff.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.TABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
+		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.MESSAGESTABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
 		insrt.bindString(1, ringHash);
 		insrt.bindLong(2, id);
 		insrt.bindString(3, date);
@@ -452,7 +377,7 @@ public class Ring {
 		String ringHash = "r" + aftff.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.TABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
+		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.MESSAGESTABLE + " (ringHash,id,date,message) VALUES (?,?,?,?)");
 		insrt.bindString(1, ringHash);
 		insrt.bindLong(2, id);
 		insrt.bindString(3, date);
@@ -542,19 +467,55 @@ public class Ring {
 	
 	
 
-	public void updateLastMessagePref(Integer curIndex) {
-		// TODO Auto-generated method stub
-		SharedPreferences prefs = context.getSharedPreferences(aftff.PREFS,0);
-		SharedPreferences.Editor ed = prefs.edit();
-		ed.putInt("lastMessage" + getFullText(), curIndex);
-		ed.commit();
+	public void updateLastMessage(Integer curIndex) {
+		
+		String ringHash = aftff.genHexHash(getFullText());
+		Integer lastMsgId = getLastMessage();
+		if (lastMsgId == null) {
+		  SQLiteDatabase db = openHelper.getWritableDatabase();
+		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.LASTMESSAGES + " (ringHash,lastMessage) VALUES (?,?)");
+		  insrt.bindString(1, ringHash);
+		  insrt.bindLong(2, curIndex);
+		  insrt.executeInsert();
+		  db.close();
+		} else {
+			SQLiteDatabase db = openHelper.getWritableDatabase();
+			SQLiteStatement update = db.compileStatement("UPDATE " + openHelper.LASTMESSAGES + " SET lastMessage = ? WHERE ringHash = ?");
+			update.bindLong(1, curIndex);
+			update.bindString(2, ringHash);
+			update.executeInsert();
+			db.close();
+			
+		}
+		
+		
+		
+		//SharedPreferences prefs = context.getSharedPreferences(aftff.PREFS,0);
+		//SharedPreferences.Editor ed = prefs.edit();
+		//ed.putInt("lastMessage" + getFullText(), curIndex);
+		//ed.commit();
+		
+		
 	}
 
-	public Integer getLastMessagePref() {
-		// TODO Auto-generated method stub
-		SharedPreferences prefs = context.getSharedPreferences(aftff.PREFS,0);
-		Integer lastMessage = prefs.getInt("lastMessage" + getFullText(), 0);
-		Log.v("Ring", "lastMesagePref: " + lastMessage);
+	public Integer getLastMessage() {
+		String ringHash = aftff.genHexHash(getFullText());
+		SQLiteDatabase db = openHelper.getReadableDatabase();
+
+		Integer lastMessage = null;
+		
+		Cursor cursor = db.query(openHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { ringHash }, null, null, "lastMessage desc" );
+		if (cursor.moveToFirst()) {
+			lastMessage = cursor.getInt(0);
+		}
+		cursor.close();
+		db.close();
+		
+//		SharedPreferences prefs = context.getSharedPreferences(aftff.PREFS,0);
+//		Integer lastMessage = prefs.getInt("lastMessage" + getFullText(), 0);
+//		Log.v("Ring", "lastMesagePref: " + lastMessage);
+//		return(lastMessage);
+		
 		return(lastMessage);
 		
 	}

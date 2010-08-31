@@ -7,119 +7,55 @@ import org.aftff.client.aftff;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
 final public class RingStore extends LinkedList<Ring> {
 	
-	public Context context;
+	public class OpenHelper extends SQLiteOpenHelper {
 
-	
-    // FIXME: fix duplication
-	public RingStore(Context applicationContext, SharedPreferences prefs) {
-		// TODO Auto-generated constructor stub
-		context = applicationContext;
-		String storeString = prefs.getString("store", null);
-        if (storeString == null || storeString.equals(""))
-        	return;
-        initStore(storeString);
-        
-	}
+			public static final int DATABASE_VERSION = 4;
+			public static final String DATABASE_NAME = "aftffdb";
+			public static final String MESSAGESTABLE = "messages";
+			public static final String SIGTABLE = "signatures";
+			public static final String LASTMESSAGES = "lastmessages";
+			public static final String RINGTABLE = "rings";
 
-	public RingStore() {
-		// TODO Auto-generated constructor stub
-		context = null;
-	}
+			
+		     
+		      public OpenHelper(Context context) {
+				// TODO Auto-generated constructor stub
+		    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
+			}
 
-	public RingStore(SharedPreferences prefs) {
-		// TODO Auto-generated constructor stub
-		context = null;
-		String storeString = prefs.getString("store", null);
-        if (storeString == null || storeString.equals(""))
-        	return;
-        initStore(storeString);
-	}
-	
-	private void initStore(String storeString) {
-        String[] storeArr = storeString.split("---");
-        
-        for (String keyStr : storeArr) {
-        	if (keyStr == null)
-        		continue;
-        	Ring r;
-        	if (context == null) {
-        		r = new Ring(keyStr);
-        	} else {
-        		r = new Ring(context,keyStr);
-        	}
-        	if (r == null)
-        		continue;
-        	add(r);
-        }
-	}
+			@Override
+		      public void onCreate(SQLiteDatabase db) {
+		         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (ringHash TEXT, id INTEGER, date TEXT, message TEXT)");
+		         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
+		         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER)");
+		         db.execSQL("CREATE TABLE " + RINGTABLE + " (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT)");
+		      }
 
-	final public String getAsString() {
-		String returnString = "";
-		
-		for (Ring r : this) {
-			returnString = returnString + r.getFullText() + "---";
-		}
-		return(returnString);
-	}
-	
-	  public void updateStore(String contents, SharedPreferences prefs) {
-	    	boolean haveRing = false;
-	        for (Ring r : this) {
-	        	if (r.getFullText().equals(contents)) {
-	        		haveRing = true;
-	        		return;
-	        	}
-	        }
-	  
-	        String storeString;
-	        if (haveRing == false) {
-	        	
-	        	if (this.isEmpty()) {
-	        		 storeString = contents + "---";
-	        	} else {
-	        	     storeString = this.getAsString() + contents + "---";
-	        	}
-	        	
-	        	SharedPreferences.Editor prefEd = prefs.edit();
-	        	prefEd.putString("store", storeString);
-	        	prefEd.commit();
-	        }
-	    }
-	  
-	  final public void deleteRing(Ring ring, SharedPreferences prefs) {
-		  String storeString = "";
-		  for (Ring r : this) {
-			  if (r.getFullText().equals(ring.getFullText())) {
-				  continue;
-			  } else {
-				  storeString = storeString + r.getFullText() + "---";
-			  }
-		  }
-		  SharedPreferences.Editor prefEd = prefs.edit();
-		  prefEd.putString("store",storeString);
-		  prefEd.commit();
-	  }
-	  
-	  
-	  
-	  
-	  public class ringListAdapter implements ListAdapter {
+		      @Override
+		      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
+		         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
+		         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
+		         db.execSQL("DROP TABLE IF EXISTS " + RINGTABLE);
+		         onCreate(db);
+		      }
+		      
+		   }
+    public class ringListAdapter implements ListAdapter {
 
 		@Override
 		public boolean areAllItemsEnabled() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public boolean isEnabled(int arg0) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -173,6 +109,12 @@ final public class RingStore extends LinkedList<Ring> {
 		}
 
 		@Override
+		public boolean isEnabled(int arg0) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
 		public void registerDataSetObserver(DataSetObserver observer) {
 			// TODO Auto-generated method stub
 			
@@ -185,5 +127,160 @@ final public class RingStore extends LinkedList<Ring> {
 		}
 		  
 	  }
+
+
+	
+    public Context context;
+
+	private OpenHelper openHelper;
+
+	
+	public RingStore(Context applicationContext, boolean readDb) {
+		// TODO Auto-generated constructor stub
+		context = applicationContext;
+	    openHelper = new OpenHelper(context);
+
+		if (readDb) {
+          initStore();
+		}
+	}
+	
+	public RingStore(Context applicationContext) {
+		// TODO Auto-generated constructor stub
+		context = applicationContext;
+	    openHelper = new OpenHelper(context);
+
+		
+        //initStore();
+	}
+
+	
+	public RingStore.OpenHelper getOpenHelper() {
+		return openHelper;
+	}
+	
+	  final public void deleteRing(Ring ring) {
+		  SQLiteDatabase db = openHelper.getWritableDatabase();
+		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + openHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
+		  delete.bindString(1, ring.getKey());
+		  delete.bindString(2, ring.getShortname());
+		  delete.bindString(3, ring.getServer());
+		  delete.execute();
+		  db.close();
+	  }
+	
+//	  final public void deleteRingOld(Ring ring) {
+//		  String storeString = "";
+//		  for (Ring r : this) {
+//			  if (r.getFullText().equals(ring.getFullText())) {
+//				  continue;
+//			  } else {
+//				  storeString = storeString + r.getFullText() + "---";
+//			  }
+//		  }
+//		  SharedPreferences.Editor prefEd = prefs.edit();
+//		  prefEd.putString("store",storeString);
+//		  prefEd.commit();
+//	  }
+	  
+	  final public String getAsString() {
+		String returnString = "";
+		
+		for (Ring r : this) {
+			returnString = returnString + r.getFullText() + "---";
+		}
+		return(returnString);
+	}
+	  
+	  
+	  
+	  private void initStore() {
+		  SQLiteDatabase db = openHelper.getReadableDatabase();
+			
+		  Cursor cursor = db.query(openHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
+		  while (cursor.moveToNext()) {
+				String shortname = cursor.getString(0);
+				String key = cursor.getString(1);
+				String server = cursor.getString(2);
+				Ring r = new Ring(context,openHelper,key,shortname,server);
+				if (r != null) 
+				   add(r);
+		  }
+		  cursor.close();
+		  db.close();
+	  }
+	  
+	  
+	  private void initStoreOld(String storeString) {
+        String[] storeArr = storeString.split("---");
+        
+        for (String keyStr : storeArr) {
+        	if (keyStr == null)
+        		continue;
+        	Ring r;
+        	r = new Ring(context,openHelper,keyStr);
+        	if (r == null)
+        		continue;
+        	add(r);
+        }
+	}
+	  
+	  public void updateStore(String contents) {
+		  Ring ring = new Ring(context,openHelper,contents);
+		  for (Ring r : this) {
+			  if (r.getFullText().equals(contents)) {
+				  return;
+			  }
+		  }
+		  addRingToDb(ring);
+	  }
+	  
+	  public void updateStore(String key, String shortname, String server) {
+		  Ring ring = new Ring(context,openHelper,key,shortname,server);
+		  for (Ring r : this) {
+			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
+				  return;
+			  }
+		  }
+		  addRingToDb(ring);
+	  }
+	  
+	  private void addRingToDb(Ring ring) {
+		  SQLiteDatabase db = openHelper.getWritableDatabase();
+		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
+		  insrt.bindString(1, ring.getKey());
+		  insrt.bindString(2, ring.getShortname());
+		  insrt.bindString(3, ring.getServer());
+		  insrt.execute();
+		  db.close();
+		  
+		  add(ring);
+	  }
+	  
+//	  public void updateStoreOld(String contents) {
+//	    	boolean haveRing = false;
+//	        for (Ring r : this) {
+//	        	if (r.getFullText().equals(contents)) {
+//	        		haveRing = true;
+//	        		return;
+//	        	}
+//	        }
+//	  
+//	        String storeString;
+//	        if (haveRing == false) {
+//	        	
+//	        	if (this.isEmpty()) {
+//	        		 storeString = contents + "---";
+//	        	} else {
+//	        	     storeString = this.getAsString() + contents + "---";
+//	        	}
+//	        	
+//	        	SharedPreferences.Editor prefEd = prefs.edit();
+//	        	prefEd.putString("store", storeString);
+//	        	prefEd.commit();
+//	        }
+//	    }
+
+	  
 
 }
