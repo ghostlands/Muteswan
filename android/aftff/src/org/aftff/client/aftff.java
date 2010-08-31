@@ -108,13 +108,14 @@ public class aftff extends Activity implements Runnable {
 	
 	
 	ITorService torService;
+	private boolean justCreated;
 	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		while (torService == null) {
 			try {
-				Thread.currentThread().sleep(300);
+				Thread.currentThread().sleep(500);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -124,45 +125,40 @@ public class aftff extends Activity implements Runnable {
 		Log.v("AFTFF", "Tor is not null.");
 		
 		
-//		try {
-//			if (torService.getStatus() != TOR_STATUS_ON) {
-//				//startActivity(new Intent("org.torproject.android.START_TOR"));
-//				//return;
-//				dialogHandler.sendEmptyMessage(0);
-//
-//			}
-//		} catch (RemoteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		try {
-//			while (torService.getStatus() != TOR_STATUS_ON) {
-//				dialog.setMessage("Waiting for Tor to become available...");
-//				Thread.currentThread().sleep(500);
-//				Log.v("AFTFF", "Tor is not at status on: " + torService.getStatus());
-//			}
-//			Log.v("AFTFF", "Tor is now at status on: " + torService.getStatus());
-//		} catch (RemoteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+
 	  try {
+		Log.v("AFFF", "Getting tor status");
 		if (torService.getStatus() != TOR_STATUS_ON) {
-		       dialog.dismiss();
-		       startActivity(new Intent(this,TorNotAvailable.class));
-		  } else {
-			   dialog.dismiss();
+			   Log.v("AFTFF", "Tor is not on.");
+		       //dialog.dismiss();
+		       torService.setProfile(TOR_STATUS_ON);
+		       //dialog.setMessage("Starting Tor...");
+		       dialogWaitOnTor.sendEmptyMessage(0);
+		       while (torService.getStatus() != TOR_STATUS_ON) {
+		    	   Log.v("AFTFF", "Still waiting on Tor...");
+		    	   try {
+					Thread.currentThread().sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		       }
+		       //startActivity(new Intent(this,TorNotAvailable.class));
+		  }
+		
+		  dialogDismiss.sendEmptyMessage(0);
+			   
+		  if (justCreated) {
+			   justCreated = false;
 			   migratePrefRings();
 			   primeTor();
+		  }
 			   //AftffHttp aHttp = new AftffHttp();
 			   //HttpHead httpHead = new HttpHead("http://www.google.com");
 		       //HttpResponse resp = aHttp.httpClient.execute(httpHead);
 			   //dialog.setMessage("Poking tor...");
 		       
-		  }
+		  
 	} catch (RemoteException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -204,24 +200,39 @@ public class aftff extends Activity implements Runnable {
 
 
 
-	private Handler dialogHandler = new Handler() {
-	
+	private Handler dialogDismiss = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
 	              	dialog.dismiss();
-	              	Intent intent = new Intent();
-	              	intent.setAction("org.torproject.android.Orbot");
-	              	startActivity(intent);
-	              	//.setAction("org.torproject.android.START_TOR"));
+	        }
+	 };
+	 
+	 private Handler dialogWaitOnTor = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	              	dialog.setMessage("Waiting for Tor to come online.");
 	        }
 	 };
 	 
 	 
-	/* public void onResume() {
+	public void onResume() {
 		 super.onResume();
-		 Thread thread = new Thread(this);
-		 thread.start();
-	 }*/
+		 
+		// Thread thread = new Thread(this);
+		// thread.start();
+		 
+		 dialog = ProgressDialog.show(this, "", "Connecting to Tor service...", true);
+	     Thread thread = new Thread(this); 
+	     thread.start();
+	        
+	        
+	        
+	       
+	       
+	        
+		 
+		 
+	 }
 	
     /** Called when the activity is first created. */
     @Override
@@ -230,17 +241,13 @@ public class aftff extends Activity implements Runnable {
         
         
         // Check tor status
-        //Intent torServiceIntent = new Intent("org.torproject.android.service.ITorService");
         Intent torServiceIntent = new Intent();
-        //torServiceIntent.setClassName("org.torproject.android.service", "ITorService");
         torServiceIntent.setAction("org.torproject.android.service.ITorService");
         boolean isBound = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
         
         
-        
-        
-        SharedPreferences prefs = getSharedPreferences(PREFS,0);
-      //  store = new Store(this,prefs);
+        // indicate we were just created
+        justCreated = true;
         
        
         setContentView(R.layout.main);
@@ -260,24 +267,15 @@ public class aftff extends Activity implements Runnable {
         final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
         createRingButton.setOnClickListener(mCreateRing);
         
-        
-        
-        
-        dialog = ProgressDialog.show(this, "", "Checking Tor connection...", true);
-        Thread thread = new Thread(this); 
-        thread.start();
-        
-        
-        
-       
         if (!isBound) {
         	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
         } else if (torService == null) {
         	Log.v("AFTFF", "Service is bound but torService is null.");
         } else {
         	Log.v("AFTFF", "Hey, we are bound to the tor service\n");
-        }
+        }   
         
+       
     }
     
     
