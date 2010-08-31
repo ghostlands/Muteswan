@@ -179,6 +179,7 @@ public class aftff extends Activity implements Runnable {
 		}
 	}
 	
+
 	// destroy soon, used to automatically migrate rings to sql
 	private void migratePrefRings() {
 		
