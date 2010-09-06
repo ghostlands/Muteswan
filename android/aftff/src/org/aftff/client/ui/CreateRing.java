@@ -60,16 +60,13 @@ public class CreateRing extends Activity {
 	    	String ringFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server.getText().toString();
 	    	
 	    	newRingResult.setText(ringFullText);
-	    	//aftff aftff = new aftff();
-	    	//aftff.updateStore(ringFullText);
 	    	
-        	SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
+	    	
         	RingStore newStore = new RingStore(getApplicationContext());
         	newStore.updateStore(ringFullText);
 
-	    	newRingResult.setText("Create ring " + name.getText().toString());
+	    	newRingResult.setText("Created ring " + name.getText().toString());
 	    	
-	        //Toast.makeText(getContext(), name.toString() + "+" + keyTxt.toString() + "@" + server.toString(), Toast.LENGTH_LONG);
 	 }
 };
 

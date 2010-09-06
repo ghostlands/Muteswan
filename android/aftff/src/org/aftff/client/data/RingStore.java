@@ -1,5 +1,6 @@
 package org.aftff.client.data;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.aftff.client.aftff;
@@ -20,7 +21,7 @@ final public class RingStore extends LinkedList<Ring> {
 	
 	public class OpenHelper extends SQLiteOpenHelper {
 
-			public static final int DATABASE_VERSION = 4;
+			public static final int DATABASE_VERSION = 6;
 			public static final String DATABASE_NAME = "aftffdb";
 			public static final String MESSAGESTABLE = "messages";
 			public static final String SIGTABLE = "signatures";
@@ -36,10 +37,10 @@ final public class RingStore extends LinkedList<Ring> {
 
 			@Override
 		      public void onCreate(SQLiteDatabase db) {
-		         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (ringHash TEXT, id INTEGER, date TEXT, message TEXT)");
+		         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date TEXT, message TEXT)");
 		         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
 		         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER)");
-		         db.execSQL("CREATE TABLE " + RINGTABLE + " (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT)");
+		         db.execSQL("CREATE TABLE IF NOT EXISTS " + RINGTABLE + " (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT)");
 		      }
 
 		      @Override
@@ -47,11 +48,12 @@ final public class RingStore extends LinkedList<Ring> {
 		         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
 		         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
 		         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
-		         db.execSQL("DROP TABLE IF EXISTS " + RINGTABLE);
+		         //db.execSQL("DROP TABLE IF EXISTS " + RINGTABLE);
 		         onCreate(db);
 		      }
 		      
 		   }
+	
     public class ringListAdapter implements ListAdapter {
 
 		@Override
@@ -169,21 +171,9 @@ final public class RingStore extends LinkedList<Ring> {
 		  db.close();
 	  }
 	
-//	  final public void deleteRingOld(Ring ring) {
-//		  String storeString = "";
-//		  for (Ring r : this) {
-//			  if (r.getFullText().equals(ring.getFullText())) {
-//				  continue;
-//			  } else {
-//				  storeString = storeString + r.getFullText() + "---";
-//			  }
-//		  }
-//		  SharedPreferences.Editor prefEd = prefs.edit();
-//		  prefEd.putString("store",storeString);
-//		  prefEd.commit();
-//	  }
+
 	  
-	  final public String getAsString() {
+	final public String getAsString() {
 		String returnString = "";
 		
 		for (Ring r : this) {
@@ -211,19 +201,7 @@ final public class RingStore extends LinkedList<Ring> {
 	  }
 	  
 	  
-	  private void initStoreOld(String storeString) {
-        String[] storeArr = storeString.split("---");
-        
-        for (String keyStr : storeArr) {
-        	if (keyStr == null)
-        		continue;
-        	Ring r;
-        	r = new Ring(context,openHelper,keyStr);
-        	if (r == null)
-        		continue;
-        	add(r);
-        }
-	}
+	 
 	  
 	  public void updateStore(String contents) {
 		  Ring ring = new Ring(context,openHelper,contents);
@@ -247,7 +225,7 @@ final public class RingStore extends LinkedList<Ring> {
 	  
 	  private void addRingToDb(Ring ring) {
 		  SQLiteDatabase db = openHelper.getWritableDatabase();
-		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + openHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
+		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
 		  insrt.bindString(1, ring.getKey());
 		  insrt.bindString(2, ring.getShortname());
 		  insrt.bindString(3, ring.getServer());
@@ -257,30 +235,17 @@ final public class RingStore extends LinkedList<Ring> {
 		  add(ring);
 	  }
 	  
-//	  public void updateStoreOld(String contents) {
-//	    	boolean haveRing = false;
-//	        for (Ring r : this) {
-//	        	if (r.getFullText().equals(contents)) {
-//	        		haveRing = true;
-//	        		return;
-//	        	}
-//	        }
-//	  
-//	        String storeString;
-//	        if (haveRing == false) {
-//	        	
-//	        	if (this.isEmpty()) {
-//	        		 storeString = contents + "---";
-//	        	} else {
-//	        	     storeString = this.getAsString() + contents + "---";
-//	        	}
-//	        	
-//	        	SharedPreferences.Editor prefEd = prefs.edit();
-//	        	prefEd.putString("store", storeString);
-//	        	prefEd.commit();
-//	        }
-//	    }
 
+	  
+	  public HashMap<String,Ring> asHashMap() {
+		HashMap<String,Ring> map = new HashMap<String,Ring>();
+		for (Ring r : this) {
+			map.put(aftff.genHexHash(r.getFullText()), r);
+		}
+		
+		return map;
+		  
+	  }
 	  
 
 }

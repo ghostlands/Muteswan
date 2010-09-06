@@ -1,28 +1,14 @@
 package org.aftff.client;
 
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.aftff.client.data.Identity;
 import org.aftff.client.data.IdentityStore;
@@ -31,64 +17,38 @@ import org.aftff.client.data.RingStore;
 import org.aftff.client.ui.CreateRing;
 import org.aftff.client.ui.GenerateIdentity;
 import org.aftff.client.ui.IdentityList;
+import org.aftff.client.ui.LatestMessages;
 import org.aftff.client.ui.MsgList;
 import org.aftff.client.ui.Preferences;
 import org.aftff.client.ui.RingList;
-import org.aftff.client.ui.TorNotAvailable;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.scheme.SocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.util.EntityUtils;
+import org.torproject.android.service.ITorService;
 
 import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
-
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
-import android.app.Service;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-
-
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.entity.BasicHttpEntity;
-import org.torproject.android.service.ITorService;
 
 
 
@@ -150,14 +110,10 @@ public class aftff extends Activity implements Runnable {
 			   
 		  if (justCreated) {
 			   justCreated = false;
-			   migratePrefRings();
+			   //migratePrefRings();
 			   primeTor();
 		  }
-			   //AftffHttp aHttp = new AftffHttp();
-			   //HttpHead httpHead = new HttpHead("http://www.google.com");
-		       //HttpResponse resp = aHttp.httpClient.execute(httpHead);
-			   //dialog.setMessage("Poking tor...");
-		       
+			
 		  
 	} catch (RemoteException e) {
 		// TODO Auto-generated catch block
@@ -174,9 +130,28 @@ public class aftff extends Activity implements Runnable {
 			Integer lastMessage = r.getMsgIndex();
 			if (lastMessage != null) {
 				Log.v("PrimeTor", r.getShortname() + ": updating lastMessage.");
+				Integer numMsgDownload = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("numMsgDownload","5"));
+				MSG: for (Integer i=lastMessage;i>lastMessage-numMsgDownload;i--) {
+					try {
+						if (i == 0)
+							break MSG;
+						
+						Log.v("PrimeTor","Downloading message id " + i + " for ring " + r.getShortname());
+						r.getMsg(i.toString());
+					} catch (ClientProtocolException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
 				r.updateLastMessage(lastMessage);
 			}
+			
 		}
+		stopTitleProgressBar.sendEmptyMessage(0);
 	}
 	
 
@@ -215,6 +190,13 @@ public class aftff extends Activity implements Runnable {
 	        }
 	 };
 	 
+	 private Handler stopTitleProgressBar = new Handler() {
+		 @Override
+		 public void handleMessage(Message msg) {
+		        setProgressBarIndeterminateVisibility(false);
+		 }
+	 };
+	 
 	 
 	public void onResume() {
 		 super.onResume();
@@ -239,7 +221,8 @@ public class aftff extends Activity implements Runnable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         
         // Check tor status
         Intent torServiceIntent = new Intent();
@@ -250,20 +233,29 @@ public class aftff extends Activity implements Runnable {
         // indicate we were just created
         justCreated = true;
         
-       
+
+
         setContentView(R.layout.main);
+        setProgressBarIndeterminateVisibility(true);
+
         
         final Button button = (Button) findViewById(R.id.mScan);
         button.setOnClickListener(mScan);
         
-        final Button shareButton = (Button) findViewById(R.id.mShare);
+        final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
+        mLatestMessagesButton.setOnClickListener(mLatestMessages);
+        
+       /* final Button shareButton = (Button) findViewById(R.id.mShare);
         shareButton.setOnClickListener(mShare);
         
         final Button readMsgsButton = (Button) findViewById(R.id.mReadMsgs);
         readMsgsButton.setOnClickListener(mReadMsgs);
         
         final Button writeMsgButton = (Button) findViewById(R.id.mWriteMsg);
-        writeMsgButton.setOnClickListener(mWriteMsg);
+        writeMsgButton.setOnClickListener(mWriteMsg); */
+        
+        final Button mManageRingsButton = (Button) findViewById(R.id.mManageRings);
+        mManageRingsButton.setOnClickListener(mManageRings); 
         
         final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
         createRingButton.setOnClickListener(mCreateRing);
@@ -425,7 +417,10 @@ public class aftff extends Activity implements Runnable {
     
     }
     
-    
+    private void showLatestMessages() {
+    	startActivity(new Intent(this,LatestMessages.class));
+    	return;
+    }
     
     
     //FIXME: get rid of this duplication in Store.java
@@ -477,6 +472,21 @@ public class aftff extends Activity implements Runnable {
 
 	 }
     };
+    
+    public Button.OnClickListener mManageRings = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	        showRings(RingList.ANY);
+	 }
+    };
+    
+    public Button.OnClickListener mLatestMessages = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	    	showLatestMessages();
+	    }
+    };
+    
+    
+    
     
     public Button.OnClickListener mWriteMsg = new Button.OnClickListener() {
 	    public void onClick(View v) {

@@ -33,7 +33,7 @@ public class AftffMessage {
 	// FIXME: define max signatures per message
 	public String[] signatures = new String[50];
 	
-	LinkedList<Identity> validSigs;
+	private LinkedList<Identity> validSigs;
 
 
 	public AftffMessage(Ring ring, Integer id, String date, String msg) {
@@ -181,6 +181,17 @@ public class AftffMessage {
 	
 		return(validSigs);
 	}
+
+	public Ring getRing() {
+		return ring;
+	}
 	
+	public LinkedList<Identity> getValidSigs() {
+		return(validSigs);
+	}
+
+	public String getId() {
+		return id.toString();
+	}
 	
 }

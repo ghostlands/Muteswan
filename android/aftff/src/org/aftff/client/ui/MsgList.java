@@ -238,14 +238,6 @@ public class MsgList extends ListActivity implements Runnable {
 			showQrcode.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(showQrcode);
 			return true;
-		} else if (item.getTitle().toString().equals("Delete Ring")) {
-			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-			RingStore store = new RingStore(getApplicationContext());
-			store.deleteRing(ring);
-			Toast.makeText(this,
-					"Deleted ring " + ring.getShortname() + " from saved keys.", 
-						  Toast.LENGTH_LONG).show();
-			return true;
 		} else if (item.getTitle().toString().equals("Refresh")) {
 			loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
 		    Thread thread = new Thread(this);

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/latestmessagesRelativeLayout"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingRight="5px"
+    android:gravity="left"
+    
+    >
+    
+    <TextView
+    android:layout_alignParentTop="true"
+     android:id="@+id/android:latestmessagesRing"
+    android:layout_width="80sp"
+    android:layout_height="wrap_content"
+    android:text="ring"
+    android:paddingRight="10px"/>
+  
+    
+    
+    <LinearLayout
+    android:id="@+id/latestmessagesMainLayout"
+     android:orientation="vertical"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:gravity="left"
+     android:layout_toRightOf="@id/android:latestmessagesRing"
+     
+    >
+    
+    
+     <TextView  
+     android:id="@+id/android:latestmessagesDate"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="date"
+    android:gravity="left"
+    
+    />
+    
+    <TextView  
+     android:id="@+id/android:latestmessagesMessage"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="message"
+    android:gravity="left"
+    android:paddingBottom="8px"
+    
+    />
+    
+    <TextView
+     android:id="@+id/android:latestmessagesSignatures"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text=""
+    android:gravity="left"
+    android:textColor="#ffffff"
+    />
+    
+    </LinearLayout>
+    
+     <ImageButton
+        android:id="@+id/latestmessagesInfoButton"   
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/more"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentBottom="false"
+        android:gravity="center"
+         />
+    
+     
+     
+
+</RelativeLayout>

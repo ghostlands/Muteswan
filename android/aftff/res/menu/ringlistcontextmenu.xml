@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/ringListShare"
+        android:title="Share" />
+    <item android:id="@+id/ringListRead"
+        android:title="Read" />
+    <item android:id="@+id/ringListWriteMsg"
+        android:title="Post Message" />
+     <item android:id="@+id/ringListDelete"
+        android:title="Delete" />      
+     
+</menu>
