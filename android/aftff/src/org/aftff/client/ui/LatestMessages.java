@@ -203,10 +203,19 @@ public class LatestMessages extends ListActivity {
                 	} else if (items[item].equals("Reply")) {
                 		Intent intent = new Intent(context,WriteMsg.class);
                 		intent.putExtra("ring",msg.getRing().getFullText());
+                		intent.putExtra("initialText", "@" + msg.getId() + ":\n");
                 		startActivity(intent);
                 	} else if (items[item].equals("Reply with Quote")) {
                 		Intent intent = new Intent(context,WriteMsg.class);
                 		intent.putExtra("ring",msg.getRing().getFullText());
+                		String[] msgLines = msg.getMsg().split("\n");
+                		StringBuilder initialText = new StringBuilder();
+                		initialText.append("From @" + msg.getId());
+                		for (int i=0; i<msgLines.length; i++) {
+                			initialText.append("> " + msgLines[i] + "\n");
+                		}
+                		initialText.append("\n");
+                		intent.putExtra("initialText", initialText.toString());
                 		startActivity(intent);
                 	} else if (items[item].equals("Share")) {
                 		Intent showQrcode = new Intent("com.google.zxing.client.android.ENCODE");

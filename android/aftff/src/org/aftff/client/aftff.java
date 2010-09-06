@@ -514,7 +514,7 @@ public class aftff extends Activity implements Runnable {
     	            // RING
     	            if (atIndex != -1) {
     	            
-      	              RingStore store = new RingStore(getApplicationContext());
+      	              RingStore store = new RingStore(getApplicationContext(),true);
     	              Ring ring = new Ring(getApplicationContext(),store.getOpenHelper(),contents);
     	              store.updateStore(contents);
     	               
@@ -536,7 +536,7 @@ public class aftff extends Activity implements Runnable {
             	//final String testSite = "2ndset+1522c03e8b9bae5d@tckwndlytrphlpyo.onion";
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
-	            RingStore store = new RingStore(getApplicationContext());
+	            RingStore store = new RingStore(getApplicationContext(),true);
             	Ring ring = new Ring(getApplicationContext(),store.getOpenHelper(),testSite);
  	            //updateStore(testSite);
 	            store.updateStore(testSite);

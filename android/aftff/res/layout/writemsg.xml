@@ -5,24 +5,13 @@
     android:layout_height="fill_parent"
     >
     
-    <!-- 
-    <TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/msgprompt"
-    /> -->
+   
     
-    
-    <EditText  android:id="@+id/newMsgText" android:layout_width="fill_parent" android:layout_height="220sp"></EditText>
-    
-   <!--   <Spinner 
-        android:id="@+id/keySelectSpinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:drawSelectorOnTop="true"
-        android:prompt="@string/keyselectspinnerprompt"
-    /> -->
-    
+    <EditText  android:id="@+id/newMsgText"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:minHeight="100sp"/>
+   
     <Button android:id="@+id/selectSigButton" android:text="Sign Message"
     	android:layout_width="fill_parent"
     	android:layout_height="wrap_content"/>

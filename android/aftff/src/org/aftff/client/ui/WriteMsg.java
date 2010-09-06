@@ -44,6 +44,7 @@ public class WriteMsg extends Activity {
 	boolean[] signSelections;
 	CharSequence[] signIdentities;
 	Identity[] identities;
+	String initialText;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
@@ -51,6 +52,7 @@ public class WriteMsg extends Activity {
 	       Bundle extras = getIntent().getExtras();
 	       RingStore rs = new RingStore(getApplicationContext());
 	       ring = new Ring(this,rs.getOpenHelper(),extras.getString("ring"));
+	       initialText = extras.getString("initialText");
 	       
 	       setContentView(R.layout.writemsg);
 	       
@@ -72,12 +74,16 @@ public class WriteMsg extends Activity {
 	       
 
 	       
-	       
 	       final Button button = (Button) findViewById(R.id.submitMsg);
 	       button.setOnClickListener(submitMsg);
 	       
 	       final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
 	       selectSigButton.setOnClickListener(selectSigButtonHandler);
+	       
+	       if (initialText != null) {
+	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
+	    	newMsgText.setText(initialText);
+	       }
 	       
 	}
 	
