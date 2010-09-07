@@ -140,6 +140,7 @@ public class aftff extends Activity implements Runnable {
 	private void fetchLatestMessageData() {
 		try {
 			Log.v("Aftff", "Running newMsgService updateMessages now");
+			
 			newMsgService.updateLastMessage();
 			newMsgService.downloadMessages();
 			while (newMsgService.isWorking()) {
@@ -226,6 +227,7 @@ public class aftff extends Activity implements Runnable {
 	        @Override
 	        public void handleMessage(Message msg) {
 	              	dialog.setMessage("Connecting to new message service.");
+
 	        }
 	 };
 	 
@@ -233,6 +235,7 @@ public class aftff extends Activity implements Runnable {
 	 private Handler stopTitleProgressBar = new Handler() {
 		 @Override
 		 public void handleMessage(Message msg) {
+           	    setTitle("aftff");
 		        setProgressBarIndeterminateVisibility(false);
 		 }
 	 };
@@ -241,15 +244,11 @@ public class aftff extends Activity implements Runnable {
 	public void onResume() {
 		 super.onResume();
 		 
-		
 		 
 		 dialog = ProgressDialog.show(this, "", "Connecting to Tor service...", true);
 	     Thread thread = new Thread(this); 
 	     thread.start();
-	        
-	        
-	        
-	       
+	        	        
 	       
 	        
 		 
@@ -283,6 +282,7 @@ public class aftff extends Activity implements Runnable {
 
 
         setContentView(R.layout.main);
+  	    setTitle("aftff (checking for new messages)");
         setProgressBarIndeterminateVisibility(true);
 
         

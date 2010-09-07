@@ -24,10 +24,13 @@ import org.json.JSONException;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.util.Log;
 import android.view.View;
@@ -38,7 +41,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class WriteMsg extends Activity {
+public class WriteMsg extends Activity implements Runnable {
 
 	Ring ring;
 	boolean[] signSelections;
@@ -127,23 +130,24 @@ public class WriteMsg extends Activity {
                  showDialog( 0 );
          }
      };
+	protected ProgressDialog sendingMsgDialog;
 
 	
 	
 	public Button.OnClickListener submitMsg = new Button.OnClickListener() {
-	    public void onClick(View v) {
+	    public void onClick(final View v) {
 	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
 	    	Editable txt = newMsgText.getText();
-	    	String txtData = txt.toString();
+	    	final String txtData = txt.toString();
 	    	
 	    		    	
-	    	try {
+	    	
 	    		
 	    		//Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
 	    		//Identity identity = (Identity) selectSignSpinner.getSelectedItem();
 	    		
 	    		//FIXME: max sigs?
-	    		Identity[] signIds = new Identity[50];
+	    		final Identity[] signIds = new Identity[50];
 	    		int j = 0;
 	    		for(int i=0; i<signSelections.length; i++) {
 	    			if (signSelections[i] == true) {
@@ -152,64 +156,139 @@ public class WriteMsg extends Activity {
 	    			}
 	    		}
 	    		
+	    		sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
+	    		  
+    		    final Handler dismissDialog = new Handler() {
+    				
+    		        @Override
+    		        public void handleMessage(Message msg) {
+    		              	sendingMsgDialog.dismiss();
+							Toast.makeText(v.getContext(), "Message posted.", Toast.LENGTH_LONG).show();
+    		        }
+    		    };
+	    		
+	    		
 	    		TextView txt2 = new TextView(v.getContext());
 	    		if (signIds[0] != null) {
-				    try {
+				    	
+				    
 				    	Log.v("WriteMsg", "Posting with signatures...");
-						ring.postMsg(txtData,signIds);
-			            txt2.setText("Posted message to " + ring.getShortname() + " with signature(s).");
 
-					} catch (InvalidKeyException e) {
-						// TODO Auto-generated catch block
-						//e.printStackTrace();
-						txt2.setText("Invalid key exception for identity privkey.");
-					} catch (SignatureException e) {
-						// TODO Auto-generated catch block
-						//e.printStackTrace();
-						txt2.setText("Signature exception: " + e.toString());
-					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
-						//e.printStackTrace();
-						txt2.setText("UnsupportedEncodingException: " + e.toString());
-					} catch (InvalidKeySpecException e) {
-						// TODO Auto-generated catch block
-						//e.printStackTrace();
-						txt2.setText("Invalid keyspec exception " + e.toString());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				    	 new Thread() {
+							  public void run() {
+								
+									try {
+										ring.postMsg(txtData,signIds);
+										dismissDialog.sendEmptyMessage(0);
+									} catch (InvalidKeyException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (NoSuchAlgorithmException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (NoSuchPaddingException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (IllegalBlockSizeException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (BadPaddingException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (SignatureException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (InvalidKeySpecException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+							  }
+								
+						 }.start();
+				    	
+				    	
+			            //txt2.setText("Posted message to " + ring.getShortname() + " with signature(s).");
+
+//					} catch (InvalidKeyException e) {
+//						// TODO Auto-generated catch block
+//						//e.printStackTrace();
+//						txt2.setText("Invalid key exception for identity privkey.");
+//					} catch (SignatureException e) {
+//						// TODO Auto-generated catch block
+//						//e.printStackTrace();
+//						txt2.setText("Signature exception: " + e.toString());
+//					} catch (UnsupportedEncodingException e) {
+//						// TODO Auto-generated catch block
+//						//e.printStackTrace();
+//						txt2.setText("UnsupportedEncodingException: " + e.toString());
+//					} catch (InvalidKeySpecException e) {
+//						// TODO Auto-generated catch block
+//						//e.printStackTrace();
+//						txt2.setText("Invalid keyspec exception " + e.toString());
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
 	    		} else {
-				  ring.postMsg(txtData);
-			      txt2.setText("Posted message to " + ring.getShortname() + " without signature.");
+	    		  
+	    		  
+				  new Thread() {
+					  public void run() {
+						try {
+							ring.postMsg(txtData);
+							dismissDialog.sendEmptyMessage(0);
+						} catch (NoSuchAlgorithmException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (NoSuchPaddingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalBlockSizeException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (BadPaddingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}  
+					  }
+				  }.start();
+				  //thread.start();
+	    		  
+	    		 // ring.postMsg(txtData);
+			      //txt2.setText("Posted message to " + ring.getShortname() + " without signature.");
 
 	    		}
-		        setContentView(txt2);
+	    	}
+	    
+	    	
+	    
+	    };
+	
+	    		//txt2.setText("");
+		        //setContentView(txt2);
 
-				
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 	    	
-	    	
+	    
+			
+				// TODO Auto-generated catch block
+			
     	 
 	    	
-	 }
+	
 
-		
-};
+	@Override
+	public void run() {
+//BOOK		
+	}
 	
 }

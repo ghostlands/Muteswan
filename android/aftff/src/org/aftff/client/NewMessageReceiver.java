@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.RemoteException;
 
 public class NewMessageReceiver extends BroadcastReceiver {
 
@@ -15,9 +16,21 @@ public class NewMessageReceiver extends BroadcastReceiver {
         Intent svc = new Intent(ctx, NewMessageService.class);
         //ctx.stopService(svc);
         
+        
+        
         //String nullExc = null;
         //nullExc.length();
        ctx.startService(svc);
+       
+       IMessageService msgService = (IMessageService) peekService(ctx,svc);
+       try {
+		msgService.poll();
+	} catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+       
+       
         //ctx.bindService(service, conn, flags)
         
 	}

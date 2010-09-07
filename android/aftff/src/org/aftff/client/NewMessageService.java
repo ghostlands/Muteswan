@@ -128,7 +128,7 @@ public class NewMessageService extends Service {
 		//poll();
 	}
 
-	public void poll() {
+	public void pollForNewMessages() {
 		
 		new Thread() {
 			
@@ -245,12 +245,12 @@ public class NewMessageService extends Service {
 	private void getLastMessageAll() {
 		RingStore rs = new RingStore(getApplicationContext(), true);
 		for (final Ring r : rs) {
-			new Thread() {
-				public void run() {
+			//new Thread() {
+				//public void run() {
 					Integer lastMessage = r.getMsgIndex();
 					r.updateLastMessage(lastMessage);
-				}
-			}.start();
+				//}
+			//}.start();
 			
 			Log.v("AftffService", "Downloaded messages index for " + r.getShortname());
 		}
@@ -259,30 +259,39 @@ public class NewMessageService extends Service {
 	private void downloadMessagesAll() {
 		RingStore store = new RingStore(getApplicationContext(),true);
 		
-		for (Ring r : store) {
+		for (final Ring r : store) {
 			
-			Integer lastIndex = r.getLastMessage();
-			if (lastIndex == null || lastIndex == 0) {
-				Log.v("AftffService", "lastIndex is null or 0");
-				continue;
-			}
+			//new Thread() {
+				//public void run() {
 			
-			Log.v("AftffService", "lastIndex is " + lastIndex);
-			MSG: for (Integer i=lastIndex; i>lastIndex - numMsgDownload; i--) {
-				if (i == 0) 
-					break MSG;
-				
-				try {
-					r.getMsg(i.toString());
-					Log.v("AftffService", "(downloadMessages) Downloaded msg " + i.toString());
-				} catch (ClientProtocolException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+					Integer lastIndex = r.getLastMessage();
+					if (lastIndex == null || lastIndex == 0) {
+						Log.v("AftffService", "lastIndex is null or 0");
+						return;
+					}
+					
+					Log.v("AftffService", "lastIndex is " + lastIndex);
+					MSG: for (Integer i=lastIndex; i>lastIndex - numMsgDownload; i--) {
+						if (i == 0) 
+							break MSG;
+						
+						try {
+							r.getMsg(i.toString());
+							Log.v("AftffService", "(downloadMessages) Downloaded msg " + i.toString());
+						} catch (ClientProtocolException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+					
+				//}
+			//}.start();
+			
+			
 		}
 	}
 		
@@ -301,6 +310,12 @@ public class NewMessageService extends Service {
 				return;
 			isWorking = true;
 			downloadMessagesAll();
+			isWorking = false;
+		}
+		
+		public void poll() {
+			isWorking = true;
+			pollForNewMessages();
 			isWorking = false;
 		}
 		
