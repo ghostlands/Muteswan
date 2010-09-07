@@ -10,6 +10,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -220,7 +221,12 @@ public class Ring {
     	SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 		try {
 			Date d = format.parse(lastModified.getValue());
-			date = d.getMonth()+1 + "/" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
+			//date = d.getMonth()+1 + "/" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
+			SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+			//FIXME: hardcoded timezone!
+			//TimeZone tz = TimeZone.getTimeZone( "EDT" );
+	        //df.setTimeZone( tz );
+	        date = df.format(d);
 		} catch (ParseException e) {
 			return(null);
 			// TODO Auto-generated catch block
@@ -439,14 +445,14 @@ public class Ring {
 		Integer lastMsgId = getLastMessage();
 		if (lastMsgId == null) {
 		  SQLiteDatabase db = openHelper.getWritableDatabase();
-		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage) VALUES (?,?)");
+		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
 		  insrt.bindString(1, ringHash);
 		  insrt.bindLong(2, curIndex);
 		  insrt.executeInsert();
 		  db.close();
 		} else {
 			SQLiteDatabase db = openHelper.getWritableDatabase();
-			SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ? WHERE ringHash = ?");
+			SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
 			update.bindLong(1, curIndex);
 			update.bindString(2, ringHash);
 			update.executeInsert();

@@ -68,6 +68,9 @@ public class aftff extends Activity implements Runnable {
 	
 	
 	ITorService torService;
+
+    IMessageService newMsgService;
+
 	private boolean justCreated;
 	
 	@Override
@@ -85,6 +88,17 @@ public class aftff extends Activity implements Runnable {
 		Log.v("AFTFF", "Tor is not null.");
 		
 		
+		dialogWaitOnNewMsgService.sendEmptyMessage(0);
+		while (newMsgService == null) {
+			try {
+				Thread.currentThread().sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		//	Log.v("AFTFF", "new message service still null.");
+		}
+		//Log.v("AFTFF", "new message service not null.");
 
 	  try {
 		Log.v("AFFF", "Getting tor status");
@@ -111,7 +125,7 @@ public class aftff extends Activity implements Runnable {
 		  if (justCreated) {
 			   justCreated = false;
 			   //migratePrefRings();
-			   primeTor();
+			   fetchLatestMessageData();
 		  }
 			
 		  
@@ -123,7 +137,25 @@ public class aftff extends Activity implements Runnable {
 	
 	
 	
-	private void primeTor() {
+	private void fetchLatestMessageData() {
+		try {
+			Log.v("Aftff", "Running newMsgService updateMessages now");
+			newMsgService.updateLastMessage();
+			newMsgService.downloadMessages();
+			while (newMsgService.isWorking()) {
+				Thread.currentThread().sleep(500);
+			}
+			stopTitleProgressBar.sendEmptyMessage(0);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void primeTorOld() {
 		RingStore rs = new RingStore(getApplicationContext(),true);
 		for (Ring r : rs) {
 			Log.v("PrimeTor", r.getShortname() + ": fetching last message.");
@@ -190,6 +222,14 @@ public class aftff extends Activity implements Runnable {
 	        }
 	 };
 	 
+	 private Handler dialogWaitOnNewMsgService = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	              	dialog.setMessage("Connecting to new message service.");
+	        }
+	 };
+	 
+	 
 	 private Handler stopTitleProgressBar = new Handler() {
 		 @Override
 		 public void handleMessage(Message msg) {
@@ -201,8 +241,7 @@ public class aftff extends Activity implements Runnable {
 	public void onResume() {
 		 super.onResume();
 		 
-		// Thread thread = new Thread(this);
-		// thread.start();
+		
 		 
 		 dialog = ProgressDialog.show(this, "", "Connecting to Tor service...", true);
 	     Thread thread = new Thread(this); 
@@ -217,6 +256,8 @@ public class aftff extends Activity implements Runnable {
 		 
 	 }
 	
+	
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -224,11 +265,17 @@ public class aftff extends Activity implements Runnable {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         
+        startService(new Intent(this,NewMessageService.class));
+        
         // Check tor status
         Intent torServiceIntent = new Intent();
         torServiceIntent.setAction("org.torproject.android.service.ITorService");
-        boolean isBound = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
+        boolean isBoundTor = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
         
+        
+        Intent serviceIntent = new Intent(this,NewMessageService.class);
+        boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
+       
         
         // indicate we were just created
         justCreated = true;
@@ -260,14 +307,19 @@ public class aftff extends Activity implements Runnable {
         final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
         createRingButton.setOnClickListener(mCreateRing);
         
-        if (!isBound) {
+        if (!isBoundTor) {
         	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
         } else if (torService == null) {
         	Log.v("AFTFF", "Service is bound but torService is null.");
         } else {
         	Log.v("AFTFF", "Hey, we are bound to the tor service\n");
         }   
-        
+       
+        if (!isBound) {
+        	Log.v("Aftff", "IMessageService is not bound.");
+        } else {
+        	Log.v("Aftff", "IMessageService is bound.");
+        }
        
     }
     
@@ -283,30 +335,10 @@ public class aftff extends Activity implements Runnable {
         
      
         
-        menu.add("Generate Identity");
+        menu.add("Create Identity");
         menu.add("List Identities");
-        //menu.add("Create Ring");
     
-        boolean serviceRunning = false;
-        ActivityManager actMan = (ActivityManager) getSystemService( ACTIVITY_SERVICE );
-        List<RunningServiceInfo> runningServices = actMan.getRunningServices(50);
-        for (RunningServiceInfo service : runningServices) {
-        	//menu.add("srvc: " + service.service.getClassName());
-        	//menu.add("msgservc: " + NewMessageService.class.getName());
-        	if (service.service.getClassName().equals(NewMessageService.class.getName())) {
-        		serviceRunning = true;
-        		break;
-        	}
-        }
         
-        
-        if (serviceRunning == false) {
-        	menu.add("Start Service");
-        } else {
-        	menu.add("Stop Service");
-        }
-        
-       // menu.add("Check Tor Connectivity");
         menu.add("Options");
        
         
@@ -319,69 +351,17 @@ public class aftff extends Activity implements Runnable {
 		if (item.toString().equals("Create Ring")) {
 			startActivity(new Intent(this, CreateRing.class));
 			return true;
-		} else if (item.toString().equals("Start Service")) {
-			//Intent intent = new Intent(this,NewMessageService.class));
-			startService(new Intent(this,NewMessageService.class));
-			return true;
-		} else if (item.toString().equals("Stop Service")) {
-			stopService(new Intent(this,NewMessageService.class));
-			return true;
 		} else if (item.toString().equals("List Identities")) {
 			startActivity(new Intent(this,IdentityList.class));
 			return true;
-		} else if (item.toString().equals("Generate Identity")) {
+		} else if (item.toString().equals("Create Identity")) {
 			startActivity(new Intent(this,GenerateIdentity.class));
 			return true;
 		} else if (item.toString().equals("Options")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}
-//		} else if (item.toString().equals("Check Tor Connectivity")) {
-//			if (torService != null) {
-//				TextView txt = new TextView(this);
-//				try {
-//					if (torService.getStatus() == TOR_STATUS_READY) {
-//					  txt.setText("Tor is connected with status ready.");
-//					} else if (torService.getStatus() == TOR_STATUS_OFF) {
-//					  txt.setText("Tor is disconnected.");
-//					} else if (torService.getStatus() == TOR_STATUS_CONNECTING) {
-//						txt.setText("Tor is currently establishing a connection.");
-//					} else if (torService.getStatus() == TOR_STATUS_ON) {
-//						txt.setText("Tor is connected with status on.");
-//					}
-//				} catch (RemoteException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				setContentView(txt);
-//				//Toast.makeText(getApplicationContext(), "Tor connected.", Toast.LENGTH_LONG);
-//			
-//			} else {
-//				TextView txt = new TextView(this);
-//				txt.setText("Not connected to tor service.");
-//				setContentView(txt);
-//				//Toast.makeText(getApplicationContext(),"Tor is not connected.", Toast.LENGTH_LONG);
-//			}
-		
-	
-//		Ring selectedRing = null;
-//		for (Ring r : store) {
-//			if (r.getShortname().equals(item.toString())) {
-//			  selectedRing = r;
-//			}
-//		}
-//		TextView txt = new TextView(this);
-//		String contextInfo;
-//		if (selectedRing.context == null) {
-//			contextInfo = " is null.";
-//		} else {
-//			contextInfo = " is not null.";
-//		}
-//		txt.setText("Loading..." + selectedRing.getShortname() + " context " + contextInfo);
-//		setContentView(txt);
-//		
-		
-	//	startActivity(new Intent( this, MsgList.class));
+
 
 		return true;
 
@@ -403,9 +383,7 @@ public class aftff extends Activity implements Runnable {
     private void showRings(Integer action) {
     	Intent intent = new Intent(this,RingList.class);
     	intent.putExtra("action", action);
-    	//Bundle bundle = new Bundle();
-    	//Bundle extr = intent.getExtras();
-    	//extr.putInt("action", action);
+    	
     	
     	startActivity(intent);
     	return;
@@ -423,29 +401,7 @@ public class aftff extends Activity implements Runnable {
     }
     
     
-    //FIXME: get rid of this duplication in Store.java
-//    public static Store getStore(SharedPreferences prefs) {
-//    	
-//    	Store newStore = new Store();   	
-//    	
-//        String storeString = prefs.getString("store", null);
-//        if (storeString == null || storeString.equals(""))
-//        	return newStore;
-//        
-//        String[] storeArr = storeString.split("---");
-//      
-//        
-//        for (String keyStr : storeArr) {
-//        	if (keyStr == null)
-//        		continue;
-//        	Ring r = new Ring(keyStr);
-//        	if (r == null)
-//        		continue;
-//        	newStore.add(r);
-//        }
-//        return(newStore);
-//    	
-//    }
+ 
     
   
     
@@ -574,6 +530,24 @@ public class aftff extends Activity implements Runnable {
            torService = null;
         }
     };
+    
+    private ServiceConnection mNewMsgConn = new ServiceConnection() {
+
+		public void onServiceConnected(ComponentName className,
+                IBinder service) {
+        	newMsgService = IMessageService.Stub.asInterface(service);
+        	Log.v("Aftff", "onServiceConnected called.");
+        	if (newMsgService == null) {
+        		Log.e("AFTFF", "newMsgService is null ");
+        	}
+
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+           newMsgService = null;
+        }
+    };
+    
 
     
     

@@ -83,7 +83,6 @@ public class AftffMessage {
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
 				
-				
 		
 	}
 	

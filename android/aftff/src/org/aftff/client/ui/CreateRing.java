@@ -57,12 +57,15 @@ public class CreateRing extends Activity {
 	    	TextView keyTxt = (TextView) findViewById(R.id.newRingKey);
 	    	TextView newRingResult = (TextView) findViewById(R.id.newRingResult);
 	    	
+	    	if (name.length() == 0 || server.length() == 0)
+	    		return;
+	    	
 	    	String ringFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server.getText().toString();
 	    	
 	    	newRingResult.setText(ringFullText);
 	    	
 	    	
-        	RingStore newStore = new RingStore(getApplicationContext());
+        	RingStore newStore = new RingStore(getApplicationContext(),true);
         	newStore.updateStore(ringFullText);
 
 	    	newRingResult.setText("Created ring " + name.getText().toString());

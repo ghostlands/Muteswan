@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -33,23 +34,16 @@ public class NewMessageService extends Service {
 	HashMap notifyIds;
 	int notifyIdLast;
 	final int PERSISTANT_NOTIFICATION = 220;
-	private final IBinder mBinder = new MyBinder();
 	private boolean backgroundMessageCheck;
 	private int checkMsgInterval;
 	private int numMsgDownload;
 	private SharedPreferences defPrefs;
 	private boolean justLaunched = false;
+	protected boolean isWorking;
     
-	@Override
-	public IBinder onBind(Intent intent) {
-		return mBinder;
-	}
+	
 
-	public class MyBinder extends Binder {
-		NewMessageService getService() {
-				return NewMessageService.this;
-		}
-    }
+	
 
 	
 	@Override
@@ -100,8 +94,13 @@ public class NewMessageService extends Service {
 		CharSequence contentText = "aftff polling at " + checkMsgInterval + " minute intervals";
 		
 		
+		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
+		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","1"));
+	
+		
 		notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-		mNM.notify(PERSISTANT_NOTIFICATION, notify);
+		if (backgroundMessageCheck) 
+		  mNM.notify(PERSISTANT_NOTIFICATION, notify);
 
 		
 		justLaunched = true;
@@ -119,14 +118,14 @@ public class NewMessageService extends Service {
 		
 		//timer.cancel();
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
-		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","1"));
+		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
 		if (justLaunched == true) {
 			justLaunched = false;
 			return;
 		}
 		
-		poll();
+		//poll();
 	}
 
 	public void poll() {
@@ -221,7 +220,6 @@ public class NewMessageService extends Service {
 				long when = System.currentTimeMillis();
 				int icon = R.drawable.icon;
 				Notification notify = new Notification(icon,title,when);
-				//notify.flags |= Notification.DEFAULT_LIGHTS;
 				
 				
 				
@@ -239,53 +237,90 @@ public class NewMessageService extends Service {
 				mNM.notify((Integer) notifyIds.get(r.getFullText()), notify);
 			}
 			
-		
 		}.start(); 
 		
 	}
 	
-		
-		
-		//}, 0, 300000);
-		
-		
 	
+	private void getLastMessageAll() {
+		RingStore rs = new RingStore(getApplicationContext(), true);
+		for (final Ring r : rs) {
+			new Thread() {
+				public void run() {
+					Integer lastMessage = r.getMsgIndex();
+					r.updateLastMessage(lastMessage);
+				}
+			}.start();
+			
+			Log.v("AftffService", "Downloaded messages index for " + r.getShortname());
+		}
+	}
+	
+	private void downloadMessagesAll() {
+		RingStore store = new RingStore(getApplicationContext(),true);
 		
-//		timer = new Timer();
-//		timer.scheduleAtFixedRate( new TimerTask() {
-//		public void run() {
-//			//Do whatever you want to do every “INTERVAL”
-//			
-//			
-//			SharedPreferences prefs = getSharedPreferences(aftff.PREFS,0);
-//			Store store = aftff.getStore(prefs);
-//			
-//			for (Ring r : store) {
-//				String lastIndex = prefs.getString("lastIndex" + r.getFullText(), null);
-//				String curIndex = r.getMsgIndexRaw();
-//				if (lastIndex != null && curIndex != null && !lastIndex.equals(curIndex)) {
-//					SharedPreferences.Editor ed = prefs.edit();
-//					ed.putString("lastIndex" + r.getFullText(), curIndex);
-//					ed.commit();
-//					notifyIds.put(r.getFullText(), notifyIdLast++);
-//					showNotification(r);
-//				} else if (lastIndex == null) {
-//					SharedPreferences.Editor ed = prefs.edit();
-//					ed.putString("lastIndex" + r.getFullText(), curIndex);
-//					ed.commit();
-//				}
-//			}
+		for (Ring r : store) {
+			
+			Integer lastIndex = r.getLastMessage();
+			if (lastIndex == null || lastIndex == 0) {
+				Log.v("AftffService", "lastIndex is null or 0");
+				continue;
+			}
+			
+			Log.v("AftffService", "lastIndex is " + lastIndex);
+			MSG: for (Integer i=lastIndex; i>lastIndex - numMsgDownload; i--) {
+				if (i == 0) 
+					break MSG;
 				
+				try {
+					r.getMsg(i.toString());
+					Log.v("AftffService", "(downloadMessages) Downloaded msg " + i.toString());
+				} catch (ClientProtocolException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+		
+	private final IMessageService.Stub binder = new IMessageService.Stub() {
+		public void updateLastMessage() {
+			if (isWorking)
+				return;
 			
-			
-		//}
+			isWorking = true;
+			getLastMessageAll();
+			isWorking = false;
+		}
+		
+		public void downloadMessages() {
+			if (isWorking)
+				return;
+			isWorking = true;
+			downloadMessagesAll();
+			isWorking = false;
+		}
+		
+		public boolean isWorking() {
+			return isWorking;
+		}
+
+		
+		
+	};
+	
+	public IBinder onBind(Intent intent) {
+		Log.v("NewMessageService","onBind called.");
+		return binder;
+	}
 
 		
 	
 	private void stopservice() {
-//		if (timer != null){
-//			timer.cancel();
-//		}
+
 	}
 
 	

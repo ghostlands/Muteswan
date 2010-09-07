@@ -21,7 +21,7 @@ final public class RingStore extends LinkedList<Ring> {
 	
 	public class OpenHelper extends SQLiteOpenHelper {
 
-			public static final int DATABASE_VERSION = 6;
+			public static final int DATABASE_VERSION = 10;
 			public static final String DATABASE_NAME = "aftffdb";
 			public static final String MESSAGESTABLE = "messages";
 			public static final String SIGTABLE = "signatures";
@@ -37,9 +37,9 @@ final public class RingStore extends LinkedList<Ring> {
 
 			@Override
 		      public void onCreate(SQLiteDatabase db) {
-		         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date TEXT, message TEXT)");
+		         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
 		         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
-		         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER)");
+		         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
 		         db.execSQL("CREATE TABLE IF NOT EXISTS " + RINGTABLE + " (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT)");
 		      }
 

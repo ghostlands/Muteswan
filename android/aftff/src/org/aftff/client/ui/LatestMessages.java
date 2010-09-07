@@ -210,7 +210,7 @@ public class LatestMessages extends ListActivity {
                 		intent.putExtra("ring",msg.getRing().getFullText());
                 		String[] msgLines = msg.getMsg().split("\n");
                 		StringBuilder initialText = new StringBuilder();
-                		initialText.append("From @" + msg.getId());
+                		initialText.append("From @" + msg.getId() + "\n");
                 		for (int i=0; i<msgLines.length; i++) {
                 			initialText.append("> " + msgLines[i] + "\n");
                 		}

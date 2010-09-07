@@ -43,6 +43,8 @@ public class GenerateIdentity extends Activity {
 	public Button.OnClickListener genIdentity = new Button.OnClickListener() {
 	    public void onClick(View v) {
 	    	EditText txtEdit = (EditText) findViewById(R.id.newIdentityName);
+	    	if (txtEdit.length() == 0) 
+	    		return;
 	    	String name = txtEdit.getText().toString();
 	    	Identity identity = new Identity();
 	    	identity.setName(name);
