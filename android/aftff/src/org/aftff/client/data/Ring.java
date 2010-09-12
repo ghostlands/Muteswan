@@ -57,6 +57,10 @@ public class Ring {
 
 	
 	public Context context;
+
+	private Integer curLastMsgId = 0;
+
+	private SQLiteDatabase rdb;
 	public Ring(Context context, RingStore.OpenHelper openHelper, String contents) {
 		Integer plusIndx = contents.indexOf("+");
 		Integer atIndx = contents.indexOf("@");
@@ -92,7 +96,8 @@ public class Ring {
 		this.openHelper = openHelper;
 		
 	    aftffHttp = new AftffHttp();
-
+	    rdb = openHelper.getReadableDatabase();
+	    curLastMsgId = 0;
 		
 		//this.add(newRing);
 	}
@@ -107,6 +112,8 @@ public class Ring {
 		this.keyHash = aftff.genHexHash(key);
 	    this.openHelper = openHelper;
 	    aftffHttp = new AftffHttp();
+	    rdb = openHelper.getReadableDatabase();
+	    curLastMsgId = 0;
 	}
 	
 	
@@ -119,23 +126,37 @@ public class Ring {
 		return key;
 	}
 	
+	public Integer getLastMsgId() {
+		if (curLastMsgId == 0) {
+			curLastMsgId = getLastMessageId();
+		}
+		return(curLastMsgId);
+	}
 	
-	public Integer getLastMessage() {
+	public Integer getLastMessageId() {
 		String ringHash = aftff.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getReadableDatabase();
 
-		Integer lastMessage = null;
+		Integer lastMessageId = null;
+		
+		
+		//ARGH WTF!!
+		//if (!db.isOpen()) {
+		//	return(null);
+		//}
 		
 		Cursor cursor = db.query(OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { ringHash }, null, null, "lastMessage desc" );
 		if (cursor.moveToFirst()) {
-			lastMessage = cursor.getInt(0);
+			lastMessageId = cursor.getInt(0);
 		}
 		cursor.close();
-		db.close();
+		//if (db.isOpen()) {
+		  db.close();
+		//}
 		
 
 		
-		return(lastMessage);
+		return(lastMessageId);
 		
 	}
 	
@@ -203,7 +224,6 @@ public class Ring {
 		cursor.close();
 		
 		db.close();
-		openHelper.close();
 		
 		return(msg);
 	}
@@ -213,12 +233,20 @@ public class Ring {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
     	HttpResponse resp = aftffHttp.httpClient.execute(httpGet);
     	
-    	String jsonString = EntityUtils.toString(resp.getEntity());
+    	return(parseMsgFromTor(resp));
+	}
+	
+	
+	private AftffMessage parseMsgFromTor(HttpResponse resp) throws org.apache.http.ParseException, IOException {
+		// TODO Auto-generated method stub
+
+		
+		String jsonString = EntityUtils.toString(resp.getEntity());
     	Header lastModified = resp.getFirstHeader("Last-Modified");
     	AftffMessage msg = null;
     	String date = null;
-    	
-    	SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+		
+		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 		try {
 			Date d = format.parse(lastModified.getValue());
 			//date = d.getMonth()+1 + "/" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
@@ -253,11 +281,9 @@ public class Ring {
 		}
     	
 		
-		
     	return(msg);
 	}
-	
-	
+
 	public Integer getMsgIndex() {
 	  
 		
@@ -285,6 +311,32 @@ public class Ring {
 	
 	return(0);
 	
+	}
+	
+	public AftffMessage getMsgLongpoll(Integer id) {
+		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/longpoll/" + id);
+    	HttpResponse resp;
+    	
+    	Log.v("Ring", "getMsgLongpoll called for " + getShortname());
+    	
+		try {
+			resp = aftffHttp.httpClient.execute(httpGet);
+			AftffMessage msg = parseMsgFromTor(resp);
+			if (msg.signatures[0] != null) {
+				   saveMsgToDb(id,msg.getDate(),msg.getMsg(),msg.signatures);
+			} else {
+				   saveMsgToDb(id,msg.getDate(),msg.getMsg());
+			}
+			return(msg);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return(null);
+    	
 	}
 	
 	
@@ -381,7 +433,17 @@ public class Ring {
 		
 	}
 	
-	
+	public boolean msgExists(SQLiteDatabase db, Integer id) {
+		String ringHash = aftff.genHexHash(getFullText());
+		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id.toString(), ringHash }, null, null, "id desc" );
+		if (cursor.getCount() != 0) {
+			cursor.close();
+			return(true);
+		} else {
+			cursor.close();
+			return(false);
+		}
+	}
 	
 	// FIXME: should refactor
 	public void saveMsgToDb(Integer id, String date, String msg) {
@@ -390,7 +452,11 @@ public class Ring {
 		
 		String ringHash = aftff.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
-		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
+		if (msgExists(db,id)) {
+			db.close();
+			return;
+		}
+
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
 		insrt.bindString(1, ringHash);
 		insrt.bindLong(2, id);
@@ -398,7 +464,6 @@ public class Ring {
 		insrt.bindString(4, msg);
 		insrt.executeInsert();
 		db.close();
-		openHelper.close();
 	}
 	
 	
@@ -409,7 +474,12 @@ public class Ring {
 		
 		String ringHash = aftff.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
-		//db.execSQL("CREATE TABLE if not exists r" + table + " (id INTEGER PRIMARY KEY, date TEXT, message TEXT)");
+		if (msgExists(db,id)) {
+			db.close();
+			return;
+		}
+		
+
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
 		insrt.bindString(1, ringHash);
 		insrt.bindLong(2, id);
@@ -439,30 +509,34 @@ public class Ring {
 		return getShortname();
 	}
 
-	public void updateLastMessage(Integer curIndex) {
+	public void createLastMessage(Integer curIndex) {
 		
 		String ringHash = aftff.genHexHash(getFullText());
-		Integer lastMsgId = getLastMessage();
-		if (lastMsgId == null) {
-		  SQLiteDatabase db = openHelper.getWritableDatabase();
-		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
-		  insrt.bindString(1, ringHash);
-		  insrt.bindLong(2, curIndex);
-		  insrt.executeInsert();
-		  db.close();
-		} else {
-			SQLiteDatabase db = openHelper.getWritableDatabase();
-			SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
-			update.bindLong(1, curIndex);
-			update.bindString(2, ringHash);
-			update.executeInsert();
-			db.close();
-			
-		}
+		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
+		insrt.bindString(1, ringHash);
+		insrt.bindLong(2, curIndex);
+		insrt.executeInsert();
+		db.close();
+	}
+	
+	public void updateLastMessage(Integer curIndex) {
+		curLastMsgId = curIndex;
+	}
+	
+	public void saveLastMessage() {
+		String ringHash = aftff.genHexHash(getFullText());
 		
+		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
+		update.bindLong(1, curLastMsgId);
+		update.bindString(2, ringHash);
+		update.executeInsert();
+		db.close();
+	}
 	
 		
-	}
+	
 
 	
 

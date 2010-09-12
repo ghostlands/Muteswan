@@ -74,6 +74,7 @@ public class MsgList extends ListActivity implements Runnable {
 		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {
 		   lastMessageIndex = ring.getMsgIndex();
 		   ring.updateLastMessage(lastMessageIndex);
+		   ring.saveLastMessage();
 		   dialogIndexHandler.sendEmptyMessage(0);
 		} else if (loadMsgDialog != null && loadMsgDialog.isShowing()) {
 			// FIXME: fix msgId garbage
@@ -137,7 +138,7 @@ public class MsgList extends ListActivity implements Runnable {
        }
        
        
-       lastMessageIndex = ring.getLastMessage();
+       lastMessageIndex = ring.getLastMsgId();
        if (!alwaysUseLastMessage || lastMessageIndex == null) {
          loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
          Thread thread = new Thread(this);

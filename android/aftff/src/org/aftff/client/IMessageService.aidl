@@ -7,6 +7,7 @@ interface IMessageService {
   void updateLastMessage();
   void downloadMessages();
   void poll();
+  void longPoll();
   boolean isWorking();
 
 }

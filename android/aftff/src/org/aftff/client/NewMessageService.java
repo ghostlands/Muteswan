@@ -2,6 +2,7 @@ package org.aftff.client;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -19,6 +20,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -31,7 +33,7 @@ public class NewMessageService extends Service {
     Intent notificationIntent;
 	PendingIntent contentIntent;
 	NotificationManager mNM;
-	HashMap notifyIds;
+	HashMap<String,Integer> notifyIds;
 	int notifyIdLast;
 	final int PERSISTANT_NOTIFICATION = 220;
 	private boolean backgroundMessageCheck;
@@ -40,6 +42,8 @@ public class NewMessageService extends Service {
 	private SharedPreferences defPrefs;
 	private boolean justLaunched = false;
 	protected boolean isWorking;
+	private HashMap<Ring,Thread> pollList = new HashMap<Ring,Thread>();
+	private boolean started = false;
     
 	
 
@@ -48,11 +52,13 @@ public class NewMessageService extends Service {
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
+		Log.v("AftffService", "onStart called.");
 		start();
 	}
 	
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		
+		Log.v("AftffService", "onStartCommand called.");
         //return START_STICKY;START_STICKY_COMPATIBILITY
 		start();
 		return 1;
@@ -71,14 +77,14 @@ public class NewMessageService extends Service {
 		int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
 		
 		AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
+		alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
 		
 		
 		
 		notificationIntent = new Intent(this, aftff.class);
 	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		notifyIds = new HashMap();
+		notifyIds = new HashMap<String,Integer>();
 		notifyIdLast = 0;
 		
 		
@@ -120,12 +126,26 @@ public class NewMessageService extends Service {
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
 		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
-		if (justLaunched == true) {
-			justLaunched = false;
-			return;
-		}
+		//if (justLaunched == true) {
+		//	justLaunched = false;
+		//	return;
+		//}
 		
-		//poll();
+		if (started  == false) {
+		
+		   pollList.clear();
+		   Log.v("AftffService", "Starting up, we are: " + Thread.currentThread().getId());
+		   RingStore rs = new RingStore(getApplicationContext(),true);
+		   for (Ring r : rs) {
+			  Log.v("AftffService", "Ring " + r.getShortname() + " registered.");
+			  registerLongpoll(r);
+		  }
+		  runLongpoll();
+		  started = true;
+		} else {
+			Log.v("AftffService", "Start flag is true, running runLongpoll.");
+			runLongpoll();
+		}
 	}
 
 	public void pollForNewMessages() {
@@ -144,10 +164,9 @@ public class NewMessageService extends Service {
 				
 				
 				RingStore store = new RingStore(getApplicationContext(),true);
-				
 				for (Ring r : store) {
 					
-					Integer lastIndex = r.getLastMessage();
+					Integer lastIndex = r.getLastMsgId();
 					Integer curIndex = r.getMsgIndex();
 					Integer diff = curIndex - lastIndex;
 					
@@ -215,69 +234,88 @@ public class NewMessageService extends Service {
 				
 			}
 		
-			private void showNotification(Ring r, CharSequence title, CharSequence content) {
-				// TODO Auto-generated method stub
-				long when = System.currentTimeMillis();
-				int icon = R.drawable.icon;
-				Notification notify = new Notification(icon,title,when);
-				
-				
-				
-				
-				
-				if (content == null)
-					return;
-				
-				
-				Intent msgIntent = new Intent(getApplicationContext(), MsgList.class);
-				msgIntent.putExtra("ring", r.getFullText());
-				PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
-				
-				notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
-				mNM.notify((Integer) notifyIds.get(r.getFullText()), notify);
-			}
+			
 			
 		}.start(); 
 		
 	}
 	
-	
-	private void getLastMessageAll() {
-		RingStore rs = new RingStore(getApplicationContext(), true);
-		for (final Ring r : rs) {
-			//new Thread() {
-				//public void run() {
-					Integer lastMessage = r.getMsgIndex();
-					r.updateLastMessage(lastMessage);
-				//}
-			//}.start();
-			
-			Log.v("AftffService", "Downloaded messages index for " + r.getShortname());
-		}
+	private void showNotification(Ring r, CharSequence title, CharSequence content) {
+		// TODO Auto-generated method stub
+		long when = System.currentTimeMillis();
+		int icon = R.drawable.icon;
+		Notification notify = new Notification(icon,title,when);
+		
+		
+		
+		
+		
+		if (content == null)
+			return;
+		
+		
+		Intent msgIntent = new Intent(getApplicationContext(), MsgList.class);
+		msgIntent.putExtra("ring", r.getFullText());
+		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
+		
+		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
+		mNM.notify((Integer) notifyIds.get(r.getFullText()), notify);
 	}
 	
-	private void downloadMessagesAll() {
-		RingStore store = new RingStore(getApplicationContext(),true);
+	
+	private void registerLongpoll(Ring ring) {
+		if (pollList.containsKey(ring))
+			return;
+		pollList.put(ring,null);
+	}
+
+	
+	private void runLongpoll() {
 		
-		for (final Ring r : store) {
-			
-			//new Thread() {
-				//public void run() {
-			
-					Integer lastIndex = r.getLastMessage();
-					if (lastIndex == null || lastIndex == 0) {
-						Log.v("AftffService", "lastIndex is null or 0");
-						return;
+		
+		 Log.v("AftffService","pollList size " + pollList.size());
+		 for (final Ring ring : pollList.keySet()) {
+			    Log.v("AftffService", "Starting poll of " + ring.getShortname());
+				notifyIds.put(ring.getFullText(), notifyIdLast++);
+				
+			 if (pollList.get(ring) == null) {
+				
+				final Integer startLastId = ring.getLastMsgId();
+
+			    Thread nThread = new Thread() {
+			    	
+			    // Some explanation needed here unfortunately. This is rather complex
+			    // and annoying so here is a general outline of this algorithm:
+			    // 1. Get the last message id from tor and start polling on
+			    //    on the next id (id++)
+			    // 2. Continue to longpoll and update last id as messages come in
+			    // 3. After 4 successful polls, get a message index. If we are
+			    //    not keeping up the messages (lastId != new message index)
+			    //    then call downloadMessages and grab the latest as needed.
+			    // 4. Continue polling
+				 public void run() {
+				    	Log.v("AftffService","THREAD RUNNING: " + ring.getShortname());
+
+					 Integer lastId = startLastId;
+					 Log.v("AftffService", "Polling for " + ring.getShortname() + " at thread " + Thread.currentThread().getId());
+			        //Integer lastId = ring.getMsgIndex();
+			        //ring.updateLastMessage(lastId);
+					if (lastId == null || lastId == 0) {
+						lastId = ring.getMsgIndex();
 					}
-					
-					Log.v("AftffService", "lastIndex is " + lastIndex);
-					MSG: for (Integer i=lastIndex; i>lastIndex - numMsgDownload; i--) {
-						if (i == 0) 
-							break MSG;
-						
+			        int count = 0;
+			        if (lastId == null) {
+			        	Log.v("AftffService", "lastId is null");
+			        } else {
+			        	Log.v("AftffService", ring.getShortname() + " has lastId " + lastId);
+			        }
+			        while (longpollForNewMessage(ring,++lastId)) {
+			        	ring.updateLastMessage(lastId);
+			        	ring.saveLastMessage();
+			        	CharSequence notifTitle = "New message in " + ring.getShortname();
+			        	CharSequence notifText = "";
 						try {
-							r.getMsg(i.toString());
-							Log.v("AftffService", "(downloadMessages) Downloaded msg " + i.toString());
+							notifText = ring.getMsg(lastId.toString()).getMsg();
 						} catch (ClientProtocolException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -285,14 +323,115 @@ public class NewMessageService extends Service {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
-					
-					
+			        	showNotification(ring,notifTitle,notifText);
+			        	count++;
+			        	
+			        	if (count == 4) {
+			        		Log.v("AftffService", "Loop count of 4 reached for " + ring.getShortname());
+			        		count = 0;
+			        		int nLastId = ring.getMsgIndex();
+			        		if (lastId != nLastId) {
+			        			Log.v("AftffService", "Running downloadMessages() for ring " + ring.getShortname());
+			        			ring.updateLastMessage(nLastId);
+			        			ring.saveLastMessage();
+			        			downloadMessages(ring);
+			        			lastId = nLastId;
+			        		}
+			        	}
+			        	
+			        }
+			        //ring.updateLastMessage(lastId);
+			        //longpollForNewMessage(ring,++lastId);
+				 }
+				};
+				
+				
+				pollList.put(ring, nThread);
+				nThread.start();
+			} else if ((pollList.get(ring).getState() == Thread.State.TERMINATED)) {
+				 pollList.get(ring).start();
+			} else {
+				 Log.v("AftffService", "Ring " + ring.getShortname() + " skipped because already polling.");
+			}
+		  }
+		
+	
+	}
+	
+	
+	private boolean longpollForNewMessage(final Ring ring, Integer id) {
+		if (ring == null) {
+			Log.v("AtffService", "WTF, ring is null.");
+		}
+		Log.v("AftffService","Longpoll for " + ring.getShortname());
+		AftffMessage msg = ring.getMsgLongpoll(id);
+		if (msg != null) {
+		  Log.v("AftffService", "Received msg from long poll: " + msg.getMsg());
+		  return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private void getLastMessageAll() {
+		final RingStore rs = new RingStore(getApplicationContext(), true);
+
+		new Thread() {
+			public void run() {
+				for (final Ring r : rs) {
+			//new Thread() {
+				//public void run() {
+					Integer lastMessage = r.getMsgIndex();
+					r.updateLastMessage(lastMessage);
 				//}
 			//}.start();
 			
-			
+				Log.v("AftffService", "Downloaded messages index for " + r.getShortname());
+				}
+				isWorking = false;
+		 }
+		}.start();
+	}
+	
+	private void downloadMessages(Ring ring) {
+		Integer lastIndex = ring.getLastMsgId();
+		if (lastIndex == null || lastIndex == 0) {
+			Log.v("AftffService", "lastIndex is null or 0");
+			return;
 		}
+		
+		Log.v("AftffService", "lastIndex is " + lastIndex);
+		MSG: for (Integer i=lastIndex; i>lastIndex - numMsgDownload; i--) {
+			if (i == 0)
+				break MSG;
+			
+			try {
+				ring.getMsg(i.toString());
+				Log.v("AftffService", "(downloadMessages) Downloaded msg " + i.toString());
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	private void downloadMessagesAll() {
+		final RingStore store = new RingStore(getApplicationContext(),true);
+		
+			
+		Thread nthread = new Thread() {
+			public void run() {
+				for (final Ring r : store) {
+					downloadMessages(r);
+				}
+			}
+		};
+		
+		nthread.start();
 	}
 		
 	private final IMessageService.Stub binder = new IMessageService.Stub() {
@@ -302,7 +441,6 @@ public class NewMessageService extends Service {
 			
 			isWorking = true;
 			getLastMessageAll();
-			isWorking = false;
 		}
 		
 		public void downloadMessages() {
@@ -310,19 +448,39 @@ public class NewMessageService extends Service {
 				return;
 			isWorking = true;
 			downloadMessagesAll();
-			isWorking = false;
 		}
 		
 		public void poll() {
 			isWorking = true;
 			pollForNewMessages();
-			isWorking = false;
 		}
 		
 		public boolean isWorking() {
 			return isWorking;
 		}
 
+		public void longPoll() {
+			Log.v("AftffService", "Longpoll() called.");
+			
+			//if (isWorking)
+			//	return;
+			
+			
+			//isWorking = true;
+			//RingStore rs = new RingStore(getApplicationContext(),true);
+			//for (Ring r : rs) {
+			//	Log.v("AftffService", "Ring " + r.getShortname() + " registered.");
+			//	registerLongpoll(r);
+			//}
+			
+		
+			//new Thread() {
+			//	 public void run() {
+					  runLongpoll();
+			//	 }
+			//}.start();
+			isWorking = false;
+		}
 		
 		
 	};

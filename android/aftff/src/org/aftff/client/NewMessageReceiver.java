@@ -6,30 +6,79 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
+import android.util.Log;
 
 public class NewMessageReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context ctx, Intent intent) {
-		// TODO Auto-generated method stub
+		Intent svc = new Intent(ctx,NewMessageService.class);
 		
-        Intent svc = new Intent(ctx, NewMessageService.class);
-        //ctx.stopService(svc);
-        
-        
-        
-        //String nullExc = null;
-        //nullExc.length();
-       ctx.startService(svc);
-       
-       IMessageService msgService = (IMessageService) peekService(ctx,svc);
-       try {
-		msgService.poll();
+    IMessageService msgService = (IMessageService) peekService(ctx,svc);
+     
+   	Log.v("AftffReceiver", "Received alarm, trying to connect to service.");
+   	
+   	int count = 0;
+   	while (msgService == null) {
+   		try {
+				Thread.currentThread().sleep(200);
+				count++;
+				if (count > 3)
+					break;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+   	}	
+	
+   	if (msgService == null) {
+   	 Log.v("AftffReceiver", "Service not running, starting.");
+	 ctx.startService(svc);
+   	} else {
+   	 Log.v("AftffReceiver", "Service already running.");
+   	 try {
+		msgService.longPoll();
 	} catch (RemoteException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
-       
+   	}
+   	
+   	
+
+//	   Intent svc = new Intent(ctx, NewMessageService.class);
+//       
+//       IMessageService msgService = (IMessageService) peekService(ctx,svc);
+//       try {
+//    	Log.v("AftffReceiver", "Received alarm, trying to connect to service.");
+//    	
+//    	int count = 0;
+//    	while (msgService == null) {
+//    		try {
+//				Thread.currentThread().sleep(200);
+//				count++;
+//				if (count > 3)
+//					break;
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//    	}
+//    	
+//    	if (msgService != null) {
+//          Log.v("AftffReceiver", "Msgserver is not null, continuing.");
+//		  msgService.longPoll();
+//    	} else {
+//    		Log.v("AftffReceiver", "Msgserver is null, starting service.");
+//    	    ctx.startService(svc);
+//    	    msgService = (IMessageService) peekService(ctx,svc);
+//    	    msgService.longpoll()
+//    	}
+//	} catch (RemoteException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
+//       
        
         //ctx.bindService(service, conn, flags)
         

@@ -138,22 +138,23 @@ public class aftff extends Activity implements Runnable {
 	
 	
 	private void fetchLatestMessageData() {
-		try {
+		//try {
 			Log.v("Aftff", "Running newMsgService updateMessages now");
 			
-			newMsgService.updateLastMessage();
-			newMsgService.downloadMessages();
-			while (newMsgService.isWorking()) {
-				Thread.currentThread().sleep(500);
-			}
+			//newMsgService.longpoll();
+			//newMsgService.updateLastMessage();
+			//newMsgService.downloadMessages();
+			//while (newMsgService.isWorking()) {
+			//	Thread.currentThread().sleep(500);
+			//}
 			stopTitleProgressBar.sendEmptyMessage(0);
-		} catch (RemoteException e) {
+		//} catch (RemoteException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+			//e.printStackTrace();
+		//} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			//e.printStackTrace();
+		//}
 	}
 	
 	private void primeTorOld() {
@@ -263,8 +264,7 @@ public class aftff extends Activity implements Runnable {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-        
-        startService(new Intent(this,NewMessageService.class));
+        //startService(new Intent(this,NewMessageService.class));
         
         // Check tor status
         Intent torServiceIntent = new Intent();
@@ -274,7 +274,7 @@ public class aftff extends Activity implements Runnable {
         
         Intent serviceIntent = new Intent(this,NewMessageService.class);
         boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
-       
+        startService(serviceIntent);
         
         // indicate we were just created
         justCreated = true;
@@ -292,14 +292,22 @@ public class aftff extends Activity implements Runnable {
         final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
-       /* final Button shareButton = (Button) findViewById(R.id.mShare);
+        final Button shareButton = (Button) findViewById(R.id.mShare);
         shareButton.setOnClickListener(mShare);
         
+        final Button createIdentityButton = (Button) findViewById(R.id.mCreateIdentity);
+        createIdentityButton.setOnClickListener(mCreateIdentity);
+        
+        final Button identitiesButton = (Button) findViewById(R.id.mIdentities);
+        identitiesButton.setOnClickListener(mIdentities);
+        
+        /*
         final Button readMsgsButton = (Button) findViewById(R.id.mReadMsgs);
         readMsgsButton.setOnClickListener(mReadMsgs);
+        */
         
         final Button writeMsgButton = (Button) findViewById(R.id.mWriteMsg);
-        writeMsgButton.setOnClickListener(mWriteMsg); */
+        writeMsgButton.setOnClickListener(mWriteMsg); 
         
         final Button mManageRingsButton = (Button) findViewById(R.id.mManageRings);
         mManageRingsButton.setOnClickListener(mManageRings); 
@@ -335,9 +343,9 @@ public class aftff extends Activity implements Runnable {
         
      
         
-        menu.add("Create Identity");
-        menu.add("List Identities");
-    
+        //menu.add("Create Identity");
+        //menu.add("List Identities");
+        //menu.add("Create Ring");
         
         menu.add("Options");
        
@@ -348,16 +356,16 @@ public class aftff extends Activity implements Runnable {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
     	
-		if (item.toString().equals("Create Ring")) {
-			startActivity(new Intent(this, CreateRing.class));
-			return true;
-		} else if (item.toString().equals("List Identities")) {
-			startActivity(new Intent(this,IdentityList.class));
-			return true;
-		} else if (item.toString().equals("Create Identity")) {
-			startActivity(new Intent(this,GenerateIdentity.class));
-			return true;
-		} else if (item.toString().equals("Options")) {
+		//if (item.toString().equals("Create Ring")) {
+		//	startActivity(new Intent(this, CreateRing.class));
+		//	return true;
+		//} else if (item.toString().equals("List Identities")) {
+		//	startActivity(new Intent(this,IdentityList.class));
+		//	return true;
+		//} else if (item.toString().equals("Create Identity")) {
+		//	startActivity(new Intent(this,GenerateIdentity.class));
+		//	return true;
+		if (item.toString().equals("Options")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}
@@ -369,10 +377,6 @@ public class aftff extends Activity implements Runnable {
     
     
     
-    
-    private void showRingOptions(Ring ring) {
-    	
-    }
     
     private void selectMsg(Ring r) {
     	Intent intent = new Intent(this,MsgList.class);
@@ -405,7 +409,15 @@ public class aftff extends Activity implements Runnable {
     
   
     
+    private void createIdentity() {
+    	startActivity(new Intent(this,GenerateIdentity.class));
+    	return;
+    }
     
+    private void showIdentities() {
+    	startActivity(new Intent(this,IdentityList.class));
+    	return;
+    }
     
     public Button.OnClickListener mScan = new Button.OnClickListener() {
     	    public void onClick(View v) {
@@ -453,6 +465,18 @@ public class aftff extends Activity implements Runnable {
     public Button.OnClickListener mCreateRing = new Button.OnClickListener() {
 	    public void onClick(View v) {
 	        createRing();
+	 }
+    };
+    
+    public Button.OnClickListener mCreateIdentity = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	    	createIdentity();
+	 }
+    };
+    
+    public Button.OnClickListener mIdentities = new Button.OnClickListener() {
+	    public void onClick(View v) {
+	        showIdentities();
 	 }
     };
     
