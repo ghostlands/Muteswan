@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView  
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    > 
+    
+    
+    <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
     android:text="aftff"
@@ -12,6 +14,17 @@
     android:gravity="center"
     
     />
+    
+    
+    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:stretchColumns="0,1"
+    
+    >
+    
+
     
     
     
@@ -26,36 +39,78 @@
          android:layout_height="wrap_content" 
          /> -->
     
-    <Button android:id="@+id/mScan" 
-    		android:text="Add Ring" 
-    		android:layout_width="fill_parent" 
-    		android:layout_height="80sp" />
-     <Button android:id="@+id/mLatestMessages" 
-    		android:text="Messages" 
-    		android:layout_width="fill_parent" 
-    		android:layout_height="80sp" />
-    
-    <!-- 
- 	<Button android:id="@+id/mShare"
- 			android:text="Share Ring" 
+    <TableRow>
+      
+       <Button android:id="@+id/mLatestMessages"
+    		android:text="Messages"
+    		android:textSize="14sp"
+    		android:layout_width="fill_parent"
+    		android:layout_height="fill_parent" />
+       <Button android:id="@+id/mWriteMsg"
+    		android:textSize="14sp"
+ 			android:text="Write Message" 
  			android:layout_width="fill_parent" 
- 			android:layout_height="80sp" />
+ 			android:layout_height="fill_parent" /> -->
+    </TableRow>
+   
+     
+ 	
+ 			<!--  
  	<Button android:id="@+id/mReadMsgs"
  			android:text="Read Messages" 
  			android:layout_width="fill_parent" 
  			android:layout_height="80sp" />
- 	<Button android:id="@+id/mWriteMsg"
- 			android:text="Write Message" 
+ 	-->
+ 	
+ 	<TableRow>
+ 	
+ 	   
+ 	    <Button android:id="@+id/mScan" 
+    		android:text="Add Ring" 
+    		android:textSize="14sp"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content" />
+    	<Button android:id="@+id/mShare"
+ 			android:text="Share Ring" 
+ 			android:textSize="14sp"
  			android:layout_width="fill_parent" 
- 			android:layout_height="80sp" /> -->
- 	<Button android:id="@+id/mManageRings"
- 			android:text="Rings"
- 			android:layout_width="fill_parent" 
- 			android:layout_height="80sp" />
- 			
- 	<Button android:id="@+id/mCreateRing"
- 			android:text="Create Ring" 
- 			android:layout_width="fill_parent" 
- 			android:layout_height="80sp" />
+ 			android:layout_height="fill_parent"
+ 			 />
+    	
 
-</LinearLayout>
+    </TableRow>
+    
+    <TableRow>
+    
+    	  
+ 	 	  <Button android:id="@+id/mCreateRing"
+ 			android:text="Create Ring" 
+ 			android:textSize="14sp"
+ 			android:layout_width="wrap_content" 
+ 			android:layout_height="wrap_content" /> 
+ 		  <Button android:id="@+id/mManageRings"
+ 			android:text="Rings"
+    		android:textSize="14sp"
+ 			android:layout_width="wrap_content" 
+ 			android:layout_height="wrap_content" />
+ 			
+    </TableRow>
+    
+    <TableRow>
+    
+    	  <Button android:id="@+id/mCreateIdentity"
+ 			android:text="Create Identity"
+ 			android:textSize="14sp"
+ 			android:layout_width="fill_parent"
+ 			android:layout_height="fill_parent"
+ 			 />
+ 			 
+ 	 	  <Button android:id="@+id/mIdentities"
+ 			android:text="Identities"
+ 			android:textSize="14sp"
+ 			android:layout_width="wrap_content"
+ 			android:layout_height="wrap_content"/> 
+    </TableRow>
+    
+ </TableLayout>
+</LinearLayout> 

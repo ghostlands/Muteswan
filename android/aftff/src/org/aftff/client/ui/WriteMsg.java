@@ -58,6 +58,12 @@ public class WriteMsg extends Activity implements Runnable {
 	       initialText = extras.getString("initialText");
 	       
 	       setContentView(R.layout.writemsg);
+
+	       
+	       TextView prompt = (TextView) findViewById(R.id.android_writemsgPrompt);
+	       if (ring != null && prompt != null)
+	         prompt.setText("Post to " + ring.getShortname());
+	       
 	       
 	       IdentityStore idStore = new IdentityStore(getApplicationContext());
 	       identities = idStore.asArray(true);

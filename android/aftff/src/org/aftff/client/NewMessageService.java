@@ -345,11 +345,11 @@ public class NewMessageService extends Service {
 				 }
 				};
 				
-				
 				pollList.put(ring, nThread);
 				nThread.start();
-			} else if ((pollList.get(ring).getState() == Thread.State.TERMINATED)) {
-				 pollList.get(ring).start();
+			} else if (!(pollList.get(ring).isAlive())) {
+				 Log.v("AftffService","Hey, looks like not alive.");
+				 pollList.get(ring).run();
 			} else {
 				 Log.v("AftffService", "Ring " + ring.getShortname() + " skipped because already polling.");
 			}

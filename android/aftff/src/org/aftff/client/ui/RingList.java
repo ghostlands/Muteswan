@@ -39,6 +39,7 @@ public class RingList extends ListActivity {
 	public Integer action;
 	Bundle extra;
 	public Ring[] ringList;
+	private String initialText;
 
 	
 	private RingStore store;
@@ -50,6 +51,7 @@ public class RingList extends ListActivity {
 
         extra = getIntent().getExtras();
         action = extra.getInt("action");
+        initialText = extra.getString("initialText");
         
     	store = new RingStore(this,true);
 
@@ -70,7 +72,7 @@ public class RingList extends ListActivity {
         
     }
     
-    // should be part of store
+    //FIXME: should be part of store
     private Ring[] getArray() {
     	
     	Ring[] ringList = new Ring[store.size()];
@@ -109,6 +111,7 @@ public class RingList extends ListActivity {
 	
 		
 		intent.putExtra("ring", ringList[position].getFullText());
+		intent.putExtra("initialText", initialText);
 		startActivity(intent);
 
 	}

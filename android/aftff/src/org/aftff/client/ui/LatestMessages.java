@@ -27,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -55,7 +56,7 @@ public class LatestMessages extends ListActivity {
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
        
 
         //extra = getIntent().getExtras();
@@ -65,7 +66,12 @@ public class LatestMessages extends ListActivity {
 
         setContentView(R.layout.latestmessages);
         
-       
+        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
+		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
+		postButton.setOnClickListener(postClicked);
+		
+        Log.v("LatestMessages", "Just set custom title bar.");
+        
         store = new RingStore(this,true);
 		ringMap = store.asHashMap();
 		idStore = new IdentityStore(this);
@@ -77,7 +83,7 @@ public class LatestMessages extends ListActivity {
 
         setListAdapter(listAdapter);
           
-       
+        
         
         
     }
@@ -127,7 +133,17 @@ public class LatestMessages extends ListActivity {
     		showRing((TextView) v);
     	}
     };
+    
+    
+   
 	
+    
+    
+    
+	public HashMap<View, Integer> replyButtons = new HashMap<View,Integer>();
+	public HashMap<View, Integer> repostButtons = new HashMap<View,Integer>();
+    
+    
     private void listItemClicked(View v) {
     	Log.v("LatestMessages","List item clicked.");
     }
@@ -142,11 +158,47 @@ public class LatestMessages extends ListActivity {
     	}
     }
     
+    public View.OnClickListener postClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent(getApplicationContext(),RingList.class);
+    		intent.putExtra("action",RingList.WRITE);
+    		startActivity(intent);
+    	}
+    };
+    
     
 	public class LatestMessagesListAdapter extends BaseAdapter {
 
 		
 		private Context context;
+	
+		
+		 public View.OnClickListener replyClicked = new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		if (replyButtons.get(v) == null) {
+		    		  Log.v("LatestMessages", "map is null");
+		    		  return;
+		    		}
+		    		AftffMessage msg = messageList.get(replyButtons.get(v));
+		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+		    		intent.putExtra("ring",msg.getRing().getFullText());
+		    		intent.putExtra("initialText","@" + msg.getId() + "\n");
+		    		startActivity(intent);
+		    	}
+		 };
+		    
+		    public View.OnClickListener repostClicked = new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		AftffMessage msg = messageList.get(repostButtons.get(v));
+		    		Intent intent = new Intent(getApplicationContext(),RingList.class);
+		    		intent.putExtra("ring",msg.getRing().getFullText());
+		    		intent.putExtra("initialText",msg.getMsg());
+		    		intent.putExtra("action",RingList.WRITE);
+		    		startActivity(intent);
+		    	}
+		    };
+		
+		    
 		
 		public LatestMessagesListAdapter(Context context) {
 			this.context = context;
@@ -179,10 +231,18 @@ public class LatestMessages extends ListActivity {
       		  TextView txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
       		  TextView txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
       		  TextView txtSigs = (TextView) layout.findViewById(R.id.android_latestmessagesSignatures);
-      		  ImageButton plusButton = (ImageButton) layout.findViewById(R.id.latestmessagesInfoButton);
-      		  LinearLayout mainLayout = (LinearLayout) layout.findViewById(R.id.latestmessagesMainLayout);
-      		
+      		  //ImageButton plusButton = (ImageButton) layout.findViewById(R.id.latestmessagesInfoButton);
+      		  //LinearLayout mainLayout = (LinearLayout) layout.findViewById(R.id.latestmessagesMainLayout);
       		  
+      		  TextView txtReply = (TextView) layout.findViewById(R.id.android_latestmessagesReplyButton);
+      		  TextView txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
+
+
+      		  txtReply.setOnClickListener(replyClicked);
+      		  txtRepost.setOnClickListener(repostClicked);
+              replyButtons.put(txtReply,position);
+              repostButtons.put(txtRepost,position);
+
       		  
       		  // not used and painful
       		  //int totalWidth = layout.getLayoutParams().width;
@@ -227,9 +287,8 @@ public class LatestMessages extends ListActivity {
                 }
             });
             AlertDialog alert = builder.create();
-    		moreButtons.put(plusButton,alert);
+    		//moreButtons.put(plusButton,alert);
 
-            //alert.show();
       		  
       		  
       		  
@@ -237,7 +296,13 @@ public class LatestMessages extends ListActivity {
       		  txtRing.setClickable(true);
       		  txtRing.setOnClickListener(showRing);
       		  txtDate.setText(msg.getDate());
-      		  txtMessage.setText(msg.getMsg());
+      		  String white = "";
+      		  // HAH WTF! fix this, please FIXME
+      		  for (int i=0; i<msg.getRing().getShortname().length(); i++) {
+      			  white = white + "  ";
+      		  }
+      		  
+      		  txtMessage.setText(white + " " + msg.getMsg());
       		  
       		  String sigDataStr = "-- \n";
       		  LinkedList<Identity> list = msg.getValidSigs();
@@ -255,11 +320,11 @@ public class LatestMessages extends ListActivity {
       		   
       		  }
       		  
-			 plusButton.setImageResource(R.drawable.more);
-			 plusButton.setClickable(true);
+			// plusButton.setImageResource(R.drawable.more);
+			// plusButton.setClickable(true);
 			 layout.setClickable(true);
 			 layout.setOnClickListener(listItemClicked);
-      		 plusButton.setOnClickListener(buttonClicked);
+      		// plusButton.setOnClickListener(buttonClicked);
 			 
       		 
       		 //layout.setMinimumHeight(320);
