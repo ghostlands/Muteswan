@@ -7,8 +7,6 @@
     android:layout_height="wrap_content"
     android:paddingRight="5px"
     android:gravity="left"
-    android:background="#ffffff"
-    android:textColor="#000000"
 
     
     >
@@ -37,6 +35,7 @@
     android:text="Ring"
     android:textColor="#0011ee"
     android:clickable="true"
+    android:typeface="monospace"
     />
      
     

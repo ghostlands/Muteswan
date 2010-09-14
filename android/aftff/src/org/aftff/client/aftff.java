@@ -49,6 +49,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.TextView;
 
 
 
@@ -200,7 +201,7 @@ public class aftff extends Activity implements Runnable {
         	if (keyStr == null)
         		continue;
         	Ring r;
-        	r = new Ring(getApplicationContext(),rs.getOpenHelper(),keyStr);
+        	r = new Ring(getApplicationContext(),keyStr);
         	if (r == null)
         		continue;
         	rs.updateStore(keyStr);
@@ -236,8 +237,8 @@ public class aftff extends Activity implements Runnable {
 	 private Handler stopTitleProgressBar = new Handler() {
 		 @Override
 		 public void handleMessage(Message msg) {
-           	    setTitle("aftff");
-		        setProgressBarIndeterminateVisibility(false);
+           	    //setTitle("aftff");
+		        //setProgressBarIndeterminateVisibility(false);
 		 }
 	 };
 	 
@@ -262,7 +263,8 @@ public class aftff extends Activity implements Runnable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        //requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
         //startService(new Intent(this,NewMessageService.class));
         
@@ -282,38 +284,45 @@ public class aftff extends Activity implements Runnable {
 
 
         setContentView(R.layout.main);
-  	    setTitle("aftff (checking for new messages)");
-        setProgressBarIndeterminateVisibility(true);
+        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
+
+  	    //setTitle("aftff (checking for new messages)");
+        //setProgressBarIndeterminateVisibility(true);
 
         
-        final Button button = (Button) findViewById(R.id.mScan);
-        button.setOnClickListener(mScan);
+        //final Button button = (Button) findViewById(R.id.mScan);
+        //button.setOnClickListener(mScan);
         
         final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
-        final Button shareButton = (Button) findViewById(R.id.mShare);
-        shareButton.setOnClickListener(mShare);
+        TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
+		postButton.setOnClickListener(postClicked);
         
-        final Button createIdentityButton = (Button) findViewById(R.id.mCreateIdentity);
-        createIdentityButton.setOnClickListener(mCreateIdentity);
+       // final Button shareButton = (Button) findViewById(R.id.mShare);
+       // shareButton.setOnClickListener(mShare);
         
-        final Button identitiesButton = (Button) findViewById(R.id.mIdentities);
-        identitiesButton.setOnClickListener(mIdentities);
+       // final Button createIdentityButton = (Button) findViewById(R.id.mCreateIdentity);
+       // createIdentityButton.setOnClickListener(mCreateIdentity);
+        
+       // final Button identitiesButton = (Button) findViewById(R.id.mIdentities);
+       // identitiesButton.setOnClickListener(mIdentities);
         
         /*
         final Button readMsgsButton = (Button) findViewById(R.id.mReadMsgs);
         readMsgsButton.setOnClickListener(mReadMsgs);
         */
         
-        final Button writeMsgButton = (Button) findViewById(R.id.mWriteMsg);
-        writeMsgButton.setOnClickListener(mWriteMsg); 
+       // final Button writeMsgButton = (Button) findViewById(R.id.mWriteMsg);
+       // writeMsgButton.setOnClickListener(mWriteMsg); 
         
         final Button mManageRingsButton = (Button) findViewById(R.id.mManageRings);
         mManageRingsButton.setOnClickListener(mManageRings); 
+      
         
-        final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
-        createRingButton.setOnClickListener(mCreateRing);
+        
+       // final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
+       // createRingButton.setOnClickListener(mCreateRing);
         
         if (!isBoundTor) {
         	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
@@ -331,6 +340,13 @@ public class aftff extends Activity implements Runnable {
        
     }
     
+    public View.OnClickListener postClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent(getApplicationContext(),RingList.class);
+    		intent.putExtra("action",RingList.WRITE);
+    		startActivity(intent);
+    	}
+    };
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -379,7 +395,7 @@ public class aftff extends Activity implements Runnable {
     
     
     private void selectMsg(Ring r) {
-    	Intent intent = new Intent(this,MsgList.class);
+    	Intent intent = new Intent(this,LatestMessages.class);
     	intent.putExtra("ring",r.getFullText());
     	return;
     }
@@ -479,57 +495,6 @@ public class aftff extends Activity implements Runnable {
 	        showIdentities();
 	 }
     };
-    
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    	  if (requestCode == 0) {
-    	    if (resultCode == RESULT_OK) {
-    	    	    //Handle successful scan
-    	            String contents = intent.getStringExtra("SCAN_RESULT");
-    	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-    	            
-    	            int atIndex = contents.indexOf("@");
-    	            
-    	            // RING
-    	            if (atIndex != -1) {
-    	            
-      	              RingStore store = new RingStore(getApplicationContext(),true);
-    	              Ring ring = new Ring(getApplicationContext(),store.getOpenHelper(),contents);
-    	              store.updateStore(contents);
-    	               
-    	              //this.activeRing = ring;
-    	              selectMsg(ring);
-    	            
-    	            // IDENTITY
-    	            } else {
-    	            	String[] parts = contents.split(":");
-    	            	Identity identity = new Identity(parts[0],parts[1],parts[2]);
-    	            	IdentityStore idStore = new IdentityStore(getApplicationContext());
-    	            	idStore.addToDb(identity);
-    	            }
-    	            
-    	            
-    	            
-            } else if (resultCode == RESULT_CANCELED) {
-            	//final String testSite = "forest+0df46018575f1656@tckwndlytrphlpyo.onion";
-            	//final String testSite = "2ndset+1522c03e8b9bae5d@tckwndlytrphlpyo.onion";
-            	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
-
-	            RingStore store = new RingStore(getApplicationContext(),true);
-            	Ring ring = new Ring(getApplicationContext(),store.getOpenHelper(),testSite);
- 	            //updateStore(testSite);
-	            store.updateStore(testSite);
-
-            	            	
-            	//this.activeRing = ring;
-            	selectMsg(ring);
-            
-            }
-    	  }
-    }
-
-    
     
     
     

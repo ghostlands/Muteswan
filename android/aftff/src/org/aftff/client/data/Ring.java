@@ -34,13 +34,18 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
 
 public class Ring {
      
-	RingStore.OpenHelper openHelper;
+	Ring.OpenHelper openHelper;
 	
 	final private String key;
 	
@@ -61,7 +66,47 @@ public class Ring {
 	private Integer curLastMsgId = 0;
 
 	private SQLiteDatabase rdb;
-	public Ring(Context context, RingStore.OpenHelper openHelper, String contents) {
+
+	public class OpenHelper extends SQLiteOpenHelper {
+
+		public static final int DATABASE_VERSION = 10;
+		public String databaseName = "aftffdb";
+		public static final String MESSAGESTABLE = "messages";
+		public static final String SIGTABLE = "signatures";
+		public static final String LASTMESSAGES = "lastmessages";
+
+		
+	     
+	      public OpenHelper(Context context, String ringHash) {
+	    	  super(context, ringHash, null, DATABASE_VERSION);
+	    	  databaseName = ringHash;
+		}
+
+		@Override
+	      public void onCreate(SQLiteDatabase db) {
+	         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
+	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
+	         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
+	      }
+
+	      @Override
+	      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
+	         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
+	         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
+	         onCreate(db);
+	      }
+	      
+	   }
+
+
+  
+
+	
+	
+	
+	
+	public Ring(Context context, String contents) {
 		Integer plusIndx = contents.indexOf("+");
 		Integer atIndx = contents.indexOf("@");
 		
@@ -93,16 +138,15 @@ public class Ring {
 		this.keyHash = aftff.genHexHash(key);
 		this.context = context;
 		initHttp();
-		this.openHelper = openHelper;
+		this.openHelper = new Ring.OpenHelper(context, aftff.genHexHash(getFullText()));
 		
 	    aftffHttp = new AftffHttp();
-	    rdb = openHelper.getReadableDatabase();
 	    curLastMsgId = 0;
 		
 		//this.add(newRing);
 	}
 	
-	public Ring(Context context, RingStore.OpenHelper openHelper, String key, String shortname, String server) {
+	public Ring(Context context, String key, String shortname, String server) {
 		super();
 		this.key = key;
 		this.shortname = shortname;
@@ -110,9 +154,8 @@ public class Ring {
 		this.context = context;
 
 		this.keyHash = aftff.genHexHash(key);
-	    this.openHelper = openHelper;
+		this.openHelper = new Ring.OpenHelper(context, aftff.genHexHash(getFullText()));
 	    aftffHttp = new AftffHttp();
-	    rdb = openHelper.getReadableDatabase();
 	    curLastMsgId = 0;
 	}
 	
@@ -531,7 +574,12 @@ public class Ring {
 		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
 		update.bindLong(1, curLastMsgId);
 		update.bindString(2, ringHash);
-		update.executeInsert();
+		if (update.executeInsert() == -1) {
+			SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+			insert.bindString(1,ringHash);
+			insert.bindLong(2, curLastMsgId);
+			insert.executeInsert();
+		}
 		db.close();
 	}
 	

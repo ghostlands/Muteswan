@@ -54,11 +54,10 @@ public class WriteMsg extends Activity implements Runnable {
 
 	       Bundle extras = getIntent().getExtras();
 	       RingStore rs = new RingStore(getApplicationContext());
-	       ring = new Ring(this,rs.getOpenHelper(),extras.getString("ring"));
+	       ring = new Ring(this,extras.getString("ring"));
 	       initialText = extras.getString("initialText");
 	       
 	       setContentView(R.layout.writemsg);
-
 	       
 	       TextView prompt = (TextView) findViewById(R.id.android_writemsgPrompt);
 	       if (ring != null && prompt != null)

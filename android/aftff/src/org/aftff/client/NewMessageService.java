@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import org.aftff.client.data.AftffMessage;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
+import org.aftff.client.ui.LatestMessages;
 import org.aftff.client.ui.MsgList;
 import org.apache.http.client.ClientProtocolException;
 
@@ -254,7 +255,7 @@ public class NewMessageService extends Service {
 			return;
 		
 		
-		Intent msgIntent = new Intent(getApplicationContext(), MsgList.class);
+		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
 		msgIntent.putExtra("ring", r.getFullText());
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
 		
@@ -281,7 +282,9 @@ public class NewMessageService extends Service {
 			 if (pollList.get(ring) == null) {
 				
 				final Integer startLastId = ring.getLastMsgId();
-
+				
+				
+				
 			    Thread nThread = new Thread() {
 			    	
 			    // Some explanation needed here unfortunately. This is rather complex
@@ -296,13 +299,20 @@ public class NewMessageService extends Service {
 				 public void run() {
 				    	Log.v("AftffService","THREAD RUNNING: " + ring.getShortname());
 
-					 Integer lastId = startLastId;
+				    	
+				    	Integer lastId;
+				    	if (startLastId == null || startLastId == 0) {
+							lastId = ring.getMsgIndex() - numMsgDownload;
+							ring.updateLastMessage(lastId);
+						    ring.saveLastMessage();
+						} else {
+							lastId = startLastId;
+						}
+				    	
 					 Log.v("AftffService", "Polling for " + ring.getShortname() + " at thread " + Thread.currentThread().getId());
 			        //Integer lastId = ring.getMsgIndex();
 			        //ring.updateLastMessage(lastId);
-					if (lastId == null || lastId == 0) {
-						lastId = ring.getMsgIndex();
-					}
+					
 			        int count = 0;
 			        if (lastId == null) {
 			        	Log.v("AftffService", "lastId is null");

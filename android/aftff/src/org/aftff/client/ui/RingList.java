@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.aftff.client.R;
 import org.aftff.client.aftff;
 import org.aftff.client.data.AftffMessage;
+import org.aftff.client.data.Identity;
+import org.aftff.client.data.IdentityStore;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
 import org.apache.http.client.ClientProtocolException;
@@ -13,12 +15,15 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -57,8 +62,23 @@ public class RingList extends ListActivity {
 
         setContentView(R.layout.ringlist);
         
+        
         TextView txt = (TextView) findViewById(R.id.android_ringlistprompt);
+        LinearLayout ringlist = (LinearLayout) findViewById(R.id.ringlistButtons);
         txt.setText(actionPrompts[action]);
+        
+        
+        if (action == null || action == ANY) {
+          Button addRing = (Button) findViewById(R.id.android_ringlistAddRing);
+          Button createRing = (Button) findViewById(R.id.android_ringlistCreateRing);
+          addRing.setOnClickListener(addRingListener);
+          createRing.setOnClickListener(createRingListener);
+          ringlist.setVisibility(View.VISIBLE);
+        } else {
+          ringlist.setVisibility(View.GONE);
+
+        }
+
         
         
         ringList = getArray();
@@ -99,7 +119,7 @@ public class RingList extends ListActivity {
 		if (action == WRITE) {
 			intent = new Intent(getApplicationContext(),WriteMsg.class);
 		} else if (action == READ) {
-			intent = new Intent(getApplicationContext(),MsgList.class);
+			intent = new Intent(getApplicationContext(),LatestMessages.class);
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",ringList[position].getFullText());;
@@ -145,6 +165,23 @@ public class RingList extends ListActivity {
 	
 	}
 
+	private Button.OnClickListener addRingListener  = new Button.OnClickListener() {
+        public void onClick( View v ) {
+        	Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+	        startActivityForResult(intent, 0);
+         }
+     };
+	
+     
+     private Button.OnClickListener createRingListener = new Button.OnClickListener() {
+    	 public void onClick(View v) {
+    		 startActivity(new Intent(getApplicationContext(),CreateRing.class));
+    	     return;
+    	 }
+     };
+     
+	
 	private void deleteRing(int position) {
 		RingStore store = new RingStore(getApplicationContext());
 		store.deleteRing(ringList[position]);
@@ -168,8 +205,57 @@ public class RingList extends ListActivity {
 	}
 
 	private void showMsgList(Integer position) {
-		Intent intent = new Intent(getApplicationContext(),MsgList.class);
-		intent.putExtra("ring", ringList[position].getFullText());
+		Intent intent = new Intent(getApplicationContext(),LatestMessages.class);
+		intent.putExtra("ring", aftff.genHexHash(ringList[position].getFullText()));
 		startActivity(intent);
+	}
+
+	@Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    	  if (requestCode == 0) {
+    	    if (resultCode == RESULT_OK) {
+    	    	    //Handle successful scan
+    	            String contents = intent.getStringExtra("SCAN_RESULT");
+    	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+    	            
+    	            int atIndex = contents.indexOf("@");
+    	            
+    	            // RING
+    	            if (atIndex != -1) {
+    	            
+      	              RingStore store = new RingStore(getApplicationContext(),true);
+    	              Ring ring = new Ring(getApplicationContext(),contents);
+    	              store.updateStore(contents);
+    	               
+    	              //this.activeRing = ring;
+    	    //          selectMsg(ring);
+    	            
+    	            // IDENTITY
+    	            } else {
+    	            	String[] parts = contents.split(":");
+    	            	Identity identity = new Identity(parts[0],parts[1],parts[2]);
+    	            	IdentityStore idStore = new IdentityStore(getApplicationContext());
+    	            	idStore.addToDb(identity);
+    	            }
+    	            
+    	            
+    	            
+            } else if (resultCode == RESULT_CANCELED) {
+            	//final String testSite = "forest+0df46018575f1656@tckwndlytrphlpyo.onion";
+            	//final String testSite = "2ndset+1522c03e8b9bae5d@tckwndlytrphlpyo.onion";
+            	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
+
+	            RingStore store = new RingStore(getApplicationContext(),true);
+            	Ring ring = new Ring(getApplicationContext(),testSite);
+ 	            //updateStore(testSite);
+	            store.updateStore(testSite);
+
+            	            	
+            	//this.activeRing = ring;
+           // 	selectMsg(ring);
+            
+            }
+    	  }
+
 	}
 }

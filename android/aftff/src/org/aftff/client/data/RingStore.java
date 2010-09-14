@@ -1,5 +1,9 @@
 package org.aftff.client.data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -13,6 +17,7 @@ import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
@@ -23,9 +28,6 @@ final public class RingStore extends LinkedList<Ring> {
 
 			public static final int DATABASE_VERSION = 10;
 			public static final String DATABASE_NAME = "aftffdb";
-			public static final String MESSAGESTABLE = "messages";
-			public static final String SIGTABLE = "signatures";
-			public static final String LASTMESSAGES = "lastmessages";
 			public static final String RINGTABLE = "rings";
 
 			
@@ -37,18 +39,12 @@ final public class RingStore extends LinkedList<Ring> {
 
 			@Override
 		      public void onCreate(SQLiteDatabase db) {
-		         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
-		         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
-		         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
 		         db.execSQL("CREATE TABLE IF NOT EXISTS " + RINGTABLE + " (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT)");
 		      }
 
 		      @Override
 		      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
-		         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
-		         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
-		         //db.execSQL("DROP TABLE IF EXISTS " + RINGTABLE);
+		         db.execSQL("DROP TABLE IF EXISTS " + RINGTABLE);
 		         onCreate(db);
 		      }
 		      
@@ -168,6 +164,10 @@ final public class RingStore extends LinkedList<Ring> {
 		  delete.bindString(2, ring.getShortname());
 		  delete.bindString(3, ring.getServer());
 		  delete.execute();
+		  
+		  delete = db.compileStatement("DELETE FROM " + Ring.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
+		  delete.bindString(1, aftff.genHexHash(ring.getFullText()));
+		  delete.execute();
 		  db.close();
 	  }
 	
@@ -192,7 +192,7 @@ final public class RingStore extends LinkedList<Ring> {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
-				Ring r = new Ring(context,openHelper,key,shortname,server);
+				Ring r = new Ring(context,key,shortname,server);
 				if (r != null) 
 				   add(r);
 		  }
@@ -204,7 +204,7 @@ final public class RingStore extends LinkedList<Ring> {
 	 
 	  
 	  public void updateStore(String contents) {
-		  Ring ring = new Ring(context,openHelper,contents);
+		  Ring ring = new Ring(context,contents);
 		  for (Ring r : this) {
 			  if (r.getFullText().equals(contents)) {
 				  return;
@@ -214,7 +214,7 @@ final public class RingStore extends LinkedList<Ring> {
 	  }
 	  
 	  public void updateStore(String key, String shortname, String server) {
-		  Ring ring = new Ring(context,openHelper,key,shortname,server);
+		  Ring ring = new Ring(context,key,shortname,server);
 		  for (Ring r : this) {
 			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
 				  return;
@@ -246,6 +246,87 @@ final public class RingStore extends LinkedList<Ring> {
 		return map;
 		  
 	  }
+
+	
 	  
+	private void updateLatestMessages(ArrayList<AftffMessage> msgs, Ring r,
+									Integer amount) {
+		IdentityStore idStore = new IdentityStore(context);
+		Integer lastId = r.getLastMessageId();
+		RING: for (Integer i = lastId; i>lastId-amount; i--) {
+		  AftffMessage msg = r.getMsgFromDb(i.toString());
+
+		  if (msg != null) {
+			Log.v("RingStore", msg.getId() + " loaded.");
+		    msg.verifySignatures(idStore);
+
+			if (msgs.size() == 0) {
+				msgs.add(msg);
+				continue RING;
+			}
+			
+			
+			Integer insertIndex = msgs.size()-1;
+			MSGS: for (int j = msgs.size()-1; j>=0; j--) {
+			//MSGS: for (AftffMessage omsg : msgs) {
+				SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+				AftffMessage omsg = msgs.get(j);
+				
+				try {
+					Date mDate = df.parse(msg.getDate());
+					Date oDate = df.parse(omsg.getDate());
+					if (mDate.after(oDate)) {
+					//	Log.v("RingStore", mDate.toGMTString() + " before " + oDate.toGMTString());
+						insertIndex = j;
+						//break;
+					} else {
+						break;
+					}
+					//} else {
+					//	insertIndex = j;
+					//	break MSGS;
+					//}
+					
+					//int oIdx = msgs.indexOf(omsg);
+					//msgs.add(oIdx+1,msg);
+					//break MSGS;
+					
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			//Log.v("RingStore", "insertIndex is " + insertIndex);
+			msgs.add(insertIndex,msg);
+			  
+			
+		  }
+		}
+		
+		
+	}
+	
+	public ArrayList<AftffMessage> getLatestMessages(String ringHash,
+			Integer last) {
+		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
+		updateLatestMessages(msgs,asHashMap().get(ringHash),last);
+		return(msgs);
+
+    }
+	  
+	public ArrayList<AftffMessage> getLatestMessages(Integer amount) {
+		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
+		IdentityStore idStore = new IdentityStore(context);
+		
+		for (Ring r : this) {
+			updateLatestMessages(msgs,r,amount);
+		}
+		
+		return(msgs);
+	}
+
+	
+	
 
 }

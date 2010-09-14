@@ -45,7 +45,7 @@ import android.widget.LinearLayout.LayoutParams;
 public class LatestMessages extends ListActivity {
 
 	private Bundle extra;
-	private int action;
+	private String ringExtra;
 	private RingStore store;
 	ArrayList<AftffMessage> messageList;
 	HashMap<String,Ring> ringMap;
@@ -59,10 +59,10 @@ public class LatestMessages extends ListActivity {
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
        
 
-        //extra = getIntent().getExtras();
-        //action = extra.getInt("action");
+        extra = getIntent().getExtras();
+        if (extra != null)
+         ringExtra = extra.getString("ring");
         
-    	
 
         setContentView(R.layout.latestmessages);
         
@@ -78,7 +78,7 @@ public class LatestMessages extends ListActivity {
 		
 		messageViewCount = 20;
 		moreButtons = new HashMap<View,AlertDialog>();
-        messageList = loadRecentMessages();
+        messageList = loadRecentMessages(5);
         listAdapter = new LatestMessagesListAdapter(this);
 
         setListAdapter(listAdapter);
@@ -100,7 +100,7 @@ public class LatestMessages extends ListActivity {
 
 		messageViewCount = messageViewCount + 20;
 		//messageList.clear();
-		messageList = loadRecentMessages(messageList, messageViewCount);
+		messageList = loadRecentMessages(messageViewCount);
 		listAdapter.notifyDataSetChanged();
 		
 		return true;
@@ -151,7 +151,7 @@ public class LatestMessages extends ListActivity {
     private void showRing(TextView v) {
     	for (Ring r : store) {
     		if (r.getShortname().equals(v.getText().toString())) {
-    			Intent intent = new Intent(this,MsgList.class);
+    			Intent intent = new Intent(this,LatestMessages.class);
     			intent.putExtra("ring", r.getFullText());
     			startActivity(intent);
     		}
@@ -302,7 +302,7 @@ public class LatestMessages extends ListActivity {
       			  white = white + "  ";
       		  }
       		  
-      		  txtMessage.setText(white + " " + msg.getMsg());
+      		  txtMessage.setText(white + ": " + msg.getMsg());
       		  
       		  String sigDataStr = "-- \n";
       		  LinkedList<Identity> list = msg.getValidSigs();
@@ -335,27 +335,32 @@ public class LatestMessages extends ListActivity {
 	}
 	
 	
-	private ArrayList<AftffMessage> loadRecentMessages() {
-		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
-		loadRecentMessages(msgs,20);
-		return(msgs);
-	}
 	
-	private ArrayList<AftffMessage> loadRecentMessages(ArrayList<AftffMessage> msgs) {
-		loadRecentMessages(msgs,20);
-		return(msgs);
-	}
 
-    private ArrayList<AftffMessage> loadRecentMessages(ArrayList<AftffMessage> msgs, Integer last) {
+    private ArrayList<AftffMessage> loadRecentMessages(Integer last) {
 		
     	
     	
     	
-		SQLiteDatabase db = store.getOpenHelper().getReadableDatabase();
-		Log.v("LatestMessages", "Fetching messages from db...");
+		//SQLiteDatabase db = store.getOpenHelper().getReadableDatabase();
+    	if (ringExtra != null) {
+    		return(store.getLatestMessages(ringExtra,last));
+    	} else {
+    		return(store.getLatestMessages(last));
+    	}
+		
+/*		Log.v("LatestMessages", "Fetching messages from db...");
 		//Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash", "date", "message" }, null, null, null, null, "date desc", "20" );
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash" }, null, null, null, null, "date desc", last.toString());
 		
+		Cursor cursor;
+		if (ringExtra != null) {
+		   //Ring ring = ringMap.get(ringExtra);
+		   cursor = db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash" }, "ringHash = '"+ringExtra+"'", null, null, null, "date desc", last.toString());
+		} else {
+		   cursor = db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash" }, null, null, null, null, "date desc", last.toString());
+		}
+		   
+		   
 		if (msgs.size() != 0) {
 			cursor.moveToPosition(msgs.size());
 		}
@@ -393,7 +398,7 @@ public class LatestMessages extends ListActivity {
 		
 		
 		
-		return msgs;
+		return msgs;*/
 	}
 	
 	

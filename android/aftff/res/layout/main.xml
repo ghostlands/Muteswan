@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     > 
     
     
-    <TextView  
+   <!--   <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
     android:text="aftff"
     android:textSize="24sp"
     android:gravity="center"
     
-    />
+    /> -->
     
     
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
-    android:stretchColumns="0,1"
+    android:padding="15sp"
     
     >
     
@@ -39,28 +39,48 @@
          android:layout_height="wrap_content" 
          /> -->
     
-    <TableRow>
+    <TableRow android:gravity="center">
       
        <Button android:id="@+id/mLatestMessages"
     		android:text="Messages"
     		android:textSize="14sp"
-    		android:layout_width="fill_parent"
-    		android:layout_height="fill_parent" />
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content" 
+    		android:minWidth="120sp"
+ 			android:maxWidth="140sp"
+ 			android:maxHeight="100sp"
+ 			android:minHeight="70sp"
+ 			android:gravity="top|center"
+    		/>
+    	
+    	  <Button android:id="@+id/mManageRings"
+ 			android:text="My Rings"
+    		android:textSize="14sp"
+ 			android:layout_width="wrap_content" 
+ 			android:layout_height="wrap_content"
+ 			android:minWidth="120sp"
+ 			android:maxWidth="140sp"
+ 			android:maxHeight="100sp"
+ 			android:minHeight="70sp"
+ 			android:gravity="top|center"
+           />	
+    		<!--  
        <Button android:id="@+id/mWriteMsg"
     		android:textSize="14sp"
  			android:text="Write Message" 
  			android:layout_width="fill_parent" 
- 			android:layout_height="fill_parent" /> -->
+ 			android:layout_height="fill_parent" /> 
     </TableRow>
+    
    
      
  	
- 			<!--  
+ 			
  	<Button android:id="@+id/mReadMsgs"
  			android:text="Read Messages" 
  			android:layout_width="fill_parent" 
  			android:layout_height="80sp" />
- 	-->
+ 	
  	
  	<TableRow>
  	
@@ -88,11 +108,7 @@
  			android:textSize="14sp"
  			android:layout_width="wrap_content" 
  			android:layout_height="wrap_content" /> 
- 		  <Button android:id="@+id/mManageRings"
- 			android:text="Rings"
-    		android:textSize="14sp"
- 			android:layout_width="wrap_content" 
- 			android:layout_height="wrap_content" />
+ 		
  			
     </TableRow>
     
@@ -109,8 +125,8 @@
  			android:text="Identities"
  			android:textSize="14sp"
  			android:layout_width="wrap_content"
- 			android:layout_height="wrap_content"/> 
-    </TableRow>
+ 			android:layout_height="wrap_content"/>  -->
+    </TableRow> 
     
  </TableLayout>
 </LinearLayout> 

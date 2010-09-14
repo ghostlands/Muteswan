@@ -4,15 +4,41 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+
     >
     
-     <TextView  
-     android:id="@+id/android:ringlistprompt"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Rings"
-    android:gravity="center"
-    />
+    
+    <LinearLayout
+     android:id="@+id/ringlistButtons"
+     android:orientation="horizontal"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:gravity="center"
+    >
+    
+     <Button
+       android:id="@+id/android:ringlistAddRing"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Add a ring"
+     />
+     
+     <Button
+       android:id="@+id/android:ringlistCreateRing"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Create a new ring"
+       android:maxWidth="80sp"
+     />
+    
+    </LinearLayout>
+      <TextView  
+      android:id="@+id/android:ringlistprompt"
+      android:layout_width="fill_parent" 
+      android:layout_height="wrap_content" 
+      android:text="Rings"
+      android:gravity="center"
+      />
     
     
    

@@ -119,7 +119,7 @@ public class MsgList extends ListActivity implements Runnable {
        
        Bundle extras = getIntent().getExtras();
        RingStore rs = new RingStore(getApplicationContext());
-       ring = new Ring(getApplicationContext(),rs.getOpenHelper(),extras.getString("ring"));
+       ring = new Ring(getApplicationContext(),extras.getString("ring"));
        
        SharedPreferences defPref = PreferenceManager.getDefaultSharedPreferences(this);
        boolean alwaysUseLastMessage = defPref.getBoolean("alwaysUseLastMessage", false);
