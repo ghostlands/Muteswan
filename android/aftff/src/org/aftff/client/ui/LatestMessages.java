@@ -70,7 +70,6 @@ public class LatestMessages extends ListActivity {
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
 		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
-		
         
         store = new RingStore(this,true);
 		ringMap = store.asHashMap();
@@ -78,7 +77,7 @@ public class LatestMessages extends ListActivity {
 		
 		messageViewCount = 20;
 		moreButtons = new HashMap<View,AlertDialog>();
-        messageList = loadRecentMessages(messageList,1,5);
+        messageList = loadRecentMessages(messageList,0,5);
         listAdapter = new LatestMessagesListAdapter(this);
 
         setListAdapter(listAdapter);

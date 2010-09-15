@@ -164,11 +164,13 @@ final public class RingStore extends LinkedList<Ring> {
 		  delete.bindString(2, ring.getShortname());
 		  delete.bindString(3, ring.getServer());
 		  delete.execute();
+		  db.close();
 		  
-		  delete = db.compileStatement("DELETE FROM " + Ring.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
+		  SQLiteDatabase rdb = ring.openHelper.getWritableDatabase();
+		  delete = rdb.compileStatement("DELETE FROM " + Ring.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
 		  delete.bindString(1, aftff.genHexHash(ring.getFullText()));
 		  delete.execute();
-		  db.close();
+		  rdb.close();
 	  }
 	
 

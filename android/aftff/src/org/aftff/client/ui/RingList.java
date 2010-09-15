@@ -48,7 +48,19 @@ public class RingList extends ListActivity {
 
 	
 	private RingStore store;
+	private ArrayAdapter<Ring> listAdapter;
 	
+	@Override
+	public void onResume() {
+		super.onResume();
+    	store = new RingStore(this,true);
+        ringList = getArray();
+        listAdapter = new ArrayAdapter<Ring>(this,
+                android.R.layout.simple_list_item_1, ringList);
+          setListAdapter(listAdapter);
+	}
+	
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
@@ -84,7 +96,7 @@ public class RingList extends ListActivity {
         registerForContextMenu(getListView());
 
       
-          ListAdapter listAdapter = new ArrayAdapter<Ring>(this,
+          listAdapter = new ArrayAdapter<Ring>(this,
                 android.R.layout.simple_list_item_1, ringList);
           setListAdapter(listAdapter);
        
@@ -187,6 +199,7 @@ public class RingList extends ListActivity {
 		Toast.makeText(this,
 				"Deleted ring " + ringList[position].getShortname() + " from saved keys.", 
 					  Toast.LENGTH_LONG).show();
+		onResume();
 		
 	}
 
