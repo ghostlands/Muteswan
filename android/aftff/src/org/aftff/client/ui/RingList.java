@@ -2,6 +2,7 @@ package org.aftff.client.ui;
 
 import java.io.IOException;
 
+import org.aftff.client.NewMessageService;
 import org.aftff.client.R;
 import org.aftff.client.aftff;
 import org.aftff.client.data.AftffMessage;
@@ -199,8 +200,10 @@ public class RingList extends ListActivity {
 		Toast.makeText(this,
 				"Deleted ring " + ringList[position].getShortname() + " from saved keys.", 
 					  Toast.LENGTH_LONG).show();
+		Intent intent = new Intent(this,NewMessageService.class);
+		stopService(intent);
+		startService(intent);
 		onResume();
-		
 	}
 
 	private void writeMsg(Integer position) {
@@ -239,6 +242,10 @@ public class RingList extends ListActivity {
     	              Ring ring = new Ring(getApplicationContext(),contents);
     	              store.updateStore(contents);
     	               
+    	              
+    	              Intent sintent = new Intent(this,NewMessageService.class);
+    	      		  stopService(sintent);
+    	      		  startService(sintent);
     	              //this.activeRing = ring;
     	    //          selectMsg(ring);
     	            
@@ -261,7 +268,10 @@ public class RingList extends ListActivity {
             	Ring ring = new Ring(getApplicationContext(),testSite);
  	            //updateStore(testSite);
 	            store.updateStore(testSite);
-
+	            
+	            Intent sintent = new Intent(this,NewMessageService.class);
+	      		stopService(sintent);
+	      		startService(sintent);
             	            	
             	//this.activeRing = ring;
            // 	selectMsg(ring);

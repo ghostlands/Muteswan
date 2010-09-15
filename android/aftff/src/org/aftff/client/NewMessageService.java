@@ -145,6 +145,21 @@ public class NewMessageService extends Service {
 		  started = true;
 		} else {
 			Log.v("AftffService", "Start flag is true, running runLongpoll.");
+			
+			// FIXME UGLY. make sure the ring list is up to date 
+			RingStore rs = new RingStore(getApplicationContext(),true);
+			for (Ring r : rs) {
+			
+			 boolean has = false;
+			 for (Ring pollr : pollList.keySet()) {
+			   if (pollr.getFullText().equals(r.getFullText())) {
+				   has = true;
+			   }
+			 }
+			 if (!has)
+		     registerLongpoll(r);
+			 
+			}
 			runLongpoll();
 		}
 	}
@@ -505,7 +520,9 @@ public class NewMessageService extends Service {
 		
 	
 	private void stopservice() {
-
+		for (Ring r : pollList.keySet()) {
+			pollList.get(r).stop();
+		}
 	}
 
 	
