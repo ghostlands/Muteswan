@@ -250,10 +250,22 @@ final public class RingStore extends LinkedList<Ring> {
 	
 	  
 	private void updateLatestMessages(ArrayList<AftffMessage> msgs, Ring r,
-									Integer amount) {
+									Integer start, Integer last) {
 		IdentityStore idStore = new IdentityStore(context);
 		Integer lastId = r.getLastMessageId();
-		RING: for (Integer i = lastId; i>lastId-amount; i--) {
+		
+		if (lastId == null || lastId == 0)
+			return;
+		
+		if (start != 0)
+			lastId = lastId - start;
+		
+		if (lastId <= 0)
+			return;
+		
+		RING: for (Integer i = lastId; i>lastId-last; i--) {
+		  if (i <= 0)
+				break;
 		  AftffMessage msg = r.getMsgFromDb(i.toString());
 
 		  if (msg != null) {
@@ -278,18 +290,13 @@ final public class RingStore extends LinkedList<Ring> {
 					if (mDate.after(oDate)) {
 					//	Log.v("RingStore", mDate.toGMTString() + " before " + oDate.toGMTString());
 						insertIndex = j;
+						
 						//break;
 					} else {
+						
 						break;
 					}
-					//} else {
-					//	insertIndex = j;
-					//	break MSGS;
-					//}
 					
-					//int oIdx = msgs.indexOf(omsg);
-					//msgs.add(oIdx+1,msg);
-					//break MSGS;
 					
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
@@ -298,8 +305,11 @@ final public class RingStore extends LinkedList<Ring> {
 			}
 			
 			//Log.v("RingStore", "insertIndex is " + insertIndex);
-			msgs.add(insertIndex,msg);
-			  
+			if (msgs.size()-1 == insertIndex) {
+			  msgs.add(msg);
+			} else {
+			  msgs.add(insertIndex,msg);
+			}
 			
 		  }
 		}
@@ -308,25 +318,42 @@ final public class RingStore extends LinkedList<Ring> {
 	}
 	
 	public ArrayList<AftffMessage> getLatestMessages(String ringHash,
-			Integer last) {
+			Integer first, Integer last) {
 		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
-		updateLatestMessages(msgs,asHashMap().get(ringHash),last);
+		updateLatestMessages(msgs,asHashMap().get(ringHash),first,last);
 		return(msgs);
-
     }
-	  
-	public ArrayList<AftffMessage> getLatestMessages(Integer amount) {
+	
+	
+	
+	
+	public ArrayList<AftffMessage> getLatestMessages(ArrayList<AftffMessage> msgs, String ringHash,
+			Integer first, Integer last) {
+		updateLatestMessages(msgs,asHashMap().get(ringHash),first,last);		
+		return(msgs);
+    }
+	
+
+	
+	public ArrayList<AftffMessage> getLatestMessages(Integer first, Integer last) {
 		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
-		IdentityStore idStore = new IdentityStore(context);
 		
 		for (Ring r : this) {
-			updateLatestMessages(msgs,r,amount);
+			updateLatestMessages(msgs,r,first,last);
+		}
+		
+		return(msgs);
+	}
+	
+	public ArrayList<AftffMessage> getLatestMessages(ArrayList<AftffMessage> msgs, Integer first,Integer amount) {
+		
+		for (Ring r : this) {
+			updateLatestMessages(msgs,r,first,amount);
 		}
 		
 		return(msgs);
 	}
 
-	
-	
 
+	
 }

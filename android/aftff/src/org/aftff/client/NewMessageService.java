@@ -256,7 +256,7 @@ public class NewMessageService extends Service {
 		
 		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
-		msgIntent.putExtra("ring", r.getFullText());
+		msgIntent.putExtra("ring", aftff.genHexHash(r.getFullText()));
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
 		
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
@@ -303,6 +303,8 @@ public class NewMessageService extends Service {
 				    	Integer lastId;
 				    	if (startLastId == null || startLastId == 0) {
 							lastId = ring.getMsgIndex() - numMsgDownload;
+							if (lastId <= 0)
+								lastId = 1;
 							ring.updateLastMessage(lastId);
 						    ring.saveLastMessage();
 						} else {

@@ -2,10 +2,12 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-<PreferenceCategory android:title="Service"><CheckBoxPreference android:title="New Messages" android:summary="Check for new messages in the background." android:key="backgroundMessageCheck"></CheckBoxPreference>
-<ListPreference android:title="Check Interval" android:key="checkMsgInterval" android:entries="@array/msgcheckintervaldisplay" android:summary="Check messages at provided interval." android:entryValues="@array/msgcheckinterval"></ListPreference>
+<PreferenceCategory android:title="Service">
+<CheckBoxPreference android:title="New Messages" android:summary="Check for new messages in the background." android:key="backgroundMessageCheck"></CheckBoxPreference>
+<!-- <ListPreference android:title="Check Interval" android:key="checkMsgInterval" android:entries="@array/msgcheckintervaldisplay" android:summary="Check messages at provided interval." android:entryValues="@array/msgcheckinterval"></ListPreference> -->
 <ListPreference android:title="Maximum Download" android:summary="Maximum amount of messages to download in background." android:key="numMsgDownload" android:entries="@array/nummsgdownloaddisplay" android:entryValues="@array/nummsgdownload"></ListPreference>
 </PreferenceCategory>
-<PreferenceCategory android:title="Message List"><CheckBoxPreference android:title="Always Use Cached Index" android:summary="If checked, the message list will not download the message index on start." android:key="alwaysUseLastMessage"></CheckBoxPreference>
-</PreferenceCategory>
+
+<!--  <PreferenceCategory android:title="Message List"><CheckBoxPreference android:title="Always Use Cached Index" android:summary="If checked, the message list will not download the message index on start." android:key="alwaysUseLastMessage"></CheckBoxPreference>
+</PreferenceCategory> -->
 </PreferenceScreen>

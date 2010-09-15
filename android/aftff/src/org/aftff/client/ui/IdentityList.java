@@ -10,6 +10,7 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,6 +46,27 @@ public class IdentityList extends ListActivity {
 	          registerForContextMenu(getListView());
 	 }
 	 
+	 
+	 @Override
+	 public boolean onCreateOptionsMenu(Menu menu) {
+	    	menu.clear();
+	    
+	    	
+	    	
+	    	MenuInflater inflater = getMenuInflater();
+	        inflater.inflate(R.menu.idlistmenu, menu);
+	        return true;
+	 }
+	 
+	 
+	 @Override
+	 public boolean onOptionsItemSelected(MenuItem item) {
+		 if (item.toString().equals("Create Identity")) {
+			 startActivity(new Intent(this,GenerateIdentity.class));
+		     return true;
+		 }
+		 return true;
+	 }
 	 
 	 
 	 public void onCreateContextMenu(ContextMenu menu, View v,

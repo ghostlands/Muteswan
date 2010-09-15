@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -298,6 +299,14 @@ public class aftff extends Activity implements Runnable {
         
         TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
+		
+		Button panicButton = (Button) findViewById(R.id.panicButton);
+		panicButton.setOnClickListener(panicButtonClicked);
+		
+		Button shareOrbotButton = (Button) findViewById(R.id.shareOrbotButton);
+		shareOrbotButton.setOnClickListener(shareOrbotButtonClicked);
+		Button shareAftffButton = (Button) findViewById(R.id.shareAftffButton);
+		shareAftffButton.setOnClickListener(shareAftffButtonClicked);
         
        // final Button shareButton = (Button) findViewById(R.id.mShare);
        // shareButton.setOnClickListener(mShare);
@@ -348,6 +357,35 @@ public class aftff extends Activity implements Runnable {
     	}
     };
     
+    public View.OnClickListener panicButtonClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent(Intent.ACTION_DELETE);
+    		String packageName = "org.aftff.client";
+    		Uri data = Uri.fromParts("package", packageName, null);
+    		intent.setData(data);
+    		startActivity(intent);
+    	}
+    };
+    
+    public View.OnClickListener shareOrbotButtonClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+			intent.putExtra("ENCODE_DATA","http://www.torproject.org/dist/android/0.2.2.13-alpha-orbot-0.0.8.apk");
+			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+			startActivity(intent);
+    	}
+    };
+    
+    public View.OnClickListener shareAftffButtonClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+			intent.putExtra("ENCODE_DATA","http://unionoftheother.org/android/aftff.apk");
+			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+			startActivity(intent);
+    	}
+    };
+    
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.clear();
@@ -363,7 +401,7 @@ public class aftff extends Activity implements Runnable {
         //menu.add("List Identities");
         //menu.add("Create Ring");
         
-        menu.add("Options");
+        //menu.add("Options");
        
         
         return true;
@@ -375,13 +413,13 @@ public class aftff extends Activity implements Runnable {
 		//if (item.toString().equals("Create Ring")) {
 		//	startActivity(new Intent(this, CreateRing.class));
 		//	return true;
-		//} else if (item.toString().equals("List Identities")) {
-		//	startActivity(new Intent(this,IdentityList.class));
-		//	return true;
+		if (item.toString().equals("Identities")) {
+			startActivity(new Intent(this,IdentityList.class));
+			return true;
 		//} else if (item.toString().equals("Create Identity")) {
 		//	startActivity(new Intent(this,GenerateIdentity.class));
 		//	return true;
-		if (item.toString().equals("Options")) {
+		} else if (item.toString().equals("Options")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}

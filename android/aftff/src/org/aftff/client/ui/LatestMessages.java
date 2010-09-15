@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.aftff.client.R;
+import org.aftff.client.aftff;
 import org.aftff.client.data.AftffMessage;
 import org.aftff.client.data.Identity;
 import org.aftff.client.data.IdentityStore;
@@ -47,7 +48,7 @@ public class LatestMessages extends ListActivity {
 	private Bundle extra;
 	private String ringExtra;
 	private RingStore store;
-	ArrayList<AftffMessage> messageList;
+	ArrayList<AftffMessage> messageList = new ArrayList<AftffMessage>();
 	HashMap<String,Ring> ringMap;
 	IdentityStore idStore;
 	private LatestMessagesListAdapter listAdapter;
@@ -70,7 +71,6 @@ public class LatestMessages extends ListActivity {
 		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
 		
-        Log.v("LatestMessages", "Just set custom title bar.");
         
         store = new RingStore(this,true);
 		ringMap = store.asHashMap();
@@ -78,7 +78,7 @@ public class LatestMessages extends ListActivity {
 		
 		messageViewCount = 20;
 		moreButtons = new HashMap<View,AlertDialog>();
-        messageList = loadRecentMessages(5);
+        messageList = loadRecentMessages(messageList,1,5);
         listAdapter = new LatestMessagesListAdapter(this);
 
         setListAdapter(listAdapter);
@@ -98,9 +98,10 @@ public class LatestMessages extends ListActivity {
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 
+		Integer start = messageViewCount;
 		messageViewCount = messageViewCount + 20;
 		//messageList.clear();
-		messageList = loadRecentMessages(messageViewCount);
+		messageList = loadRecentMessages(messageList,start,messageViewCount);
 		listAdapter.notifyDataSetChanged();
 		
 		return true;
@@ -152,7 +153,7 @@ public class LatestMessages extends ListActivity {
     	for (Ring r : store) {
     		if (r.getShortname().equals(v.getText().toString())) {
     			Intent intent = new Intent(this,LatestMessages.class);
-    			intent.putExtra("ring", r.getFullText());
+    			intent.putExtra("ring", aftff.genHexHash(r.getFullText()));
     			startActivity(intent);
     		}
     	}
@@ -160,9 +161,15 @@ public class LatestMessages extends ListActivity {
     
     public View.OnClickListener postClicked = new View.OnClickListener() {
     	public void onClick(View v) {
-    		Intent intent = new Intent(getApplicationContext(),RingList.class);
-    		intent.putExtra("action",RingList.WRITE);
-    		startActivity(intent);
+    		if (ringExtra != null) {
+    		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+    		  intent.putExtra("ring",ringMap.get(ringExtra).getFullText());
+    		  startActivity(intent);
+    		} else {
+    		   Intent intent = new Intent(getApplicationContext(),RingList.class);
+      		  intent.putExtra("action",RingList.WRITE);
+      		  startActivity(intent);
+    		}
     	}
     };
     
@@ -302,7 +309,7 @@ public class LatestMessages extends ListActivity {
       			  white = white + "  ";
       		  }
       		  
-      		  txtMessage.setText(white + ": " + msg.getMsg());
+      		  txtMessage.setText(white + "/" + msg.getId() + ": " + msg.getMsg());
       		  
       		  String sigDataStr = "-- \n";
       		  LinkedList<Identity> list = msg.getValidSigs();
@@ -337,16 +344,16 @@ public class LatestMessages extends ListActivity {
 	
 	
 
-    private ArrayList<AftffMessage> loadRecentMessages(Integer last) {
+    private ArrayList<AftffMessage> loadRecentMessages(ArrayList<AftffMessage> msgs, Integer first,Integer last) {
 		
     	
     	
     	
 		//SQLiteDatabase db = store.getOpenHelper().getReadableDatabase();
     	if (ringExtra != null) {
-    		return(store.getLatestMessages(ringExtra,last));
+    		return(store.getLatestMessages(msgs,ringExtra,first,last));
     	} else {
-    		return(store.getLatestMessages(last));
+    		return(store.getLatestMessages(msgs,first,last));
     	}
 		
 /*		Log.v("LatestMessages", "Fetching messages from db...");

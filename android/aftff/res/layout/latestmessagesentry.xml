@@ -109,8 +109,7 @@
      android:gravity="center"
      android:padding="5sp"
      android:textColor="#0011ee"
-    android:clickable="true"
-
+     android:clickable="true"
      />
     
     </RelativeLayout>

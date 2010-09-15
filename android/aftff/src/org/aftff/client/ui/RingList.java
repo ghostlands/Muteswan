@@ -76,7 +76,6 @@ public class RingList extends ListActivity {
           ringlist.setVisibility(View.VISIBLE);
         } else {
           ringlist.setVisibility(View.GONE);
-
         }
 
         
