@@ -415,8 +415,11 @@ public class NewMessageService extends Service {
 				
 				pollList.put(ring, nThread);
 				nThread.start();
-			} else if (!(pollList.get(ring).isAlive()) || pollList.get(ring).isInterrupted()) {
-				 Log.v("AftffService","Hey, looks like not alive.");
+			} else if (pollList.get(ring).isInterrupted()) {
+				Log.v("AftffService","Service is interrupted.");
+				//pollList.remove(ring);
+			} else if (!(pollList.get(ring).isAlive())) {
+				 Log.v("AftffService","Hey, looks like not alive, starting.");
 				 pollList.get(ring).run();
 			} else {
 				 Log.v("AftffService", "Ring " + ring.getShortname() + " skipped because already polling.");

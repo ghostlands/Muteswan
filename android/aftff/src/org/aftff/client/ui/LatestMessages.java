@@ -1,6 +1,9 @@
 package org.aftff.client.ui;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,15 +16,21 @@ import org.aftff.client.data.IdentityStore;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
 import org.aftff.client.data.RingStore.OpenHelper;
+import org.apache.http.client.ClientProtocolException;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ParseException;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,50 +52,64 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
-public class LatestMessages extends ListActivity {
+public class LatestMessages extends ListActivity implements Runnable {
 
 	private Bundle extra;
 	private String ringExtra;
 	private RingStore store;
-	ArrayList<AftffMessage> messageList = new ArrayList<AftffMessage>();
+	final ArrayList<AftffMessage> messageList = new ArrayList<AftffMessage>();
 	HashMap<String,Ring> ringMap;
 	IdentityStore idStore;
 	private LatestMessagesListAdapter listAdapter;
 	private int messageViewCount;
 	HashMap<View, AlertDialog> moreButtons;
+	private ProgressDialog gettingMsgsDialog;
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
        
 
+        store = new RingStore(this,true);
+		ringMap = store.asHashMap();
+		idStore = new IdentityStore(this);
+        
         extra = getIntent().getExtras();
-        if (extra != null)
+        if (extra != null) 
          ringExtra = extra.getString("ring");
+         
+        setContentView(R.layout.latestmessages);
+
+        
+        if (ringExtra != null) {
+		 TextView txtTitle = (TextView) findViewById(R.id.android_latestmessagesprompt);
+		 txtTitle.setText("Messages for " + ringMap.get(ringExtra).getShortname());
+		 //txtTitle.setText("Messages for " + ringExtra);
+		 //txtTitle.setText("ugh");
+        }
         
 
-        setContentView(R.layout.latestmessages);
         
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
 		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
         
-        store = new RingStore(this,true);
-		ringMap = store.asHashMap();
-		idStore = new IdentityStore(this);
+        
 		
-		messageViewCount = 5;
+		messageViewCount = 0;
 		moreButtons = new HashMap<View,AlertDialog>();
-        messageList = loadRecentMessages(messageList,0,5);
+        //messageList = loadRecentMessages(messageList,0,5);
+		//this.run();
+		
         listAdapter = new LatestMessagesListAdapter(this);
-
         setListAdapter(listAdapter);
-          
         
-        
+        Thread thread = new Thread(this);
+        thread.start();
+        showDialog();
+
         
     }
-
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -97,17 +120,22 @@ public class LatestMessages extends ListActivity {
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 
+		
 		Integer start = messageViewCount;
 		messageViewCount = messageViewCount + 5;
 		//messageList.clear();
 		Log.v("LatestMessages", "Start is " + start);
-		loadRecentMessages(messageList,start,5);
-		listAdapter.notifyDataSetChanged();
-		
+		//loadRecentMessages(messageList,start,5);
+		Thread thread = new Thread(this);
+		thread.start();
+		showDialog();		
 		return true;
 		
 	}
 
+	private void showDialog() {
+		gettingMsgsDialog = ProgressDialog.show(this, "", "Getting messages...", true);
+	}
 	
 	public View.OnClickListener listItemClicked = new View.OnClickListener() {
 
@@ -324,7 +352,7 @@ public class LatestMessages extends ListActivity {
       		   }
       		   
       		  txtSigs.setText(sigDataStr);
-      		   
+      		//  txtSigs.setTextColor(RESULT_CANCELED.)  ("#00ff00");
       		  }
       		  
 			// plusButton.setImageResource(R.drawable.more);
@@ -343,70 +371,217 @@ public class LatestMessages extends ListActivity {
 	
 	
 	
+	private ArrayList<AftffMessage> loadRecentMessages(
+			ArrayList<AftffMessage> msgs, Integer first, Integer last) {
 
-    private ArrayList<AftffMessage> loadRecentMessages(ArrayList<AftffMessage> msgs, Integer first,Integer last) {
-		
-    	
-    	
-    	
-		//SQLiteDatabase db = store.getOpenHelper().getReadableDatabase();
-    	if (ringExtra != null) {
-    		return(store.getLatestMessages(msgs,ringExtra,first,last));
-    	} else {
-    		return(store.getLatestMessages(msgs,first,last));
-    	}
-		
-/*		Log.v("LatestMessages", "Fetching messages from db...");
-		//Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash", "date", "message" }, null, null, null, null, "date desc", "20" );
-		
-		Cursor cursor;
+		// SQLiteDatabase db = store.getOpenHelper().getReadableDatabase();
 		if (ringExtra != null) {
-		   //Ring ring = ringMap.get(ringExtra);
-		   cursor = db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash" }, "ringHash = '"+ringExtra+"'", null, null, null, "date desc", last.toString());
+			return (getLatestMessages(msgs, ringExtra, first, last));
 		} else {
-		   cursor = db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId", "ringHash" }, null, null, null, null, "date desc", last.toString());
+			return (getLatestMessages(msgs, first, last));
 		}
-		   
-		   
-		if (msgs.size() != 0) {
-			cursor.moveToPosition(msgs.size());
-		}
+
+		/*
+		 * Log.v("LatestMessages", "Fetching messages from db..."); //Cursor
+		 * cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId",
+		 * "ringHash", "date", "message" }, null, null, null, null, "date desc",
+		 * "20" );
+		 * 
+		 * Cursor cursor; if (ringExtra != null) { //Ring ring =
+		 * ringMap.get(ringExtra); cursor =
+		 * db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId",
+		 * "ringHash" }, "ringHash = '"+ringExtra+"'", null, null, null,
+		 * "date desc", last.toString()); } else { cursor =
+		 * db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId",
+		 * "ringHash" }, null, null, null, null, "date desc", last.toString());
+		 * }
+		 * 
+		 * 
+		 * if (msgs.size() != 0) { cursor.moveToPosition(msgs.size()); }
+		 * 
+		 * int count=0; while (cursor.moveToNext()) {
+		 * 
+		 * //if (cursor.getPosition() > ) { // newMsgs.add(msgs.get(count)); //
+		 * continue; //}
+		 * 
+		 * String msgId = cursor.getString(0); String ringHash =
+		 * cursor.getString(1); //String date = cursor.getString(2); //String
+		 * message = cursor.getString(3); Ring ring = ringMap.get(ringHash); if
+		 * (ring == null) { Log.v("LatestMessages", "Ring for hash " + ringHash
+		 * + " is null."); return(null); } //AftffMessage msg = new
+		 * AftffMessage(ring,msgId,) //AftffMessage msg =
+		 * ring.getMsgFromDb(msgId); //msgs[count] = new
+		 * AftffMessage(ring,Integer.parseInt(msgId),date,message);
+		 * 
+		 * AftffMessage msg = ring.getMsgFromDb(msgId);
+		 * msg.verifySignatures(idStore); msgs.add(msg);
+		 * 
+		 * count++; Log.v("LatestMessages", "Got message " + msgId + " ring " +
+		 * ring.getShortname()); } cursor.close(); db.close();
+		 * 
+		 * 
+		 * 
+		 * return msgs;
+		 */
+	}
+
+
+	final Handler dismissDialog = new Handler() {
 		
-		int count=0;
-		while (cursor.moveToNext()) {
-			
-			//if (cursor.getPosition() > ) {
-			//	newMsgs.add(msgs.get(count));
-			//	continue;
-			//}
-			
-			String msgId = cursor.getString(0);
-			String ringHash = cursor.getString(1);
-			//String date = cursor.getString(2);
-			//String message = cursor.getString(3);
-			Ring ring = ringMap.get(ringHash);
-			if (ring == null) {
-				Log.v("LatestMessages", "Ring for hash " + ringHash + " is null.");
-				return(null);
+        @Override
+        public void handleMessage(Message msg) {
+        	    gettingMsgsDialog.dismiss();
+        }
+    };
+	
+    final Handler dataSetChanged = new Handler() {
+		
+        @Override
+        public void handleMessage(Message msg) {
+        	    listAdapter.notifyDataSetChanged();
+        }
+    };
+	
+	
+	private void updateLatestMessages(ArrayList<AftffMessage> msgs, Ring r,
+			Integer start, Integer last) {
+		IdentityStore idStore = new IdentityStore(this);
+		Integer lastId = r.getLastMessageId();
+
+		if (lastId == null || lastId == 0)
+			return;
+
+		if (start != 0)
+			lastId = lastId - start;
+
+		if (lastId <= 0)
+			return;
+
+		Log.v("RingStore", "Update messages, lastId is " + lastId
+				+ " and last is " + last + " (" + (lastId - last) + ")");
+		RING: for (Integer i = lastId; i > lastId - last; i--) {
+			if (i <= 0)
+				break;
+			AftffMessage msg = null;
+			msg = r.getMsgFromDb(i.toString());
+
+			if (msg == null && ringExtra != null) {
+				try {
+					msg = r.getMsgFromTor(i.toString());
+					if (msg != null && msg.signatures[0] != null) {
+						r.saveMsgToDb(i, msg.getDate(), msg.getMsg(),
+								msg.signatures);
+					} else if (msg != null) {
+						r.saveMsgToDb(i, msg.getDate(), msg.getMsg());
+					}
+					// r.saveMsgToDb(i, msg.getDate(), msg)
+				} catch (ClientProtocolException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			//AftffMessage msg = new AftffMessage(ring,msgId,)
-			//AftffMessage msg = ring.getMsgFromDb(msgId);
-			//msgs[count] = new AftffMessage(ring,Integer.parseInt(msgId),date,message);
-    		
-			AftffMessage msg = ring.getMsgFromDb(msgId);
-			msg.verifySignatures(idStore);
-			msgs.add(msg);
-			
-			count++;
-			Log.v("LatestMessages", "Got message " + msgId + " ring " + ring.getShortname());
+
+			if (msg != null) {
+				Log.v("RingStore", msg.getId() + " loaded.");
+				msg.verifySignatures(idStore);
+
+				if (msgs.size() == 0) {
+					msgs.add(msg);
+					continue RING;
+				}
+
+				// figure out where to insert the msg such that msgs is ordered
+				// by date
+				Integer insertIndex = msgs.size() - 1;
+				for (int j = msgs.size() - 1; j >= 0; j--) {
+					SimpleDateFormat df = new SimpleDateFormat(
+							"yyyy-MM-dd HH:mm:ss");
+					AftffMessage omsg = msgs.get(j);
+
+					try {
+						Date mDate = df.parse(msg.getDate());
+						Date oDate = df.parse(omsg.getDate());
+						if (mDate.after(oDate)) {
+							insertIndex = j;
+
+							// break;
+						} else {
+
+							break;
+						}
+
+					} catch (java.text.ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+				// Log.v("RingStore", "insertIndex is " + insertIndex);
+				if (msgs.size() - 1 == insertIndex) {
+					msgs.add(msg);
+				} else {
+					msgs.add(insertIndex, msg);
+				}
+
+			}
 		}
-		cursor.close();
-		db.close();
-		
-		
-		
-		return msgs;*/
+
+	}
+
+	public ArrayList<AftffMessage> getLatestMessages(String ringHash,
+			Integer first, Integer last) {
+		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
+		updateLatestMessages(msgs, store.asHashMap().get(ringHash), first, last);
+		return (msgs);
+	}
+
+	public ArrayList<AftffMessage> getLatestMessages(
+			ArrayList<AftffMessage> msgs, String ringHash, Integer first,
+			Integer last) {
+		updateLatestMessages(msgs, store.asHashMap().get(ringHash), first, last);
+		return (msgs);
+	}
+
+	public ArrayList<AftffMessage> getLatestMessages(Integer first, Integer last) {
+		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
+
+		for (Ring r : store) {
+			updateLatestMessages(msgs, r, first, last);
+		}
+
+		return (msgs);
+	}
+
+	public ArrayList<AftffMessage> getLatestMessages(
+			ArrayList<AftffMessage> msgs, Integer first, Integer amount) {
+
+		for (Ring r : store) {
+			updateLatestMessages(msgs, r, first, amount);
+		}
+
+		return (msgs);
+	}
+
+
+	@Override
+	public void run() {
+		Log.v("LatestMessages","Running!");
+		final int start = messageViewCount;
+		loadRecentMessages(messageList,start,5);
+		dismissDialog.sendEmptyMessage(0);
+		dataSetChanged.sendEmptyMessage(0);
+		Log.v("LatestMessages","Not running!");
 	}
 	
-	
+    
+    
+    
+    
+    
+    
+    
+    
 }

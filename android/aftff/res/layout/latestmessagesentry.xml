@@ -7,8 +7,6 @@
     android:layout_height="wrap_content"
     android:paddingRight="5px"
     android:gravity="left"
-
-    
     >
     
   
@@ -57,7 +55,7 @@
     android:layout_height="wrap_content"
     android:text=""
     android:gravity="left"
-    android:textColor="#333333"
+    android:textColor="#00ff00"
     android:layout_below="@id/android:latestmessagesMessage"
     />
     

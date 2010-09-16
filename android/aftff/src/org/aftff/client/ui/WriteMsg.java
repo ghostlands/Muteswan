@@ -168,7 +168,8 @@ public class WriteMsg extends Activity implements Runnable {
     		        @Override
     		        public void handleMessage(Message msg) {
     		              	sendingMsgDialog.dismiss();
-							Toast.makeText(v.getContext(), "Message posted.", Toast.LENGTH_LONG).show();
+							
+    		              	Toast.makeText(v.getContext(), "Message posted.", Toast.LENGTH_LONG).show();
     		        }
     		    };
 	    		
