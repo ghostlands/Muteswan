@@ -97,6 +97,12 @@ public class Ring {
 	         onCreate(db);
 	      }
 	      
+	      public void deleteData(SQLiteDatabase db) {
+	    	  db.execSQL("DELETE FROM " + MESSAGESTABLE);
+		      db.execSQL("DELETE FROM " + SIGTABLE);
+		      db.execSQL("DELETE FROM " + LASTMESSAGES);
+	      }
+	      
 	   }
 
 
@@ -178,7 +184,7 @@ public class Ring {
 	
 	public Integer getLastMessageId() {
 		String ringHash = aftff.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getReadableDatabase();
+		SQLiteDatabase db = this.openHelper.getWritableDatabase();
 
 		Integer lastMessageId = null;
 		
@@ -188,7 +194,7 @@ public class Ring {
 		//	return(null);
 		//}
 		
-		Cursor cursor = db.query(OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { ringHash }, null, null, "lastMessage desc" );
+		Cursor cursor = db.query(Ring.OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { ringHash }, null, null, "lastMessage desc" );
 		if (cursor.moveToFirst()) {
 			lastMessageId = cursor.getInt(0);
 		}
@@ -210,6 +216,9 @@ public class Ring {
 		if (msg == null) {
 			
 			msg = getMsgFromTor(id);
+			
+			if (msg == null)
+				return null;
 			
 			if (context != null) {
 				if (msg.signatures[0] != null) {
@@ -274,21 +283,34 @@ public class Ring {
 	
 	public AftffMessage getMsgFromTor(String id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
+		Log.v("Ring", "Fetching message " + id);
     	HttpResponse resp = aftffHttp.httpClient.execute(httpGet);
+    	Log.v("Ring", "Fetched message " + id);
     	
-    	return(parseMsgFromTor(resp));
+    	return(parseMsgFromTor(Integer.parseInt(id),resp));
+    	
 	}
 	
 	
-	private AftffMessage parseMsgFromTor(HttpResponse resp) throws org.apache.http.ParseException, IOException {
+	private AftffMessage parseMsgFromTor(Integer id, HttpResponse resp) throws org.apache.http.ParseException, IOException {
 		// TODO Auto-generated method stub
 
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
+		if (jsonString == null) {
+			Log.v("Ring", "WTF, jsonString is null");
+			return null;
+		}
+		
     	Header lastModified = resp.getFirstHeader("Last-Modified");
     	AftffMessage msg = null;
     	String date = null;
-		
+    	
+    	if (lastModified == null) {
+			Log.v("Ring", "WTF, lastModified is null");
+			return null;
+    	}
+    	
 		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 		try {
 			Date d = format.parse(lastModified.getValue());
@@ -305,7 +327,7 @@ public class Ring {
 		}
     	
     	try {
-			msg = new AftffMessage(this,jsonString,date);
+			msg = new AftffMessage(id,this,jsonString,date);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -364,7 +386,7 @@ public class Ring {
     	
 		try {
 			resp = aftffHttp.httpClient.execute(httpGet);
-			AftffMessage msg = parseMsgFromTor(resp);
+			AftffMessage msg = parseMsgFromTor(id,resp);
 			if (msg.signatures[0] != null) {
 				   saveMsgToDb(id,msg.getDate(),msg.getMsg(),msg.signatures);
 			} else {

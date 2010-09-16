@@ -5,7 +5,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class NewMessageReceiver extends BroadcastReceiver {
@@ -14,13 +16,22 @@ public class NewMessageReceiver extends BroadcastReceiver {
 	public void onReceive(Context ctx, Intent intent) {
 		Intent svc = new Intent(ctx,NewMessageService.class);
 		
-    IMessageService msgService = (IMessageService) peekService(ctx,svc);
+        IMessageService msgService = (IMessageService) peekService(ctx,svc);
      
-   	Log.v("AftffReceiver", "Received alarm, trying to connect to service.");
+
+   	    SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+
+   	    
+		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
+		if (backgroundMessageCheck == false)
+			return;
    	
-   	int count = 0;
-   	while (msgService == null) {
-   		try {
+   	
+   	    Log.v("AftffReceiver", "Received alarm, trying to connect to service.");
+
+   	    int count = 0;
+   	    while (msgService == null) {
+   		  try {
 				Thread.currentThread().sleep(200);
 				count++;
 				if (count > 3)
@@ -29,20 +40,20 @@ public class NewMessageReceiver extends BroadcastReceiver {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-   	}	
+   	    }	
 	
-   	if (msgService == null) {
-   	 Log.v("AftffReceiver", "Service not running, starting.");
-	 ctx.startService(svc);
-   	} else {
-   	 Log.v("AftffReceiver", "Service already running.");
-   	 try {
-		msgService.longPoll();
-	} catch (RemoteException e) {
+       if (msgService == null) {
+   	     Log.v("AftffReceiver", "Service not running, starting.");
+	     ctx.startService(svc);
+   	   } else {
+   	     Log.v("AftffReceiver", "Service already running.");
+   	     try {
+		   msgService.longPoll();
+	    } catch (RemoteException e) {
 		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-   	}
+		  e.printStackTrace();
+	   }
+   	  }
    	
    	
 

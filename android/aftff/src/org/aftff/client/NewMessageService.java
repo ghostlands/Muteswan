@@ -102,12 +102,12 @@ public class NewMessageService extends Service {
 		
 		
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
-		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","1"));
+		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
 		
-		notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-		if (backgroundMessageCheck) 
-		  mNM.notify(PERSISTANT_NOTIFICATION, notify);
+		//notify.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+		//if (backgroundMessageCheck) 
+		//  mNM.notify(PERSISTANT_NOTIFICATION, notify);
 
 		
 		justLaunched = true;
@@ -155,9 +155,15 @@ public class NewMessageService extends Service {
 			   if (pollr.getFullText().equals(r.getFullText())) {
 				   has = true;
 			   }
+			   
+			   
 			 }
 			 if (!has)
-		     registerLongpoll(r);
+		      registerLongpoll(r);
+			 
+			 //for (Ring pollr : pollList.keySet()) {
+			 //	 
+			 //}
 			 
 			}
 			runLongpoll();
@@ -291,6 +297,24 @@ public class NewMessageService extends Service {
 		
 		 Log.v("AftffService","pollList size " + pollList.size());
 		 for (final Ring ring : pollList.keySet()) {
+			 
+			 
+			    //FIXME: UGLY
+			 	RingStore rs = new RingStore(getApplicationContext(),true);
+			 	boolean hasRing = false;
+			 	for (Ring r : rs) {
+			 		if (ring.getFullText().equals(r.getFullText())) {
+			 			hasRing = true;
+			 		}
+			 	}
+			 	
+			 	if (hasRing == false) {
+			 		Log.v("NewMessageService", "We don't have " + ring.getShortname() + " anymore, stoping thread.");
+			 		stopList.add(ring);
+			 		pollList.get(ring).interrupt();
+			 	}
+			 	
+			 
 			    Log.v("AftffService", "Starting poll of " + ring.getShortname());
 				notifyIds.put(ring.getFullText(), notifyIdLast++);
 				
@@ -336,7 +360,24 @@ public class NewMessageService extends Service {
 			        } else {
 			        	Log.v("AftffService", ring.getShortname() + " has lastId " + lastId);
 			        }
-			        while (longpollForNewMessage(ring,++lastId)) {
+			        //AftffMessage msg = null;
+			        while (true) {
+					//while (longpollForNewMessage(msg,ring,++lastId)) {
+			        	
+			        	AftffMessage msg = longpollForNewMessage(ring,++lastId);
+						if (msg == null) {
+							Log.v("AftffService", "Null msg, continuing.");
+						    continue;
+						}
+						
+			        	for (Ring r : stopList) {
+			        		if (r.getFullText().equals(ring.getFullText())) {
+			        			stopList.remove(r);
+			        			Log.v("AftffService", "We are on the stop list, bailing out.");
+			        			return;
+			        		}
+			        	}
+			        	
 			        	ring.updateLastMessage(lastId);
 			        	ring.saveLastMessage();
 			        	CharSequence notifTitle = "New message in " + ring.getShortname();
@@ -365,7 +406,7 @@ public class NewMessageService extends Service {
 			        			lastId = nLastId;
 			        		}
 			        	}
-			        	
+			        	msg = null;
 			        }
 			        //ring.updateLastMessage(lastId);
 			        //longpollForNewMessage(ring,++lastId);
@@ -374,7 +415,7 @@ public class NewMessageService extends Service {
 				
 				pollList.put(ring, nThread);
 				nThread.start();
-			} else if (!(pollList.get(ring).isAlive())) {
+			} else if (!(pollList.get(ring).isAlive()) || pollList.get(ring).isInterrupted()) {
 				 Log.v("AftffService","Hey, looks like not alive.");
 				 pollList.get(ring).run();
 			} else {
@@ -386,18 +427,13 @@ public class NewMessageService extends Service {
 	}
 	
 	
-	private boolean longpollForNewMessage(final Ring ring, Integer id) {
+	private AftffMessage longpollForNewMessage(final Ring ring, Integer id) {
 		if (ring == null) {
 			Log.v("AtffService", "WTF, ring is null.");
 		}
 		Log.v("AftffService","Longpoll for " + ring.getShortname());
 		AftffMessage msg = ring.getMsgLongpoll(id);
-		if (msg != null) {
-		  Log.v("AftffService", "Received msg from long poll: " + msg.getMsg());
-		  return true;
-		} else {
-			return false;
-		}
+		return(msg);
 	}
 	
 	private void getLastMessageAll() {
@@ -511,6 +547,7 @@ public class NewMessageService extends Service {
 		
 		
 	};
+	final private LinkedList<Ring> stopList = new LinkedList<Ring>();
 	
 	public IBinder onBind(Intent intent) {
 		Log.v("NewMessageService","onBind called.");
@@ -521,7 +558,8 @@ public class NewMessageService extends Service {
 	
 	private void stopservice() {
 		for (Ring r : pollList.keySet()) {
-			pollList.get(r).stop();
+			stopList.add(r);
+			pollList.get(r).interrupt();
 		}
 	}
 

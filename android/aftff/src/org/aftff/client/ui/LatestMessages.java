@@ -75,7 +75,7 @@ public class LatestMessages extends ListActivity {
 		ringMap = store.asHashMap();
 		idStore = new IdentityStore(this);
 		
-		messageViewCount = 20;
+		messageViewCount = 5;
 		moreButtons = new HashMap<View,AlertDialog>();
         messageList = loadRecentMessages(messageList,0,5);
         listAdapter = new LatestMessagesListAdapter(this);
@@ -98,9 +98,10 @@ public class LatestMessages extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 
 		Integer start = messageViewCount;
-		messageViewCount = messageViewCount + 20;
+		messageViewCount = messageViewCount + 5;
 		//messageList.clear();
-		messageList = loadRecentMessages(messageList,start,messageViewCount);
+		Log.v("LatestMessages", "Start is " + start);
+		loadRecentMessages(messageList,start,5);
 		listAdapter.notifyDataSetChanged();
 		
 		return true;

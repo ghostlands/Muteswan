@@ -1,5 +1,6 @@
 package org.aftff.client.data;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.aftff.client.aftff;
+import org.apache.http.client.ClientProtocolException;
 
 
 import android.content.Context;
@@ -170,6 +172,7 @@ final public class RingStore extends LinkedList<Ring> {
 		  delete = rdb.compileStatement("DELETE FROM " + Ring.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
 		  delete.bindString(1, aftff.genHexHash(ring.getFullText()));
 		  delete.execute();
+		  ring.openHelper.deleteData(rdb);
 		  rdb.close();
 	  }
 	
@@ -252,9 +255,10 @@ final public class RingStore extends LinkedList<Ring> {
 	
 	  
 	private void updateLatestMessages(ArrayList<AftffMessage> msgs, Ring r,
-									Integer start, Integer last) {
+									Integer start, Integer last, boolean fromNetwork) {
 		IdentityStore idStore = new IdentityStore(context);
 		Integer lastId = r.getLastMessageId();
+
 		
 		if (lastId == null || lastId == 0)
 			return;
@@ -265,10 +269,30 @@ final public class RingStore extends LinkedList<Ring> {
 		if (lastId <= 0)
 			return;
 		
+		Log.v("RingStore", "Upadte messages, lastId is " + lastId + " and last is " + last + " (" + (lastId - last) + ")");
 		RING: for (Integer i = lastId; i>lastId-last; i--) {
 		  if (i <= 0)
 				break;
-		  AftffMessage msg = r.getMsgFromDb(i.toString());
+		  AftffMessage msg = null;
+		  msg = r.getMsgFromDb(i.toString());
+		
+		  if (msg == null && fromNetwork) {
+			  try {
+				msg = r.getMsgFromTor(i.toString());
+				if (msg != null && msg.signatures[0] != null) {
+					   r.saveMsgToDb(i,msg.getDate(),msg.getMsg(),msg.signatures);
+				} else if (msg != null){
+					   r.saveMsgToDb(i,msg.getDate(),msg.getMsg());
+				}
+				//r.saveMsgToDb(i, msg.getDate(), msg)
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		  }
 
 		  if (msg != null) {
 			Log.v("RingStore", msg.getId() + " loaded.");
@@ -280,9 +304,9 @@ final public class RingStore extends LinkedList<Ring> {
 			}
 			
 			
+			// figure out where to insert the msg such that msgs is ordered by date
 			Integer insertIndex = msgs.size()-1;
-			MSGS: for (int j = msgs.size()-1; j>=0; j--) {
-			//MSGS: for (AftffMessage omsg : msgs) {
+			for (int j = msgs.size()-1; j>=0; j--) {
 				SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 				AftffMessage omsg = msgs.get(j);
 				
@@ -290,7 +314,6 @@ final public class RingStore extends LinkedList<Ring> {
 					Date mDate = df.parse(msg.getDate());
 					Date oDate = df.parse(omsg.getDate());
 					if (mDate.after(oDate)) {
-					//	Log.v("RingStore", mDate.toGMTString() + " before " + oDate.toGMTString());
 						insertIndex = j;
 						
 						//break;
@@ -322,7 +345,7 @@ final public class RingStore extends LinkedList<Ring> {
 	public ArrayList<AftffMessage> getLatestMessages(String ringHash,
 			Integer first, Integer last) {
 		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
-		updateLatestMessages(msgs,asHashMap().get(ringHash),first,last);
+		updateLatestMessages(msgs,asHashMap().get(ringHash),first,last,true);
 		return(msgs);
     }
 	
@@ -331,7 +354,7 @@ final public class RingStore extends LinkedList<Ring> {
 	
 	public ArrayList<AftffMessage> getLatestMessages(ArrayList<AftffMessage> msgs, String ringHash,
 			Integer first, Integer last) {
-		updateLatestMessages(msgs,asHashMap().get(ringHash),first,last);		
+		updateLatestMessages(msgs,asHashMap().get(ringHash),first,last,true);	
 		return(msgs);
     }
 	
@@ -341,7 +364,7 @@ final public class RingStore extends LinkedList<Ring> {
 		ArrayList<AftffMessage> msgs = new ArrayList<AftffMessage>();
 		
 		for (Ring r : this) {
-			updateLatestMessages(msgs,r,first,last);
+			updateLatestMessages(msgs,r,first,last,false);
 		}
 		
 		return(msgs);
@@ -350,7 +373,7 @@ final public class RingStore extends LinkedList<Ring> {
 	public ArrayList<AftffMessage> getLatestMessages(ArrayList<AftffMessage> msgs, Integer first,Integer amount) {
 		
 		for (Ring r : this) {
-			updateLatestMessages(msgs,r,first,amount);
+			updateLatestMessages(msgs,r,first,amount,false);
 		}
 		
 		return(msgs);
