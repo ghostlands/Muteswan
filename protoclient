@@ -48,6 +48,7 @@ our %commands = (
 	'export' => { 'sub' => 'export_sub' },
 	'import' => { 'sub' => 'import_sub' },
 	'exporttxt' => { 'sub' => 'exporttxt_sub' },
+	'longpoll' => { 'sub' => 'longpoll_sub' },
 );
 
 
@@ -394,6 +395,56 @@ print STDERR "$$aftff_keys{$keyhash}{name}+$$aftff_keys{$keyhash}{key}\@$$aftff_
 	export_png($$aftff_keys{$keyhash}{name},$$aftff_keys{$keyhash}{key},$$aftff_keys{$keyhash}{at});
 
 
+}
+
+sub longpoll_sub {
+
+
+	my $keyhash = shift(@ARGV);
+	my $msgid = shift(@ARGV);
+
+	my $hash = find_short_name($keyhash);
+	if ($hash) {
+		$keyhash = $hash;
+	}
+
+	if (!$$aftff_keys{$keyhash}) {
+		error("No aftff keyhash supplied or not found.\n");
+	}
+
+	if (!defined($msgid)) {
+		error("No message id supplied.\n");
+	}
+
+	if (!$server && !$$aftff_keys{$keyhash}{at}) {
+		print "Error, no server host (-h optiont) defined.\n";
+		exit;
+	} elsif ($$aftff_keys{$keyhash}{at}) {
+		$server = $$aftff_keys{$keyhash}{at};
+	}
+
+
+	print "# Long polling...\n";
+
+	my $ua = new LWP::UserAgent( agent => $agent );
+	$ua->proxy('http' => 'socks://127.0.0.1:9050');
+	my $req = new HTTP::Request("GET" => "http://$server/$keyhash/longpoll/$msgid");
+	my $res = $ua->request($req);
+	print "# Response: " . $res->code . "\n";
+	if ($res->code != 200) {
+		print "Error, unable to get data.\n";
+	} else {
+	  open(DB,">/tmp/debug.txt");
+	  print DB $res->content();
+	  close(DB);
+	  
+	  my $json = new JSON( 'allow_nonref' => 1 );
+	  my $jsonObj = $json->decode($res->content());
+	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}));
+	  print Dump($plaintext);
+	}
+
+	
 }
 
 sub exporttxt_sub {
