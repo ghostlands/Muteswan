@@ -289,8 +289,8 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  txtDate.setText(msg.getDate());
       		  String white = "";
       		  // HAH WTF! fix this, please FIXME
-      		  for (int i=0; i<msg.getRing().getShortname().length(); i++) {
-      			  white = white + "  ";
+      		  for (int i=0; i<msg.getRing().getShortname().length()-1; i++) {
+      			  white = white + "   ";
       		  }
       		  
       		  txtMessage.setText(white + "/" + msg.getId() + ": " + msg.getMsg());
@@ -506,10 +506,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
     
     
-    
-    
-    
-    
-    
+       
     
 }
