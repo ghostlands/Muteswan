@@ -62,10 +62,15 @@ public class AftffMessage {
 		  sigs = jsonObj.getJSONArray("signatures");
 		  for (int i=0; i<sigs.length(); i++) {
 			    String sig = sigs.getString(i);
-			    byte[] sigKeyBytes = Base64.decode(sig);
-			    Crypto cryptoSig = new Crypto(ring.getKey().getBytes(),sigKeyBytes);
-			    byte[] realSignature = cryptoSig.decrypt();
-				this.signatures[i] = new String(realSignature);
+
+			    if (sig.indexOf(":") != -1) {
+				  this.signatures[i] = sig;
+			    } else {
+				  byte[] sigKeyBytes = Base64.decode(sig);
+			      Crypto cryptoSig = new Crypto(ring.getKey().getBytes(),sigKeyBytes);
+			      byte[] realSignature = cryptoSig.decrypt();
+				  this.signatures[i] = new String(realSignature);
+			    }
 		  }
 		} catch (JSONException e) {
 			
