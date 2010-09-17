@@ -41,7 +41,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class WriteMsg extends Activity implements Runnable {
+public class WriteMsg extends Activity {
 
 	Ring ring;
 	boolean[] signSelections;
@@ -75,11 +75,7 @@ public class WriteMsg extends Activity implements Runnable {
 	    	   signSelections[i] = false;
 	       }
 	       
-	       //Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
-	       //ArrayAdapter adapter = new ArrayAdapter<Identity>(
-	       //	   this, android.R.layout.simple_spinner_item, idStore.asArray());
-	       //selectSignSpinner.setAdapter(adapter);
-	       
+	      
 
 	       
 	       final Button button = (Button) findViewById(R.id.submitMsg);
@@ -147,9 +143,6 @@ public class WriteMsg extends Activity implements Runnable {
 	    	
 	    		    	
 	    	
-	    		
-	    		//Spinner selectSignSpinner = (Spinner) findViewById(R.id.keySelectSpinner);
-	    		//Identity identity = (Identity) selectSignSpinner.getSelectedItem();
 	    		
 	    		//FIXME: max sigs?
 	    		final Identity[] signIds = new Identity[50];
@@ -219,29 +212,6 @@ public class WriteMsg extends Activity implements Runnable {
 								
 						 }.start();
 				    	
-				    	
-			            //txt2.setText("Posted message to " + ring.getShortname() + " with signature(s).");
-
-//					} catch (InvalidKeyException e) {
-//						// TODO Auto-generated catch block
-//						//e.printStackTrace();
-//						txt2.setText("Invalid key exception for identity privkey.");
-//					} catch (SignatureException e) {
-//						// TODO Auto-generated catch block
-//						//e.printStackTrace();
-//						txt2.setText("Signature exception: " + e.toString());
-//					} catch (UnsupportedEncodingException e) {
-//						// TODO Auto-generated catch block
-//						//e.printStackTrace();
-//						txt2.setText("UnsupportedEncodingException: " + e.toString());
-//					} catch (InvalidKeySpecException e) {
-//						// TODO Auto-generated catch block
-//						//e.printStackTrace();
-//						txt2.setText("Invalid keyspec exception " + e.toString());
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
 	    		} else {
 	    		  
 	    		  
@@ -268,10 +238,7 @@ public class WriteMsg extends Activity implements Runnable {
 						}  
 					  }
 				  }.start();
-				  //thread.start();
-	    		  
-	    		 // ring.postMsg(txtData);
-			      //txt2.setText("Posted message to " + ring.getShortname() + " without signature.");
+				  
 
 	    		}
 	    	}
@@ -280,21 +247,10 @@ public class WriteMsg extends Activity implements Runnable {
 	    
 	    };
 	
-	    		//txt2.setText("");
-		        //setContentView(txt2);
-
 	    	
-	    
-			
-				// TODO Auto-generated catch block
 			
     	 
 	    	
 	
-
-	@Override
-	public void run() {
-//BOOK		
-	}
 	
 }

@@ -69,64 +69,6 @@ public class GenerateIdentity extends Activity {
 	};
 	       
 	       
-//	       //Bundle extras = getIntent().getExtras();
-//	       
-//	       
-//	       
-//	       try {
-//			genKeyPair();
-//		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (NoSuchProviderException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	    	  
-//		
-//		TextView txt = new TextView(this);
-//		txt.setText("Pub key: " + pubKeyHex + "\nPriv key: " + privKeyHex);
-//		setContentView(txt);
-//		
-//		//Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-//		//intent.putExtra("ENCODE_DATA",pubKeyHex.toString());
-//		//intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-////		startActivity(intent);
-//			
-//		
-//		String signData = "8377e7f83018g0f8d83a8ebcefde583";
-//		try {
-//			Signature sig = Signature.getInstance("MD5WithRSA");
-//			sig.initSign(privateKey);
-//			sig.update(signData.getBytes("UTF8"));
-//			byte[] sigBytes = sig.sign();
-//			
-//			sig.initVerify(publicKey);
-//			sig.update(signData.getBytes("UTF8"));
-//			if (sig.verify(sigBytes)) {
-//				txt.setText("signData is valid.\n");
-//			} else {
-//				txt.setText("signData is invalid.\n");
-//			}
-//			
-//		} catch (NoSuchAlgorithmException e) {
-//			//get a null pointer
-//			String a = null; a.charAt(0);
-//
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (InvalidKeyException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (SignatureException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//	}
 	
 	
 	

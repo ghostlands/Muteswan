@@ -18,7 +18,6 @@ public class ShowMsg extends Activity {
 
 	       setContentView(R.layout.showmsg);
 	       TextView msg = (TextView) findViewById(R.id.msgText);
-	       //msg.setText(getIntent().getStringExtra("msg"));
 	       
 	}
 

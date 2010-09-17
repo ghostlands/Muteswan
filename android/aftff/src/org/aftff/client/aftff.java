@@ -98,17 +98,13 @@ public class aftff extends Activity implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		//	Log.v("AFTFF", "new message service still null.");
 		}
-		//Log.v("AFTFF", "new message service not null.");
 
 	  try {
 		Log.v("AFFF", "Getting tor status");
 		if (torService.getStatus() != TOR_STATUS_ON) {
 			   Log.v("AFTFF", "Tor is not on.");
-		       //dialog.dismiss();
 		       torService.setProfile(TOR_STATUS_ON);
-		       //dialog.setMessage("Starting Tor...");
 		       dialogWaitOnTor.sendEmptyMessage(0);
 		       while (torService.getStatus() != TOR_STATUS_ON) {
 		    	   Log.v("AFTFF", "Still waiting on Tor...");
@@ -119,15 +115,12 @@ public class aftff extends Activity implements Runnable {
 					e.printStackTrace();
 				}
 		       }
-		       //startActivity(new Intent(this,TorNotAvailable.class));
 		  }
 		
 		  dialogDismiss.sendEmptyMessage(0);
 			   
 		  if (justCreated) {
 			   justCreated = false;
-			   //migratePrefRings();
-			   fetchLatestMessageData();
 		  }
 			
 		  
@@ -139,78 +132,8 @@ public class aftff extends Activity implements Runnable {
 	
 	
 	
-	private void fetchLatestMessageData() {
-		//try {
-			Log.v("Aftff", "Running newMsgService updateMessages now");
-			
-			//newMsgService.longpoll();
-			//newMsgService.updateLastMessage();
-			//newMsgService.downloadMessages();
-			//while (newMsgService.isWorking()) {
-			//	Thread.currentThread().sleep(500);
-			//}
-			stopTitleProgressBar.sendEmptyMessage(0);
-		//} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		//} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		//}
-	}
 	
-	private void primeTorOld() {
-		RingStore rs = new RingStore(getApplicationContext(),true);
-		for (Ring r : rs) {
-			Log.v("PrimeTor", r.getShortname() + ": fetching last message.");
-			Integer lastMessage = r.getMsgIndex();
-			if (lastMessage != null) {
-				Log.v("PrimeTor", r.getShortname() + ": updating lastMessage.");
-				Integer numMsgDownload = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("numMsgDownload","5"));
-				MSG: for (Integer i=lastMessage;i>lastMessage-numMsgDownload;i--) {
-					try {
-						if (i == 0)
-							break MSG;
-						
-						Log.v("PrimeTor","Downloading message id " + i + " for ring " + r.getShortname());
-						r.getMsg(i.toString());
-					} catch (ClientProtocolException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-				}
-				r.updateLastMessage(lastMessage);
-			}
-			
-		}
-		stopTitleProgressBar.sendEmptyMessage(0);
-	}
 	
-
-	// destroy soon, used to automatically migrate rings to sql
-	private void migratePrefRings() {
-		
-        SharedPreferences prefs = getSharedPreferences(PREFS,0);
-        RingStore rs = new RingStore(getApplicationContext(),true);
-        String[] storeArr = prefs.getString("store", "").split("---");
-        
-        for (String keyStr : storeArr) {
-        	if (keyStr == null)
-        		continue;
-        	Ring r;
-        	r = new Ring(getApplicationContext(),keyStr);
-        	if (r == null)
-        		continue;
-        	rs.updateStore(keyStr);
-        }
-		
-	}
-
-
 
 	private Handler dialogDismiss = new Handler() {
 	        @Override
@@ -264,10 +187,8 @@ public class aftff extends Activity implements Runnable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
-        //startService(new Intent(this,NewMessageService.class));
         
         // Check tor status
         Intent torServiceIntent = new Intent();
@@ -287,13 +208,7 @@ public class aftff extends Activity implements Runnable {
         setContentView(R.layout.main);
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
 
-  	    //setTitle("aftff (checking for new messages)");
-        //setProgressBarIndeterminateVisibility(true);
-
-        
-        //final Button button = (Button) findViewById(R.id.mScan);
-        //button.setOnClickListener(mScan);
-        
+  	   
         final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
@@ -308,31 +223,12 @@ public class aftff extends Activity implements Runnable {
 		Button shareAftffButton = (Button) findViewById(R.id.shareAftffButton);
 		shareAftffButton.setOnClickListener(shareAftffButtonClicked);
         
-       // final Button shareButton = (Button) findViewById(R.id.mShare);
-       // shareButton.setOnClickListener(mShare);
-        
-       // final Button createIdentityButton = (Button) findViewById(R.id.mCreateIdentity);
-       // createIdentityButton.setOnClickListener(mCreateIdentity);
-        
-       // final Button identitiesButton = (Button) findViewById(R.id.mIdentities);
-       // identitiesButton.setOnClickListener(mIdentities);
-        
-        /*
-        final Button readMsgsButton = (Button) findViewById(R.id.mReadMsgs);
-        readMsgsButton.setOnClickListener(mReadMsgs);
-        */
-        
-       // final Button writeMsgButton = (Button) findViewById(R.id.mWriteMsg);
-       // writeMsgButton.setOnClickListener(mWriteMsg); 
-        
+       
         final Button mManageRingsButton = (Button) findViewById(R.id.mManageRings);
         mManageRingsButton.setOnClickListener(mManageRings); 
       
         
-        
-       // final Button createRingButton = (Button) findViewById(R.id.mCreateRing);
-       // createRingButton.setOnClickListener(mCreateRing);
-        
+      
         if (!isBoundTor) {
         	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
         } else if (torService == null) {
@@ -473,27 +369,7 @@ public class aftff extends Activity implements Runnable {
     	return;
     }
     
-    public Button.OnClickListener mScan = new Button.OnClickListener() {
-    	    public void onClick(View v) {
-    	        Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-    	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-    	        startActivityForResult(intent, 0);
-    	 }
-    };
-    
-    public Button.OnClickListener mShare = new Button.OnClickListener() {
-	    public void onClick(View v) {
-	        showRings(RingList.SHARE);
-	 }
-    };
-    
-    public Button.OnClickListener mReadMsgs = new Button.OnClickListener() {
-	    public void onClick(View v) {
-	        
-	        showRings(RingList.READ);
-
-	 }
-    };
+   
     
     public Button.OnClickListener mManageRings = new Button.OnClickListener() {
 	    public void onClick(View v) {
@@ -507,32 +383,6 @@ public class aftff extends Activity implements Runnable {
 	    }
     };
     
-    
-    
-    
-    public Button.OnClickListener mWriteMsg = new Button.OnClickListener() {
-	    public void onClick(View v) {
-	        showRings(RingList.WRITE);
-	 }
-    };
-    
-    public Button.OnClickListener mCreateRing = new Button.OnClickListener() {
-	    public void onClick(View v) {
-	        createRing();
-	 }
-    };
-    
-    public Button.OnClickListener mCreateIdentity = new Button.OnClickListener() {
-	    public void onClick(View v) {
-	    	createIdentity();
-	 }
-    };
-    
-    public Button.OnClickListener mIdentities = new Button.OnClickListener() {
-	    public void onClick(View v) {
-	        showIdentities();
-	 }
-    };
     
     
     
@@ -610,52 +460,6 @@ public class aftff extends Activity implements Runnable {
 	    return(new String(hexString));
 		
 	}
-
-
-	// BLECH! not used
-    static public String getGetBody(String host, String getline) throws UnknownHostException, IOException {
-    	  // Get the proxy port
-        SocksProxy proxy = new SocksProxy(9050);
-
-          
-        // Create a socket to the destination through the
-        // anonymous proxy
-        Socket s = proxy.connectSocksProxy(null, host, 80, 0);
-                   //Socket s = new Socket(HOST, PORT);
-
-        PrintWriter writer = new PrintWriter(s.getOutputStream());
-        InputStreamReader reader = new InputStreamReader(s.getInputStream());
-        InputStream  is = s.getInputStream();
-
-        
-        // Very simple HTTP GET
-        writer.println("GET " + getline + " HTTP/1.1");
-        writer.println("Host: " + host);
-        writer.println("Connection: close");
-        writer.println();
-        writer.flush();
-        
-        BasicHttpEntity resp = new BasicHttpEntity();
-        resp.setContent(is);
-
-        String body = EntityUtils.toString(resp);
-        return(body);
-        
-//        // Get the result
-//        StringBuilder result = new StringBuilder();
-//        char[] buffer = new char[1024];
-//        int read = 0;
-//        do {
-//                  result.append(buffer, 0, read);
-//                  read = reader.read(buffer, 0, buffer.length);
-//           } while (read > -1);
-//        
-
-        
-        //return(result.toString());
-    }
-
-
 	
     
 }

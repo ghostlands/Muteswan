@@ -130,7 +130,6 @@ public class IdentityStore extends LinkedList<Identity> {
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		
 		SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.TABLE + " WHERE name=?");
-		//(name,publicKey,privateKey,pubKeyHash,privKeyHash) VALUES (?,?,?,?,?)");
 		delete.bindString(1, identity.name);
 		delete.execute();
 		this.remove(identity);
@@ -138,8 +137,5 @@ public class IdentityStore extends LinkedList<Identity> {
 
 	
 
-	//public void save() {
-	//	
-	//}
 	
 }

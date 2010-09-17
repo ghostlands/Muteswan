@@ -266,8 +266,7 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  TextView txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
       		  TextView txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
       		  TextView txtSigs = (TextView) layout.findViewById(R.id.android_latestmessagesSignatures);
-      		  //ImageButton plusButton = (ImageButton) layout.findViewById(R.id.latestmessagesInfoButton);
-      		  //LinearLayout mainLayout = (LinearLayout) layout.findViewById(R.id.latestmessagesMainLayout);
+      		  
       		  
       		  TextView txtReply = (TextView) layout.findViewById(R.id.android_latestmessagesReplyButton);
       		  TextView txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
@@ -282,50 +281,7 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  // not used and painful
       		  //int totalWidth = layout.getLayoutParams().width;
       		  //int ringWidth = txtRing.getLayoutParams().width;
-      		  //int mainWidth = mainLayout.getLayoutParams().width;
-      	
-      		final CharSequence[] items = {"Post", "Reply", "Reply with Quote", "Share"};
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle("Choose an action");
-            builder.setItems(items, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int item) {
-                	if (items[item].equals("Post")) {
-                		//Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_LONG).show();
-                		Intent intent = new Intent(context,WriteMsg.class);
-                		intent.putExtra("ring",msg.getRing().getFullText());
-                		startActivity(intent);
-                	} else if (items[item].equals("Reply")) {
-                		Intent intent = new Intent(context,WriteMsg.class);
-                		intent.putExtra("ring",msg.getRing().getFullText());
-                		intent.putExtra("initialText", "@" + msg.getId() + ":\n");
-                		startActivity(intent);
-                	} else if (items[item].equals("Reply with Quote")) {
-                		Intent intent = new Intent(context,WriteMsg.class);
-                		intent.putExtra("ring",msg.getRing().getFullText());
-                		String[] msgLines = msg.getMsg().split("\n");
-                		StringBuilder initialText = new StringBuilder();
-                		initialText.append("From @" + msg.getId() + "\n");
-                		for (int i=0; i<msgLines.length; i++) {
-                			initialText.append("> " + msgLines[i] + "\n");
-                		}
-                		initialText.append("\n");
-                		intent.putExtra("initialText", initialText.toString());
-                		startActivity(intent);
-                	} else if (items[item].equals("Share")) {
-                		Intent showQrcode = new Intent("com.google.zxing.client.android.ENCODE");
-            			showQrcode.putExtra("ENCODE_DATA",msg.getRing().getFullText());
-            			showQrcode.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-            			startActivity(showQrcode);
-                	}
-                    //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-                }
-            });
-            AlertDialog alert = builder.create();
-    		//moreButtons.put(plusButton,alert);
-
-      		  
-      		  
+      		  //int mainWidth = mainLayout.getLayoutParams().width;	  
       		  
       		  txtRing.setText(msg.getRing().getShortname());
       		  txtRing.setClickable(true);
@@ -352,18 +308,14 @@ public class LatestMessages extends ListActivity implements Runnable {
       		   }
       		   
       		  txtSigs.setText(sigDataStr);
-      		//  txtSigs.setTextColor(RESULT_CANCELED.)  ("#00ff00");
       		  }
       		  
-			// plusButton.setImageResource(R.drawable.more);
-			// plusButton.setClickable(true);
+			
 			 layout.setClickable(true);
 			 layout.setOnClickListener(listItemClicked);
-      		// plusButton.setOnClickListener(buttonClicked);
 			 
       		 
-      		 //layout.setMinimumHeight(320);
-      		 
+      		       		 
       		 return layout;	
 		}
 		
@@ -374,55 +326,13 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private ArrayList<AftffMessage> loadRecentMessages(
 			ArrayList<AftffMessage> msgs, Integer first, Integer last) {
 
-		// SQLiteDatabase db = store.getOpenHelper().getReadableDatabase();
 		if (ringExtra != null) {
 			return (getLatestMessages(msgs, ringExtra, first, last));
 		} else {
 			return (getLatestMessages(msgs, first, last));
 		}
 
-		/*
-		 * Log.v("LatestMessages", "Fetching messages from db..."); //Cursor
-		 * cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId",
-		 * "ringHash", "date", "message" }, null, null, null, null, "date desc",
-		 * "20" );
-		 * 
-		 * Cursor cursor; if (ringExtra != null) { //Ring ring =
-		 * ringMap.get(ringExtra); cursor =
-		 * db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId",
-		 * "ringHash" }, "ringHash = '"+ringExtra+"'", null, null, null,
-		 * "date desc", last.toString()); } else { cursor =
-		 * db.query(Ring.OpenHelper.MESSAGESTABLE, new String[] { "msgId",
-		 * "ringHash" }, null, null, null, null, "date desc", last.toString());
-		 * }
-		 * 
-		 * 
-		 * if (msgs.size() != 0) { cursor.moveToPosition(msgs.size()); }
-		 * 
-		 * int count=0; while (cursor.moveToNext()) {
-		 * 
-		 * //if (cursor.getPosition() > ) { // newMsgs.add(msgs.get(count)); //
-		 * continue; //}
-		 * 
-		 * String msgId = cursor.getString(0); String ringHash =
-		 * cursor.getString(1); //String date = cursor.getString(2); //String
-		 * message = cursor.getString(3); Ring ring = ringMap.get(ringHash); if
-		 * (ring == null) { Log.v("LatestMessages", "Ring for hash " + ringHash
-		 * + " is null."); return(null); } //AftffMessage msg = new
-		 * AftffMessage(ring,msgId,) //AftffMessage msg =
-		 * ring.getMsgFromDb(msgId); //msgs[count] = new
-		 * AftffMessage(ring,Integer.parseInt(msgId),date,message);
-		 * 
-		 * AftffMessage msg = ring.getMsgFromDb(msgId);
-		 * msg.verifySignatures(idStore); msgs.add(msg);
-		 * 
-		 * count++; Log.v("LatestMessages", "Got message " + msgId + " ring " +
-		 * ring.getShortname()); } cursor.close(); db.close();
-		 * 
-		 * 
-		 * 
-		 * return msgs;
-		 */
+		
 	}
 
 
@@ -442,6 +352,14 @@ public class LatestMessages extends ListActivity implements Runnable {
         }
     };
 	
+    final Handler updateDialogText = new Handler() {
+    	
+    	@Override
+    	public void handleMessage(Message msg) {
+    		gettingMsgsDialog.setMessage(msg.getData().getString("txt"));
+    	}
+    };
+    
 	
 	private void updateLatestMessages(ArrayList<AftffMessage> msgs, Ring r,
 			Integer start, Integer last) {
@@ -463,10 +381,20 @@ public class LatestMessages extends ListActivity implements Runnable {
 			if (i <= 0)
 				break;
 			AftffMessage msg = null;
+			Message m = new Message();
+			Bundle b = new Bundle();
+			b.putString("txt", "Loading....." + i);
+			m.setData(b);
+			updateDialogText.sendMessage(m);
 			msg = r.getMsgFromDb(i.toString());
 
 			if (msg == null && ringExtra != null) {
 				try {
+					m = new Message();
+					b = new Bundle();
+					b.putString("txt", "Downloading..." + i);
+					m.setData(b);
+					updateDialogText.sendMessage(m);
 					msg = r.getMsgFromTor(i.toString());
 					if (msg != null && msg.signatures[0] != null) {
 						r.saveMsgToDb(i, msg.getDate(), msg.getMsg(),

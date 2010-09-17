@@ -137,16 +137,12 @@ public class Identity {
 
 
 	public String getShareableString() {
-		//return(name + ":" + Base64.encodeBytes(publicKeyEnc.getBytes()) + ":" + privKeyHash );
 		return(name + ":" + publicKeyEnc + ":" + privKeyHash );
 
 		
 	}
 	
-	//public void initHash() {
-	//	privKeyHash = Ring.genHexHash(privateKey.toString());
-	//	pubKeyHash = Ring.genHexHash(publicKey.toString());
-	//}
+	
 	
 	
 }
