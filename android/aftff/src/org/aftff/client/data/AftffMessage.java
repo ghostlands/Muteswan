@@ -51,7 +51,7 @@ public class AftffMessage {
 		this.signatures = signatures;
 	}
 	
-	public AftffMessage(Integer id, Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
+	public AftffMessage(Integer id, Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 		jsonObj = new JSONObject(jsonString);
 		this.date = date;
 		this.ring = ring;
@@ -61,7 +61,11 @@ public class AftffMessage {
 		try {
 		  sigs = jsonObj.getJSONArray("signatures");
 		  for (int i=0; i<sigs.length(); i++) {
-				this.signatures[i] = sigs.getString(i);
+			    String sig = sigs.getString(i);
+			    byte[] sigKeyBytes = Base64.decode(sig);
+			    Crypto cryptoSig = new Crypto(ring.getKey().getBytes(),sigKeyBytes);
+			    byte[] realSignature = cryptoSig.decrypt();
+				this.signatures[i] = new String(realSignature);
 		  }
 		} catch (JSONException e) {
 			

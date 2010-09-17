@@ -486,7 +486,11 @@ public class Ring {
 			sig.initSign(rsaPrivKey);
 			sig.update(msg.getBytes("UTF8"));
 			byte[] sigBytes = sig.sign();
-			jsonArray.put(identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes));
+			
+			String sigLine = identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes);
+			Crypto cryptoEnc = new Crypto(key.getBytes(),sigLine.getBytes("UTF8"));
+			byte[] sigData = cryptoEnc.encrypt();
+			jsonArray.put(Base64.encodeBytes(sigData));
 			//encodedSigs[i] = identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes);
 		}
 		
