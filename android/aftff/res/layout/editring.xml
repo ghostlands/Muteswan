@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+   android:layout_width="fill_parent" android:layout_height="fill_parent">
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    
+    >
+    
+    
+    
+    
+    
+    
+    
+     <TextView
+    android:id="@+id/editRingPrompt"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:text="Edit Ring"
+    android:textSize="24sp"    
+    />
+    
+    <LinearLayout 
+      android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+    
+     <TextView
+    android:id="@+id/editRingNamePrompt"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Name"
+    android:minWidth="50sp"/>
+    
+    />
+     
+    <EditText android:text="" 
+      android:id="@+id/editRingName"
+      android:layout_width="80sp"
+      android:layout_height="wrap_content"/>
+    
+    </LinearLayout>
+    
+    <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+    
+    <TextView android:text="Key"
+       android:id="@+id/editRingKeyPrompt"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:minWidth="50sp"/>
+    
+    <TextView  
+    android:id="@+id/editRingKey"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:text="(new key)"
+    /> 
+    </LinearLayout>
+   
+   <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+   
+    <TextView android:text="Server"
+      android:id="@+id/editRingServerPrompt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:minWidth="50sp"/>
+    <EditText android:text="tckwndlytrphlpyo.onion" android:id="@+id/editRingServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
+
+   </LinearLayout>
+
+<TextView android:text="Optional Information" android:layout_width="wrap_content" android:layout_height="wrap_content" 
+           android:textSize="24sp"/> 
+           
+  <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+   
+    <TextView android:text="Description"
+      android:id="@+id/editRingDescriptionPrompt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:minWidth="90sp"
+      android:maxWidth="90sp"/>
+    <EditText android:text="" android:id="@+id/editRingDescription" android:layout_width="200sp" android:layout_height="wrap_content"></EditText>
+
+   </LinearLayout>
+   
+   <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+   
+    <TextView android:text="Long Description"
+      android:id="@+id/editRingLongDescriptionPrompt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:minWidth="90sp"
+      android:maxWidth="90sp"/>
+       <EditText android:text="" android:id="@+id/editRingLongDescription" android:layout_width="200sp" android:layout_height="80sp"></EditText>
+
+   </LinearLayout>
+   
+   <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+   
+    <TextView android:text="Image (url)"
+      android:id="@+id/editRingImagePrompt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:minWidth="90sp"
+      android:maxWidth="90sp"/>
+    <EditText android:text="" android:id="@+id/editRingImage" android:layout_width="200sp" android:layout_height="wrap_content"></EditText>
+
+   </LinearLayout>
+   
+   
+   <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+   
+    <TextView android:text="Authorzation Identity"
+      android:id="@+id/editRingAuthKeyPrompt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:minWidth="90sp"
+      android:maxWidth="90sp"/>
+    <Spinner android:text="" android:id="@+id/editRingAuthKey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
+
+   </LinearLayout>
+   
+   
+ <LinearLayout
+     android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      >
+   
+    <TextView android:text="Post Policy"
+      android:id="@+id/editRingPostPolicyPrompt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:minWidth="90sp"
+      android:maxWidth="90sp"/>
+    <Spinner android:text="" android:textSize="12sp" android:id="@+id/editRingPostPolicy" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
+
+   </LinearLayout>
+
+    <Button android:text="Update Manifest" android:id="@+id/updateRingButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+<TextView android:text="" android:id="@+id/editRingResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+
+</LinearLayout>
+</ScrollView>

@@ -53,6 +53,7 @@ public class Identity {
 	 public RSAPublicKey getPublicKey() throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		EncodedKeySpec encKeySpec = new X509EncodedKeySpec(Base64.decode(publicKeyEnc));
+		
 		return (RSAPublicKey) (keyFactory.generatePublic(encKeySpec));
 		
 

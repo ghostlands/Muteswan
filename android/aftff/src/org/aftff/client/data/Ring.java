@@ -26,6 +26,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -51,9 +52,7 @@ public class Ring {
 	
 	
 	
-	
-	
-	
+		
 	final private String shortname;
 	final private String server;
 	final private String notes = null;
@@ -67,13 +66,20 @@ public class Ring {
 
 	private SQLiteDatabase rdb;
 
+	private String postPolicy;
+	private String authKey;
+	private byte[] image;
+	private String longDescription;
+	private String description;
+
 	public class OpenHelper extends SQLiteOpenHelper {
 
-		public static final int DATABASE_VERSION = 10;
+		public static final int DATABASE_VERSION = 11;
 		public String databaseName = "aftffdb";
 		public static final String MESSAGESTABLE = "messages";
 		public static final String SIGTABLE = "signatures";
 		public static final String LASTMESSAGES = "lastmessages";
+		public static final String MANIFESTS = "manifests";
 
 		
 	     
@@ -87,13 +93,15 @@ public class Ring {
 	         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
 	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
 	         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
-	      }
+	         db.execSQL("CREATE TABLE " + MANIFESTS + " (ringHash TEXT PRIMARY KEY, description TEXT, longdescription TEXT, image BLOB, authkey TEXT, postpolicy TEXT)");
+		}
 
 	      @Override
 	      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
 	         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
 	         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
+	         db.execSQL("DROP TABLE IF EXISTS " + MANIFESTS);
 	         onCreate(db);
 	      }
 	      
@@ -101,6 +109,7 @@ public class Ring {
 	    	  db.execSQL("DELETE FROM " + MESSAGESTABLE);
 		      db.execSQL("DELETE FROM " + SIGTABLE);
 		      db.execSQL("DELETE FROM " + LASTMESSAGES);
+		      db.execSQL("DELETE FROM " + MANIFESTS);
 	      }
 	      
 	   }
@@ -149,6 +158,8 @@ public class Ring {
 	    aftffHttp = new AftffHttp();
 	    curLastMsgId = 0;
 		
+	    initManifest();
+	    
 		//this.add(newRing);
 	}
 	
@@ -163,12 +174,78 @@ public class Ring {
 		this.openHelper = new Ring.OpenHelper(context, aftff.genHexHash(getFullText()));
 	    aftffHttp = new AftffHttp();
 	    curLastMsgId = 0;
+	    initManifest();
 	}
 	
 	
+	private void initManifest() {
+		String ringHash = aftff.genHexHash(getFullText());
+		SQLiteDatabase db = this.openHelper.getWritableDatabase();
+		Cursor cursor = db.query(Ring.OpenHelper.MANIFESTS, new String[] { "description", "longdescription", "image", "authkey", "postpolicy" }, "ringHash = ?", new String[] { ringHash }, null, null, null );
+		if (cursor.moveToFirst()) {
+			if (cursor.getString(0) != null)
+			   setDescription(cursor.getString(0));
+			if (cursor.getString(0) != null)
+			   setLongDescription(cursor.getString(1));
+			if (cursor.getString(0) != null)
+			   setAuthKey(cursor.getString(3));
+
+
+		
+		   setImage(cursor.getBlob(2));
+		   setPostPolicy(cursor.getString(4));
+		}
+		cursor.close();
+		db.close();
+		
+	}
+	
+	public String getPostPolicy() {
+		return(postPolicy);
+	}
+
+	public String getAuthKey() {
+		return(authKey);
+	}
+
+	public byte[] getImage() {
+		return(image);
+	}
+
+	public String getLongDescription() {
+		return(longDescription);
+	}
+
+	public String getDescription() {
+		return(description);
+	}
+
 	final public String getFullText() {
 		return(getShortname()+"+"+getKey()+"@"+getServer());
 	}
+	
+	private void setPostPolicy(String policy) {
+		this.postPolicy = policy;
+	}
+
+	private void setAuthKey(String key) {
+		this.authKey = key;
+	}
+
+	private void setImage(byte[] image) {
+		this.image = image;
+	}
+
+	private void setLongDescription(String description) {
+		this.longDescription = description;
+	}
+
+	private void setDescription(String description) {
+		this.description = description;
+	}
+
+	
+	
 	
 	
 	public String getKey() {
@@ -189,24 +266,18 @@ public class Ring {
 		Integer lastMessageId = null;
 		
 		
-		//ARGH WTF!!
-		//if (!db.isOpen()) {
-		//	return(null);
-		//}
+		
 		
 		Cursor cursor = db.query(Ring.OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { ringHash }, null, null, "lastMessage desc" );
 		if (cursor.moveToFirst()) {
 			lastMessageId = cursor.getInt(0);
 		}
 		cursor.close();
-		//if (db.isOpen()) {
-		  db.close();
-		//}
-		
+		db.close();
+				
 
 		
 		return(lastMessageId);
-		
 	}
 	
 	
@@ -293,7 +364,6 @@ public class Ring {
 	
 	
 	private AftffMessage parseMsgFromTor(Integer id, HttpResponse resp) throws org.apache.http.ParseException, IOException {
-		// TODO Auto-generated method stub
 
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
@@ -430,6 +500,67 @@ public class Ring {
 		
 		HttpPost httpPost = new HttpPost("http://" + server + "/" + keyHash);
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
+		
+		if (getPostPolicy() != null && !getPostPolicy().equals("ANY")) {
+			if (getPostPolicy().equals("AUTHKEY")) {
+				Log.v("Ring", "Adding Signature header for " + getShortname());
+				Signature sig = null;
+				try {
+					sig = Signature.getInstance("MD5WithRSA");
+				} catch (NoSuchAlgorithmException e1) {
+					// TODO Auto-generated catch block
+					//e1.printStackTrace();
+					return;
+				}
+				IdentityStore idStore = new IdentityStore(context);
+				RSAPrivateKey rsaPrivKey = null;
+				for (Identity id : idStore) {
+					if (id.publicKeyEnc.equals(getAuthKey())) {
+						try {
+							rsaPrivKey = id.getPrivateKey();
+						} catch (NoSuchAlgorithmException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvalidKeySpecException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						break;
+					}
+				}
+				
+				if (rsaPrivKey == null) {
+					Log.e("Ring", "Could not find appropriate identity for " + getShortname() + " in idstore.");
+					return;
+				}
+				
+				   
+				try {
+					sig.initSign(rsaPrivKey);
+					sig.update(jsonObj.toString().getBytes());
+					//sig.update("some random sign data".getBytes("UTF8"));
+					byte[] sigBytes = sig.sign();
+					httpPost.setHeader("Signature",Base64.encodeBytes(sigBytes));
+				} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SignatureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+				//ring.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
+			} else if (getPostPolicy().equals("KEYLIST")) {
+				Log.e("Ring", "Cannot handle KEYLIST");
+				return;
+			}
+		}
+		
+		
 		httpPost.setEntity(entity);
 		
 		try {
@@ -459,7 +590,6 @@ public class Ring {
 	}
 	
 	public void postMsg(String msg, Identity[] identities) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, InvalidKeyException, SignatureException, InvalidKeySpecException, IOException {
-		// TODO Auto-generated method stub
 		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
 		
@@ -491,10 +621,8 @@ public class Ring {
 			Crypto cryptoEnc = new Crypto(key.getBytes(),sigLine.getBytes("UTF8"));
 			byte[] sigData = cryptoEnc.encrypt();
 			jsonArray.put(Base64.encodeBytes(sigData));
-			//encodedSigs[i] = identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes);
 		}
 		
-		//jsonObj.put("signatures", encodedSigs);
 		jsonObj.put("signatures", jsonArray);
 		
 		
@@ -608,12 +736,142 @@ public class Ring {
 		}
 		db.close();
 	}
+
+	public void updateManifest(JSONObject jsonObj) {
+		HttpPut httpPut = new HttpPut("http://" + server + "/" + keyHash + "/manifest");
+		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
+		httpPut.setEntity(entity);
+		
+		try {
+			aftffHttp.httpClient.execute(httpPut);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return;
+		}
+	}
 	
+	public void updateManifest(JSONObject jsonObj, String signature) {
+		HttpPut httpPut = new HttpPut("http://" + server + "/" + keyHash + "/manifest");
+		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
+		httpPut.setHeader("Signature",signature);
+		httpPut.setEntity(entity);
+		
+		try {
+			aftffHttp.httpClient.execute(httpPut);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return;
+		}
+	}
+
+	public void downloadManifest() {
+			HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/manifest");
+			Log.v("Ring", "Downloading manifest for " + getShortname());
+	    	try {
+				HttpResponse resp = aftffHttp.httpClient.execute(httpGet);
+				JSONObject jsonObj = parseManifest(resp);
+				if (jsonObj == null || !jsonObj.has("manifest"))
+					return;
+				JSONObject jsonManifest = jsonObj.getJSONObject("manifest");
+				
+				if (jsonManifest.has("description"))
+				  setDescription(new String(Base64.decode(jsonManifest.getString("description"))));
+				if (jsonManifest.has("longdescription"))
+				  setLongDescription(new String(Base64.decode(jsonManifest.getString("longdescription"))));
+				if (jsonManifest.has("authkey"))
+				  setAuthKey(jsonManifest.getString("authkey"));
+				if (jsonManifest.has("postpolicy"))
+				  setPostPolicy(jsonManifest.getString("postpolicy"));
+				saveManifestToDb();
+
+		    	Log.v("Ring", "Downloaded manifest for " + getShortname());
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+   }
+	
+   
+	
+   private void saveManifestToDb() {
+	    SQLiteDatabase db = openHelper.getWritableDatabase();
+	    String ringHash = aftff.genHexHash(getFullText());
+		
+	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFESTS);
+	    del.execute();
+	    
+		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFESTS + " (ringHash) VALUES (?)");
+		insrt.bindString(1, ringHash);
+		insrt.execute();
+		
+		if (getDescription() != null) {
+		  insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET description = ? WHERE ringHash = ?");
+		  insrt.bindString(2, ringHash);
+		  insrt.bindString(1, getDescription());
+		  insrt.execute();
+		}
+		
+		if (getLongDescription() != null) {
+	      insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET longdescription = ? WHERE ringHash = ?");
+		  insrt.bindString(2, ringHash);
+		  insrt.bindString(1, getLongDescription());
+		  insrt.execute();
+		}
+		
+		if (getAuthKey() != null) {
+		  insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET authkey = ? WHERE ringHash = ?");
+		  insrt.bindString(2, ringHash);
+		  insrt.bindString(1, getAuthKey());
+		  insrt.execute();
+		}
+		
+		if (getPostPolicy() != null) {
+		  insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET postpolicy = ? WHERE ringHash = ?");
+		  insrt.bindString(2, ringHash);
+		  insrt.bindString(1, getPostPolicy());
+		  insrt.execute();
+		}
+		
+		db.close();
+	   
+	}
+
+private JSONObject parseManifest(HttpResponse resp) {
+	   JSONObject jsonObj = null;
+	   try {
+		String jsonString = EntityUtils.toString(resp.getEntity());
+		jsonObj = new JSONObject(jsonString);
+	} catch (org.apache.http.ParseException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+	   return jsonObj;
+   }
 		
 	
-
-	
-
 
 
 }

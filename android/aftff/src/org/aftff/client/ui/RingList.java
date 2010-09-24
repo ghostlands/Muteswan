@@ -169,6 +169,12 @@ public class RingList extends ListActivity {
 		  case R.id.ringListShare:
 			  shareRing(info.position);
 			  break;
+		  case R.id.ringListView:
+			  viewRing(info.position);
+			  break;
+		  case R.id.ringListEdit:
+			  editRing(info.position);
+			  break;
 		  case R.id.ringListWriteMsg:
 			  writeMsg(info.position);
 			  break;
@@ -212,6 +218,19 @@ public class RingList extends ListActivity {
 		startActivity(intent);
 	}
 
+	
+	private void viewRing(Integer position) {
+		Intent intent = new Intent(getApplicationContext(),ViewRing.class);
+		intent.putExtra("ring",ringList[position].getFullText());
+		startActivity(intent);
+	}
+	
+	private void editRing(Integer position) {
+		Intent intent = new Intent(getApplicationContext(),EditRing.class);
+		intent.putExtra("ring",ringList[position].getFullText());
+		startActivity(intent);
+	}
+	
 	private void shareRing(Integer position) {
 		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 		intent.putExtra("ENCODE_DATA",ringList[position].getFullText());

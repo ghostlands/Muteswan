@@ -63,8 +63,11 @@ public class AftffMessage {
 		  for (int i=0; i<sigs.length(); i++) {
 			    String sig = sigs.getString(i);
 
+			    // FIXME: better way to check for non encrypted signatures
+			    // not encrypted signature
 			    if (sig.indexOf(":") != -1) {
 				  this.signatures[i] = sig;
+				// encrypted signature
 			    } else {
 				  byte[] sigKeyBytes = Base64.decode(sig);
 			      Crypto cryptoSig = new Crypto(ring.getKey().getBytes(),sigKeyBytes);
@@ -108,7 +111,6 @@ public class AftffMessage {
 	}
 
 	public void addValidSig(Identity identity) {
-		// TODO Auto-generated method stub
 		if (validSigs == null) {
 			validSigs = new LinkedList<Identity>();
 		}

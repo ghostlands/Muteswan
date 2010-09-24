@@ -6,6 +6,10 @@
     <item android:id="@+id/ringListWriteMsg"
         android:title="Post Message" />
      <item android:id="@+id/ringListDelete"
-        android:title="Delete" />      
+        android:title="Delete" />
+     <item android:id="@+id/ringListView"
+        android:title="View"/> 
+     <item android:id="@+id/ringListEdit"
+        android:title="Edit"/> 
      
 </menu>

@@ -148,7 +148,6 @@ public class NewMessageService extends Service {
 
 	
 	private void showNotification(Ring r, CharSequence title, CharSequence content) {
-		// TODO Auto-generated method stub
 		long when = System.currentTimeMillis();
 		int icon = R.drawable.icon;
 		Notification notify = new Notification(icon,title,when);

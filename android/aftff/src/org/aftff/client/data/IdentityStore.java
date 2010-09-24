@@ -25,7 +25,6 @@ public class IdentityStore extends LinkedList<Identity> {
 		
 	     
 	      public OpenHelper(Context context) {
-			// TODO Auto-generated constructor stub
 	    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		}
 
