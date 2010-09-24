@@ -63,16 +63,9 @@ public class CreateRing extends Activity implements Runnable {
 		    
 			keyTxt.setText(genKeyStr);
 	       
-			try {
-				Thread.currentThread().sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
-	      	Intent intent = new Intent(this,EditRing.class);
-	      	startActivity(intent);
-	       
+			
+	      		       
 	}
 	
 	public Button.OnClickListener genRing = new Button.OnClickListener() {
@@ -95,6 +88,17 @@ public class CreateRing extends Activity implements Runnable {
 
 	    	newRingResult.setText("Created ring " + name.getText().toString());
 	    	
+	    	try {
+				Thread.currentThread().sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	
+	    	Intent intent = new Intent(getApplicationContext(),EditRing.class);
+	    	intent.putExtra("ring",aftff.genHexHash(ringFullText));
+	      	startActivity(intent);
+
 	 }
 
 
