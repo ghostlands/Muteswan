@@ -555,7 +555,7 @@ public class Ring {
 		
 		if (getPostPolicy() != null && !getPostPolicy().equals("ANY")) {
 			if (getPostPolicy().equals("AUTHKEY")) {
-				Log.v("Ring", "Adding Signature header for " + getShortname());
+				Log.v("Ring", "AUTHKEY Adding Signature header for " + getShortname());
 				Signature sig = null;
 				try {
 					sig = Signature.getInstance("MD5WithRSA");
@@ -607,17 +607,78 @@ public class Ring {
 				
 				//ring.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
 			} else if (getPostPolicy().equals("KEYLIST")) {
-				Log.e("Ring", "Cannot handle KEYLIST");
-				return;
-			}
+				Log.v("Ring", "KEYLIST Adding Signature header for " + getShortname());
+				Signature sig = null;
+				try {
+					sig = Signature.getInstance("MD5WithRSA");
+				} catch (NoSuchAlgorithmException e1) {
+					// TODO Auto-generated catch block
+					//e1.printStackTrace();
+					return;
+				}
+				
+				IdentityStore idStore = new IdentityStore(context);
+				RSAPrivateKey rsaPrivKey = null;
+				KEYS: for (String key : keylist) {
+					for (Identity id : idStore) {
+					  if (key.equals(id.publicKeyEnc) && id.privateKeyEnc != null) {
+						  Log.v("Ring", "Found identity " + id.getName());
+						  try {
+
+							rsaPrivKey = id.getPrivateKey();
+
+						} catch (NoSuchAlgorithmException e) {
+							e.printStackTrace();
+							Log.e("Ring", "NoSuchAlgorithmException getting private key.");
+						} catch (InvalidKeySpecException e) {
+							// TODO Auto-generated catch block
+							Log.e("Ring", "InvalidKeySpecException getting private key.");
+
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							Log.e("Ring", "IOException getting private key.");
+
+						}
+						  break KEYS;
+					  }
+				 }
+				}
+				
+				if (rsaPrivKey == null) {
+					Log.e("Ring", "Could not find appropriate identity for " + getShortname() + " in idstore.");
+					return;
+				}
+				
+
+				try {
+					sig.initSign(rsaPrivKey);
+					sig.update(jsonObj.toString().getBytes());
+					//sig.update("some random sign data".getBytes("UTF8"));
+					
+					byte[] sigBytes = sig.sign();
+
+					httpPost.setHeader("Signature",Base64.encodeBytes(sigBytes));
+				} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+					Log.v("Ring", "Invalid key posting.");
+				} catch (SignatureException e) {
+					// TODO Auto-generated catch block
+					Log.v("Ring", "Signature exception posting.");
+				}
+				
+			
+		  }
 		}
 		
 		
 		httpPost.setEntity(entity);
-		
+		Log.v("Ring", "ARGH WTF ");
+
 		try {
 			// POST MESSAGE
 			aftffHttp.httpClient.execute(httpPost);
+
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
