@@ -1,7 +1,10 @@
 package org.aftff.client.ui;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
@@ -10,6 +13,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
+import org.aftff.client.AftffHttp;
 import org.aftff.client.Base64;
 import org.aftff.client.R;
 import org.aftff.client.aftff;
@@ -17,15 +21,29 @@ import org.aftff.client.data.Identity;
 import org.aftff.client.data.IdentityStore;
 import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
+import org.aftff.client.ui.WriteMsg.DialogButtonClickHandler;
+import org.aftff.client.ui.WriteMsg.DialogSelectionClickHandler;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -34,6 +52,9 @@ public class EditRing extends Activity {
 	
 	private Identity[] identities;
 	private Ring ring;
+	protected byte[] imageBytes;
+	private boolean[] keylistIdentitiesSelected;
+	private CharSequence[] signIdentities;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,6 +65,12 @@ public class EditRing extends Activity {
 	    ring = hashMap.get(aftff.genHexHash(extras.getString("ring")));
 		setContentView(R.layout.editring);
 		
+
+		Button fetchImage = (Button) findViewById(R.id.editRingFetchImageButton);
+		fetchImage.setOnClickListener(fetchImageListener);
+		
+		Button setKeylistButton = (Button) findViewById(R.id.editRingSetKeylistButton);
+		setKeylistButton.setOnClickListener(setKeylistButtonListener);
 		
 		Button updateButton = (Button) findViewById(R.id.updateRingButton);
 		updateButton.setOnClickListener(updateButtonListener);
@@ -67,7 +94,8 @@ public class EditRing extends Activity {
 		
         IdentityStore idStore = new IdentityStore(getApplicationContext());
 	    identities = idStore.asArray(true);
-	    CharSequence[] signIdentities = new CharSequence[identities.length+1];
+	    signIdentities = new CharSequence[identities.length+1];
+	    keylistIdentitiesSelected = new boolean[identities.length+1];
 	    signIdentities[0] = "None";
 	    int knownIdentity = 0;
 	    for (int i=0; i<identities.length;i++) {
@@ -102,7 +130,112 @@ public class EditRing extends Activity {
 		
         	EditText txtLDesc = (EditText) findViewById(R.id.editRingLongDescription);
         	txtLDesc.setText(ring.getLongDescription());
+        	
+        	TextView editRingName = (TextView) findViewById(R.id.editRingName);
+        	editRingName.setText(ring.getShortname());
 	}
+	
+	
+	 @Override
+     protected Dialog onCreateDialog( int id )
+     {
+             return
+             new AlertDialog.Builder( this )
+             .setTitle( "Select identities to add to the keylist." )
+             .setMultiChoiceItems(signIdentities, keylistIdentitiesSelected, new DialogSelectionClickHandler() )
+             .setPositiveButton( "OK", new DialogButtonClickHandler() )
+             .create();
+     }
+
+	 public class DialogSelectionClickHandler implements DialogInterface.OnMultiChoiceClickListener
+     {
+             public void onClick( DialogInterface dialog, int clicked, boolean selected )
+             {
+            	 keylistIdentitiesSelected[clicked] = selected;
+            	 Log.v("WriteMsg", "Set " + clicked + " to " + selected);
+             }
+     }
+	
+	 public class DialogButtonClickHandler implements DialogInterface.OnClickListener
+     {
+             public void onClick( DialogInterface dialog, int clicked )
+             {
+                     switch( clicked )
+                     {
+                             case DialogInterface.BUTTON_POSITIVE:
+                            	 	 updateKeylist();
+                                     break;
+                     }
+             }
+
+			
+     }
+	 
+   private void updateKeylist() {
+			TextView txtView = (TextView) findViewById(R.id.editRingKeylistInfo);
+			StringBuilder sBuilder = new StringBuilder();
+			for (int i = 0; i<keylistIdentitiesSelected.length; i++) {
+				if (signIdentities[i].equals("None"))
+				   continue;
+				if (keylistIdentitiesSelected[i])
+				   sBuilder.append(signIdentities[i] + "\n");
+			}
+			
+			if (sBuilder.toString().equals("")) {
+				txtView.setText("None selected.");
+   			} else {
+			    txtView.setText(sBuilder.toString());
+   			}
+   }
+	 
+	public Button.OnClickListener setKeylistButtonListener = new Button.OnClickListener() {
+		public void onClick(View v) {
+			showDialog(0);
+		}
+	};
+	
+	
+	public Button.OnClickListener fetchImageListener = new Button.OnClickListener() {
+		public void onClick(View v) {
+			EditText txtImage = (EditText) findViewById(R.id.editRingImage);
+			ImageView imageView = (ImageView) findViewById(R.id.editRingImageView);
+			String url = txtImage.getText().toString();
+		    AftffHttp aftffHttp = new AftffHttp();
+			HttpGet httpGet = new HttpGet(url);
+		    try {
+				HttpResponse resp = aftffHttp.httpClient.execute(httpGet);
+				
+				// FIXME seems wrong, dunno what is right
+				//imageBytes  = EntityUtils.toString(resp.getEntity()).getBytes();
+				imageBytes = new byte[Integer.parseInt(resp.getFirstHeader ("Content-Length").getValue())];
+				//resp.getEntity().getContent().read(imageBytes);
+				
+				InputStream is = resp.getEntity().getContent();
+				
+				int count=0;
+				while ((is.read(imageBytes,count,1)) != -1) {
+					count++;
+				}
+				Log.v("EditRing", "Count is " + count + " and content length is " + imageBytes.length);
+				//is.read(imageBytes, 0, imageBytes.length);
+				ByteArrayInputStream is2 = new ByteArrayInputStream(imageBytes);
+				
+				
+				
+				//Bitmap bitmap = BitmapFactory.decodeStream(resp.getEntity().getContent());
+				Bitmap bitmap = BitmapFactory.decodeStream(is2);
+				//Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+				imageView.setImageBitmap(bitmap);
+				
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	};
 	
 	public Button.OnClickListener updateButtonListener = new Button.OnClickListener() {
 
@@ -154,7 +287,6 @@ public class EditRing extends Activity {
 	private JSONObject collectManifestData() {
 		final TextView newRingDescription = (TextView) findViewById(R.id.editRingDescription);
 		final TextView newRingLongDescription = (TextView) findViewById(R.id.editRingLongDescription);
-		final TextView newRingImage = (TextView) findViewById(R.id.editRingImage);
 		final Spinner authKey = (Spinner) findViewById(R.id.editRingAuthKey);
 		final Spinner postPolicy = (Spinner) findViewById(R.id.editRingPostPolicy);
 
@@ -168,16 +300,21 @@ public class EditRing extends Activity {
 					Base64.encodeBytes(newRingLongDescription.getText().toString().getBytes("UTF8")));
 			jsonManifest.put("description", 
 					Base64.encodeBytes(newRingDescription.getText().toString().getBytes("UTF8")));
-			//jsonManifest.put("image", newRingImage.getText());
+			if (imageBytes != null)
+			  jsonManifest.put("image", Base64.encodeBytes(imageBytes));
 			jsonManifest.put("postpolicy", postPolicy.getSelectedItem());
 
 			if (authkeyId != 0) {
 			  jsonManifest.put("authkey",identities[authkeyId-1].publicKeyEnc);
-
-		     
-			 
-			  //jsonObj.put("signdata",Base64.encodeBytes("some random sign data".getBytes()));
-			  //jsonObj.put("signature", Base64.encodeBytes(sigBytes));
+		
+			JSONArray keylist = new JSONArray();
+			for (int i=0; i<keylistIdentitiesSelected.length; i++) {
+				if (keylistIdentitiesSelected[i])
+				   keylist.put(identities[i-1].publicKeyEnc);
+			}
+		    
+			if (keylist.length() != 0)
+				jsonManifest.put("keylist", keylist);			 
 			}
 			
 			

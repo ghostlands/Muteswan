@@ -71,15 +71,16 @@ public class Ring {
 	private byte[] image;
 	private String longDescription;
 	private String description;
+	private String[] keylist;
 
 	public class OpenHelper extends SQLiteOpenHelper {
 
-		public static final int DATABASE_VERSION = 11;
+		public static final int DATABASE_VERSION = 12;
 		public String databaseName = "aftffdb";
 		public static final String MESSAGESTABLE = "messages";
 		public static final String SIGTABLE = "signatures";
 		public static final String LASTMESSAGES = "lastmessages";
-		public static final String MANIFESTS = "manifests";
+		public static final String MANIFEST = "manifest";
 
 		
 	     
@@ -93,7 +94,9 @@ public class Ring {
 	         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
 	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
 	         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
-	         db.execSQL("CREATE TABLE " + MANIFESTS + " (ringHash TEXT PRIMARY KEY, description TEXT, longdescription TEXT, image BLOB, authkey TEXT, postpolicy TEXT)");
+	         //db.execSQL("CREATE TABLE " + MANIFESTS + " (ringHash TEXT PRIMARY KEY, description TEXT, longdescription TEXT, image BLOB, authkey TEXT, postpolicy TEXT)");
+	         db.execSQL("CREATE TABLE " + MANIFEST + " (key TEXT, value TEXT)");
+
 		}
 
 	      @Override
@@ -101,7 +104,7 @@ public class Ring {
 	         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
 	         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
 	         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
-	         db.execSQL("DROP TABLE IF EXISTS " + MANIFESTS);
+	         db.execSQL("DROP TABLE IF EXISTS " + MANIFEST);
 	         onCreate(db);
 	      }
 	      
@@ -109,7 +112,7 @@ public class Ring {
 	    	  db.execSQL("DELETE FROM " + MESSAGESTABLE);
 		      db.execSQL("DELETE FROM " + SIGTABLE);
 		      db.execSQL("DELETE FROM " + LASTMESSAGES);
-		      db.execSQL("DELETE FROM " + MANIFESTS);
+		      db.execSQL("DELETE FROM " + MANIFEST);
 	      }
 	      
 	   }
@@ -181,22 +184,63 @@ public class Ring {
 	private void initManifest() {
 		String ringHash = aftff.genHexHash(getFullText());
 		SQLiteDatabase db = this.openHelper.getWritableDatabase();
-		Cursor cursor = db.query(Ring.OpenHelper.MANIFESTS, new String[] { "description", "longdescription", "image", "authkey", "postpolicy" }, "ringHash = ?", new String[] { ringHash }, null, null, null );
-		if (cursor.moveToFirst()) {
-			if (cursor.getString(0) != null)
-			   setDescription(cursor.getString(0));
-			if (cursor.getString(0) != null)
-			   setLongDescription(cursor.getString(1));
-			if (cursor.getString(0) != null)
-			   setAuthKey(cursor.getString(3));
-
-
 		
-		   setImage(cursor.getBlob(2));
-		   setPostPolicy(cursor.getString(4));
+		Cursor cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "description" }, null, null, null );
+		if (cursor.moveToFirst() && cursor.getString(0) != null) {
+			setDescription(cursor.getString(0));
 		}
 		cursor.close();
+		
+		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "longdescription" }, null, null, null );
+		if (cursor.moveToFirst() && cursor.getString(0) != null) {
+			setLongDescription(cursor.getString(0));
+		}
+		cursor.close();
+		
+		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "image" }, null, null, null );
+		if (cursor.moveToFirst() && cursor.getBlob(0) != null) {
+			setImage(cursor.getBlob(0));
+		}
+		cursor.close();
+		
+		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "postpolicy" }, null, null, null );
+		if (cursor.moveToFirst() && cursor.getString(0) != null) {
+			setPostPolicy(cursor.getString(0));
+		}
+		cursor.close();
+		
+		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "authkey" }, null, null, null );
+		if (cursor.moveToFirst() && cursor.getString(0) != null) {
+			setAuthKey(cursor.getString(0));
+		}
+		cursor.close();
+		
+		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "keylist" }, null, null, null );
+		
+		if (cursor.getCount() != 0) {
+		  String[] keylist = new String[cursor.getCount()];
+		  int count = 0;
+		  while (cursor.moveToNext()) {
+			keylist[count] = cursor.getString(0);
+			count++;
+		  }
+		
+		  if (count != 0)
+			setKeylist(keylist);
+		
+		  if (cursor.moveToFirst() && cursor.getString(0) != null) {
+			setAuthKey(cursor.getString(0));
+		  }
+		  cursor.close();
+		
+		
+		  db.close();
+		} else {
+			cursor.close();
+		}
+		
 		db.close();
+
 		
 	}
 	
@@ -211,6 +255,10 @@ public class Ring {
 	public byte[] getImage() {
 		return(image);
 	}
+	
+	public String[] getKeylist() {
+		return(keylist);
+	}
 
 	public String getLongDescription() {
 		return(longDescription);
@@ -222,6 +270,10 @@ public class Ring {
 
 	final public String getFullText() {
 		return(getShortname()+"+"+getKey()+"@"+getServer());
+	}
+	
+	private void setKeylist(String[] keylist) {
+		this.keylist = keylist;
 	}
 	
 	private void setPostPolicy(String policy) {
@@ -564,6 +616,7 @@ public class Ring {
 		httpPost.setEntity(entity);
 		
 		try {
+			// POST MESSAGE
 			aftffHttp.httpClient.execute(httpPost);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
@@ -792,6 +845,18 @@ public class Ring {
 				  setAuthKey(jsonManifest.getString("authkey"));
 				if (jsonManifest.has("postpolicy"))
 				  setPostPolicy(jsonManifest.getString("postpolicy"));
+				if (jsonManifest.has("image"))
+				  setImage(Base64.decode(jsonManifest.getString("image")));
+				if (jsonManifest.has("keylist")) {
+					JSONArray keylist = jsonManifest.getJSONArray("keylist");
+					String[] keylistArr = new String[keylist.length()];
+					for (int i=0; i<keylist.length();i++) {
+						keylistArr[i] = keylist.getString(i);
+					}
+					setKeylist(keylistArr);
+				}
+				
+				
 				saveManifestToDb();
 
 		    	Log.v("Ring", "Downloaded manifest for " + getShortname());
@@ -813,39 +878,50 @@ public class Ring {
 	    SQLiteDatabase db = openHelper.getWritableDatabase();
 	    String ringHash = aftff.genHexHash(getFullText());
 		
-	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFESTS);
+	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFEST);
 	    del.execute();
 	    
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFESTS + " (ringHash) VALUES (?)");
-		insrt.bindString(1, ringHash);
-		insrt.execute();
+		//SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (ringHash) VALUES (?)");
+		//insrt.bindString(1, ringHash);
+		//insrt.execute();
 		
+	    SQLiteStatement insrt;
 		if (getDescription() != null) {
-		  insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET description = ? WHERE ringHash = ?");
-		  insrt.bindString(2, ringHash);
+		  insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('description',?)");
 		  insrt.bindString(1, getDescription());
 		  insrt.execute();
 		}
 		
 		if (getLongDescription() != null) {
-	      insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET longdescription = ? WHERE ringHash = ?");
-		  insrt.bindString(2, ringHash);
-		  insrt.bindString(1, getLongDescription());
+		  insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('longdescription',?)");
+	      insrt.bindString(1, getLongDescription());
 		  insrt.execute();
 		}
 		
 		if (getAuthKey() != null) {
-		  insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET authkey = ? WHERE ringHash = ?");
-		  insrt.bindString(2, ringHash);
+	      insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('authkey',?)");
 		  insrt.bindString(1, getAuthKey());
 		  insrt.execute();
 		}
 		
 		if (getPostPolicy() != null) {
-		  insrt = db.compileStatement("UPDATE " + OpenHelper.MANIFESTS + " SET postpolicy = ? WHERE ringHash = ?");
-		  insrt.bindString(2, ringHash);
-		  insrt.bindString(1, getPostPolicy());
-		  insrt.execute();
+			insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('postpolicy',?)");
+			insrt.bindString(1, getPostPolicy());
+			insrt.execute();
+		}
+		
+		if (getImage() != null) {
+			insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('image',?)");
+			insrt.bindBlob(1, getImage());
+			insrt.execute();
+		}
+		
+		if (getKeylist() != null) {
+			for (String s : getKeylist()) {
+				insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('keylist',?)");
+				insrt.bindString(1, s);
+				insrt.execute();
+			}
 		}
 		
 		db.close();

@@ -27,6 +27,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.BitmapFactory;
 import android.net.ParseException;
 import android.os.Bundle;
 import android.os.Handler;
@@ -314,7 +315,12 @@ public class LatestMessages extends ListActivity implements Runnable {
 			 layout.setClickable(true);
 			 layout.setOnClickListener(listItemClicked);
 			 
-      		 
+      		 if (msg.getRing().getImage() != null) {
+      			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
+      			 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getRing().getImage(), 0, msg.getRing().getImage().length));
+      			 //layout.addView(imageView);
+      		 }
+			 
       		       		 
       		 return layout;	
 		}

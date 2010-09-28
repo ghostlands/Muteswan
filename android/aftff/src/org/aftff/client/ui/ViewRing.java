@@ -8,12 +8,14 @@ import org.aftff.client.data.Ring;
 import org.aftff.client.data.RingStore;
 
 import android.app.Activity;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +39,7 @@ public class ViewRing extends Activity implements Runnable {
 		TextView viewRingLongDescription = (TextView) findViewById(R.id.viewRingLongDescription);
 		TextView viewRingPostPolicy = (TextView) findViewById(R.id.viewRingPostPolicy);
 		TextView viewRingAuthKey = (TextView) findViewById(R.id.viewRingAuthKey);
+		ImageView viewRingImageView = (ImageView) findViewById(R.id.viewRingImageView);
 
 		
 		viewRingServer.setText("@"+ring.getServer());
@@ -46,6 +49,8 @@ public class ViewRing extends Activity implements Runnable {
 		viewRingPostPolicy.setText(ring.getPostPolicy());
 		viewRingAuthKey.setText(ring.getAuthKey());
 		
+		if (ring.getImage() != null)
+		  viewRingImageView.setImageBitmap(BitmapFactory.decodeByteArray(ring.getImage(), 0, ring.getImage().length));
 		
 	}
 	

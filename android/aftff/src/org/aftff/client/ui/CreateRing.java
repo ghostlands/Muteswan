@@ -88,15 +88,15 @@ public class CreateRing extends Activity implements Runnable {
 
 	    	newRingResult.setText("Created ring " + name.getText().toString());
 	    	
-	    	try {
-				Thread.currentThread().sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	    	//try {
+			//	Thread.currentThread().sleep(1000);
+			//} catch (InterruptedException e) {
+			//	// TODO Auto-generated catch block
+			//	e.printStackTrace();
+			//}
 	    	
 	    	Intent intent = new Intent(getApplicationContext(),EditRing.class);
-	    	intent.putExtra("ring",aftff.genHexHash(ringFullText));
+	    	intent.putExtra("ring",ringFullText);
 	      	startActivity(intent);
 
 	 }

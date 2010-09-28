@@ -16,6 +16,7 @@ public class Crypto {
 
 	
 	// FIXME: better solution for ivData than this? obviously protocol implications
+	// use value from Last-Modified header? how would we know that? use iso date?
 	final byte[] ivData = new byte[] { '0','1','2','3','4','5','6','7','0','1','2','3','4','5','6','7' };
 	
 	Cipher cipher;

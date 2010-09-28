@@ -90,8 +90,8 @@
      android:layout_height="wrap_content"
      android:layout_alignParentRight="true"
      android:layout_alignParentLeft="false"
-     android:layout_alignParentTop="true"
-     android:layout_alignParentBottom="false"    
+     android:layout_alignParentTop="false"
+     android:layout_alignParentBottom="true"    
      android:gravity="center"
      android:text="Repost"
      android:padding="5sp"
@@ -107,12 +107,14 @@
      android:layout_height="wrap_content"
      android:text="Reply"
      android:layout_toLeftOf="@id/android:latestmessagesRepostButton"    
-     android:layout_alignParentTop="true"
+     android:layout_alignParentBottom="true"
      android:gravity="center"
      android:padding="5sp"
      android:textColor="#0011ee"
      android:clickable="true"
      />
+  
+  
     
     </RelativeLayout>
     
@@ -133,7 +135,15 @@
          />
          -->
     
-     
-     
+  
+  <ImageView
+  	android:id="@+id/latestmessagesImage"
+  	android:layout_width="100sp"
+  	android:layout_height="100sp"
+  	android:gravity="center"
+  	android:layout_alignParentRight="true"
+  	android:layout_alignParentTop="true"
+  	
+     />
 
 </RelativeLayout>
