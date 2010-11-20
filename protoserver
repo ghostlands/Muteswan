@@ -3,11 +3,16 @@
 use HTTP::Daemon;
 use HTTP::Status;
 use Getopt::Std;
-use YAML;
 use Digest::SHA qw(sha256_hex);
+use MIME::Base64;
+use JSON;
+use Data::Dumper;
 
 
-# this is a prototype server for aftff (anonymous front, trusted face to face)
+use Crypt::OpenSSL::RSA;
+
+
+
 
 # options:
 # directory: -d - directory to store data
@@ -17,12 +22,19 @@ getopt('d:', \%opts);
 our $directory = $opts{'d'};
 
 my $seed = rand(2**32);
-mkdir("$directory/ex");
 
+# don't care about no zombies
+$SIG{CHLD} = "IGNORE";
 
 # main logic
 ############
-my $daemon = new HTTP::Daemon LocalPort => 80;
+
+if (!$directory) {
+	print "usage: protodaemon -d directory\n";
+	exit;
+}
+
+my $daemon = new HTTP::Daemon LocalPort => 80, LocalAddr => '127.0.0.1';
 print "Please contact me at: <URL:", $daemon->url, ">\n";
 while (my $c = $daemon->accept) {
 
@@ -31,7 +43,7 @@ while (my $c = $daemon->accept) {
     if (!$pid) {
 
       while (my $r = $c->get_request) {
-	print $r->method . " " . $r->url->path . "\n";
+	print localtime(time()) . ": " . $r->method . " " . $r->url->path . "\n";
         if ($r->method eq 'GET') {
 	    handleGet($r->url->path,$c);
         } elsif ($r->method eq 'POST' || $r->method eq 'PUT') {
@@ -42,8 +54,11 @@ while (my $c = $daemon->accept) {
       }
       $c->close;
       undef($c);
+      #print localtime(time()) . ": child exited.\n";
       exit;
 
+    } else {
+	#print localtime(time()) . ": forked pid $pid\n";
     }
 }
 ########
@@ -59,11 +74,26 @@ sub handleGet {
 		#$res->content($index);
 		$res->header( 'Last-Message' => $index );
 		$conn->send_response($res);
+
+	# longpoll
+	} elsif ($path =~ /^\/(\w+)\/longpoll\/(\d+)$/) {
+	       print "Longpoll request for $2\n";
+	       my $count = 0;
+	       while ( ! -f "$directory/$1/$2") {
+		sleep(1);
+		$count++;
+		exit if $count > 500;
+	       }
+	         
+	       print "New data in longpoll request, sending $2.\n";
+	       $conn->send_file_response($directory . "/" . $1 . "/" . $2); 
+
+
 	# send a file
 	} else {
 		$conn->send_file_response($directory . "/" . $path);
 	}
-	exit;
+	#exit;
 }
 
 sub handlePost {
@@ -72,28 +102,147 @@ sub handlePost {
 
 
 
-   if ( -f "$directory/" . $r->url->path  && ! -d "$directory/" . $r->url->path) {
+   if ( -f "$directory/" . $r->url->path  && ! -d "$directory/" . $r->url->path
+	&& $r->url->path !~ /manifest$/) {
 	print "File exists, forbidden.\n";
         $c->send_error(RC_FORBIDDEN);
    } elsif ($r->url->path =~ /^\/(\w+)?$/) {
-	my $msgid = addMessage($1,$r->content());
-	my $res = new HTTP::Response( 200 );
-	$res->content("Added message: $msgid\n");
+	my $msgid = addMessage($1,$r);
+	if ($msgid) {
+	  my $res = new HTTP::Response( 200 );
+	  $res->header( 'Last-Message' => $msgid );
+	  $c->send_response($res);
+	} else {
+	  $c->send_error(RC_FORBIDDEN);
+	}
+   } elsif ($r->url->path =~ /^\/(\w+)?\/manifest$/ && ! -f "$directory/$1/manifest") {
+	addManifest($1,$r->content());
+	my $res =  new HTTP::Response( 200 );
 	$c->send_response($res);
-    } else {
-        $c->send_error(RC_FORBIDDEN);
-    }
+   } elsif ($r->url->path =~ /^\/(\w+)?\/manifest$/) {
+	my $json = new JSON();
+	my $json_data = $json->decode($r->content());
+	my $old_manifest = loadManifest($1);
+	#print Dumper($json_data);
+	my $signature = $r->header('Signature');
+	if ($$old_manifest{'manifest'}{'authkey'} && $signature) {
+	    my $res = &verify_signature(
+                        $r->content(),
+                        decode_base64($signature),
+			$$old_manifest{'manifest'}{'authkey'});
+	    if ($res) {
+		addManifest($1,$r->content());
+		my $res =  new HTTP::Response( 200 );
+		$c->send_response($res);
+	    } else {
+		print "Forbidden, key does not match.\n";
+	  	$c->send_error(RC_FORBIDDEN);
+	    }
+	} elsif ($$old_manifest{'manifest'}{'authkey'} && !$signature) {
+	  print "Forbidden, no signature provided and authorization is required.\n";
+	  $c->send_error(RC_FORBIDDEN);
+	} else {
+	  print "Forbidden, authkey in manifest is empty.\n";
+	  $c->send_error(RC_FORBIDDEN);
+	}	
 
+   } else {
+        $c->send_error(RC_FORBIDDEN);
+   }
+
+}
+
+# FIXME: no verification of manifest data
+sub addManifest {
+	print "Adding manifest.\n";
+	my $keyhash = shift;
+	my $content = shift;
+
+	if ( ! -d $keyhash ) {
+		mkdir("$directory/$keyhash");
+	}
+
+	open(MANIFEST,">$directory/$keyhash/manifest");
+	print MANIFEST $content;
+	close(MANIFEST);
+
+}
+
+sub verify_signature {
+	my $signdata = shift;
+	my $signature = shift;
+	#my $pubkeydata = "-----BEGIN PUBLIC KEY-----\n" . shift . "\n-----END PUBLIC KEY-----";
+	my $pubkeydata = shift;
+
+
+	my $pubkeyForOpenssl = &get_openssl_base64($pubkeydata);
+
+
+	#open(TMPFILE,">/tmp/aftff.pubkey.$$");
+	#print TMPFILE $pubkeydata;
+	#close(TMPFILE);
+
+
+	print "PUBKEY: $pubkeyForOpenssl\n";
+	my $rsa_pub = Crypt::OpenSSL::RSA->new_public_key($pubkeyForOpenssl);
+	$rsa_pub->use_md5_hash();
+	if ($rsa_pub->verify($signdata,$signature)) {
+		print "Valid signature!\n";
+		return(1);
+	} else {
+		print "Invalid signature!\n";
+		return(0);
+	}
 }
 
 
 sub addMessage {
-
 	my $keyhash = shift;
-	my $msg = shift;
+	my $req = shift;
+	
+
+	my $msg = $req->content();
 
 	if ( ! -d $keyhash ) {
 		mkdir("$directory/$keyhash");
+	}
+
+        my $old_manifest;
+	if (-f "$directory/$keyhash/manifest" ) {
+		$old_manifest = loadManifest($keyhash);
+	}
+
+	if ($old_manifest && $$old_manifest{'manifest'}{'postpolicy'} eq 'AUTHKEY') {
+		my $rsa_pub = Crypt::OpenSSL::RSA->new_public_key(
+			get_openssl_base64($$old_manifest{'manifest'}{'authkey'}));
+		$rsa_pub->use_md5_hash();
+		my $signature = $req->header('Signature');
+		if ($rsa_pub->verify($req->content(),decode_base64($signature))) {
+			print "Valid signature for post!\n";
+		} else {
+			print "Invalid signature for post!\n";
+			return;
+		}
+	} elsif ($old_manifest && $$old_manifest{'manifest'}{'postpolicy'} eq 'KEYLIST') {
+		#print "Ack! can't handle KEYLIST post policy yet!\n";
+		my $valid=0;
+	        foreach my $key (@{$$old_manifest{'manifest'}{'keylist'}}) {
+		  my $rsa_pub = Crypt::OpenSSL::RSA->new_public_key(
+			get_openssl_base64($key));
+		  $rsa_pub->use_md5_hash();
+		  my $signature = $req->header('Signature');
+		  if ($rsa_pub->verify($req->content(),decode_base64($signature))) {
+			print "Valid signature for post!\n";
+			$valid = 1;
+			last;
+		  }
+		}
+
+		if (!$valid) {
+		  print "Invalid signature for post!\n";
+		  return;
+		}
+
 	}
 
 	print "Add message for $keyhash\n";
@@ -111,7 +260,6 @@ sub addMessage {
 	print "Added message $msg_id\n";
 
 	return($msg_id);
-
 }
 
 sub getIndex {
@@ -122,12 +270,39 @@ sub getIndex {
 	return(pop(@msgs));
 }
 
+sub loadManifest {
+	my $keyhash = shift;
+
+	open(MANIFEST,"$directory/$keyhash/manifest");
+	while(<MANIFEST>) {
+		$manifestData .= $_;
+	}
+	close(MANIFEST);
+
+	my $json = new JSON();
+	my $json_data = $json->decode($manifestData);
+	return($json_data);
+}
+
 
 # utility functions
 sub getMsgs {
 	my $keyhash = shift;
 	opendir(DIR,"$directory/" . $keyhash);
-	my @msgs = sort {$a <=> $b} grep { !/^\.$/ && !/^\.\.$/ } readdir(DIR);
+	my @msgs = sort {$a <=> $b} grep { !/^\.$/ && !/^\.\.$/ && !/manifest/} readdir(DIR);
 	closedir(DIR);
 	return(@msgs);
+}
+
+sub get_openssl_base64 {
+	my $pubkey = shift;
+	my $pubkeyForOpenssl = "-----BEGIN PUBLIC KEY-----\n";
+
+	my $offset = 0;
+	while(my $subs = substr($pubkey,$offset,64)) {
+		$offset = $offset + 64;
+		$pubkeyForOpenssl .= $subs . "\n";
+	}
+	$pubkeyForOpenssl .= "-----END PUBLIC KEY-----\n";
+	return($pubkeyForOpenssl);
 }
