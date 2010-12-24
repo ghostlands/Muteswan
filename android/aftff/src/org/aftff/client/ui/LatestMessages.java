@@ -284,17 +284,19 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  //int ringWidth = txtRing.getLayoutParams().width;
       		  //int mainWidth = mainLayout.getLayoutParams().width;	  
       		  
-      		  txtRing.setText(msg.getRing().getShortname());
+      		  txtRing.setText(msg.getRing().getShortname() + "/" + msg.getId());
       		  txtRing.setClickable(true);
       		  txtRing.setOnClickListener(showRing);
       		  txtDate.setText(msg.getDate());
       		  String white = "";
       		  // HAH WTF! fix this, please FIXME
-      		  for (int i=0; i<msg.getRing().getShortname().length()-1; i++) {
-      			  white = white + "   ";
-      		  }
+      		  //for (int i=0; i<msg.getRing().getShortname().length()-1; i++) {
+      			//  white = white + "   ";
+      		  //}
       		  
-      		  txtMessage.setText(white + "/" + msg.getId() + ": " + msg.getMsg());
+      		  //txtMessage.setText(white + "/" + msg.getId() + ": " + msg.getMsg());
+      		  txtMessage.setText(msg.getMsg());
+
       		  
       		  String sigDataStr = "-- \n";
       		  LinkedList<Identity> list = msg.getValidSigs();
@@ -319,6 +321,9 @@ public class LatestMessages extends ListActivity implements Runnable {
       			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
       			 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getRing().getImage(), 0, msg.getRing().getImage().length));
       			 //layout.addView(imageView);
+      		 } else {
+      			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
+      			 layout.removeView(imageView);
       		 }
 			 
       		       		 

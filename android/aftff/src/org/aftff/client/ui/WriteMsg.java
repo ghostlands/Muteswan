@@ -12,6 +12,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.aftff.client.R;
+import org.aftff.client.TorStatus;
 import org.aftff.client.aftff;
 import org.aftff.client.R.id;
 import org.aftff.client.R.layout;
@@ -78,8 +79,11 @@ public class WriteMsg extends Activity {
 	      
 
 	       
-	       final Button button = (Button) findViewById(R.id.submitMsg);
-	       button.setOnClickListener(submitMsg);
+	       final Button postButton = (Button) findViewById(R.id.submitMsg);
+	       postButton.setOnClickListener(submitMsg);
+	       
+	       TorStatus torStatus = new TorStatus(aftff.torService);
+	       torStatus.checkButton(postButton);
 	       
 	       final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
 	       selectSigButton.setOnClickListener(selectSigButtonHandler);

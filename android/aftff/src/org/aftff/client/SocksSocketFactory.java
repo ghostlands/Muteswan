@@ -50,20 +50,20 @@ public class SocksSocketFactory implements SocketFactory {
         if (sock == null)
             sock = createSocket();
         
-        DataOutputStream fhe = null;
-		try {
-			fhe = new DataOutputStream(new FileOutputStream("/sdcard/sockdata.txt"));
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        //DataOutputStream fhe = null;
+		//try {
+		//	fhe = new DataOutputStream(new FileOutputStream("/sdcard/sockdata.txt"));
+		//} catch (FileNotFoundException e1) {
+		//	// TODO Auto-generated catch block
+		//	e1.printStackTrace();
+		//}
 		
-        try {
-        	fhe.writeChars("sock " + sock + " host " + host + " port " + port + " localAddress " + localAddress + " localPort " + localPort);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        //try {
+        //	fhe.writeChars("sock " + sock + " host " + host + " port " + port + " localAddress " + localAddress + " localPort " + localPort);
+		//} catch (IOException e1) {
+		//	// TODO Auto-generated catch block
+		//	e1.printStackTrace();
+		//}
 
         if ((localAddress != null) || (localPort > 0)) {
 

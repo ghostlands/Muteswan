@@ -69,7 +69,7 @@ public class aftff extends Activity implements Runnable {
 	private ProgressDialog dialog;
 	
 	
-	ITorService torService;
+	public static ITorService torService;
 
     IMessageService newMsgService;
 
@@ -89,7 +89,7 @@ public class aftff extends Activity implements Runnable {
 		Log.v("AFTFF", "Tor is not null.");
 		
 		
-		dialogWaitOnNewMsgService.sendEmptyMessage(0);
+		//dialogWaitOnNewMsgService.sendEmptyMessage(0);
 		while (newMsgService == null) {
 			try {
 				Thread.currentThread().sleep(500);
@@ -104,7 +104,7 @@ public class aftff extends Activity implements Runnable {
 		if (torService.getStatus() != TOR_STATUS_ON) {
 			   Log.v("AFTFF", "Tor is not on.");
 		       torService.setProfile(TOR_STATUS_ON);
-		       dialogWaitOnTor.sendEmptyMessage(0);
+		  //     dialogWaitOnTor.sendEmptyMessage(0);
 		       while (torService.getStatus() != TOR_STATUS_ON) {
 		    	   Log.v("AFTFF", "Still waiting on Tor...");
 		    	   try {
@@ -116,7 +116,7 @@ public class aftff extends Activity implements Runnable {
 		       }
 		  }
 		
-		  dialogDismiss.sendEmptyMessage(0);
+		  //dialogDismiss.sendEmptyMessage(0);
 			   
 		  if (justCreated) {
 			   justCreated = false;
@@ -164,15 +164,21 @@ public class aftff extends Activity implements Runnable {
 		        //setProgressBarIndeterminateVisibility(false);
 		 }
 	 };
+	private TextView postButton;
 	 
 	 
 	public void onResume() {
 		 super.onResume();
+
+		  TorStatus torStatus = new TorStatus(torService);
+	      torStatus.checkView(postButton);
+
+		 //TorStatus torStatus = new TorStatus(torService);
 		 
 		 
-		 dialog = ProgressDialog.show(this, "", "Connecting to Tor service...", true);
-	     Thread thread = new Thread(this); 
-	     thread.start();
+		 //dialog = ProgressDialog.show(this, "", "Connecting to Tor service...", true);
+		 //Thread thread = new Thread(this); 
+	     //thread.start();
 	        	        
 	       
 	        
@@ -194,6 +200,7 @@ public class aftff extends Activity implements Runnable {
         torServiceIntent.setAction("org.torproject.android.service.ITorService");
         boolean isBoundTor = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
         
+        TorStatus torStatus = new TorStatus(torService);
         
         Intent serviceIntent = new Intent(this,NewMessageService.class);
         boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
@@ -211,8 +218,9 @@ public class aftff extends Activity implements Runnable {
         final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
-        TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
+        postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
+		
 		
 		Button panicButton = (Button) findViewById(R.id.panicButton);
 		panicButton.setOnClickListener(panicButtonClicked);
@@ -241,7 +249,11 @@ public class aftff extends Activity implements Runnable {
         } else {
         	Log.v("Aftff", "IMessageService is bound.");
         }
-       
+     
+        Thread thread = new Thread(this); 
+	    thread.start();
+     
+        
     }
     
     public View.OnClickListener postClicked = new View.OnClickListener() {
@@ -423,15 +435,6 @@ public class aftff extends Activity implements Runnable {
            newMsgService = null;
         }
     };
-    
-
-    
-    
-    
-    
-    
-    
-    
     
     
 	public static String genHexHash(String data) {

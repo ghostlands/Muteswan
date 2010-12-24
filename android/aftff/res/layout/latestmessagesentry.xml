@@ -9,7 +9,15 @@
     android:gravity="left"
     >
     
-  
+   <ImageView
+  	android:id="@+id/latestmessagesImage"
+  	android:layout_width="100sp"
+  	android:layout_height="100sp"
+  	android:gravity="center"
+  	android:layout_alignParentLeft="true"
+  	android:layout_alignParentTop="true"
+  	
+     />
     
     
    <!--  <LinearLayout
@@ -25,7 +33,7 @@
     
   
     <TextView
-    android:layout_alignParentTop="true"
+    android:layout_below="@id/latestmessagesImage"
     android:layout_alignParentLeft="true"
     android:id="@+id/android:latestmessagesRing"
     android:layout_width="wrap_content"
@@ -43,7 +51,7 @@
      android:id="@+id/android:latestmessagesMessage"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
-    android:layout_alignParentTop="true" 
+    android:layout_below="@id/android:latestmessagesRing" 
     android:text="message"
     android:gravity="left"
     android:paddingBottom="8px"
@@ -136,14 +144,6 @@
          -->
     
   
-  <ImageView
-  	android:id="@+id/latestmessagesImage"
-  	android:layout_width="100sp"
-  	android:layout_height="100sp"
-  	android:gravity="center"
-  	android:layout_alignParentRight="true"
-  	android:layout_alignParentTop="true"
-  	
-     />
+ 
 
 </RelativeLayout>

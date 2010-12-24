@@ -108,6 +108,10 @@ public class NewMessageService extends Service {
 		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
 		
+		TorStatus torStatus = new TorStatus(aftff.torService);
+		if (torStatus.checkStatus() == false)
+			return;
+		
 		// Register the available rings and then poll
 		if (started  == false) {
 		
