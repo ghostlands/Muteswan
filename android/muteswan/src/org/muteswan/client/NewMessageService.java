@@ -228,15 +228,16 @@ public class NewMessageService extends Service {
 
 				    	
 				    	Integer lastId;
-				    	if (startLastId == null || startLastId == 0) {
-							lastId = ring.getMsgIndex() - numMsgDownload;
-							if (lastId <= 0)
-								lastId = 1;
+				    	//if (startLastId == null || startLastId == 0) {
+							//lastId = ring.getMsgIndex() - numMsgDownload;
+				    		lastId = ring.getMsgIndex();
+						//	if (lastId <= 0)
+						//		lastId = 1;
 							ring.updateLastMessage(lastId);
 						    ring.saveLastMessage();
-						} else {
-							lastId = startLastId;
-						}
+						//} else {
+						//	lastId = startLastId;
+						//}
 				    	
 					 Log.v("MuteswanService", "Polling for " + ring.getShortname() + " at thread " + Thread.currentThread().getId());
 			       

@@ -120,10 +120,6 @@ public class Ring {
 
   
 
-	
-	
-	
-	
 	public Ring(Context context, String contents) {
 		Integer plusIndx = contents.indexOf("+");
 		Integer atIndx = contents.indexOf("@");

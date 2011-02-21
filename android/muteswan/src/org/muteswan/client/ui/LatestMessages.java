@@ -317,14 +317,15 @@ public class LatestMessages extends ListActivity implements Runnable {
 			 layout.setClickable(true);
 			 layout.setOnClickListener(listItemClicked);
 			 
-      		 if (msg.getRing().getImage() != null) {
-      			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
-      			 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getRing().getImage(), 0, msg.getRing().getImage().length));
-      			 //layout.addView(imageView);
-      		 } else {
+      		 // images are not showed right now, uncomment to show them
+			 //if (msg.getRing().getImage() != null) {
+      		//	 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
+      		//	 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getRing().getImage(), 0, msg.getRing().getImage().length));
+      		//	 //layout.addView(imageView);
+      		// } else {
       			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
       			 layout.removeView(imageView);
-      		 }
+      		// }
 			 
       		       		 
       		 return layout;	
@@ -508,6 +509,12 @@ public class LatestMessages extends ListActivity implements Runnable {
 	@Override
 	public void run() {
 		Log.v("LatestMessages","Running!");
+		
+		Ring ring = ringMap.get(ringExtra);
+		if (ring != null) {
+			ring.updateLastMessage(ring.getMsgIndex());
+		}
+		
 		final int start = messageViewCount;
 		loadRecentMessages(messageList,start,5);
 		dismissDialog.sendEmptyMessage(0);
