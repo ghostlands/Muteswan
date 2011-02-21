@@ -1,4 +1,4 @@
-package org.aftff.client.data;
+package org.muteswan.client.data;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -13,15 +13,15 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.aftff.client.Base64;
-import org.aftff.client.Crypto;
+import org.muteswan.client.Base64;
+import org.muteswan.client.Crypto;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
 
-public class AftffMessage {
+public class MuteswanMessage {
 
 	private JSONObject jsonObj;
 	private String msgData;
@@ -36,14 +36,14 @@ public class AftffMessage {
 	private LinkedList<Identity> validSigs;
 
 
-	public AftffMessage(Ring ring, Integer id, String date, String msg) {
+	public MuteswanMessage(Ring ring, Integer id, String date, String msg) {
 		this.date = date;
 		this.ring = ring;
 		this.msgData = msg;
 		this.id = id;
 	}
 	
-	public AftffMessage(Ring ring, Integer id, String date, String msg, String[] signatures) {
+	public MuteswanMessage(Ring ring, Integer id, String date, String msg, String[] signatures) {
 		this.date = date;
 		this.ring = ring;
 		this.msgData = msg;
@@ -51,7 +51,7 @@ public class AftffMessage {
 		this.signatures = signatures;
 	}
 	
-	public AftffMessage(Integer id, Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+	public MuteswanMessage(Integer id, Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 		jsonObj = new JSONObject(jsonString);
 		this.date = date;
 		this.ring = ring;

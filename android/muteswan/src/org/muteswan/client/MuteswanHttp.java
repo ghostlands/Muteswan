@@ -1,4 +1,4 @@
-package org.aftff.client;
+package org.muteswan.client;
 
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.ClientConnectionManager;
@@ -9,11 +9,11 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 
-public class AftffHttp {
+public class MuteswanHttp {
 
 	public DefaultHttpClient httpClient;
 	
-	public AftffHttp() {
+	public MuteswanHttp() {
 		initHttp();
 	}
     

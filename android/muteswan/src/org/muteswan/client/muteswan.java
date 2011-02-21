@@ -1,4 +1,4 @@
-package org.aftff.client;
+package org.muteswan.client;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,17 +10,17 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import org.aftff.client.data.Identity;
-import org.aftff.client.data.IdentityStore;
-import org.aftff.client.data.Ring;
-import org.aftff.client.data.RingStore;
-import org.aftff.client.ui.CreateRing;
-import org.aftff.client.ui.GenerateIdentity;
-import org.aftff.client.ui.IdentityList;
-import org.aftff.client.ui.LatestMessages;
-import org.aftff.client.ui.MsgList;
-import org.aftff.client.ui.Preferences;
-import org.aftff.client.ui.RingList;
+import org.muteswan.client.data.Identity;
+import org.muteswan.client.data.IdentityStore;
+import org.muteswan.client.data.Ring;
+import org.muteswan.client.data.RingStore;
+import org.muteswan.client.ui.CreateRing;
+import org.muteswan.client.ui.GenerateIdentity;
+import org.muteswan.client.ui.IdentityList;
+import org.muteswan.client.ui.LatestMessages;
+import org.muteswan.client.ui.MsgList;
+import org.muteswan.client.ui.Preferences;
+import org.muteswan.client.ui.RingList;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.util.EntityUtils;
@@ -55,7 +55,7 @@ import android.widget.TextView;
 
 
 
-public class aftff extends Activity implements Runnable {
+public class muteswan extends Activity implements Runnable {
 	//Store store = null;
 	//public static Ring activeRing = null;
 
@@ -65,7 +65,7 @@ public class aftff extends Activity implements Runnable {
 	public final static int TOR_STATUS_CONNECTING = 2;
 
 	
-	public final static String PREFS = "AftffPrefs"; 
+	public final static String PREFS = "MuteswanPrefs"; 
 	private ProgressDialog dialog;
 	
 	
@@ -84,9 +84,9 @@ public class aftff extends Activity implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			Log.v("AFTFF", "Tor service still null.");
+			Log.v("Muteswan", "Tor service still null.");
 		}
-		Log.v("AFTFF", "Tor is not null.");
+		Log.v("Muteswan", "Tor is not null.");
 		
 		
 		//dialogWaitOnNewMsgService.sendEmptyMessage(0);
@@ -100,13 +100,13 @@ public class aftff extends Activity implements Runnable {
 		}
 
 	  try {
-		Log.v("AFFF", "Getting tor status");
+		Log.v("Muteswan", "Getting tor status");
 		if (torService.getStatus() != TOR_STATUS_ON) {
-			   Log.v("AFTFF", "Tor is not on.");
+			   Log.v("Muteswan", "Tor is not on.");
 		       torService.setProfile(TOR_STATUS_ON);
 		  //     dialogWaitOnTor.sendEmptyMessage(0);
 		       while (torService.getStatus() != TOR_STATUS_ON) {
-		    	   Log.v("AFTFF", "Still waiting on Tor...");
+		    	   Log.v("Muteswan", "Still waiting on Tor...");
 		    	   try {
 					Thread.currentThread().sleep(500);
 				} catch (InterruptedException e) {
@@ -160,7 +160,7 @@ public class aftff extends Activity implements Runnable {
 	 private Handler stopTitleProgressBar = new Handler() {
 		 @Override
 		 public void handleMessage(Message msg) {
-           	    //setTitle("aftff");
+           	    //setTitle("muteswan");
 		        //setProgressBarIndeterminateVisibility(false);
 		 }
 	 };
@@ -227,8 +227,8 @@ public class aftff extends Activity implements Runnable {
 		
 		Button shareOrbotButton = (Button) findViewById(R.id.shareOrbotButton);
 		shareOrbotButton.setOnClickListener(shareOrbotButtonClicked);
-		Button shareAftffButton = (Button) findViewById(R.id.shareAftffButton);
-		shareAftffButton.setOnClickListener(shareAftffButtonClicked);
+		Button shareMuteswanButton = (Button) findViewById(R.id.shareMuteswanButton);
+		shareMuteswanButton.setOnClickListener(shareMuteswanButtonClicked);
         
        
         final Button mManageRingsButton = (Button) findViewById(R.id.mManageRings);
@@ -237,17 +237,17 @@ public class aftff extends Activity implements Runnable {
         
       
         if (!isBoundTor) {
-        	Log.v("AFTFF", "failed to bind, service conn definitely busted.\n");
+        	Log.v("Muteswan", "failed to bind, service conn definitely busted.\n");
         } else if (torService == null) {
-        	Log.v("AFTFF", "Service is bound but torService is null.");
+        	Log.v("Muteswan", "Service is bound but torService is null.");
         } else {
-        	Log.v("AFTFF", "Hey, we are bound to the tor service\n");
+        	Log.v("Muteswan", "Hey, we are bound to the tor service\n");
         }   
        
         if (!isBound) {
-        	Log.v("Aftff", "IMessageService is not bound.");
+        	Log.v("Muteswan", "IMessageService is not bound.");
         } else {
-        	Log.v("Aftff", "IMessageService is bound.");
+        	Log.v("Muteswan", "IMessageService is bound.");
         }
      
         Thread thread = new Thread(this); 
@@ -267,7 +267,7 @@ public class aftff extends Activity implements Runnable {
     public View.OnClickListener panicButtonClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent(Intent.ACTION_DELETE);
-    		String packageName = "org.aftff.client";
+    		String packageName = "org.muteswan.client";
     		Uri data = Uri.fromParts("package", packageName, null);
     		intent.setData(data);
     		startActivity(intent);
@@ -283,10 +283,10 @@ public class aftff extends Activity implements Runnable {
     	}
     };
     
-    public View.OnClickListener shareAftffButtonClicked = new View.OnClickListener() {
+    public View.OnClickListener shareMuteswanButtonClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","http://unionoftheother.org/android/aftff.apk");
+			intent.putExtra("ENCODE_DATA","http://unionoftheother.org/android/muteswan.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(intent);
     	}
@@ -409,7 +409,7 @@ public class aftff extends Activity implements Runnable {
                 IBinder service) {
         	torService = ITorService.Stub.asInterface(service);
         	if (torService == null) {
-        		Log.e("AFTFF", "torService is null in mTorConn Service Connection callback.");
+        		Log.e("Muteswan", "torService is null in mTorConn Service Connection callback.");
         	}
 
         }
@@ -424,9 +424,9 @@ public class aftff extends Activity implements Runnable {
 		public void onServiceConnected(ComponentName className,
                 IBinder service) {
         	newMsgService = IMessageService.Stub.asInterface(service);
-        	Log.v("Aftff", "onServiceConnected called.");
+        	Log.v("Muteswan", "onServiceConnected called.");
         	if (newMsgService == null) {
-        		Log.e("AFTFF", "newMsgService is null ");
+        		Log.e("Muteswan", "newMsgService is null ");
         	}
 
         }
