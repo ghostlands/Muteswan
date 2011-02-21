@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">muteswan</string>
+    <string name="msgprompt">Please write your message below.</string>
+    <string name="showmsgprompt">Message</string>
+    
+    <string name="msglistprompt">Message List</string>
+    <string name="foundkeys">Found keys...</string>
+    
+    <string name="app_name">muteswanclient</string>
+    <string name="newMsgTextDefault">...</string>
+    <string name="newringprompt">Create Ring</string>
+    <string name="service_run_message">Service running...</string>
+    
+    <string name="keyselectspinnerprompt">Send without signing</string>
+    
+</resources>

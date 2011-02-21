@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="org.muteswan.client"
+      android:versionCode="1"
+      android:versionName="1.0">
+    <application android:icon="@drawable/icon"
+          android:label="@string/app_name" 
+          android:theme="@android:style/Theme.Light">
+        <activity android:name=".muteswan"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+           
+
+        
+        
+           <receiver android:name=".NewMessageReceiver"
+                        android:exported="true">
+                    <!--   <intent-filter>
+                                <action android:name="de.schoar.nagroid.POLL" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                        </intent-filter> -->
+           </receiver>
+        
+        
+        <activity android:name=".ui.MsgList"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.TorNotAvailable"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.WriteMsg"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.CreateRing"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.RingList"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.LatestMessages"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.GenerateIdentity"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.IdentityList"
+                  android:label="@string/app_name" />
+        <activity android:name=".ui.Preferences"
+                  android:label="@string/app_name" />
+        <service android:name=".NewMessageService"/>
+        <activity android:name=".ui.ViewRing"
+                  android:label="@string/app_name" />
+         <activity android:name=".ui.EditRing"
+                  android:label="@string/app_name" />
+
+    </application>
+
+
+
+<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+</manifest> 

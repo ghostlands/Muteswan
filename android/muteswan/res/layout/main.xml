@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    > 
+    
+    
+   <!--   <TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="muteswan"
+    android:textSize="24sp"
+    android:gravity="center"
+    
+    /> -->
+    
+    
+    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:padding="15sp"
+    android:id="@+id/mainLayoutTable"
+    >
+    
+
+    
+    
+    
+    
+    
+    <!--   <EditText android:text="@+id/EditText01" android:id="@+id/EditText01" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText> -->
+    
+    
+    <!--   <ListView  
+         android:id="@android:id/list"
+         android:layout_width="fill_parent" 
+         android:layout_height="wrap_content" 
+         /> -->
+    
+    <TableRow android:gravity="center" >
+      
+       <Button android:id="@+id/mLatestMessages"
+    		android:text="Messages"
+    		android:textSize="14sp"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content" 
+    		android:minWidth="120sp"
+ 			android:maxWidth="140sp"
+ 			android:maxHeight="100sp"
+ 			android:minHeight="70sp"
+ 			android:gravity="top|center"
+    		/>
+    	
+    	  <Button android:id="@+id/mManageRings"
+ 			android:text="My Rings"
+    		android:textSize="14sp"
+ 			android:layout_width="wrap_content" 
+ 			android:layout_height="wrap_content"
+ 			android:minWidth="120sp"
+ 			android:maxWidth="140sp"
+ 			android:maxHeight="100sp"
+ 			android:minHeight="70sp"
+ 			android:gravity="top|center"
+           />	
+    		<!--  
+       <Button android:id="@+id/mWriteMsg"
+    		android:textSize="14sp"
+ 			android:text="Write Message" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="fill_parent" /> 
+    </TableRow>
+    
+   
+     
+ 	
+ 			
+ 	<Button android:id="@+id/mReadMsgs"
+ 			android:text="Read Messages" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="80sp" />
+ 	
+ 	
+ 	<TableRow>
+ 	
+ 	   
+ 	    <Button android:id="@+id/mScan" 
+    		android:text="Add Ring" 
+    		android:textSize="14sp"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content" />
+    	<Button android:id="@+id/mShare"
+ 			android:text="Share Ring" 
+ 			android:textSize="14sp"
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="fill_parent"
+ 			 />
+    	
+
+    </TableRow>
+    
+    <TableRow>
+    
+    	  
+ 	 	  <Button android:id="@+id/mCreateRing"
+ 			android:text="Create Ring" 
+ 			android:textSize="14sp"
+ 			android:layout_width="wrap_content" 
+ 			android:layout_height="wrap_content" /> 
+ 		
+ 			
+    </TableRow>
+    
+    <TableRow>
+    
+    	  <Button android:id="@+id/mCreateIdentity"
+ 			android:text="Create Identity"
+ 			android:textSize="14sp"
+ 			android:layout_width="fill_parent"
+ 			android:layout_height="fill_parent"
+ 			 />
+ 			 
+ 	 	  <Button android:id="@+id/mIdentities"
+ 			android:text="Identities"
+ 			android:textSize="14sp"
+ 			android:layout_width="wrap_content"
+ 			android:layout_height="wrap_content"/>  -->
+    </TableRow> 
+    
+    
+    
+ </TableLayout>
+ 
+  <ImageView
+    android:layout_height="120sp"
+    android:layout_width="120sp"
+    android:id="@+id/logoView"
+    android:src="@drawable/icon"
+    android:layout_centerInParent="true"
+    />
+ 
+  <Button
+      android:id="@+id/panicButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentRight="true"
+      android:layout_alignParentLeft="false"
+      android:layout_alignParentTop="false"
+      android:layout_alignParentBottom="true"
+      android:text="Panic!"    
+    />
+    
+    <Button
+      android:id="@+id/shareOrbotButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentRight="false"
+      android:layout_alignParentLeft="true"
+      android:layout_alignParentTop="false"
+      android:layout_alignParentBottom="true"
+      android:text="Share Orbot"    
+    />
+    
+    <Button
+      android:id="@+id/shareMuteswanButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_toRightOf="@id/shareOrbotButton"
+      android:layout_alignParentBottom="true"
+      android:text="Share Muteswan"    
+    />
+    
+ 
+</RelativeLayout> 
