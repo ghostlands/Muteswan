@@ -277,7 +277,7 @@ public class muteswan extends Activity implements Runnable {
     public View.OnClickListener shareOrbotButtonClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","http://www.torproject.org/dist/android/0.2.2.13-alpha-orbot-0.0.8.apk");
+			intent.putExtra("ENCODE_DATA","https://www.torproject.org/dist/android/0.2.2.22-alpha-orbot-1.0.4.1.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(intent);
     	}
@@ -286,7 +286,7 @@ public class muteswan extends Activity implements Runnable {
     public View.OnClickListener shareMuteswanButtonClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","http://unionoftheother.org/android/muteswan.apk");
+			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(intent);
     	}

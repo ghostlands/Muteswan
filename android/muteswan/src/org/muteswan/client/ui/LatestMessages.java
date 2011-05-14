@@ -376,7 +376,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Ring r,
 			Integer start, Integer last) {
 		IdentityStore idStore = new IdentityStore(this);
-		Integer lastId = r.getLastMessageId();
+		Integer lastId = r.getLastMsgId();
 
 		if (lastId == null || lastId == 0)
 			return;
@@ -512,7 +512,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		Ring ring = ringMap.get(ringExtra);
 		if (ring != null) {
-			ring.updateLastMessage(ring.getMsgIndex());
+			ring.updateLastMessage(ring.getLastTorMessageId());
+			Log.v("LatestMessages","Ring has last message of: " + ring.getLastMsgId());
 		}
 		
 		final int start = messageViewCount;

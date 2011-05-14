@@ -72,9 +72,9 @@ public class MsgList extends ListActivity implements Runnable {
 	
 	public void run() {
 		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {
-		   lastMessageIndex = ring.getMsgIndex();
+		   lastMessageIndex = ring.getLastTorMessageId();
 		   ring.updateLastMessage(lastMessageIndex);
-		   ring.saveLastMessage();
+		   //ring.saveLastMessage();
 		   dialogIndexHandler.sendEmptyMessage(0);
 		} else if (loadMsgDialog != null && loadMsgDialog.isShowing()) {
 			// FIXME: fix msgId garbage

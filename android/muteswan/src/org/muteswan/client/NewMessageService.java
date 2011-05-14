@@ -230,11 +230,11 @@ public class NewMessageService extends Service {
 				    	Integer lastId;
 				    	//if (startLastId == null || startLastId == 0) {
 							//lastId = ring.getMsgIndex() - numMsgDownload;
-				    		lastId = ring.getMsgIndex();
+				    		lastId = ring.getLastTorMessageId();
 						//	if (lastId <= 0)
 						//		lastId = 1;
 							ring.updateLastMessage(lastId);
-						    ring.saveLastMessage();
+						    //ring.saveLastMessage();
 						//} else {
 						//	lastId = startLastId;
 						//}
@@ -285,7 +285,7 @@ public class NewMessageService extends Service {
 			        	if (count == 4) {
 			        		Log.v("MuteswanService", "Loop count of 4 reached for " + ring.getShortname());
 			        		count = 0;
-			        		int nLastId = ring.getMsgIndex();
+			        		int nLastId = ring.getLastTorMessageId();
 			        		if (lastId != nLastId) {
 			        			Log.v("MuteswanService", "Running downloadMessages() for ring " + ring.getShortname());
 			        			ring.updateLastMessage(nLastId);
@@ -334,7 +334,7 @@ public class NewMessageService extends Service {
 			public void run() {
 				for (final Ring r : rs) {
 			
-					Integer lastMessage = r.getMsgIndex();
+					Integer lastMessage = r.getLastTorMessageId();
 					r.updateLastMessage(lastMessage);
 			
 				Log.v("MuteswanService", "Downloaded messages index for " + r.getShortname());

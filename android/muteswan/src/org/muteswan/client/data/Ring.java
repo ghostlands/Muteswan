@@ -300,14 +300,13 @@ public class Ring {
 		return key;
 	}
 	
-	public Integer getLastMsgId() {
-		if (curLastMsgId == 0) {
-			curLastMsgId = getLastMessageId();
-		}
-		return(curLastMsgId);
-	}
 	
-	public Integer getLastMessageId() {
+	public Integer getLastMsgId() {
+		
+		//if (curLastMsgId != null && curLastMsgId != 0) {
+        // 	return(curLastMsgId);
+		//}
+		
 		String ringHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = this.openHelper.getWritableDatabase();
 
@@ -467,7 +466,7 @@ public class Ring {
     	return(msg);
 	}
 
-	public Integer getMsgIndex() {
+	public Integer getLastTorMessageId() {
 	  
 		
 	   HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
@@ -476,12 +475,12 @@ public class Ring {
 	    Header lastMessage = resp.getFirstHeader("Last-Message");
 	    
 	    if (lastMessage == null)
-	    	return 0;
+	    	return null;
 	    
 	    
 	    Integer result = Integer.parseInt(lastMessage.getValue());
 	    if (result == null)
-	    	return 0;
+	    	return null;
 	    	
 		return(result);
 
@@ -492,7 +491,7 @@ public class Ring {
 		// TODO Auto-generated catch block
 	}
 	
-	return(0);
+	return(null);
 	
 	}
 	
@@ -829,6 +828,7 @@ public class Ring {
 	
 	public void updateLastMessage(Integer curIndex) {
 		curLastMsgId = curIndex;
+		saveLastMessage();
 	}
 	
 	public void saveLastMessage() {
