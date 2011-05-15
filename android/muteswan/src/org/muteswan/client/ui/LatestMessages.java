@@ -520,7 +520,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		loadRecentMessages(messageList,start,5);
 		dismissDialog.sendEmptyMessage(0);
 		dataSetChanged.sendEmptyMessage(0);
-		Log.v("LatestMessages","Not running!");
+		
 	}
 	
     

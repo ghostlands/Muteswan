@@ -58,10 +58,12 @@ final public class RingStore extends LinkedList<Ring> {
     public Context context;
 	private OpenHelper openHelper;
 
+
 	
 	public RingStore(Context applicationContext, boolean readDb) {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
+	  
 
 		if (readDb) {
           initStore();
@@ -90,6 +92,7 @@ final public class RingStore extends LinkedList<Ring> {
 		  delete.bindString(3, ring.getServer());
 		  delete.execute();
 		  db.close();
+		  
 		  
 		  SQLiteDatabase rdb = ring.openHelper.getWritableDatabase();
 		  delete = rdb.compileStatement("DELETE FROM " + Ring.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
@@ -160,6 +163,14 @@ final public class RingStore extends LinkedList<Ring> {
 		  insrt.execute();
 		  db.close();
 		  
+		  SQLiteDatabase rdb = ring.openHelper.getWritableDatabase();
+		  //muteswan.genHexHash(ring.getFullText()));
+ 		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Ring.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+		  insert.bindString(1,muteswan.genHexHash(ring.getFullText()));
+		  insert.bindLong(2, 0);
+		  insert.executeInsert();
+		  rdb.close();
+	  
 		  add(ring);
 	  }
 	  

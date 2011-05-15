@@ -474,13 +474,15 @@ public class Ring {
 	    HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
 	    Header lastMessage = resp.getFirstHeader("Last-Message");
 	    
-	    if (lastMessage == null)
-	    	return null;
+	    if (lastMessage == null) {
+	    	Log.v("LatestMessages","lastMessage header is null!");
+	    	return 0;
+	    }
 	    
-	    
+	    Log.v("LatestMessages","lastmessage: " + lastMessage.getValue());
 	    Integer result = Integer.parseInt(lastMessage.getValue());
 	    if (result == null)
-	    	return null;
+	    	return 0;
 	    	
 		return(result);
 
@@ -491,7 +493,7 @@ public class Ring {
 		// TODO Auto-generated catch block
 	}
 	
-	return(null);
+	return(0);
 	
 	}
 	
@@ -827,7 +829,11 @@ public class Ring {
 	}
 	
 	public void updateLastMessage(Integer curIndex) {
-		curLastMsgId = curIndex;
+		if (curIndex == null)
+			curLastMsgId = 0;
+		else {
+			curLastMsgId = curIndex;
+		}
 		saveLastMessage();
 	}
 	
@@ -838,12 +844,14 @@ public class Ring {
 		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
 		update.bindLong(1, curLastMsgId);
 		update.bindString(2, ringHash);
-		if (update.executeInsert() == -1) {
-			SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-			insert.bindString(1,ringHash);
-			insert.bindLong(2, curLastMsgId);
-			insert.executeInsert();
-		}
+		update.execute();
+		
+		//if (update.execute() == -1) {
+		//	SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+		//	insert.bindString(1,ringHash);
+		//	insert.bindLong(2, curLastMsgId);
+		//	insert.executeInsert();
+		//}
 		db.close();
 	}
 
