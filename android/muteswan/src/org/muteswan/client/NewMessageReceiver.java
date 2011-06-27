@@ -47,12 +47,12 @@ public class NewMessageReceiver extends BroadcastReceiver {
 	     ctx.startService(svc);
    	   } else {
    	     Log.v("MuteswanReceiver", "Service already running.");
-   	     try {
-		   msgService.longPoll();
-	    } catch (RemoteException e) {
+   	     //try {
+		   //msgService.longPoll();
+	    //} catch (RemoteException e) {
 		// TODO Auto-generated catch block
-		  e.printStackTrace();
-	   }
+		 // e.printStackTrace();
+	   //}
    	  }
    	
    	

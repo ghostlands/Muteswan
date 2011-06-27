@@ -87,8 +87,6 @@ public class NewMessageService extends Service {
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
 		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
-		
-		
 
 		
 		justLaunched = true;
@@ -107,10 +105,10 @@ public class NewMessageService extends Service {
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
 		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
-		
-		TorStatus torStatus = new TorStatus(muteswan.torService);
-		if (torStatus.checkStatus() == false)
-			return;
+		// tor service is now permissioned
+		//TorStatus torStatus = new TorStatus(muteswan.torService);
+		//if (torStatus.checkStatus() == false)
+		//	return;
 		
 		// Register the available rings and then poll
 		if (started  == false) {
@@ -226,32 +224,36 @@ public class NewMessageService extends Service {
 				 public void run() {
 				    	Log.v("MuteswanService","THREAD RUNNING: " + ring.getShortname());
 
+				    		boolean poll = true;
 				    	
-				    	Integer lastId;
-				    	//if (startLastId == null || startLastId == 0) {
-							//lastId = ring.getMsgIndex() - numMsgDownload;
-				    		lastId = ring.getLastTorMessageId();
-						//	if (lastId <= 0)
-						//		lastId = 1;
+				    		Integer lastId = ring.getLastTorMessageId();
+				    		if (lastId == null || lastId == 0) {
+				    			Log.v("MuteswanService", "Got null or 0 from Tor, bailing out.");
+				    			poll = false;
+				    			//return;
+				    		}
 							ring.updateLastMessage(lastId);
-						    //ring.saveLastMessage();
-						//} else {
-						//	lastId = startLastId;
-						//}
+						  
 				    	
 					 Log.v("MuteswanService", "Polling for " + ring.getShortname() + " at thread " + Thread.currentThread().getId());
 			       
 					
 			        int count = 0;
-			        if (lastId == null) {
-			        	Log.v("MuteswanService", "lastId is null");
-			        } else {
-			        	Log.v("MuteswanService", ring.getShortname() + " has lastId " + lastId);
-			        }
+			        Log.v("MuteswanService", ring.getShortname() + " has lastId " + lastId);
+			        
 
-			        while (true) {
+			        while (poll) {
 			        	
-			        	MuteswanMessage msg = longpollForNewMessage(ring,++lastId);
+			        	MuteswanMessage msg = null;
+						try {
+							msg = longpollForNewMessage(ring,++lastId);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							//e1.printStackTrace();
+							Log.v("MuteswanService", "IO exception connecting to tor.");
+							poll = false;
+						}
+						
 						if (msg == null) {
 							Log.v("MuteswanService", "Null msg, continuing.");
 							--lastId;
@@ -285,8 +287,10 @@ public class NewMessageService extends Service {
 			        	if (count == 4) {
 			        		Log.v("MuteswanService", "Loop count of 4 reached for " + ring.getShortname());
 			        		count = 0;
-			        		int nLastId = ring.getLastTorMessageId();
-			        		if (lastId != nLastId) {
+			        		Integer nLastId = ring.getLastTorMessageId();
+			        		
+			        		
+			        		if (lastId < nLastId) {
 			        			Log.v("MuteswanService", "Running downloadMessages() for ring " + ring.getShortname());
 			        			ring.updateLastMessage(nLastId);
 			        			ring.saveLastMessage();
@@ -317,7 +321,7 @@ public class NewMessageService extends Service {
 	}
 	
 	
-	private MuteswanMessage longpollForNewMessage(final Ring ring, Integer id) {
+	private MuteswanMessage longpollForNewMessage(final Ring ring, Integer id) throws IOException {
 		if (ring == null) {
 			Log.v("AtffService", "WTF, ring is null.");
 		}

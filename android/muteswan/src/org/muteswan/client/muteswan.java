@@ -77,16 +77,6 @@ public class muteswan extends Activity implements Runnable {
 	
 	@Override
 	public void run() {
-		while (torService == null) {
-			try {
-				Thread.currentThread().sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			Log.v("Muteswan", "Tor service still null.");
-		}
-		Log.v("Muteswan", "Tor is not null.");
 		
 		
 		//dialogWaitOnNewMsgService.sendEmptyMessage(0);
@@ -98,35 +88,12 @@ public class muteswan extends Activity implements Runnable {
 				e.printStackTrace();
 			}
 		}
-
-	  try {
-		Log.v("Muteswan", "Getting tor status");
-		if (torService.getStatus() != TOR_STATUS_ON) {
-			   Log.v("Muteswan", "Tor is not on.");
-		       torService.setProfile(TOR_STATUS_ON);
-		  //     dialogWaitOnTor.sendEmptyMessage(0);
-		       while (torService.getStatus() != TOR_STATUS_ON) {
-		    	   Log.v("Muteswan", "Still waiting on Tor...");
-		    	   try {
-					Thread.currentThread().sleep(500);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		       }
-		  }
-		
-		  //dialogDismiss.sendEmptyMessage(0);
-			   
+   
 		  if (justCreated) {
 			   justCreated = false;
 		  }
 			
 		  
-	} catch (RemoteException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
 	}
 	
 	
@@ -173,14 +140,7 @@ public class muteswan extends Activity implements Runnable {
 		  TorStatus torStatus = new TorStatus(torService);
 	      torStatus.checkView(postButton);
 
-		 //TorStatus torStatus = new TorStatus(torService);
-		 
-		 
-		 //dialog = ProgressDialog.show(this, "", "Connecting to Tor service...", true);
-		 //Thread thread = new Thread(this); 
-	     //thread.start();
-	        	        
-	       
+	
 	        
 		 
 		 
@@ -196,11 +156,13 @@ public class muteswan extends Activity implements Runnable {
 
         
         // Check tor status
-        Intent torServiceIntent = new Intent();
-        torServiceIntent.setAction("org.torproject.android.service.ITorService");
-        boolean isBoundTor = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
+        //Intent torServiceIntent = new Intent();
         
-        TorStatus torStatus = new TorStatus(torService);
+        
+        //torServiceIntent.setAction("org.torproject.android.service.ITorService");
+        //boolean isBoundTor = bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
+        
+        //TorStatus torStatus = new TorStatus(torService);
         
         Intent serviceIntent = new Intent(this,NewMessageService.class);
         boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
@@ -235,15 +197,7 @@ public class muteswan extends Activity implements Runnable {
         mManageRingsButton.setOnClickListener(mManageRings); 
       
         
-      
-        if (!isBoundTor) {
-        	Log.v("Muteswan", "failed to bind, service conn definitely busted.\n");
-        } else if (torService == null) {
-        	Log.v("Muteswan", "Service is bound but torService is null.");
-        } else {
-        	Log.v("Muteswan", "Hey, we are bound to the tor service\n");
-        }   
-       
+             
         if (!isBound) {
         	Log.v("Muteswan", "IMessageService is not bound.");
         } else {
@@ -393,11 +347,6 @@ public class muteswan extends Activity implements Runnable {
 	    	showLatestMessages();
 	    }
     };
-    
-    
-    
-    
-    
     
     
     

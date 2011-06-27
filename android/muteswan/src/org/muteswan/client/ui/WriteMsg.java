@@ -82,8 +82,8 @@ public class WriteMsg extends Activity {
 	       final Button postButton = (Button) findViewById(R.id.submitMsg);
 	       postButton.setOnClickListener(submitMsg);
 	       
-	       TorStatus torStatus = new TorStatus(muteswan.torService);
-	       torStatus.checkButton(postButton);
+	       //TorStatus torStatus = new TorStatus(muteswan.torService);
+	       //torStatus.checkButton(postButton);
 	       
 	       final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
 	       selectSigButton.setOnClickListener(selectSigButtonHandler);

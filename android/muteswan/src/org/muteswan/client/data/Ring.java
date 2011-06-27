@@ -301,6 +301,10 @@ public class Ring {
 	}
 	
 	
+	/**
+	 * Gets the last known message from the database. Does not check tor.
+	 * @return integer
+	 */
 	public Integer getLastMsgId() {
 		
 		//if (curLastMsgId != null && curLastMsgId != 0) {
@@ -497,7 +501,7 @@ public class Ring {
 	
 	}
 	
-	public MuteswanMessage getMsgLongpoll(Integer id) {
+	public MuteswanMessage getMsgLongpoll(Integer id) throws IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/longpoll/" + id);
     	HttpResponse resp;
     	
@@ -513,9 +517,6 @@ public class Ring {
 			}
 			return(msg);
 		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -829,8 +830,8 @@ public class Ring {
 	}
 	
 	public void updateLastMessage(Integer curIndex) {
-		if (curIndex == null)
-			curLastMsgId = 0;
+		if (curIndex == null || curIndex == 0)
+			return;
 		else {
 			curLastMsgId = curIndex;
 		}
