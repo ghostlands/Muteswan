@@ -8,6 +8,7 @@ interface IMessageService {
   void downloadMessages();
   void longPoll();
   boolean isWorking();
+  boolean torOnline();
 
 }
 

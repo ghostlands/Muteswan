@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.muteswan.client.IMessageService;
+import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
 import org.muteswan.client.data.MuteswanMessage;
@@ -22,16 +24,20 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.net.ParseException;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -66,6 +72,26 @@ public class LatestMessages extends ListActivity implements Runnable {
 	HashMap<View, AlertDialog> moreButtons;
 	private ProgressDialog gettingMsgsDialog;
 	
+	public void onResume() {
+		super.onResume();
+		TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
+		try {
+			if (newMsgService != null && newMsgService.torOnline()) {
+				  torOnlineView.setText("(tor online)");
+			  }
+		  } catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void onDestroy() {
+		super.onDestroy();
+		if (newMsgService != null) {
+			unbindService(mNewMsgConn);
+		}
+	}
+	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
@@ -95,6 +121,20 @@ public class LatestMessages extends ListActivity implements Runnable {
 		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
         
+		Intent serviceIntent = new Intent(this,NewMessageService.class);
+        boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
+        //startService(serviceIntent);
+		
+		TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
+		try {
+			if (newMsgService != null && newMsgService.torOnline()) {
+				  torOnlineView.setText("(tor online)");
+				  }
+		    } catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		 }
+	
         
 		
 		messageViewCount = 0;
@@ -371,6 +411,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     		gettingMsgsDialog.setMessage(msg.getData().getString("txt"));
     	}
     };
+	protected IMessageService newMsgService;
     
 	
 	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Ring r,
@@ -524,7 +565,22 @@ public class LatestMessages extends ListActivity implements Runnable {
 	}
 	
     
-    
+	private ServiceConnection mNewMsgConn = new ServiceConnection() {
+
+		public void onServiceConnected(ComponentName className,
+                IBinder service) {
+        	newMsgService = IMessageService.Stub.asInterface(service);
+        	Log.v("Muteswan", "onServiceConnected called.");
+        	if (newMsgService == null) {
+        		Log.e("Muteswan", "newMsgService is null ");
+        	}
+
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+           newMsgService = null;
+        }
+    };
        
     
 }

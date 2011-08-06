@@ -78,8 +78,11 @@ public class muteswan extends Activity implements Runnable {
 	@Override
 	public void run() {
 		
-		
+		//dialog.show();
 		//dialogWaitOnNewMsgService.sendEmptyMessage(0);
+        Intent serviceIntent = new Intent(this,NewMessageService.class);
+      
+		
 		while (newMsgService == null) {
 			try {
 				Thread.currentThread().sleep(500);
@@ -89,6 +92,16 @@ public class muteswan extends Activity implements Runnable {
 			}
 		}
    
+		
+		  try {
+				if (!newMsgService.isWorking()) {
+					startService(serviceIntent);
+				}
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		
 		  if (justCreated) {
 			   justCreated = false;
 		  }
@@ -119,7 +132,6 @@ public class muteswan extends Activity implements Runnable {
 	        @Override
 	        public void handleMessage(Message msg) {
 	              	dialog.setMessage("Connecting to new message service.");
-
 	        }
 	 };
 	 
@@ -132,19 +144,38 @@ public class muteswan extends Activity implements Runnable {
 		 }
 	 };
 	private TextView postButton;
+	private TextView torOnlineField;
 	 
 	 
 	public void onResume() {
 		 super.onResume();
 
-		  TorStatus torStatus = new TorStatus(torService);
-	      torStatus.checkView(postButton);
+		 // TorStatus torStatus = new TorStatus(torService);
+	     // torStatus.checkView(postButton);
 
-	
+	      TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
+		  try {
+			if (newMsgService != null && newMsgService.torOnline()) {
+				  torOnlineView.setText("(tor online)");
+			  }
+		  } catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		  }
+			
 	        
 		 
 		 
 	 }
+	
+	public void onDestroy() {
+		
+		super.onDestroy();
+		
+		if (newMsgService != null) {
+			unbindService(mNewMsgConn);
+		}
+	}
 	
 	
 	
@@ -166,12 +197,16 @@ public class muteswan extends Activity implements Runnable {
         
         Intent serviceIntent = new Intent(this,NewMessageService.class);
         boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
-        startService(serviceIntent);
+        
         
         // indicate we were just created
+       
         justCreated = true;
         
 
+        Thread thread = new Thread(this); 
+	    thread.start();
+     
 
         setContentView(R.layout.main);
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
@@ -182,6 +217,7 @@ public class muteswan extends Activity implements Runnable {
         
         postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
+		
 		
 		
 		Button panicButton = (Button) findViewById(R.id.panicButton);
@@ -204,10 +240,20 @@ public class muteswan extends Activity implements Runnable {
         	Log.v("Muteswan", "IMessageService is bound.");
         }
      
-        Thread thread = new Thread(this); 
-	    thread.start();
-     
-        
+	    
+	    TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
+		try {
+			if (newMsgService != null && newMsgService.torOnline()) {
+				  torOnlineView.setText("(tor online)");
+				  
+				  }
+		    } catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		 }
+	    
+		 
+		    
     }
     
     public View.OnClickListener postClicked = new View.OnClickListener() {
@@ -231,7 +277,7 @@ public class muteswan extends Activity implements Runnable {
     public View.OnClickListener shareOrbotButtonClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","https://www.torproject.org/dist/android/0.2.2.22-alpha-orbot-1.0.4.1.apk");
+			intent.putExtra("ENCODE_DATA","https://www.torproject.org/dist/android/0.2.2.25-alpha-orbot-1.0.5.2.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(intent);
     	}

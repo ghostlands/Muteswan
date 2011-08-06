@@ -45,6 +45,7 @@ public class NewMessageService extends Service {
 	protected boolean isWorking;
 	private HashMap<Ring,Thread> pollList = new HashMap<Ring,Thread>();
 	private boolean started = false;
+	protected boolean torActive = false;
     
 	
 	@Override
@@ -180,6 +181,7 @@ public class NewMessageService extends Service {
 	
 	private void runLongpoll() {
 		
+		 isWorking = true;
 		
 		 Log.v("MuteswanService","pollList size " + pollList.size());
 		 for (final Ring ring : pollList.keySet()) {
@@ -230,6 +232,7 @@ public class NewMessageService extends Service {
 				    		if (lastId == null || lastId == 0) {
 				    			Log.v("MuteswanService", "Got null or 0 from Tor, bailing out.");
 				    			poll = false;
+				    			torActive = false;
 				    			//return;
 				    		}
 							ring.updateLastMessage(lastId);
@@ -243,10 +246,13 @@ public class NewMessageService extends Service {
 			        
 
 			        while (poll) {
+			        	torActive = true;
+			        	
 			        	
 			        	MuteswanMessage msg = null;
 						try {
 							msg = longpollForNewMessage(ring,++lastId);
+							
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							//e1.printStackTrace();
@@ -260,6 +266,7 @@ public class NewMessageService extends Service {
 						    continue;
 						}
 						
+					
 			        	for (Ring r : stopList) {
 			        		if (r.getFullText().equals(ring.getFullText())) {
 			        			stopList.remove(r);
@@ -419,6 +426,9 @@ public class NewMessageService extends Service {
 			isWorking = false;
 		}
 		
+		public boolean torOnline() {
+			return torActive ;
+		}
 		
 	};
 	final private LinkedList<Ring> stopList = new LinkedList<Ring>();
