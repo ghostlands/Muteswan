@@ -11,10 +11,10 @@
     
     
     <TextView
-    android:id="@+id/viewRingPrompt"
+    android:id="@+id/viewCirclePrompt"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
-    android:text="View Ring"
+    android:text="View Circle"
     android:textSize="24sp"
     />
     
@@ -27,11 +27,11 @@
     
     
      
-    <TextView android:text="RingName" 
-      android:id="@+id/viewRingName"
+    <TextView android:text="CircleName" 
+      android:id="@+id/viewCircleName"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"/>
-    <TextView android:text="tckwndlytrphlpyo.onion" android:id="@+id/viewRingServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <TextView android:text="tckwndlytrphlpyo.onion" android:id="@+id/viewCircleServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 
     
     </LinearLayout>
@@ -50,12 +50,12 @@
       >
    
    <!--   <TextView android:text="Description"
-      android:id="@+id/viewRingDescriptionPrompt"
+      android:id="@+id/viewCircleDescriptionPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/> -->
-    <TextView android:text="" android:id="@+id/viewRingDescription" android:layout_width="200sp" android:layout_height="wrap_content"></TextView>
+    <TextView android:text="" android:id="@+id/viewCircleDescription" android:layout_width="200sp" android:layout_height="wrap_content"></TextView>
 
    </LinearLayout>
    
@@ -66,12 +66,12 @@
       >
    
     <!--  <TextView android:text="Long Description"
-      android:id="@+id/viewRingLongDescriptionPrompt"
+      android:id="@+id/viewCircleLongDescriptionPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/> -->
-       <TextView android:text="" android:id="@+id/viewRingLongDescription" android:layout_width="200sp" android:layout_height="wrap_content"></TextView>
+       <TextView android:text="" android:id="@+id/viewCircleLongDescription" android:layout_width="200sp" android:layout_height="wrap_content"></TextView>
 
    </LinearLayout>
    
@@ -85,7 +85,7 @@
    
    
     <TextView android:text="Image (url)"
-      android:id="@+id/viewRingImagePrompt"
+      android:id="@+id/viewCircleImagePrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
@@ -98,11 +98,11 @@
       <ImageView
     android:layout_height="100sp"
     android:layout_width="100sp"
-    android:id="@+id/viewRingImageView"
+    android:id="@+id/viewCircleImageView"
     android:src="@drawable/icon"
     android:layout_centerInParent="true"
     />
-    <TextView android:text="" android:id="@+id/viewRingImage" android:layout_width="200sp" android:layout_height="wrap_content"></TextView>
+    <TextView android:text="" android:id="@+id/viewCircleImage" android:layout_width="200sp" android:layout_height="wrap_content"></TextView>
 	</LinearLayout>
    </LinearLayout>
    
@@ -114,12 +114,12 @@
       >
    
     <TextView android:text="Authorzation Identity"
-      android:id="@+id/viewRingAuthKeyPrompt"
+      android:id="@+id/viewCircleAuthKeyPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
-    <TextView android:text="" android:id="@+id/viewRingAuthKey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <TextView android:text="" android:id="@+id/viewCircleAuthKey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 
    </LinearLayout>
    
@@ -131,12 +131,12 @@
       >
    
     <TextView android:text="Post Policy"
-      android:id="@+id/viewRingPostPolicyPrompt"
+      android:id="@+id/viewCirclePostPolicyPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
-    <TextView android:text="" android:textSize="12sp" android:id="@+id/viewRingPostPolicy" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <TextView android:text="" android:textSize="12sp" android:id="@+id/viewCirclePostPolicy" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 
    </LinearLayout>
 

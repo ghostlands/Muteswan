@@ -9,7 +9,7 @@
     
     <string name="app_name">muteswanclient</string>
     <string name="newMsgTextDefault">...</string>
-    <string name="newringprompt">Create Ring</string>
+    <string name="newcircleprompt">Create Circle</string>
     <string name="service_run_message">Service running...</string>
     
     <string name="keyselectspinnerprompt">Send without signing</string>

@@ -19,7 +19,7 @@ import org.muteswan.client.muteswan;
 
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.RingStore;
+import org.muteswan.client.data.CircleStore;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,14 +35,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 
-public class CreateRing extends Activity implements Runnable {
+public class CreateCircle extends Activity implements Runnable {
 
 	private Identity[] identities;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
-	       setContentView(R.layout.createring);
-	       TextView keyTxt = (TextView) findViewById(R.id.newRingKey);
+	       setContentView(R.layout.createcircle);
+	       TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
 	    
 	       String genKeyStr;
 	       
@@ -57,8 +57,8 @@ public class CreateRing extends Activity implements Runnable {
 			sr.generateSeed(24);
 			genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
 			
-			final Button genRingButton = (Button) findViewById(R.id.genRingButton);
-	        genRingButton.setOnClickListener(genRing);
+			final Button genCircleButton = (Button) findViewById(R.id.genCircleButton);
+	        genCircleButton.setOnClickListener(genCircle);
 
 		    
 			keyTxt.setText(genKeyStr);
@@ -68,25 +68,25 @@ public class CreateRing extends Activity implements Runnable {
 	      		       
 	}
 	
-	public Button.OnClickListener genRing = new Button.OnClickListener() {
+	public Button.OnClickListener genCircle = new Button.OnClickListener() {
 	    public void onClick(View v) {
-	    	EditText name = (EditText) findViewById(R.id.newRingName);
-	    	EditText server = (EditText) findViewById(R.id.newRingServer);
-	    	TextView keyTxt = (TextView) findViewById(R.id.newRingKey);
-	    	TextView newRingResult = (TextView) findViewById(R.id.newRingResult);
+	    	EditText name = (EditText) findViewById(R.id.newCircleName);
+	    	EditText server = (EditText) findViewById(R.id.newCircleServer);
+	    	TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
+	    	TextView newCircleResult = (TextView) findViewById(R.id.newCircleResult);
 	    	
 	    	if (name.length() == 0 || server.length() == 0)
 	    		return;
 	    	
-	    	String ringFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server.getText().toString();
+	    	String circleFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server.getText().toString();
 	    	
-	    	newRingResult.setText(ringFullText);
+	    	newCircleResult.setText(circleFullText);
 	    	
 	    	
-        	RingStore newStore = new RingStore(getApplicationContext(),true);
-        	newStore.updateStore(ringFullText);
+        	CircleStore newStore = new CircleStore(getApplicationContext(),true);
+        	newStore.updateStore(circleFullText);
 
-	    	newRingResult.setText("Created ring " + name.getText().toString());
+	    	newCircleResult.setText("Created circle " + name.getText().toString());
 	    	
 	    	//try {
 			//	Thread.currentThread().sleep(1000);
@@ -95,8 +95,8 @@ public class CreateRing extends Activity implements Runnable {
 			//	e.printStackTrace();
 			//}
 	    	
-	    	Intent intent = new Intent(getApplicationContext(),EditRing.class);
-	    	intent.putExtra("ring",ringFullText);
+	    	Intent intent = new Intent(getApplicationContext(),EditCircle.class);
+	    	intent.putExtra("circle",circleFullText);
 	      	startActivity(intent);
 
 	 }

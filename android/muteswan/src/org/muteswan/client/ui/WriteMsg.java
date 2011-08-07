@@ -18,8 +18,8 @@ import org.muteswan.client.R.id;
 import org.muteswan.client.R.layout;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
 import org.json.JSONException;
 
 import android.app.Activity;
@@ -44,7 +44,7 @@ import android.widget.Toast;
 
 public class WriteMsg extends Activity {
 
-	Ring ring;
+	Circle circle;
 	boolean[] signSelections;
 	CharSequence[] signIdentities;
 	Identity[] identities;
@@ -54,15 +54,15 @@ public class WriteMsg extends Activity {
 	       super.onCreate(savedInstanceState);
 
 	       Bundle extras = getIntent().getExtras();
-	       RingStore rs = new RingStore(getApplicationContext());
-	       ring = new Ring(this,extras.getString("ring"));
+	       CircleStore rs = new CircleStore(getApplicationContext());
+	       circle = new Circle(this,extras.getString("circle"));
 	       initialText = extras.getString("initialText");
 	       
 	       setContentView(R.layout.writemsg);
 	       
 	       TextView prompt = (TextView) findViewById(R.id.android_writemsgPrompt);
-	       if (ring != null && prompt != null)
-	         prompt.setText("Post to " + ring.getShortname());
+	       if (circle != null && prompt != null)
+	         prompt.setText("Post to " + circle.getShortname());
 	       
 	       
 	       IdentityStore idStore = new IdentityStore(getApplicationContext());
@@ -181,7 +181,7 @@ public class WriteMsg extends Activity {
 							  public void run() {
 								
 									try {
-										ring.postMsg(txtData,signIds);
+										circle.postMsg(txtData,signIds);
 										dismissDialog.sendEmptyMessage(0);
 									} catch (InvalidKeyException e) {
 										// TODO Auto-generated catch block
@@ -222,7 +222,7 @@ public class WriteMsg extends Activity {
 				  new Thread() {
 					  public void run() {
 						try {
-							ring.postMsg(txtData);
+							circle.postMsg(txtData);
 							dismissDialog.sendEmptyMessage(0);
 						} catch (NoSuchAlgorithmException e) {
 							// TODO Auto-generated catch block

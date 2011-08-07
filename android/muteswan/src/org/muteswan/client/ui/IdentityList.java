@@ -4,7 +4,7 @@ import org.muteswan.client.Base64;
 import org.muteswan.client.R;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Ring;
+import org.muteswan.client.data.Circle;
 
 import android.app.ListActivity;
 import android.content.Intent;

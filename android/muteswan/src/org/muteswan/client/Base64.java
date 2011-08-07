@@ -99,7 +99,7 @@ package org.muteswan.client;
  *   URL and file name friendly format as described in Section 4 of RFC3548.
  *   http://www.faqs.org/rfcs/rfc3548.html</li>
  *   <li>Calling Base64.setFormat(Base64.BASE64_FORMAT.ORDERED_FORMAT) generates
- *   URL and file name friendly format that preserves lexical ordering as described
+ *   URL and file name friendly format that preserves lexical ordecircle as described
  *   in http://www.faqs.org/qa/rfcc-1940.html</li>
  *   </ol>
  *   Special thanks to Jim Kellerman at <a href="http://www.powerset.com/">http://www.powerset.com/</a>

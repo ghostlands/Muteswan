@@ -15,9 +15,9 @@ import org.muteswan.client.muteswan;
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
-import org.muteswan.client.data.RingStore.OpenHelper;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.data.CircleStore.OpenHelper;
 import org.apache.http.client.ClientProtocolException;
 
 import android.app.AlertDialog;
@@ -62,10 +62,10 @@ import android.widget.LinearLayout.LayoutParams;
 public class LatestMessages extends ListActivity implements Runnable {
 
 	private Bundle extra;
-	private String ringExtra;
-	private RingStore store;
+	private String circleExtra;
+	private CircleStore store;
 	final ArrayList<MuteswanMessage> messageList = new ArrayList<MuteswanMessage>();
-	HashMap<String,Ring> ringMap;
+	HashMap<String,Circle> circleMap;
 	IdentityStore idStore;
 	private LatestMessagesListAdapter listAdapter;
 	private int messageViewCount;
@@ -97,21 +97,21 @@ public class LatestMessages extends ListActivity implements Runnable {
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
        
 
-        store = new RingStore(this,true);
-		ringMap = store.asHashMap();
+        store = new CircleStore(this,true);
+		circleMap = store.asHashMap();
 		idStore = new IdentityStore(this);
         
         extra = getIntent().getExtras();
         if (extra != null) 
-         ringExtra = extra.getString("ring");
+         circleExtra = extra.getString("circle");
          
         setContentView(R.layout.latestmessages);
 
         
-        if (ringExtra != null) {
+        if (circleExtra != null) {
 		 TextView txtTitle = (TextView) findViewById(R.id.android_latestmessagesprompt);
-		 txtTitle.setText("Messages for " + ringMap.get(ringExtra).getShortname());
-		 //txtTitle.setText("Messages for " + ringExtra);
+		 txtTitle.setText("Messages for " + circleMap.get(circleExtra).getShortname());
+		 //txtTitle.setText("Messages for " + circleExtra);
 		 //txtTitle.setText("ugh");
         }
         
@@ -198,9 +198,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 	    
     };
 	
-    public View.OnClickListener showRing = new View.OnClickListener() {
+    public View.OnClickListener showCircle = new View.OnClickListener() {
     	public void onClick(View v) {
-    		showRing((TextView) v);
+    		showCircle((TextView) v);
     	}
     };
     
@@ -218,11 +218,11 @@ public class LatestMessages extends ListActivity implements Runnable {
     	Log.v("LatestMessages","List item clicked.");
     }
     
-    private void showRing(TextView v) {
-    	for (Ring r : store) {
+    private void showCircle(TextView v) {
+    	for (Circle r : store) {
     		if (r.getShortname().equals(v.getText().toString())) {
     			Intent intent = new Intent(this,LatestMessages.class);
-    			intent.putExtra("ring", muteswan.genHexHash(r.getFullText()));
+    			intent.putExtra("circle", muteswan.genHexHash(r.getFullText()));
     			startActivity(intent);
     		}
     	}
@@ -230,13 +230,13 @@ public class LatestMessages extends ListActivity implements Runnable {
     
     public View.OnClickListener postClicked = new View.OnClickListener() {
     	public void onClick(View v) {
-    		if (ringExtra != null) {
+    		if (circleExtra != null) {
     		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-    		  intent.putExtra("ring",ringMap.get(ringExtra).getFullText());
+    		  intent.putExtra("circle",circleMap.get(circleExtra).getFullText());
     		  startActivity(intent);
     		} else {
-    		   Intent intent = new Intent(getApplicationContext(),RingList.class);
-      		  intent.putExtra("action",RingList.WRITE);
+    		   Intent intent = new Intent(getApplicationContext(),CircleList.class);
+      		  intent.putExtra("action",CircleList.WRITE);
       		  startActivity(intent);
     		}
     	}
@@ -257,7 +257,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		    		}
 		    		MuteswanMessage msg = messageList.get(replyButtons.get(v));
 		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		    		intent.putExtra("ring",msg.getRing().getFullText());
+		    		intent.putExtra("circle",msg.getCircle().getFullText());
 		    		intent.putExtra("initialText","@" + msg.getId() + "\n");
 		    		startActivity(intent);
 		    	}
@@ -266,10 +266,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 		    public View.OnClickListener repostClicked = new View.OnClickListener() {
 		    	public void onClick(View v) {
 		    		MuteswanMessage msg = messageList.get(repostButtons.get(v));
-		    		Intent intent = new Intent(getApplicationContext(),RingList.class);
-		    		intent.putExtra("ring",msg.getRing().getFullText());
+		    		Intent intent = new Intent(getApplicationContext(),CircleList.class);
+		    		intent.putExtra("circle",msg.getCircle().getFullText());
 		    		intent.putExtra("initialText",msg.getMsg());
-		    		intent.putExtra("action",RingList.WRITE);
+		    		intent.putExtra("action",CircleList.WRITE);
 		    		startActivity(intent);
 		    	}
 		    };
@@ -303,7 +303,7 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  
       		  final MuteswanMessage msg = messageList.get(position);
       		  
-      		  TextView txtRing = (TextView) layout.findViewById(R.id.android_latestmessagesRing);
+      		  TextView txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
       		  TextView txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
       		  TextView txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
       		  TextView txtSigs = (TextView) layout.findViewById(R.id.android_latestmessagesSignatures);
@@ -321,16 +321,16 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  
       		  // not used and painful
       		  //int totalWidth = layout.getLayoutParams().width;
-      		  //int ringWidth = txtRing.getLayoutParams().width;
+      		  //int circleWidth = txtCircle.getLayoutParams().width;
       		  //int mainWidth = mainLayout.getLayoutParams().width;	  
       		  
-      		  txtRing.setText(msg.getRing().getShortname() + "/" + msg.getId());
-      		  txtRing.setClickable(true);
-      		  txtRing.setOnClickListener(showRing);
+      		  txtCircle.setText(msg.getCircle().getShortname() + "/" + msg.getId());
+      		  txtCircle.setClickable(true);
+      		  txtCircle.setOnClickListener(showCircle);
       		  txtDate.setText(msg.getDate());
       		  String white = "";
       		  // HAH WTF! fix this, please FIXME
-      		  //for (int i=0; i<msg.getRing().getShortname().length()-1; i++) {
+      		  //for (int i=0; i<msg.getCircle().getShortname().length()-1; i++) {
       			//  white = white + "   ";
       		  //}
       		  
@@ -358,9 +358,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 			 layout.setOnClickListener(listItemClicked);
 			 
       		 // images are not showed right now, uncomment to show them
-			 //if (msg.getRing().getImage() != null) {
+			 //if (msg.getCircle().getImage() != null) {
       		//	 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
-      		//	 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getRing().getImage(), 0, msg.getRing().getImage().length));
+      		//	 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getCircle().getImage(), 0, msg.getCircle().getImage().length));
       		//	 //layout.addView(imageView);
       		// } else {
       			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
@@ -378,8 +378,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private ArrayList<MuteswanMessage> loadRecentMessages(
 			ArrayList<MuteswanMessage> msgs, Integer first, Integer last) {
 
-		if (ringExtra != null) {
-			return (getLatestMessages(msgs, ringExtra, first, last));
+		if (circleExtra != null) {
+			return (getLatestMessages(msgs, circleExtra, first, last));
 		} else {
 			return (getLatestMessages(msgs, first, last));
 		}
@@ -414,7 +414,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	protected IMessageService newMsgService;
     
 	
-	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Ring r,
+	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Circle r,
 			Integer start, Integer last) {
 		IdentityStore idStore = new IdentityStore(this);
 		Integer lastId = r.getLastMsgId();
@@ -428,7 +428,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		if (lastId <= 0)
 			return;
 
-		Log.v("RingStore", "Update messages, lastId is " + lastId
+		Log.v("CircleStore", "Update messages, lastId is " + lastId
 				+ " and last is " + last + " (" + (lastId - last) + ")");
 		RING: for (Integer i = lastId; i > lastId - last; i--) {
 			if (i <= 0)
@@ -441,7 +441,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			updateDialogText.sendMessage(m);
 			msg = r.getMsgFromDb(i.toString());
 
-			if (msg == null && ringExtra != null) {
+			if (msg == null && circleExtra != null) {
 				try {
 					m = new Message();
 					b = new Bundle();
@@ -466,7 +466,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			}
 
 			if (msg != null) {
-				Log.v("RingStore", msg.getId() + " loaded.");
+				Log.v("CircleStore", msg.getId() + " loaded.");
 				msg.verifySignatures(idStore);
 
 				if (msgs.size() == 0) {
@@ -500,7 +500,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 					}
 				}
 
-				// Log.v("RingStore", "insertIndex is " + insertIndex);
+				// Log.v("CircleStore", "insertIndex is " + insertIndex);
 				if (msgs.size() - 1 == insertIndex) {
 					msgs.add(msg);
 				} else {
@@ -512,24 +512,24 @@ public class LatestMessages extends ListActivity implements Runnable {
 
 	}
 
-	public ArrayList<MuteswanMessage> getLatestMessages(String ringHash,
+	public ArrayList<MuteswanMessage> getLatestMessages(String circleHash,
 			Integer first, Integer last) {
 		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
-		updateLatestMessages(msgs, store.asHashMap().get(ringHash), first, last);
+		updateLatestMessages(msgs, store.asHashMap().get(circleHash), first, last);
 		return (msgs);
 	}
 
 	public ArrayList<MuteswanMessage> getLatestMessages(
-			ArrayList<MuteswanMessage> msgs, String ringHash, Integer first,
+			ArrayList<MuteswanMessage> msgs, String circleHash, Integer first,
 			Integer last) {
-		updateLatestMessages(msgs, store.asHashMap().get(ringHash), first, last);
+		updateLatestMessages(msgs, store.asHashMap().get(circleHash), first, last);
 		return (msgs);
 	}
 
 	public ArrayList<MuteswanMessage> getLatestMessages(Integer first, Integer last) {
 		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
 
-		for (Ring r : store) {
+		for (Circle r : store) {
 			updateLatestMessages(msgs, r, first, last);
 		}
 
@@ -539,7 +539,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public ArrayList<MuteswanMessage> getLatestMessages(
 			ArrayList<MuteswanMessage> msgs, Integer first, Integer amount) {
 
-		for (Ring r : store) {
+		for (Circle r : store) {
 			updateLatestMessages(msgs, r, first, amount);
 		}
 
@@ -551,10 +551,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public void run() {
 		Log.v("LatestMessages","Running!");
 		
-		Ring ring = ringMap.get(ringExtra);
-		if (ring != null) {
-			ring.updateLastMessage(ring.getLastTorMessageId());
-			Log.v("LatestMessages","Ring has last message of: " + ring.getLastMsgId());
+		Circle circle = circleMap.get(circleExtra);
+		if (circle != null) {
+			circle.updateLastMessage(circle.getLastTorMessageId());
+			Log.v("LatestMessages","Circle has last message of: " + circle.getLastMsgId());
 		}
 		
 		final int start = messageViewCount;

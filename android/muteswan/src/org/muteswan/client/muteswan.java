@@ -12,15 +12,15 @@ import java.util.List;
 
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
-import org.muteswan.client.ui.CreateRing;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.ui.CreateCircle;
 import org.muteswan.client.ui.GenerateIdentity;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
 import org.muteswan.client.ui.MsgList;
 import org.muteswan.client.ui.Preferences;
-import org.muteswan.client.ui.RingList;
+import org.muteswan.client.ui.CircleList;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.util.EntityUtils;
@@ -57,7 +57,7 @@ import android.widget.TextView;
 
 public class muteswan extends Activity implements Runnable {
 	//Store store = null;
-	//public static Ring activeRing = null;
+	//public static Circle activeCircle = null;
 
 	public final static int TOR_STATUS_OFF = -1;
 	public final static int TOR_STATUS_READY = 0;
@@ -229,8 +229,8 @@ public class muteswan extends Activity implements Runnable {
 		shareMuteswanButton.setOnClickListener(shareMuteswanButtonClicked);
         
        
-        final Button mManageRingsButton = (Button) findViewById(R.id.mManageRings);
-        mManageRingsButton.setOnClickListener(mManageRings); 
+        final Button mManageCirclesButton = (Button) findViewById(R.id.mManageCircles);
+        mManageCirclesButton.setOnClickListener(mManageCircles); 
       
         
              
@@ -258,8 +258,8 @@ public class muteswan extends Activity implements Runnable {
     
     public View.OnClickListener postClicked = new View.OnClickListener() {
     	public void onClick(View v) {
-    		Intent intent = new Intent(getApplicationContext(),RingList.class);
-    		intent.putExtra("action",RingList.WRITE);
+    		Intent intent = new Intent(getApplicationContext(),CircleList.class);
+    		intent.putExtra("action",CircleList.WRITE);
     		startActivity(intent);
     	}
     };
@@ -306,7 +306,7 @@ public class muteswan extends Activity implements Runnable {
         
         //menu.add("Create Identity");
         //menu.add("List Identities");
-        //menu.add("Create Ring");
+        //menu.add("Create Circle");
         
         //menu.add("Options");
        
@@ -317,8 +317,8 @@ public class muteswan extends Activity implements Runnable {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
     	
-		//if (item.toString().equals("Create Ring")) {
-		//	startActivity(new Intent(this, CreateRing.class));
+		//if (item.toString().equals("Create Circle")) {
+		//	startActivity(new Intent(this, CreateCircle.class));
 		//	return true;
 		if (item.toString().equals("Identities")) {
 			startActivity(new Intent(this,IdentityList.class));
@@ -339,14 +339,14 @@ public class muteswan extends Activity implements Runnable {
     
     
     
-    private void selectMsg(Ring r) {
+    private void selectMsg(Circle r) {
     	Intent intent = new Intent(this,LatestMessages.class);
-    	intent.putExtra("ring",r.getFullText());
+    	intent.putExtra("circle",r.getFullText());
     	return;
     }
     
-    private void showRings(Integer action) {
-    	Intent intent = new Intent(this,RingList.class);
+    private void showCircles(Integer action) {
+    	Intent intent = new Intent(this,CircleList.class);
     	intent.putExtra("action", action);
     	
     	
@@ -354,8 +354,8 @@ public class muteswan extends Activity implements Runnable {
     	return;
     }
     
-    private void createRing() {
-    	startActivity(new Intent(this,CreateRing.class));
+    private void createCircle() {
+    	startActivity(new Intent(this,CreateCircle.class));
     	return;
     
     }
@@ -382,9 +382,9 @@ public class muteswan extends Activity implements Runnable {
     
    
     
-    public Button.OnClickListener mManageRings = new Button.OnClickListener() {
+    public Button.OnClickListener mManageCircles = new Button.OnClickListener() {
 	    public void onClick(View v) {
-	        showRings(RingList.ANY);
+	        showCircles(CircleList.ANY);
 	 }
     };
     

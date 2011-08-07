@@ -26,7 +26,7 @@ public class MuteswanMessage {
 	private JSONObject jsonObj;
 	private String msgData;
 	private String date;
-	private Ring ring;
+	private Circle circle;
 	private Integer id;
 	Crypto cryptoDec;
 	
@@ -36,25 +36,25 @@ public class MuteswanMessage {
 	private LinkedList<Identity> validSigs;
 
 
-	public MuteswanMessage(Ring ring, Integer id, String date, String msg) {
+	public MuteswanMessage(Circle circle, Integer id, String date, String msg) {
 		this.date = date;
-		this.ring = ring;
+		this.circle = circle;
 		this.msgData = msg;
 		this.id = id;
 	}
 	
-	public MuteswanMessage(Ring ring, Integer id, String date, String msg, String[] signatures) {
+	public MuteswanMessage(Circle circle, Integer id, String date, String msg, String[] signatures) {
 		this.date = date;
-		this.ring = ring;
+		this.circle = circle;
 		this.msgData = msg;
 		this.id = id;
 		this.signatures = signatures;
 	}
 	
-	public MuteswanMessage(Integer id, Ring ring, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+	public MuteswanMessage(Integer id, Circle circle, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 		jsonObj = new JSONObject(jsonString);
 		this.date = date;
-		this.ring = ring;
+		this.circle = circle;
 		
 		String base64Msg = jsonObj.getString("message");
 		JSONArray sigs = null;
@@ -70,7 +70,7 @@ public class MuteswanMessage {
 				// encrypted signature
 			    } else {
 				  byte[] sigKeyBytes = Base64.decode(sig);
-			      Crypto cryptoSig = new Crypto(ring.getKey().getBytes(),sigKeyBytes);
+			      Crypto cryptoSig = new Crypto(circle.getKey().getBytes(),sigKeyBytes);
 			      byte[] realSignature = cryptoSig.decrypt();
 				  this.signatures[i] = new String(realSignature);
 			    }
@@ -91,7 +91,7 @@ public class MuteswanMessage {
 		
 		
 			
-		cryptoDec = new Crypto(ring.getKey().getBytes(),rawMsgBytes);
+		cryptoDec = new Crypto(circle.getKey().getBytes(),rawMsgBytes);
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
 				
@@ -192,8 +192,8 @@ public class MuteswanMessage {
 		return(validSigs);
 	}
 
-	public Ring getRing() {
-		return ring;
+	public Circle getCircle() {
+		return circle;
 	}
 	
 	public LinkedList<Identity> getValidSigs() {

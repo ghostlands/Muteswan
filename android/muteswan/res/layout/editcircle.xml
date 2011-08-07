@@ -12,10 +12,10 @@
     
     
     <TextView
-    android:id="@+id/editRingPrompt"
+    android:id="@+id/editCirclePrompt"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
-    android:text="View Ring"
+    android:text="View Circle"
     android:textSize="24sp"
     />
     
@@ -28,11 +28,11 @@
     
     
      
-    <TextView android:text="RingName" 
-      android:id="@+id/editRingName"
+    <TextView android:text="CircleName" 
+      android:id="@+id/editCircleName"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"/>
-    <TextView android:text="tckwndlytrphlpyo.onion" android:id="@+id/viewRingServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <TextView android:text="tckwndlytrphlpyo.onion" android:id="@+id/viewCircleServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 
     
     </LinearLayout>
@@ -49,12 +49,12 @@
       >
    
     <TextView android:text="Description"
-      android:id="@+id/editRingDescriptionPrompt"
+      android:id="@+id/editCircleDescriptionPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
-    <EditText android:text="" android:id="@+id/editRingDescription" android:layout_width="200sp" android:layout_height="wrap_content"></EditText>
+    <EditText android:text="" android:id="@+id/editCircleDescription" android:layout_width="200sp" android:layout_height="wrap_content"></EditText>
 
    </LinearLayout>
    
@@ -65,12 +65,12 @@
       >
    
     <TextView android:text="Long Description"
-      android:id="@+id/editRingLongDescriptionPrompt"
+      android:id="@+id/editCircleLongDescriptionPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
-       <EditText android:text="" android:id="@+id/editRingLongDescription" android:layout_width="200sp" android:layout_height="80sp"></EditText>
+       <EditText android:text="" android:id="@+id/editCircleLongDescription" android:layout_width="200sp" android:layout_height="80sp"></EditText>
 
    </LinearLayout>
    
@@ -81,7 +81,7 @@
       >
    
     <TextView android:text="Image"
-      android:id="@+id/editRingImagePrompt"
+      android:id="@+id/editCircleImagePrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
@@ -95,13 +95,13 @@
       <ImageView
     android:layout_height="100sp"
     android:layout_width="100sp"
-    android:id="@+id/editRingImageView"
+    android:id="@+id/editCircleImageView"
     android:src="@drawable/icon"
     android:layout_centerInParent="true"
     />
      
-    <EditText android:text="" android:id="@+id/editRingImage" android:layout_width="200sp" android:layout_height="wrap_content"></EditText>
-	<Button android:text="Get Image" android:id="@+id/editRingFetchImageButton" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText android:text="" android:id="@+id/editCircleImage" android:layout_width="200sp" android:layout_height="wrap_content"></EditText>
+	<Button android:text="Get Image" android:id="@+id/editCircleFetchImageButton" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
    </LinearLayout>
    
    
@@ -115,13 +115,13 @@
       >
    
     <TextView android:text="Authorzation Identity"
-      android:id="@+id/editRingAuthKeyPrompt"
+      android:id="@+id/editCircleAuthKeyPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
       
-    <Spinner android:text="" android:id="@+id/editRingAuthKey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
+    <Spinner android:text="" android:id="@+id/editCircleAuthKey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
 
    </LinearLayout>
    
@@ -132,13 +132,13 @@
       >
    
     <TextView android:text="Keylist"
-      android:id="@+id/editRingKeylist"
+      android:id="@+id/editCircleKeylist"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
-    <TextView android:text="(none defined)" android:textSize="12sp" android:id="@+id/editRingKeylistInfo" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
-        <Button android:text="Set Keylist" android:id="@+id/editRingSetKeylistButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+    <TextView android:text="(none defined)" android:textSize="12sp" android:id="@+id/editCircleKeylistInfo" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+        <Button android:text="Set Keylist" android:id="@+id/editCircleSetKeylistButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
     
 
    </LinearLayout>
@@ -151,17 +151,17 @@
       >
    
     <TextView android:text="Post Policy"
-      android:id="@+id/editRingPostPolicyPrompt"
+      android:id="@+id/editCirclePostPolicyPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="90sp"
       android:maxWidth="90sp"/>
-    <Spinner android:text="" android:textSize="12sp" android:id="@+id/editRingPostPolicy" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
+    <Spinner android:text="" android:textSize="12sp" android:id="@+id/editCirclePostPolicy" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
 
    </LinearLayout>
 
-    <Button android:text="Update Manifest" android:id="@+id/updateRingButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
-<TextView android:text="" android:id="@+id/editRingResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <Button android:text="Update Manifest" android:id="@+id/updateCircleButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+<TextView android:text="" android:id="@+id/editCircleResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 
 </LinearLayout>
 </ScrollView>

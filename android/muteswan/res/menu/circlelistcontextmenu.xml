@@ -1,15 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/ringListShare"
+    <item android:id="@+id/circleListShare"
         android:title="Share" />
-    <item android:id="@+id/ringListRead"
+    <item android:id="@+id/circleListRead"
         android:title="Read" />
-    <item android:id="@+id/ringListWriteMsg"
+    <item android:id="@+id/circleListWriteMsg"
         android:title="Post Message" />
-     <item android:id="@+id/ringListDelete"
+     <item android:id="@+id/circleListDelete"
         android:title="Delete" />
-     <item android:id="@+id/ringListView"
+     <item android:id="@+id/circleListView"
         android:title="View"/> 
-     <item android:id="@+id/ringListEdit"
+     <item android:id="@+id/circleListEdit"
         android:title="Edit"/> 
      
 </menu>

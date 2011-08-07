@@ -4,10 +4,10 @@
     <item android:id="@+id/newmessage"
         android:title="New Message" />
         
-    <!--  <item android:id="@+id/exportring"
-        android:title="Export Ring" />
-     <item android:id="@+id/deletering"
-        android:title="Delete Ring" /> -->
+    <!--  <item android:id="@+id/exportcircle"
+        android:title="Export Circle" />
+     <item android:id="@+id/deletecircle"
+        android:title="Delete Circle" /> -->
     <item android:id="@+id/msglistefresh"
         android:title="Refresh" />
             

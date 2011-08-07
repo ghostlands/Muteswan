@@ -19,8 +19,8 @@ import org.muteswan.client.R.menu;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.MuteswanMessage;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 
@@ -59,7 +59,7 @@ public class MsgList extends ListActivity implements Runnable {
 	private String[] msgList;
 	
 	private List<Integer> seenMsgs = new LinkedList();
-	Ring ring;
+	Circle circle;
 	
 	IdentityStore idStore;
 	ProgressDialog loadIndexDialog;
@@ -72,15 +72,15 @@ public class MsgList extends ListActivity implements Runnable {
 	
 	public void run() {
 		if (loadIndexDialog != null && loadIndexDialog.isShowing()) {
-		   lastMessageIndex = ring.getLastTorMessageId();
-		   ring.updateLastMessage(lastMessageIndex);
-		   //ring.saveLastMessage();
+		   lastMessageIndex = circle.getLastTorMessageId();
+		   circle.updateLastMessage(lastMessageIndex);
+		   //circle.saveLastMessage();
 		   dialogIndexHandler.sendEmptyMessage(0);
 		} else if (loadMsgDialog != null && loadMsgDialog.isShowing()) {
 			// FIXME: fix msgId garbage
 			String msgId = msgList[lastPosition].replace("\n", "");
 			try {
-				lastMsg = ring.getMsg(msgId);
+				lastMsg = circle.getMsg(msgId);
 			} catch (ClientProtocolException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -118,8 +118,8 @@ public class MsgList extends ListActivity implements Runnable {
        super.onCreate(savedInstanceState);
        
        Bundle extras = getIntent().getExtras();
-       RingStore rs = new RingStore(getApplicationContext());
-       ring = new Ring(getApplicationContext(),extras.getString("ring"));
+       CircleStore rs = new CircleStore(getApplicationContext());
+       circle = new Circle(getApplicationContext(),extras.getString("circle"));
        
        SharedPreferences defPref = PreferenceManager.getDefaultSharedPreferences(this);
        boolean alwaysUseLastMessage = defPref.getBoolean("alwaysUseLastMessage", false);
@@ -130,15 +130,15 @@ public class MsgList extends ListActivity implements Runnable {
        EditText msgPostField = (EditText) findViewById(R.id.android_newMsgTextInline);
        
        msglistPrompt = (TextView) findViewById(R.id.android_msglistprompt);
-       msglistPrompt.setText(ring.getShortname());
+       msglistPrompt.setText(circle.getShortname());
 
-       if (ring == null) {
-    	 msglistPrompt.setText("active ring is null...");
+       if (circle == null) {
+    	 msglistPrompt.setText("active circle is null...");
     	 return;
        }
        
        
-       lastMessageIndex = ring.getLastMsgId();
+       lastMessageIndex = circle.getLastMsgId();
        if (!alwaysUseLastMessage || lastMessageIndex == null) {
          loadIndexDialog = ProgressDialog.show(this, "", "Downloading message list...", true);
          Thread thread = new Thread(this);
@@ -151,7 +151,7 @@ public class MsgList extends ListActivity implements Runnable {
        
        
        
-      //lastMessage = ring.getMsgIndex();
+      //lastMessage = circle.getMsgIndex();
 	}
      
 	private void renderList() {
@@ -161,12 +161,12 @@ public class MsgList extends ListActivity implements Runnable {
 		
 		Log.v("MsgList", "lastMessageIndex: " + lastMessageIndex);
       if (lastMessageIndex == 0 || lastMessageIndex == null) {
-          msglistPrompt.setText("No messages for " + ring.getShortname());
+          msglistPrompt.setText("No messages for " + circle.getShortname());
   	       return;
       }
       
 //      } else {
-//        msglistPrompt.setText(ring.getShortname());
+//        msglistPrompt.setText(circle.getShortname());
 //      }
 //      
       
@@ -183,7 +183,7 @@ public class MsgList extends ListActivity implements Runnable {
     		  break;
     	  }
     	  
-    	  MuteswanMessage msg = ring.getMsgFromDb(i.toString());
+    	  MuteswanMessage msg = circle.getMsgFromDb(i.toString());
     	  
     	  
     	  
@@ -232,10 +232,10 @@ public class MsgList extends ListActivity implements Runnable {
         //setContentView(R.layout.writemsg);
 		
 		
-		//export ring to jpg using zxing
-		if (item.getTitle().toString().equals("Export Ring")) {
+		//export circle to jpg using zxing
+		if (item.getTitle().toString().equals("Export Circle")) {
 			Intent showQrcode = new Intent("com.google.zxing.client.android.ENCODE");
-			showQrcode.putExtra("ENCODE_DATA",ring.getFullText());
+			showQrcode.putExtra("ENCODE_DATA",circle.getFullText());
 			showQrcode.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(showQrcode);
 			return true;
@@ -252,9 +252,9 @@ public class MsgList extends ListActivity implements Runnable {
     	 String txtData = txt.toString();
     	 if (txtData.getBytes().length != 0) {	
     	  try {
-			ring.postMsg(txtData);
+			circle.postMsg(txtData);
 			Toast.makeText(this, 
-				"Posted message to " + ring.getShortname(), 
+				"Posted message to " + circle.getShortname(), 
 					  Toast.LENGTH_LONG).show();
 			newMsgText.setText("");
 			return true;
@@ -283,7 +283,7 @@ public class MsgList extends ListActivity implements Runnable {
     	 } else {
     	   Intent intent = new Intent(this,WriteMsg.class);
     	   Bundle extr = intent.getExtras();
-    	   extr.putString("ring",ring.getFullText());
+    	   extr.putString("circle",circle.getFullText());
 		   startActivity(intent);
 		   return true;
 	     }

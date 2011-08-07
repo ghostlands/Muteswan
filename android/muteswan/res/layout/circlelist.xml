@@ -9,7 +9,7 @@
     
     
     <LinearLayout
-     android:id="@+id/ringlistButtons"
+     android:id="@+id/circlelistButtons"
      android:orientation="horizontal"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
@@ -17,26 +17,26 @@
     >
     
      <Button
-       android:id="@+id/android:ringlistAddRing"
+       android:id="@+id/android:circlelistAddCircle"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:text="Add a ring"
+       android:text="Add a circle"
      />
      
      <Button
-       android:id="@+id/android:ringlistCreateRing"
+       android:id="@+id/android:circlelistCreateCircle"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:text="Create a new ring"
+       android:text="Create a new circle"
        android:maxWidth="80sp"
      />
     
     </LinearLayout>
       <TextView  
-      android:id="@+id/android:ringlistprompt"
+      android:id="@+id/android:circlelistprompt"
       android:layout_width="fill_parent" 
       android:layout_height="wrap_content" 
-      android:text="Rings"
+      android:text="Circles"
       android:gravity="center"
       />
     

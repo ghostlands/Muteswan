@@ -7,8 +7,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.muteswan.client.data.MuteswanMessage;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.LatestMessages;
 import org.muteswan.client.ui.MsgList;
 import org.apache.http.client.ClientProtocolException;
@@ -43,7 +43,7 @@ public class NewMessageService extends Service {
 	private SharedPreferences defPrefs;
 	private boolean justLaunched = false;
 	protected boolean isWorking;
-	private HashMap<Ring,Thread> pollList = new HashMap<Ring,Thread>();
+	private HashMap<Circle,Thread> pollList = new HashMap<Circle,Thread>();
 	private boolean started = false;
 	protected boolean torActive = false;
     
@@ -111,14 +111,14 @@ public class NewMessageService extends Service {
 		//if (torStatus.checkStatus() == false)
 		//	return;
 		
-		// Register the available rings and then poll
+		// Register the available circles and then poll
 		if (started  == false) {
 		
 		   pollList.clear();
 		   Log.v("MuteswanService", "Starting up, we are: " + Thread.currentThread().getId());
-		   RingStore rs = new RingStore(getApplicationContext(),true);
-		   for (Ring r : rs) {
-			  Log.v("MuteswanService", "Ring " + r.getShortname() + " registered.");
+		   CircleStore rs = new CircleStore(getApplicationContext(),true);
+		   for (Circle r : rs) {
+			  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
 			  registerLongpoll(r);
 		  }
 		  runLongpoll();
@@ -128,12 +128,12 @@ public class NewMessageService extends Service {
 		} else {
 			Log.v("MuteswanService", "Start flag is true, running runLongpoll.");
 			
-			// FIXME UGLY. make sure the ring list is up to date 
-			RingStore rs = new RingStore(getApplicationContext(),true);
-			for (Ring r : rs) {
+			// FIXME UGLY. make sure the circle list is up to date 
+			CircleStore rs = new CircleStore(getApplicationContext(),true);
+			for (Circle r : rs) {
 			
 			 boolean has = false;
-			 for (Ring pollr : pollList.keySet()) {
+			 for (Circle pollr : pollList.keySet()) {
 			   if (pollr.getFullText().equals(r.getFullText())) {
 				   has = true;
 			   }
@@ -150,7 +150,7 @@ public class NewMessageService extends Service {
 	}
 
 	
-	private void showNotification(Ring r, CharSequence title, CharSequence content) {
+	private void showNotification(Circle r, CharSequence title, CharSequence content) {
 		long when = System.currentTimeMillis();
 		int icon = R.drawable.icon;
 		Notification notify = new Notification(icon,title,when);
@@ -164,7 +164,7 @@ public class NewMessageService extends Service {
 		
 		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
-		msgIntent.putExtra("ring", muteswan.genHexHash(r.getFullText()));
+		msgIntent.putExtra("circle", muteswan.genHexHash(r.getFullText()));
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
 		
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
@@ -172,10 +172,10 @@ public class NewMessageService extends Service {
 	}
 	
 	
-	private void registerLongpoll(Ring ring) {
-		if (pollList.containsKey(ring))
+	private void registerLongpoll(Circle circle) {
+		if (pollList.containsKey(circle))
 			return;
-		pollList.put(ring,null);
+		pollList.put(circle,null);
 	}
 
 	
@@ -184,31 +184,31 @@ public class NewMessageService extends Service {
 		 isWorking = true;
 		
 		 Log.v("MuteswanService","pollList size " + pollList.size());
-		 for (final Ring ring : pollList.keySet()) {
+		 for (final Circle circle : pollList.keySet()) {
 			 
 			 
 			    //FIXME: UGLY
-			 	RingStore rs = new RingStore(getApplicationContext(),true);
-			 	boolean hasRing = false;
-			 	for (Ring r : rs) {
-			 		if (ring.getFullText().equals(r.getFullText())) {
-			 			hasRing = true;
+			 	CircleStore rs = new CircleStore(getApplicationContext(),true);
+			 	boolean hasCircle = false;
+			 	for (Circle r : rs) {
+			 		if (circle.getFullText().equals(r.getFullText())) {
+			 			hasCircle = true;
 			 		}
 			 	}
 			 	
-			 	if (hasRing == false) {
-			 		Log.v("NewMessageService", "We don't have " + ring.getShortname() + " anymore, stopping thread.");
-			 		stopList.add(ring);
-			 		pollList.get(ring).interrupt();
+			 	if (hasCircle == false) {
+			 		Log.v("NewMessageService", "We don't have " + circle.getShortname() + " anymore, stopping thread.");
+			 		stopList.add(circle);
+			 		pollList.get(circle).interrupt();
 			 	}
 			 	
 			 
-			    Log.v("MuteswanService", "Starting poll of " + ring.getShortname());
-				notifyIds.put(ring.getFullText(), notifyIdLast++);
+			    Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
+				notifyIds.put(circle.getFullText(), notifyIdLast++);
 				
-			 if (pollList.get(ring) == null) {
+			 if (pollList.get(circle) == null) {
 				
-				final Integer startLastId = ring.getLastMsgId();
+				final Integer startLastId = circle.getLastMsgId();
 				
 				
 				
@@ -224,25 +224,25 @@ public class NewMessageService extends Service {
 			    //    then call downloadMessages and grab the latest as needed.
 			    // 4. Continue polling
 				 public void run() {
-				    	Log.v("MuteswanService","THREAD RUNNING: " + ring.getShortname());
+				    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
 				    		boolean poll = true;
 				    	
-				    		Integer lastId = ring.getLastTorMessageId();
+				    		Integer lastId = circle.getLastTorMessageId();
 				    		if (lastId == null || lastId == 0) {
 				    			Log.v("MuteswanService", "Got null or 0 from Tor, bailing out.");
 				    			poll = false;
 				    			torActive = false;
 				    			//return;
 				    		}
-							ring.updateLastMessage(lastId);
+							circle.updateLastMessage(lastId);
 						  
 				    	
-					 Log.v("MuteswanService", "Polling for " + ring.getShortname() + " at thread " + Thread.currentThread().getId());
+					 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
 			       
 					
 			        int count = 0;
-			        Log.v("MuteswanService", ring.getShortname() + " has lastId " + lastId);
+			        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
 			        
 
 			        while (poll) {
@@ -251,7 +251,7 @@ public class NewMessageService extends Service {
 			        	
 			        	MuteswanMessage msg = null;
 						try {
-							msg = longpollForNewMessage(ring,++lastId);
+							msg = longpollForNewMessage(circle,++lastId);
 							
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
@@ -267,20 +267,20 @@ public class NewMessageService extends Service {
 						}
 						
 					
-			        	for (Ring r : stopList) {
-			        		if (r.getFullText().equals(ring.getFullText())) {
+			        	for (Circle r : stopList) {
+			        		if (r.getFullText().equals(circle.getFullText())) {
 			        			stopList.remove(r);
 			        			Log.v("MuteswanService", "We are on the stop list, bailing out.");
 			        			return;
 			        		}
 			        	}
 			        	
-			        	ring.updateLastMessage(lastId);
-			        	ring.saveLastMessage();
-			        	CharSequence notifTitle = "New message in " + ring.getShortname();
+			        	circle.updateLastMessage(lastId);
+			        	circle.saveLastMessage();
+			        	CharSequence notifTitle = "New message in " + circle.getShortname();
 			        	CharSequence notifText = "";
 						try {
-							notifText = ring.getMsg(lastId.toString()).getMsg();
+							notifText = circle.getMsg(lastId.toString()).getMsg();
 						} catch (ClientProtocolException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -288,20 +288,20 @@ public class NewMessageService extends Service {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-			        	showNotification(ring,notifTitle,notifText);
+			        	showNotification(circle,notifTitle,notifText);
 			        	count++;
 			        	
 			        	if (count == 4) {
-			        		Log.v("MuteswanService", "Loop count of 4 reached for " + ring.getShortname());
+			        		Log.v("MuteswanService", "Loop count of 4 reached for " + circle.getShortname());
 			        		count = 0;
-			        		Integer nLastId = ring.getLastTorMessageId();
+			        		Integer nLastId = circle.getLastTorMessageId();
 			        		
 			        		
 			        		if (lastId < nLastId) {
-			        			Log.v("MuteswanService", "Running downloadMessages() for ring " + ring.getShortname());
-			        			ring.updateLastMessage(nLastId);
-			        			ring.saveLastMessage();
-			        			downloadMessages(ring);
+			        			Log.v("MuteswanService", "Running downloadMessages() for circle " + circle.getShortname());
+			        			circle.updateLastMessage(nLastId);
+			        			circle.saveLastMessage();
+			        			downloadMessages(circle);
 			        			lastId = nLastId;
 			        		}
 			        	}
@@ -311,16 +311,16 @@ public class NewMessageService extends Service {
 				 }
 				};
 				
-				pollList.put(ring, nThread);
+				pollList.put(circle, nThread);
 				nThread.start();
-			} else if (pollList.get(ring).isInterrupted()) {
+			} else if (pollList.get(circle).isInterrupted()) {
 				Log.v("MuteswanService","Service is interrupted.");
-				//pollList.remove(ring);
-			} else if (!(pollList.get(ring).isAlive())) {
+				//pollList.remove(circle);
+			} else if (!(pollList.get(circle).isAlive())) {
 				 Log.v("MuteswanService","Hey, looks like not alive, starting.");
-				 pollList.get(ring).run();
+				 pollList.get(circle).run();
 			} else {
-				 Log.v("MuteswanService", "Ring " + ring.getShortname() + " skipped because already polling.");
+				 Log.v("MuteswanService", "Circle " + circle.getShortname() + " skipped because already polling.");
 			}
 		  }
 		
@@ -328,22 +328,22 @@ public class NewMessageService extends Service {
 	}
 	
 	
-	private MuteswanMessage longpollForNewMessage(final Ring ring, Integer id) throws IOException {
-		if (ring == null) {
-			Log.v("AtffService", "WTF, ring is null.");
+	private MuteswanMessage longpollForNewMessage(final Circle circle, Integer id) throws IOException {
+		if (circle == null) {
+			Log.v("AtffService", "WTF, circle is null.");
 		}
-		Log.v("MuteswanService","Longpoll for " + ring.getShortname());
-		MuteswanMessage msg = ring.getMsgLongpoll(id);
+		Log.v("MuteswanService","Longpoll for " + circle.getShortname());
+		MuteswanMessage msg = circle.getMsgLongpoll(id);
 		return(msg);
 	}
 
 	
 	private void getLastMessageAll() {
-		final RingStore rs = new RingStore(getApplicationContext(), true);
+		final CircleStore rs = new CircleStore(getApplicationContext(), true);
 
 		new Thread() {
 			public void run() {
-				for (final Ring r : rs) {
+				for (final Circle r : rs) {
 			
 					Integer lastMessage = r.getLastTorMessageId();
 					r.updateLastMessage(lastMessage);
@@ -355,8 +355,8 @@ public class NewMessageService extends Service {
 		}.start();
 	}
 	
-	private void downloadMessages(Ring ring) {
-		Integer lastIndex = ring.getLastMsgId();
+	private void downloadMessages(Circle circle) {
+		Integer lastIndex = circle.getLastMsgId();
 		if (lastIndex == null || lastIndex == 0) {
 			Log.v("MuteswanService", "lastIndex is null or 0");
 			return;
@@ -368,7 +368,7 @@ public class NewMessageService extends Service {
 				break MSG;
 			
 			try {
-				ring.getMsg(i.toString());
+				circle.getMsg(i.toString());
 				Log.v("MuteswanService", "(downloadMessages) Downloaded msg " + i.toString());
 			} catch (ClientProtocolException e) {
 				// TODO Auto-generated catch block
@@ -382,12 +382,12 @@ public class NewMessageService extends Service {
 	}
 	
 	private void downloadMessagesAll() {
-		final RingStore store = new RingStore(getApplicationContext(),true);
+		final CircleStore store = new CircleStore(getApplicationContext(),true);
 		
 			
 		Thread nthread = new Thread() {
 			public void run() {
-				for (final Ring r : store) {
+				for (final Circle r : store) {
 					downloadMessages(r);
 				}
 			}
@@ -431,7 +431,7 @@ public class NewMessageService extends Service {
 		}
 		
 	};
-	final private LinkedList<Ring> stopList = new LinkedList<Ring>();
+	final private LinkedList<Circle> stopList = new LinkedList<Circle>();
 	
 	public IBinder onBind(Intent intent) {
 		Log.v("NewMessageService","onBind called.");
@@ -441,7 +441,7 @@ public class NewMessageService extends Service {
 		
 	
 	private void stopservice() {
-		for (Ring r : pollList.keySet()) {
+		for (Circle r : pollList.keySet()) {
 			stopList.add(r);
 			pollList.get(r).interrupt();
 		}

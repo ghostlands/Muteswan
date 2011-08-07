@@ -24,7 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
-final public class RingStore extends LinkedList<Ring> {
+final public class CircleStore extends LinkedList<Circle> {
 	
 	public class OpenHelper extends SQLiteOpenHelper {
 
@@ -60,7 +60,7 @@ final public class RingStore extends LinkedList<Ring> {
 
 
 	
-	public RingStore(Context applicationContext, boolean readDb) {
+	public CircleStore(Context applicationContext, boolean readDb) {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	  
@@ -70,7 +70,7 @@ final public class RingStore extends LinkedList<Ring> {
 		}
 	}
 	
-	public RingStore(Context applicationContext) {
+	public CircleStore(Context applicationContext) {
 		// TODO Auto-generated constructor stub
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
@@ -80,25 +80,25 @@ final public class RingStore extends LinkedList<Ring> {
 	}
 
 	
-	public RingStore.OpenHelper getOpenHelper() {
+	public CircleStore.OpenHelper getOpenHelper() {
 		return openHelper;
 	}
 	
-	  final public void deleteRing(Ring ring) {
+	  final public void deleteCircle(Circle circle) {
 		  SQLiteDatabase db = openHelper.getWritableDatabase();
 		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + openHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
-		  delete.bindString(1, ring.getKey());
-		  delete.bindString(2, ring.getShortname());
-		  delete.bindString(3, ring.getServer());
+		  delete.bindString(1, circle.getKey());
+		  delete.bindString(2, circle.getShortname());
+		  delete.bindString(3, circle.getServer());
 		  delete.execute();
 		  db.close();
 		  
 		  
-		  SQLiteDatabase rdb = ring.openHelper.getWritableDatabase();
-		  delete = rdb.compileStatement("DELETE FROM " + Ring.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
-		  delete.bindString(1, muteswan.genHexHash(ring.getFullText()));
+		  SQLiteDatabase rdb = circle.openHelper.getWritableDatabase();
+		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE circleHash = ?");
+		  delete.bindString(1, muteswan.genHexHash(circle.getFullText()));
 		  delete.execute();
-		  ring.openHelper.deleteData(rdb);
+		  circle.openHelper.deleteData(rdb);
 		  rdb.close();
 	  }
 	
@@ -107,7 +107,7 @@ final public class RingStore extends LinkedList<Ring> {
 	final public String getAsString() {
 		String returnString = "";
 		
-		for (Ring r : this) {
+		for (Circle r : this) {
 			returnString = returnString + r.getFullText() + "---";
 		}
 		return(returnString);
@@ -123,7 +123,7 @@ final public class RingStore extends LinkedList<Ring> {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
-				Ring r = new Ring(context,key,shortname,server);
+				Circle r = new Circle(context,key,shortname,server);
 				if (r != null) 
 				   add(r);
 		  }
@@ -135,50 +135,50 @@ final public class RingStore extends LinkedList<Ring> {
 	 
 	  
 	  public void updateStore(String contents) {
-		  Ring ring = new Ring(context,contents);
-		  for (Ring r : this) {
+		  Circle circle = new Circle(context,contents);
+		  for (Circle r : this) {
 			  if (r.getFullText().equals(contents)) {
 				  return;
 			  }
 		  }
-		  addRingToDb(ring);
+		  addCircleToDb(circle);
 	  }
 	  
 	  public void updateStore(String key, String shortname, String server) {
-		  Ring ring = new Ring(context,key,shortname,server);
-		  for (Ring r : this) {
+		  Circle circle = new Circle(context,key,shortname,server);
+		  for (Circle r : this) {
 			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
 				  return;
 			  }
 		  }
-		  addRingToDb(ring);
+		  addCircleToDb(circle);
 	  }
 	  
-	  private void addRingToDb(Ring ring) {
+	  private void addCircleToDb(Circle circle) {
 		  SQLiteDatabase db = openHelper.getWritableDatabase();
 		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
-		  insrt.bindString(1, ring.getKey());
-		  insrt.bindString(2, ring.getShortname());
-		  insrt.bindString(3, ring.getServer());
+		  insrt.bindString(1, circle.getKey());
+		  insrt.bindString(2, circle.getShortname());
+		  insrt.bindString(3, circle.getServer());
 		  insrt.execute();
 		  db.close();
 		  
-		  SQLiteDatabase rdb = ring.openHelper.getWritableDatabase();
-		  //muteswan.genHexHash(ring.getFullText()));
- 		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Ring.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-		  insert.bindString(1,muteswan.genHexHash(ring.getFullText()));
+		  SQLiteDatabase rdb = circle.openHelper.getWritableDatabase();
+		  //muteswan.genHexHash(circle.getFullText()));
+ 		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (circleHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+		  insert.bindString(1,muteswan.genHexHash(circle.getFullText()));
 		  insert.bindLong(2, 0);
 		  insert.executeInsert();
 		  rdb.close();
 	  
-		  add(ring);
+		  add(circle);
 	  }
 	  
 
 	  
-	  public HashMap<String,Ring> asHashMap() {
-		HashMap<String,Ring> map = new HashMap<String,Ring>();
-		for (Ring r : this) {
+	  public HashMap<String,Circle> asHashMap() {
+		HashMap<String,Circle> map = new HashMap<String,Circle>();
+		for (Circle r : this) {
 			map.put(muteswan.genHexHash(r.getFullText()), r);
 		}
 		

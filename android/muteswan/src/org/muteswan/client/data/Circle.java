@@ -20,7 +20,7 @@ import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.Base64;
 import org.muteswan.client.Crypto;
 import org.muteswan.client.muteswan;
-import org.muteswan.client.data.RingStore.OpenHelper;
+import org.muteswan.client.data.CircleStore.OpenHelper;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -44,9 +44,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
-public class Ring {
+public class Circle {
      
-	Ring.OpenHelper openHelper;
+	Circle.OpenHelper openHelper;
 	
 	final private String key;
 	
@@ -84,9 +84,9 @@ public class Ring {
 
 		
 	     
-	      public OpenHelper(Context context, String ringHash) {
-	    	  super(context, ringHash, null, DATABASE_VERSION);
-	    	  databaseName = ringHash;
+	      public OpenHelper(Context context, String circleHash) {
+	    	  super(context, circleHash, null, DATABASE_VERSION);
+	    	  databaseName = circleHash;
 		}
 
 		@Override
@@ -120,7 +120,7 @@ public class Ring {
 
   
 
-	public Ring(Context context, String contents) {
+	public Circle(Context context, String contents) {
 		Integer plusIndx = contents.indexOf("+");
 		Integer atIndx = contents.indexOf("@");
 		
@@ -152,17 +152,17 @@ public class Ring {
 		this.keyHash = muteswan.genHexHash(key);
 		this.context = context;
 		initHttp();
-		this.openHelper = new Ring.OpenHelper(context, muteswan.genHexHash(getFullText()));
+		this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
 		
 	    muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
 		
 	    initManifest();
 	    
-		//this.add(newRing);
+		//this.add(newCircle);
 	}
 	
-	public Ring(Context context, String key, String shortname, String server) {
+	public Circle(Context context, String key, String shortname, String server) {
 		super();
 		this.key = key;
 		this.shortname = shortname;
@@ -170,7 +170,7 @@ public class Ring {
 		this.context = context;
 
 		this.keyHash = muteswan.genHexHash(key);
-		this.openHelper = new Ring.OpenHelper(context, muteswan.genHexHash(getFullText()));
+		this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
 	    muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
 	    initManifest();
@@ -178,40 +178,40 @@ public class Ring {
 	
 	
 	private void initManifest() {
-		String ringHash = muteswan.genHexHash(getFullText());
+		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = this.openHelper.getWritableDatabase();
 		
-		Cursor cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "description" }, null, null, null );
+		Cursor cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "description" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getString(0) != null) {
 			setDescription(cursor.getString(0));
 		}
 		cursor.close();
 		
-		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "longdescription" }, null, null, null );
+		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "longdescription" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getString(0) != null) {
 			setLongDescription(cursor.getString(0));
 		}
 		cursor.close();
 		
-		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "image" }, null, null, null );
+		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "image" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getBlob(0) != null) {
 			setImage(cursor.getBlob(0));
 		}
 		cursor.close();
 		
-		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "postpolicy" }, null, null, null );
+		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "postpolicy" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getString(0) != null) {
 			setPostPolicy(cursor.getString(0));
 		}
 		cursor.close();
 		
-		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "authkey" }, null, null, null );
+		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "authkey" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getString(0) != null) {
 			setAuthKey(cursor.getString(0));
 		}
 		cursor.close();
 		
-		cursor = db.query(Ring.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "keylist" }, null, null, null );
+		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "keylist" }, null, null, null );
 		
 		if (cursor.getCount() != 0) {
 		  String[] keylist = new String[cursor.getCount()];
@@ -311,7 +311,7 @@ public class Ring {
         // 	return(curLastMsgId);
 		//}
 		
-		String ringHash = muteswan.genHexHash(getFullText());
+		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = this.openHelper.getWritableDatabase();
 
 		Integer lastMessageId = null;
@@ -319,7 +319,7 @@ public class Ring {
 		
 		
 		
-		Cursor cursor = db.query(Ring.OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { ringHash }, null, null, "lastMessage desc" );
+		Cursor cursor = db.query(Circle.OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { circleHash }, null, null, "lastMessage desc" );
 		if (cursor.moveToFirst()) {
 			lastMessageId = cursor.getInt(0);
 		}
@@ -362,16 +362,16 @@ public class Ring {
 			return(null);
 		
 		
-		String ringHash = muteswan.genHexHash(this.getFullText());
+		String circleHash = muteswan.genHexHash(this.getFullText());
 		
 		SQLiteDatabase db = openHelper.getReadableDatabase();
 		
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "id desc" );
+		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
 		if (cursor.moveToFirst()) {
 			String date = cursor.getString(0);
 			String msgData = cursor.getString(1);
 			
-			Cursor cursorSig = db.query(OpenHelper.SIGTABLE, new String[] { "signature" }, "msgId = ? and ringHash = ?", new String[] { id, ringHash }, null, null, "signature desc" );
+			Cursor cursorSig = db.query(OpenHelper.SIGTABLE, new String[] { "signature" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "signature desc" );
 			
 			//FIXME: max signatures?
 			String[] signatures = new String[50];
@@ -405,9 +405,9 @@ public class Ring {
 	
 	public MuteswanMessage getMsgFromTor(String id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
-		Log.v("Ring", "Fetching message " + id);
+		Log.v("Circle", "Fetching message " + id);
     	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
-    	Log.v("Ring", "Fetched message " + id);
+    	Log.v("Circle", "Fetched message " + id);
     	
     	return(parseMsgFromTor(Integer.parseInt(id),resp));
     	
@@ -419,7 +419,7 @@ public class Ring {
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
 		if (jsonString == null) {
-			Log.v("Ring", "WTF, jsonString is null");
+			Log.v("Circle", "WTF, jsonString is null");
 			return null;
 		}
 		
@@ -428,7 +428,7 @@ public class Ring {
     	String date = null;
     	
     	if (lastModified == null) {
-			Log.v("Ring", "WTF, lastModified is null");
+			Log.v("Circle", "WTF, lastModified is null");
 			return null;
     	}
     	
@@ -505,7 +505,7 @@ public class Ring {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/longpoll/" + id);
     	HttpResponse resp;
     	
-    	Log.v("Ring", "getMsgLongpoll called for " + getShortname());
+    	Log.v("Circle", "getMsgLongpoll called for " + getShortname());
     	
 		try {
 			resp = muteswanHttp.httpClient.execute(httpGet);
@@ -553,7 +553,7 @@ public class Ring {
 		
 		if (getPostPolicy() != null && !getPostPolicy().equals("ANY")) {
 			if (getPostPolicy().equals("AUTHKEY")) {
-				Log.v("Ring", "AUTHKEY Adding Signature header for " + getShortname());
+				Log.v("Circle", "AUTHKEY Adding Signature header for " + getShortname());
 				Signature sig = null;
 				try {
 					sig = Signature.getInstance("MD5WithRSA");
@@ -583,7 +583,7 @@ public class Ring {
 				}
 				
 				if (rsaPrivKey == null) {
-					Log.e("Ring", "Could not find appropriate identity for " + getShortname() + " in idstore.");
+					Log.e("Circle", "Could not find appropriate identity for " + getShortname() + " in idstore.");
 					return;
 				}
 				
@@ -603,9 +603,9 @@ public class Ring {
 				}
 				
 				
-				//ring.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
+				//circle.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
 			} else if (getPostPolicy().equals("KEYLIST")) {
-				Log.v("Ring", "KEYLIST Adding Signature header for " + getShortname());
+				Log.v("Circle", "KEYLIST Adding Signature header for " + getShortname());
 				Signature sig = null;
 				try {
 					sig = Signature.getInstance("MD5WithRSA");
@@ -620,21 +620,21 @@ public class Ring {
 				KEYS: for (String key : keylist) {
 					for (Identity id : idStore) {
 					  if (key.equals(id.publicKeyEnc) && id.privateKeyEnc != null) {
-						  Log.v("Ring", "Found identity " + id.getName());
+						  Log.v("Circle", "Found identity " + id.getName());
 						  try {
 
 							rsaPrivKey = id.getPrivateKey();
 
 						} catch (NoSuchAlgorithmException e) {
 							e.printStackTrace();
-							Log.e("Ring", "NoSuchAlgorithmException getting private key.");
+							Log.e("Circle", "NoSuchAlgorithmException getting private key.");
 						} catch (InvalidKeySpecException e) {
 							// TODO Auto-generated catch block
-							Log.e("Ring", "InvalidKeySpecException getting private key.");
+							Log.e("Circle", "InvalidKeySpecException getting private key.");
 
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
-							Log.e("Ring", "IOException getting private key.");
+							Log.e("Circle", "IOException getting private key.");
 
 						}
 						  break KEYS;
@@ -643,7 +643,7 @@ public class Ring {
 				}
 				
 				if (rsaPrivKey == null) {
-					Log.e("Ring", "Could not find appropriate identity for " + getShortname() + " in idstore.");
+					Log.e("Circle", "Could not find appropriate identity for " + getShortname() + " in idstore.");
 					return;
 				}
 				
@@ -659,10 +659,10 @@ public class Ring {
 				} catch (InvalidKeyException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					Log.v("Ring", "Invalid key posting.");
+					Log.v("Circle", "Invalid key posting.");
 				} catch (SignatureException e) {
 					// TODO Auto-generated catch block
-					Log.v("Ring", "Signature exception posting.");
+					Log.v("Circle", "Signature exception posting.");
 				}
 				
 			
@@ -671,7 +671,7 @@ public class Ring {
 		
 		
 		httpPost.setEntity(entity);
-		Log.v("Ring", "ARGH WTF ");
+		Log.v("Circle", "ARGH WTF ");
 
 		try {
 			// POST MESSAGE
@@ -717,11 +717,11 @@ public class Ring {
 		    Signature sig = Signature.getInstance("MD5WithRSA");
 		    
 		    if (identities[i] == null) {
-		    	Log.v("Ring", "Wtf, identities is null\n");
+		    	Log.v("Circle", "Wtf, identities is null\n");
 		    	break;
 		    }
 		    
-		    Log.v("Ring", "Signing with " + identities[i].getName() + "\n");
+		    Log.v("Circle", "Signing with " + identities[i].getName() + "\n");
 		
 		    RSAPrivateKey rsaPrivKey = identities[i].getPrivateKey();
 		   
@@ -743,8 +743,8 @@ public class Ring {
 	}
 	
 	public boolean msgExists(SQLiteDatabase db, Integer id) {
-		String ringHash = muteswan.genHexHash(getFullText());
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id.toString(), ringHash }, null, null, "id desc" );
+		String circleHash = muteswan.genHexHash(getFullText());
+		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id.toString(), circleHash }, null, null, "id desc" );
 		if (cursor.getCount() != 0) {
 			cursor.close();
 			return(true);
@@ -759,7 +759,7 @@ public class Ring {
 		if (context == null) 
 			return;	
 		
-		String ringHash = muteswan.genHexHash(getFullText());
+		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		if (msgExists(db,id)) {
 			db.close();
@@ -767,7 +767,7 @@ public class Ring {
 		}
 
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
-		insrt.bindString(1, ringHash);
+		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, id);
 		insrt.bindString(3, date);
 		insrt.bindString(4, msg);
@@ -781,7 +781,7 @@ public class Ring {
 		if (context == null) 
 			return;	
 		
-		String ringHash = muteswan.genHexHash(getFullText());
+		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		if (msgExists(db,id)) {
 			db.close();
@@ -790,7 +790,7 @@ public class Ring {
 		
 
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
-		insrt.bindString(1, ringHash);
+		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, id);
 		insrt.bindString(3, date);
 		insrt.bindString(4, msg);
@@ -803,7 +803,7 @@ public class Ring {
 		
 		  insrt = db.compileStatement("INSERT INTO " + OpenHelper.SIGTABLE + " (msgId,ringHash,signature) VALUES (?,?,?)");
 		  insrt.bindLong(1, id);
-		  insrt.bindString(2, ringHash);
+		  insrt.bindString(2, circleHash);
 		  insrt.bindString(3,signatures[i]);
 		  insrt.executeInsert();
 		}
@@ -820,10 +820,10 @@ public class Ring {
 
 	public void createLastMessage(Integer curIndex) {
 		
-		String ringHash = muteswan.genHexHash(getFullText());
+		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
-		insrt.bindString(1, ringHash);
+		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, curIndex);
 		insrt.executeInsert();
 		db.close();
@@ -839,17 +839,17 @@ public class Ring {
 	}
 	
 	public void saveLastMessage() {
-		String ringHash = muteswan.genHexHash(getFullText());
+		String circleHash = muteswan.genHexHash(getFullText());
 		
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
 		update.bindLong(1, curLastMsgId);
-		update.bindString(2, ringHash);
+		update.bindString(2, circleHash);
 		update.execute();
 		
 		//if (update.execute() == -1) {
 		//	SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-		//	insert.bindString(1,ringHash);
+		//	insert.bindString(1,circleHash);
 		//	insert.bindLong(2, curLastMsgId);
 		//	insert.executeInsert();
 		//}
@@ -895,7 +895,7 @@ public class Ring {
 
 	public void downloadManifest() {
 			HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/manifest");
-			Log.v("Ring", "Downloading manifest for " + getShortname());
+			Log.v("Circle", "Downloading manifest for " + getShortname());
 	    	try {
 				HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
 				JSONObject jsonObj = parseManifest(resp);
@@ -925,7 +925,7 @@ public class Ring {
 				
 				saveManifestToDb();
 
-		    	Log.v("Ring", "Downloaded manifest for " + getShortname());
+		    	Log.v("Circle", "Downloaded manifest for " + getShortname());
 			} catch (ClientProtocolException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -942,13 +942,13 @@ public class Ring {
 	
    private void saveManifestToDb() {
 	    SQLiteDatabase db = openHelper.getWritableDatabase();
-	    String ringHash = muteswan.genHexHash(getFullText());
+	    String circleHash = muteswan.genHexHash(getFullText());
 		
 	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFEST);
 	    del.execute();
 	    
 		//SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (ringHash) VALUES (?)");
-		//insrt.bindString(1, ringHash);
+		//insrt.bindString(1, circleHash);
 		//insrt.execute();
 		
 	    SQLiteStatement insrt;

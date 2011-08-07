@@ -32,9 +32,9 @@
                   android:label="@string/app_name" />
         <activity android:name=".ui.WriteMsg"
                   android:label="@string/app_name" />
-        <activity android:name=".ui.CreateRing"
+        <activity android:name=".ui.CreateCircle"
                   android:label="@string/app_name" />
-        <activity android:name=".ui.RingList"
+        <activity android:name=".ui.CircleList"
                   android:label="@string/app_name" />
         <activity android:name=".ui.LatestMessages"
                   android:label="@string/app_name" />
@@ -45,9 +45,9 @@
         <activity android:name=".ui.Preferences"
                   android:label="@string/app_name" />
         <service android:name=".NewMessageService"/>
-        <activity android:name=".ui.ViewRing"
+        <activity android:name=".ui.ViewCircle"
                   android:label="@string/app_name" />
-         <activity android:name=".ui.EditRing"
+         <activity android:name=".ui.EditCircle"
                   android:label="@string/app_name" />
 
     </application>

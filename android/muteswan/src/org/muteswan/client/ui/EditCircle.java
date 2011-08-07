@@ -19,8 +19,8 @@ import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.WriteMsg.DialogButtonClickHandler;
 import org.muteswan.client.ui.WriteMsg.DialogSelectionClickHandler;
 import org.apache.http.HttpResponse;
@@ -47,11 +47,11 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class EditRing extends Activity {
+public class EditCircle extends Activity {
 
 	
 	private Identity[] identities;
-	private Ring ring;
+	private Circle circle;
 	protected byte[] imageBytes;
 	private boolean[] keylistIdentitiesSelected;
 	private CharSequence[] signIdentities;
@@ -60,31 +60,31 @@ public class EditRing extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		Bundle extras = getIntent().getExtras();
-	    RingStore rs = new RingStore(getApplicationContext(),true);
-	    HashMap<String,Ring> hashMap = rs.asHashMap();
-	    ring = hashMap.get(muteswan.genHexHash(extras.getString("ring")));
-		setContentView(R.layout.editring);
+	    CircleStore rs = new CircleStore(getApplicationContext(),true);
+	    HashMap<String,Circle> hashMap = rs.asHashMap();
+	    circle = hashMap.get(muteswan.genHexHash(extras.getString("circle")));
+		setContentView(R.layout.editcircle);
 		
 
-		Button fetchImage = (Button) findViewById(R.id.editRingFetchImageButton);
+		Button fetchImage = (Button) findViewById(R.id.editCircleFetchImageButton);
 		fetchImage.setOnClickListener(fetchImageListener);
 		
-		Button setKeylistButton = (Button) findViewById(R.id.editRingSetKeylistButton);
+		Button setKeylistButton = (Button) findViewById(R.id.editCircleSetKeylistButton);
 		setKeylistButton.setOnClickListener(setKeylistButtonListener);
 		
-		Button updateButton = (Button) findViewById(R.id.updateRingButton);
+		Button updateButton = (Button) findViewById(R.id.updateCircleButton);
 		updateButton.setOnClickListener(updateButtonListener);
 
-        Spinner policySpinner = (Spinner) findViewById(R.id.editRingPostPolicy);
+        Spinner policySpinner = (Spinner) findViewById(R.id.editCirclePostPolicy);
         String[] policyList = new String[] { "NONE", "AUTHKEY", "KEYLIST" };
         ArrayAdapter policyAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, policyList);
         //createFromResource(
          //       this, policyList, android.R.layout.simple_spinner_item);
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         policySpinner.setAdapter(policyAdapter);
-        if (ring.getPostPolicy() != null) {
+        if (circle.getPostPolicy() != null) {
         	for (int i=0; i<policyList.length;i++) {
-        		if (policyList[i].equals(ring.getPostPolicy())) {
+        		if (policyList[i].equals(circle.getPostPolicy())) {
         			policySpinner.setSelection(i);
         		}
         	}
@@ -101,8 +101,8 @@ public class EditRing extends Activity {
 	    for (int i=0; i<identities.length;i++) {
 	    	  String authkeyEnc = "";
 			try {
-				if (ring.getAuthKey() != null)
-				  authkeyEnc = new String(Base64.decode(ring.getAuthKey()));
+				if (circle.getAuthKey() != null)
+				  authkeyEnc = new String(Base64.decode(circle.getAuthKey()));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -115,7 +115,7 @@ public class EditRing extends Activity {
 	    }
 	    
 	    
-	    Spinner authkeySpinner = (Spinner) findViewById(R.id.editRingAuthKey);
+	    Spinner authkeySpinner = (Spinner) findViewById(R.id.editCircleAuthKey);
 	    ArrayAdapter authkeyAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, signIdentities);
         authkeySpinner.setAdapter(authkeyAdapter);
         if (knownIdentity != 0) {
@@ -123,16 +123,16 @@ public class EditRing extends Activity {
         }
 
         
-       // if (ring.getDescription() != null) {
-        	EditText txtDesc = (EditText) findViewById(R.id.editRingDescription);
-        	txtDesc.setText(ring.getDescription());
+       // if (circle.getDescription() != null) {
+        	EditText txtDesc = (EditText) findViewById(R.id.editCircleDescription);
+        	txtDesc.setText(circle.getDescription());
         //}
 		
-        	EditText txtLDesc = (EditText) findViewById(R.id.editRingLongDescription);
-        	txtLDesc.setText(ring.getLongDescription());
+        	EditText txtLDesc = (EditText) findViewById(R.id.editCircleLongDescription);
+        	txtLDesc.setText(circle.getLongDescription());
         	
-        	TextView editRingName = (TextView) findViewById(R.id.editRingName);
-        	editRingName.setText(ring.getShortname());
+        	TextView editCircleName = (TextView) findViewById(R.id.editCircleName);
+        	editCircleName.setText(circle.getShortname());
 	}
 	
 	
@@ -172,7 +172,7 @@ public class EditRing extends Activity {
      }
 	 
    private void updateKeylist() {
-			TextView txtView = (TextView) findViewById(R.id.editRingKeylistInfo);
+			TextView txtView = (TextView) findViewById(R.id.editCircleKeylistInfo);
 			StringBuilder sBuilder = new StringBuilder();
 			for (int i = 0; i<keylistIdentitiesSelected.length; i++) {
 				if (signIdentities[i].equals("None"))
@@ -197,8 +197,8 @@ public class EditRing extends Activity {
 	
 	public Button.OnClickListener fetchImageListener = new Button.OnClickListener() {
 		public void onClick(View v) {
-			EditText txtImage = (EditText) findViewById(R.id.editRingImage);
-			ImageView imageView = (ImageView) findViewById(R.id.editRingImageView);
+			EditText txtImage = (EditText) findViewById(R.id.editCircleImage);
+			ImageView imageView = (ImageView) findViewById(R.id.editCircleImageView);
 			String url = txtImage.getText().toString();
 		    MuteswanHttp muteswanHttp = new MuteswanHttp();
 			HttpGet httpGet = new HttpGet(url);
@@ -216,7 +216,7 @@ public class EditRing extends Activity {
 				while ((is.read(imageBytes,count,1)) != -1) {
 					count++;
 				}
-				Log.v("EditRing", "Count is " + count + " and content length is " + imageBytes.length);
+				Log.v("EditCircle", "Count is " + count + " and content length is " + imageBytes.length);
 				//is.read(imageBytes, 0, imageBytes.length);
 				ByteArrayInputStream is2 = new ByteArrayInputStream(imageBytes);
 				
@@ -241,7 +241,7 @@ public class EditRing extends Activity {
 
 		@Override
 		public void onClick(View v) {
-			final Spinner authKey = (Spinner) findViewById(R.id.editRingAuthKey);
+			final Spinner authKey = (Spinner) findViewById(R.id.editCircleAuthKey);
 			JSONObject jsonObj = collectManifestData();
 
 			int authkeyId = authKey.getSelectedItemPosition();
@@ -257,7 +257,7 @@ public class EditRing extends Activity {
 					//sig.update("some random sign data".getBytes("UTF8"));
 					byte[] sigBytes = sig.sign();
 					
-					ring.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
+					circle.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
 				} catch (NoSuchAlgorithmException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -276,7 +276,7 @@ public class EditRing extends Activity {
 				}
 				
 			} else {
-				ring.updateManifest(jsonObj);
+				circle.updateManifest(jsonObj);
 			}
 			
 		}
@@ -285,10 +285,10 @@ public class EditRing extends Activity {
 	
 	
 	private JSONObject collectManifestData() {
-		final TextView newRingDescription = (TextView) findViewById(R.id.editRingDescription);
-		final TextView newRingLongDescription = (TextView) findViewById(R.id.editRingLongDescription);
-		final Spinner authKey = (Spinner) findViewById(R.id.editRingAuthKey);
-		final Spinner postPolicy = (Spinner) findViewById(R.id.editRingPostPolicy);
+		final TextView newCircleDescription = (TextView) findViewById(R.id.editCircleDescription);
+		final TextView newCircleLongDescription = (TextView) findViewById(R.id.editCircleLongDescription);
+		final Spinner authKey = (Spinner) findViewById(R.id.editCircleAuthKey);
+		final Spinner postPolicy = (Spinner) findViewById(R.id.editCirclePostPolicy);
 
 		JSONObject jsonManifest = new JSONObject();
 		JSONObject jsonObj = new JSONObject();
@@ -297,9 +297,9 @@ public class EditRing extends Activity {
 		try {
 			int authkeyId = authKey.getSelectedItemPosition();
 			jsonManifest.put("longdescription",
-					Base64.encodeBytes(newRingLongDescription.getText().toString().getBytes("UTF8")));
+					Base64.encodeBytes(newCircleLongDescription.getText().toString().getBytes("UTF8")));
 			jsonManifest.put("description", 
-					Base64.encodeBytes(newRingDescription.getText().toString().getBytes("UTF8")));
+					Base64.encodeBytes(newCircleDescription.getText().toString().getBytes("UTF8")));
 			if (imageBytes != null)
 			  jsonManifest.put("image", Base64.encodeBytes(imageBytes));
 			jsonManifest.put("postpolicy", postPolicy.getSelectedItem());

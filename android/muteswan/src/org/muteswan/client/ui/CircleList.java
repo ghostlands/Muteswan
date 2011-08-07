@@ -8,8 +8,8 @@ import org.muteswan.client.muteswan;
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Ring;
-import org.muteswan.client.data.RingStore;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
 import org.apache.http.client.ClientProtocolException;
 
 import android.app.ListActivity;
@@ -31,33 +31,33 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
-public class RingList extends ListActivity {
+public class CircleList extends ListActivity {
 
 
 	public static int SHARE = 0;
 	public static int READ = 1;
 	public static int WRITE = 2;
 	public static int ANY = 3;
-	public static String[] actionPrompts = new String[] { "Select a ring to share.", 
-														  "Select a ring to read messages.", 
-														  "Select a ring to write a message.",
-														  "Long-press a ring for actions."};
+	public static String[] actionPrompts = new String[] { "Select a circle to share.", 
+														  "Select a circle to read messages.", 
+														  "Select a circle to write a message.",
+														  "Long-press a circle for actions."};
 	public Integer action;
 	Bundle extra;
-	public Ring[] ringList;
+	public Circle[] circleList;
 	private String initialText;
 
 	
-	private RingStore store;
-	private ArrayAdapter<Ring> listAdapter;
+	private CircleStore store;
+	private ArrayAdapter<Circle> listAdapter;
 	
 	@Override
 	public void onResume() {
 		super.onResume();
-    	store = new RingStore(this,true);
-        ringList = getArray();
-        listAdapter = new ArrayAdapter<Ring>(this,
-                android.R.layout.simple_list_item_1, ringList);
+    	store = new CircleStore(this,true);
+        circleList = getArray();
+        listAdapter = new ArrayAdapter<Circle>(this,
+                android.R.layout.simple_list_item_1, circleList);
           setListAdapter(listAdapter);
 	}
 	
@@ -71,50 +71,50 @@ public class RingList extends ListActivity {
         action = extra.getInt("action");
         initialText = extra.getString("initialText");
         
-    	store = new RingStore(this,true);
+    	store = new CircleStore(this,true);
 
-        setContentView(R.layout.ringlist);
+        setContentView(R.layout.circlelist);
         
         
-        TextView txt = (TextView) findViewById(R.id.android_ringlistprompt);
-        LinearLayout ringlist = (LinearLayout) findViewById(R.id.ringlistButtons);
+        TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
+        LinearLayout circlelist = (LinearLayout) findViewById(R.id.circlelistButtons);
         txt.setText(actionPrompts[action]);
         
         
         if (action == null || action == ANY) {
-          Button addRing = (Button) findViewById(R.id.android_ringlistAddRing);
-          Button createRing = (Button) findViewById(R.id.android_ringlistCreateRing);
-          addRing.setOnClickListener(addRingListener);
-          createRing.setOnClickListener(createRingListener);
-          ringlist.setVisibility(View.VISIBLE);
+          Button addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
+          Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
+          addCircle.setOnClickListener(addCircleListener);
+          createCircle.setOnClickListener(createCircleListener);
+          circlelist.setVisibility(View.VISIBLE);
         } else {
-          ringlist.setVisibility(View.GONE);
+          circlelist.setVisibility(View.GONE);
         }
 
         
         
-        ringList = getArray();
+        circleList = getArray();
         registerForContextMenu(getListView());
 
       
-          listAdapter = new ArrayAdapter<Ring>(this,
-                android.R.layout.simple_list_item_1, ringList);
+          listAdapter = new ArrayAdapter<Circle>(this,
+                android.R.layout.simple_list_item_1, circleList);
           setListAdapter(listAdapter);
        
         
     }
     
     //FIXME: should be part of store
-    private Ring[] getArray() {
+    private Circle[] getArray() {
     	
-    	Ring[] ringList = new Ring[store.size()];
+    	Circle[] circleList = new Circle[store.size()];
     	int i = 0;
-    	for (Ring r : store) {
-    		ringList[i] = r;
+    	for (Circle r : store) {
+    		circleList[i] = r;
     		i++;
     	}
     	
-    	return(ringList);
+    	return(circleList);
     }
     
     
@@ -134,7 +134,7 @@ public class RingList extends ListActivity {
 			intent = new Intent(getApplicationContext(),LatestMessages.class);
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA",ringList[position].getFullText());;
+			intent.putExtra("ENCODE_DATA",circleList[position].getFullText());;
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");;
 	    } else if (action == ANY) {
 	    	return;
@@ -142,7 +142,7 @@ public class RingList extends ListActivity {
 		
 	
 		
-		intent.putExtra("ring", ringList[position].getFullText());
+		intent.putExtra("circle", circleList[position].getFullText());
 		intent.putExtra("initialText", initialText);
 		startActivity(intent);
 
@@ -152,7 +152,7 @@ public class RingList extends ListActivity {
             ContextMenuInfo menuInfo) {
 			super.onCreateContextMenu(menu, v, menuInfo);
 			MenuInflater inflater = getMenuInflater();
-			inflater.inflate(R.menu.ringlistcontextmenu, menu);
+			inflater.inflate(R.menu.circlelistcontextmenu, menu);
 	}
 
 	public boolean onContextItemSelected(MenuItem item) {
@@ -160,22 +160,22 @@ public class RingList extends ListActivity {
 		
 		
 		switch (item.getItemId()) {
-		  case R.id.ringListDelete:
-			  deleteRing(info.position);
+		  case R.id.circleListDelete:
+			  deleteCircle(info.position);
 			  break;
-		  case R.id.ringListRead:
+		  case R.id.circleListRead:
 			  showMsgList(info.position);
 			  break;
-		  case R.id.ringListShare:
-			  shareRing(info.position);
+		  case R.id.circleListShare:
+			  shareCircle(info.position);
 			  break;
-		  case R.id.ringListView:
-			  viewRing(info.position);
+		  case R.id.circleListView:
+			  viewCircle(info.position);
 			  break;
-		  case R.id.ringListEdit:
-			  editRing(info.position);
+		  case R.id.circleListEdit:
+			  editCircle(info.position);
 			  break;
-		  case R.id.ringListWriteMsg:
+		  case R.id.circleListWriteMsg:
 			  writeMsg(info.position);
 			  break;
 		}
@@ -183,7 +183,7 @@ public class RingList extends ListActivity {
 	
 	}
 
-	private Button.OnClickListener addRingListener  = new Button.OnClickListener() {
+	private Button.OnClickListener addCircleListener  = new Button.OnClickListener() {
         public void onClick( View v ) {
         	Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
@@ -192,19 +192,19 @@ public class RingList extends ListActivity {
      };
 	
      
-     private Button.OnClickListener createRingListener = new Button.OnClickListener() {
+     private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
     	 public void onClick(View v) {
-    		 startActivity(new Intent(getApplicationContext(),CreateRing.class));
+    		 startActivity(new Intent(getApplicationContext(),CreateCircle.class));
     	     return;
     	 }
      };
      
 	
-	private void deleteRing(int position) {
-		RingStore store = new RingStore(getApplicationContext());
-		store.deleteRing(ringList[position]);
+	private void deleteCircle(int position) {
+		CircleStore store = new CircleStore(getApplicationContext());
+		store.deleteCircle(circleList[position]);
 		Toast.makeText(this,
-				"Deleted ring " + ringList[position].getShortname() + " from saved keys.", 
+				"Deleted circle " + circleList[position].getShortname() + " from saved keys.", 
 					  Toast.LENGTH_LONG).show();
 		Intent intent = new Intent(this,NewMessageService.class);
 		stopService(intent);
@@ -214,33 +214,33 @@ public class RingList extends ListActivity {
 
 	private void writeMsg(Integer position) {
 		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		intent.putExtra("ring", ringList[position].getFullText());
+		intent.putExtra("circle", circleList[position].getFullText());
 		startActivity(intent);
 	}
 
 	
-	private void viewRing(Integer position) {
-		Intent intent = new Intent(getApplicationContext(),ViewRing.class);
-		intent.putExtra("ring",ringList[position].getFullText());
+	private void viewCircle(Integer position) {
+		Intent intent = new Intent(getApplicationContext(),ViewCircle.class);
+		intent.putExtra("circle",circleList[position].getFullText());
 		startActivity(intent);
 	}
 	
-	private void editRing(Integer position) {
-		Intent intent = new Intent(getApplicationContext(),EditRing.class);
-		intent.putExtra("ring",ringList[position].getFullText());
+	private void editCircle(Integer position) {
+		Intent intent = new Intent(getApplicationContext(),EditCircle.class);
+		intent.putExtra("circle",circleList[position].getFullText());
 		startActivity(intent);
 	}
 	
-	private void shareRing(Integer position) {
+	private void shareCircle(Integer position) {
 		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-		intent.putExtra("ENCODE_DATA",ringList[position].getFullText());
+		intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
 		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 		startActivity(intent);
 	}
 
 	private void showMsgList(Integer position) {
 		Intent intent = new Intent(getApplicationContext(),LatestMessages.class);
-		intent.putExtra("ring", muteswan.genHexHash(ringList[position].getFullText()));
+		intent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
 		startActivity(intent);
 	}
 
@@ -257,16 +257,16 @@ public class RingList extends ListActivity {
     	            // RING
     	            if (atIndex != -1) {
     	            
-      	              RingStore store = new RingStore(getApplicationContext(),true);
-    	              Ring ring = new Ring(getApplicationContext(),contents);
+      	              CircleStore store = new CircleStore(getApplicationContext(),true);
+    	              Circle circle = new Circle(getApplicationContext(),contents);
     	              store.updateStore(contents);
     	               
     	              
     	              Intent sintent = new Intent(this,NewMessageService.class);
     	      		  stopService(sintent);
     	      		  startService(sintent);
-    	              //this.activeRing = ring;
-    	    //          selectMsg(ring);
+    	              //this.activeCircle = circle;
+    	    //          selectMsg(circle);
     	            
     	            // IDENTITY
     	            } else {
@@ -282,8 +282,8 @@ public class RingList extends ListActivity {
             	
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
-	            RingStore store = new RingStore(getApplicationContext(),true);
-            	Ring ring = new Ring(getApplicationContext(),testSite);
+	            CircleStore store = new CircleStore(getApplicationContext(),true);
+            	Circle circle = new Circle(getApplicationContext(),testSite);
 	            store.updateStore(testSite);
 	            
 	            Intent sintent = new Intent(this,NewMessageService.class);

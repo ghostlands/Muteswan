@@ -54,8 +54,8 @@
  			android:gravity="top|center"
     		/>
     	
-    	  <Button android:id="@+id/mManageRings"
- 			android:text="My Rings"
+    	  <Button android:id="@+id/mManageCircles"
+ 			android:text="My Circles"
     		android:textSize="14sp"
  			android:layout_width="wrap_content" 
  			android:layout_height="wrap_content"
@@ -87,12 +87,12 @@
  	
  	   
  	    <Button android:id="@+id/mScan" 
-    		android:text="Add Ring" 
+    		android:text="Add Circle" 
     		android:textSize="14sp"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content" />
     	<Button android:id="@+id/mShare"
- 			android:text="Share Ring" 
+ 			android:text="Share Circle" 
  			android:textSize="14sp"
  			android:layout_width="fill_parent" 
  			android:layout_height="fill_parent"
@@ -104,8 +104,8 @@
     <TableRow>
     
     	  
- 	 	  <Button android:id="@+id/mCreateRing"
- 			android:text="Create Ring" 
+ 	 	  <Button android:id="@+id/mCreateCircle"
+ 			android:text="Create Circle" 
  			android:textSize="14sp"
  			android:layout_width="wrap_content" 
  			android:layout_height="wrap_content" /> 

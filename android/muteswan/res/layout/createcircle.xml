@@ -11,10 +11,10 @@
     
     
      <TextView
-    android:id="@+id/newRingPrompt"
+    android:id="@+id/newCirclePrompt"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
-    android:text="@string/newringprompt"
+    android:text="@string/newcircleprompt"
     android:textSize="24sp"    
     />
     
@@ -25,7 +25,7 @@
       >
     
      <TextView
-    android:id="@+id/newRingNamePrompt"
+    android:id="@+id/newCircleNamePrompt"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="Name"
@@ -34,7 +34,7 @@
     />
      
     <EditText android:text="" 
-      android:id="@+id/newRingName"
+      android:id="@+id/newCircleName"
       android:layout_width="80sp"
       android:layout_height="wrap_content"/>
     
@@ -47,13 +47,13 @@
       >
     
     <TextView android:text="Key"
-       android:id="@+id/newRingKeyPrompt"
+       android:id="@+id/newCircleKeyPrompt"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        android:minWidth="50sp"/>
     
     <TextView  
-    android:id="@+id/newRingKey"
+    android:id="@+id/newCircleKey"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:text="(new key)"
@@ -67,18 +67,18 @@
       >
    
     <TextView android:text="Server"
-      android:id="@+id/newRingServerPrompt"
+      android:id="@+id/newCircleServerPrompt"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="50sp"/>
-    <EditText android:text="tckwndlytrphlpyo.onion" android:id="@+id/newRingServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
+    <EditText android:text="tckwndlytrphlpyo.onion" android:id="@+id/newCircleServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
 
    </LinearLayout>
 
 
  
-    <Button android:text="Create Ring" android:id="@+id/genRingButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
-<TextView android:text="" android:id="@+id/newRingResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+    <Button android:text="Create Circle" android:id="@+id/genCircleButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+<TextView android:text="" android:id="@+id/newCircleResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 
 </LinearLayout>
 </ScrollView>
