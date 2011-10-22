@@ -22,9 +22,10 @@
        android:minHeight="100sp"
        android:maxHeight="120sp"/>
    
-    <Button android:id="@+id/selectSigButton" android:text="Sign Message"
+   <!--  REMOVE SIGN MESSAGE features -->
+   <!--  <Button android:id="@+id/selectSigButton" android:text="Sign Message"
     	android:layout_width="fill_parent"
-    	android:layout_height="wrap_content"/>
+    	android:layout_height="wrap_content"/> -->
     
     <Button android:id="@+id/submitMsg" android:text="Post Message" android:layout_width="fill_parent" android:layout_height="wrap_content" />
     

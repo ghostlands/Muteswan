@@ -7,9 +7,11 @@
         android:title="Post Message" />
      <item android:id="@+id/circleListDelete"
         android:title="Delete" />
+        
+     <!--  MANIFEST ITEMS REMOVED 
      <item android:id="@+id/circleListView"
         android:title="View"/> 
      <item android:id="@+id/circleListEdit"
-        android:title="Edit"/> 
+        android:title="Edit"/>  -->
      
 </menu>

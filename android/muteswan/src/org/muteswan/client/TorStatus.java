@@ -49,24 +49,4 @@ public class TorStatus {
 	 
 	}
 	
-	public void checkButton(Button button) {
-		if (checkStatus() == false) {
-			button.setClickable(false);
-			button.setVisibility(Button.INVISIBLE);
-		} else {
-			button.setClickable(true);
-			button.setVisibility(Button.VISIBLE);
-		}
-	}
-	
-	public void checkView(TextView view) {
-		if (checkStatus() == false) {
-			view.setClickable(false);
-			view.setVisibility(Button.INVISIBLE);
-		} else {
-			view.setClickable(true);
-			view.setVisibility(Button.VISIBLE);
-		}
-	}
-	
 }

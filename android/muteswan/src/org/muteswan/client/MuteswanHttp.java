@@ -23,7 +23,7 @@ public class MuteswanHttp {
 		
 		SchemeRegistry supportedSchemes = new SchemeRegistry();
 		supportedSchemes.register(new Scheme("http", socksFactory, 80));
-		//supportedSchemes.register(new Scheme("https", socksFactory, 443));
+	
 		
 		HttpParams params = new BasicHttpParams();
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);

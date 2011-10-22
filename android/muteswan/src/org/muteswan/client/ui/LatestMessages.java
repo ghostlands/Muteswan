@@ -79,9 +79,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public void onDestroy() {
 		super.onDestroy();
-		if (newMsgService != null) {
-			unbindService(mNewMsgConn);
-		}
+		//if (newMsgService != null) {
+		//	unbindService(mNewMsgConn);
+		//}
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -113,8 +113,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
 		postButton.setOnClickListener(postClicked);
         
-		Intent serviceIntent = new Intent(this,NewMessageService.class);
-        boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
+		//Intent serviceIntent = new Intent(this,NewMessageService.class);
+        //boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
         //startService(serviceIntent);
 		
 		
@@ -159,7 +159,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	}
 
 	private void showDialog() {
-		gettingMsgsDialog = ProgressDialog.show(this, "", "Getting messages...", true);
+		gettingMsgsDialog = ProgressDialog.show(this, "", "Checking for new messages...", true);
 	}
 	
 	public View.OnClickListener listItemClicked = new View.OnClickListener() {
@@ -402,6 +402,14 @@ public class LatestMessages extends ListActivity implements Runnable {
 			Integer start, Integer last) {
 		IdentityStore idStore = new IdentityStore(this);
 		Integer lastId = r.getLastMsgId();
+		
+		
+		Message m = new Message();
+		Bundle b = new Bundle();
+		b.putString("txt", "Loading..." + r.getShortname());
+		m.setData(b);
+		updateDialogText.sendMessage(m);
+		
 
 		if (lastId == null || lastId == 0)
 			return;
@@ -418,11 +426,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 			if (i <= 0)
 				break;
 			MuteswanMessage msg = null;
-			Message m = new Message();
-			Bundle b = new Bundle();
-			b.putString("txt", "Loading....." + i);
-			m.setData(b);
-			updateDialogText.sendMessage(m);
+//			Message m = new Message();
+//			Bundle b = new Bundle();
+//			b.putString("txt", "[" + r.getShortname() + "] loading: " + i);
+//			m.setData(b);
+			//updateDialogText.sendMessage(m);
 			msg = r.getMsgFromDb(i.toString());
 
 			if (msg == null && circleExtra != null) {
@@ -458,8 +466,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 					continue RING;
 				}
 
+				//msgs.add(msg);
 				// figure out where to insert the msg such that msgs is ordered
-				// by date
+				// by date. FIXME: I don't like this algorithm, it is yucky.
 				Integer insertIndex = msgs.size() - 1;
 				for (int j = msgs.size() - 1; j >= 0; j--) {
 					SimpleDateFormat df = new SimpleDateFormat(
@@ -537,7 +546,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		Circle circle = circleMap.get(circleExtra);
 		if (circle != null) {
-			circle.updateLastMessage(circle.getLastTorMessageId());
+
+			Integer lastMsg = circle.getLastTorMessageId();
+			if (lastMsg != null ) {
+				circle.updateLastMessage(lastMsg);
+			}
 			Log.v("LatestMessages","Circle has last message of: " + circle.getLastMsgId());
 		}
 		

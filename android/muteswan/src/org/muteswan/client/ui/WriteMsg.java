@@ -85,8 +85,8 @@ public class WriteMsg extends Activity {
 	       //TorStatus torStatus = new TorStatus(muteswan.torService);
 	       //torStatus.checkButton(postButton);
 	       
-	       final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
-	       selectSigButton.setOnClickListener(selectSigButtonHandler);
+	       //final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
+	       //selectSigButton.setOnClickListener(selectSigButtonHandler);
 	       
 	       if (initialText != null) {
 	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);

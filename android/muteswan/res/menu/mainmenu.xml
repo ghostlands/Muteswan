@@ -4,5 +4,7 @@
     <!--   <item android:id="@+id/newmessage"
         android:title="New Message" /> -->
         <item android:id="@+id/mainMenuOptions" android:title="Options"/>
-        <item android:id="@+id/mainMenuIdentities" android:title="Identities"/>
+        
+        <!-- IDENTITIES DISABLED -->
+        <!--   <item android:id="@+id/mainMenuIdentities" android:title="Identities"/> -->
 </menu>

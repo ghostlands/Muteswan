@@ -39,6 +39,9 @@ import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1012,6 +1015,8 @@ private JSONObject parseManifest(HttpResponse resp) {
 
 	   return jsonObj;
    }
+
+
 		
 	
 

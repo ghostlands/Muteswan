@@ -144,6 +144,7 @@ public class CircleList extends ListActivity {
 		
 		intent.putExtra("circle", circleList[position].getFullText());
 		intent.putExtra("initialText", initialText);
+		//Log.v("CircleList", "Would launch " + action.toString());
 		startActivity(intent);
 
 	}
@@ -159,6 +160,8 @@ public class CircleList extends ListActivity {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		
 		
+		
+		
 		switch (item.getItemId()) {
 		  case R.id.circleListDelete:
 			  deleteCircle(info.position);
@@ -169,12 +172,13 @@ public class CircleList extends ListActivity {
 		  case R.id.circleListShare:
 			  shareCircle(info.position);
 			  break;
-		  case R.id.circleListView:
-			  viewCircle(info.position);
-			  break;
-		  case R.id.circleListEdit:
-			  editCircle(info.position);
-			  break;
+	     // MANIFEST features not used right now
+		 // case R.id.circleListView:
+		 //	  viewCircle(info.position);
+		 //	  break;
+		 // case R.id.circleListEdit:
+		 //  editCircle(info.position);
+		 //	  break;
 		  case R.id.circleListWriteMsg:
 			  writeMsg(info.position);
 			  break;

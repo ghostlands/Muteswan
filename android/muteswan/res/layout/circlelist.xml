@@ -27,7 +27,7 @@
        android:id="@+id/android:circlelistCreateCircle"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:text="Create a new circle"
+       android:text="Start a New Circle"
        android:maxWidth="80sp"
      />
     

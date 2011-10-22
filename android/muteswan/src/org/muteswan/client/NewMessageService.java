@@ -10,7 +10,7 @@ import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.LatestMessages;
-import org.muteswan.client.ui.MsgList;
+
 import org.apache.http.client.ClientProtocolException;
 
 import android.app.AlarmManager;

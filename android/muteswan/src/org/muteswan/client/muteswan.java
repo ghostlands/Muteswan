@@ -18,7 +18,7 @@ import org.muteswan.client.ui.CreateCircle;
 import org.muteswan.client.ui.GenerateIdentity;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
-import org.muteswan.client.ui.MsgList;
+
 import org.muteswan.client.ui.Preferences;
 import org.muteswan.client.ui.CircleList;
 import org.apache.http.client.ClientProtocolException;
@@ -110,8 +110,15 @@ public class muteswan extends Activity implements Runnable {
 //			   justCreated = false;
 //		  }
 			
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
-	
+		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
+		if (backgroundMessageCheck == true) {
+			Intent serviceIntent = new Intent(this,NewMessageService.class);
+			startService(serviceIntent);
+		}
+		
+		
 		TorStatus checkTorStatus = new TorStatus();
 		if (checkTorStatus.checkStatus()) {
 			checkTorDialogDismiss.sendEmptyMessage(0);
