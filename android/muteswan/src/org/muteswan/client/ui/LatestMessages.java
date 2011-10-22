@@ -74,15 +74,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public void onResume() {
 		super.onResume();
-		TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
-		try {
-			if (newMsgService != null && newMsgService.torOnline()) {
-				  torOnlineView.setText("(tor online)");
-			  }
-		  } catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
 	}
 	
 	public void onDestroy() {
@@ -125,15 +117,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
         //startService(serviceIntent);
 		
-		TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
-		try {
-			if (newMsgService != null && newMsgService.torOnline()) {
-				  torOnlineView.setText("(tor online)");
-				  }
-		    } catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-		 }
+		
 	
         
 		
