@@ -4,6 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#24282b"
+    android:gravity="center"
     > 
     
     
@@ -43,7 +44,7 @@
     <TableRow android:gravity="center" >
       
        <Button android:id="@+id/mLatestMessages"
-    		android:text="Messages"
+    		android:text="Latest Messages"
     		android:textSize="14sp"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content" 
@@ -51,7 +52,7 @@
  			android:maxWidth="140sp"
  			android:maxHeight="100sp"
  			android:minHeight="70sp"
- 			android:gravity="top|center"
+ 			android:gravity="center"
     		/>
     	
     	  <Button android:id="@+id/mManageCircles"
@@ -63,57 +64,80 @@
  			android:maxWidth="140sp"
  			android:maxHeight="100sp"
  			android:minHeight="70sp"
- 			android:gravity="top|center"
+ 			android:gravity="center"
            />	
-    		<!--  
-       <Button android:id="@+id/mWriteMsg"
-    		android:textSize="14sp"
- 			android:text="Write Message" 
- 			android:layout_width="fill_parent" 
- 			android:layout_height="fill_parent" /> 
+    		 
+      
     </TableRow>
     
    
      
  	
  			
- 	<Button android:id="@+id/mReadMsgs"
- 			android:text="Read Messages" 
- 			android:layout_width="fill_parent" 
- 			android:layout_height="80sp" />
+ </TableLayout>	
  	
+ 	
+ 	
+
+  <ImageView
+    android:layout_height="120sp"
+    android:layout_width="120sp"
+    android:id="@+id/logoView"
+    android:src="@drawable/icon"
+   
+    android:layout_centerInParent="true"
+    />   
+ 
+ 	<TableLayout
+ 	xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/logoView"
+    android:gravity="center"
+ 
+    android:paddingLeft="20sp"
+    android:paddingRight="20sp"
+   
+    android:id="@+id/circleCmdsTable"
+ 	>
  	
  	<TableRow>
  	
- 	   
- 	    <Button android:id="@+id/mScan" 
-    		android:text="Add Circle" 
+ 	<Button android:id="@+id/mReadMsgs"
+ 			android:text="Read" 
+ 			android:layout_height="fill_parent"
+ 			android:layout_width="fill_parent" />
+ 	
+ 	 <Button android:id="@+id/mWriteMsg"
     		android:textSize="14sp"
-    		android:layout_width="wrap_content"
-    		android:layout_height="wrap_content" />
+ 			android:text="Post" 
+ 			android:layout_width="fill_parent" 
+ 			android:layout_height="fill_parent" /> 
+ 	
+ 	
+ 	    <Button android:id="@+id/mScan" 
+    		android:text="Scan"
+    		android:textSize="14sp"
+    		android:layout_width="fill_parent"
+    		android:layout_height="fill_parent" />
     	<Button android:id="@+id/mShare"
- 			android:text="Share Circle" 
+ 			android:text="Share" 
  			android:textSize="14sp"
  			android:layout_width="fill_parent" 
  			android:layout_height="fill_parent"
- 			 />
-    	
-
-    </TableRow>
-    
-    <TableRow>
+ 			 />    
+  
     
     	  
  	 	  <Button android:id="@+id/mCreateCircle"
- 			android:text="Create Circle" 
+ 			android:text="New" 
  			android:textSize="14sp"
  			android:layout_width="wrap_content" 
- 			android:layout_height="wrap_content" /> 
- 		
- 			
-    </TableRow>
+ 			android:layout_height="wrap_content" />
+ 			 			
+  </TableRow>
     
-    <TableRow>
+   <!--     <TableRow>
     
     	  <Button android:id="@+id/mCreateIdentity"
  			android:text="Create Identity"
@@ -126,20 +150,14 @@
  			android:text="Identities"
  			android:textSize="14sp"
  			android:layout_width="wrap_content"
- 			android:layout_height="wrap_content"/>  -->
-    </TableRow> 
+ 			android:layout_height="wrap_content"/>  
+    </TableRow>  -->
     
     
-    
- </TableLayout>
+    </TableLayout>
  
-  <ImageView
-    android:layout_height="120sp"
-    android:layout_width="120sp"
-    android:id="@+id/logoView"
-    android:src="@drawable/icon"
-    android:layout_centerInParent="true"
-    />
+
+ 
  
   <Button
       android:id="@+id/panicButton"

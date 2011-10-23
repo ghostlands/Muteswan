@@ -31,10 +31,13 @@ public class TorStatus {
 			HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
 			
 			
+			
 			String checkContent = EntityUtils.toString(resp.getEntity());
 			if (checkContent.contains("So you are NOT using Tor to reach the web!")) {
+				Log.v("TorStatus", "Tor failed check.");
 				return(false);
 			} else if (checkContent.contains("So you are using Tor successfully to reach the web!")) {
+				Log.v("TorStatus","Looks like Tor is good.");
 				return(true);
 			}
 			

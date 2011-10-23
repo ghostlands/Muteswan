@@ -246,7 +246,22 @@ public class muteswan extends Activity implements Runnable {
         
        
         final Button mManageCirclesButton = (Button) findViewById(R.id.mManageCircles);
-        mManageCirclesButton.setOnClickListener(mManageCircles); 
+        mManageCirclesButton.setOnClickListener(mManageCircles);
+        
+        final Button mReadMsgsButton = (Button) findViewById(R.id.mReadMsgs);
+        mReadMsgsButton.setOnClickListener(mReadMsgs); 
+        
+        final Button mWriteMsgButton = (Button) findViewById(R.id.mWriteMsg);
+        mWriteMsgButton.setOnClickListener(mWriteMsg); 
+        
+        final Button mShareCircleButton = (Button) findViewById(R.id.mShare);
+        mShareCircleButton.setOnClickListener(mShareCircle); 
+        
+        final Button mScanCircleButton = (Button) findViewById(R.id.mScan);
+        mScanCircleButton.setOnClickListener(mScanCircle); 
+        
+        final Button mCreateCircleButton = (Button) findViewById(R.id.mCreateCircle);
+        mCreateCircleButton.setOnClickListener(mCreateCircle); 
       
         
         showCheckTorDialog();
@@ -311,6 +326,44 @@ public class muteswan extends Activity implements Runnable {
     	}
     };
     
+    public View.OnClickListener mReadMsgs = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		   Intent intent = new Intent(getApplicationContext(),CircleList.class);
+       		  intent.putExtra("action",CircleList.READ);
+       		  startActivity(intent);
+    	}
+    };
+    
+    public View.OnClickListener mWriteMsg = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		   Intent intent = new Intent(getApplicationContext(),CircleList.class);
+       		  intent.putExtra("action",CircleList.WRITE);
+       		  startActivity(intent);
+    	}
+    };
+    
+    public View.OnClickListener mShareCircle = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		  Intent intent = new Intent(getApplicationContext(),CircleList.class);
+       		  intent.putExtra("action",CircleList.SHARE);
+       		  startActivity(intent);
+    	}
+    };
+    
+    public View.OnClickListener mScanCircle = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent(getApplicationContext(),CircleList.class);
+     		intent.putExtra("action",CircleList.SCAN);
+     		startActivity(intent);
+    	}
+    };
+    
+    public View.OnClickListener mCreateCircle = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		startActivity(new Intent(getApplicationContext(),CreateCircle.class));
+    	}
+    
+    };
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

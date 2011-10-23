@@ -95,7 +95,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  
 		  
 		  SQLiteDatabase rdb = circle.openHelper.getWritableDatabase();
-		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE circleHash = ?");
+		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
 		  delete.bindString(1, muteswan.genHexHash(circle.getFullText()));
 		  delete.execute();
 		  circle.openHelper.deleteData(rdb);
@@ -165,7 +165,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  
 		  SQLiteDatabase rdb = circle.openHelper.getWritableDatabase();
 		  //muteswan.genHexHash(circle.getFullText()));
- 		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (circleHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+ 		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 		  insert.bindString(1,muteswan.genHexHash(circle.getFullText()));
 		  insert.bindLong(2, 0);
 		  insert.executeInsert();

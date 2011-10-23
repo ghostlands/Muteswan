@@ -38,10 +38,12 @@ public class CircleList extends ListActivity {
 	public static int READ = 1;
 	public static int WRITE = 2;
 	public static int ANY = 3;
+	public static int SCAN = 4;
 	public static String[] actionPrompts = new String[] { "Select a circle to share.", 
 														  "Select a circle to read messages.", 
 														  "Select a circle to write a message.",
-														  "Long-press a circle for actions."};
+														  "Long-press a circle for actions.",
+														  "New circle added"};
 	public Integer action;
 	Bundle extra;
 	public Circle[] circleList;
@@ -80,8 +82,14 @@ public class CircleList extends ListActivity {
         LinearLayout circlelist = (LinearLayout) findViewById(R.id.circlelistButtons);
         txt.setText(actionPrompts[action]);
         
+	   if (action == SCAN) {
+		Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+        startActivityForResult(intent, 0);
+	   }
         
-        if (action == null || action == ANY) {
+        
+        if (action == null || action == ANY || action == SCAN) {
           Button addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
           Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
           addCircle.setOnClickListener(addCircleListener);
@@ -130,19 +138,21 @@ public class CircleList extends ListActivity {
 		Intent intent = null;
 		if (action == WRITE) {
 			intent = new Intent(getApplicationContext(),WriteMsg.class);
+			intent.putExtra("circle", circleList[position].getFullText());
 		} else if (action == READ) {
 			intent = new Intent(getApplicationContext(),LatestMessages.class);
+			intent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",circleList[position].getFullText());;
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");;
-	    } else if (action == ANY) {
+	    } else if (action == ANY || action == SCAN) {
 	    	return;
 	    }
 		
 	
 		
-		intent.putExtra("circle", circleList[position].getFullText());
+		
 		intent.putExtra("initialText", initialText);
 		//Log.v("CircleList", "Would launch " + action.toString());
 		startActivity(intent);
@@ -210,9 +220,6 @@ public class CircleList extends ListActivity {
 		Toast.makeText(this,
 				"Deleted circle " + circleList[position].getShortname() + " from saved keys.", 
 					  Toast.LENGTH_LONG).show();
-		Intent intent = new Intent(this,NewMessageService.class);
-		stopService(intent);
-		startService(intent);
 		onResume();
 	}
 
@@ -266,9 +273,6 @@ public class CircleList extends ListActivity {
     	              store.updateStore(contents);
     	               
     	              
-    	              Intent sintent = new Intent(this,NewMessageService.class);
-    	      		  stopService(sintent);
-    	      		  startService(sintent);
     	              //this.activeCircle = circle;
     	    //          selectMsg(circle);
     	            
@@ -290,10 +294,6 @@ public class CircleList extends ListActivity {
             	Circle circle = new Circle(getApplicationContext(),testSite);
 	            store.updateStore(testSite);
 	            
-	            Intent sintent = new Intent(this,NewMessageService.class);
-	      		stopService(sintent);
-	      		startService(sintent);
-            	            	
             
             }
     	  }

@@ -3,10 +3,14 @@ package org.muteswan.client.ui;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.muteswan.client.IMessageService;
 import org.muteswan.client.NewMessageService;
@@ -29,6 +33,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
@@ -36,8 +41,10 @@ import android.net.ParseException;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -71,6 +78,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private int messageViewCount;
 	HashMap<View, AlertDialog> moreButtons;
 	private ProgressDialog gettingMsgsDialog;
+	private Thread newMsgCheckThread;
+	private HashMap<String, String> newMsgCheckState = new HashMap<String,String>();
 	
 	public void onResume() {
 		super.onResume();
@@ -129,8 +138,9 @@ public class LatestMessages extends ListActivity implements Runnable {
         listAdapter = new LatestMessagesListAdapter(this);
         setListAdapter(listAdapter);
         
-        Thread thread = new Thread(this);
-        thread.start();
+        newMsgCheckThread = new Thread(this);
+        newMsgCheckThread.start();
+      
         showDialog();
 
         
@@ -301,24 +311,15 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  txtRepost.setOnClickListener(repostClicked);
               replyButtons.put(txtReply,position);
               repostButtons.put(txtRepost,position);
-
+  
+      		
       		  
-      		  // not used and painful
-      		  //int totalWidth = layout.getLayoutParams().width;
-      		  //int circleWidth = txtCircle.getLayoutParams().width;
-      		  //int mainWidth = mainLayout.getLayoutParams().width;	  
-      		  
-      		  txtCircle.setText(msg.getCircle().getShortname() + "/" + msg.getId());
+      		  //txtCircle.setText(msg.getCircle().getShortname() + "/" + msg.getId());
+              txtCircle.setText(msg.getCircle().getShortname());
       		  txtCircle.setClickable(true);
       		  txtCircle.setOnClickListener(showCircle);
-      		  txtDate.setText(msg.getDate());
-      		  String white = "";
-      		  // HAH WTF! fix this, please FIXME
-      		  //for (int i=0; i<msg.getCircle().getShortname().length()-1; i++) {
-      			//  white = white + "   ";
-      		  //}
-      		  
-      		  //txtMessage.setText(white + "/" + msg.getId() + ": " + msg.getMsg());
+      		  txtDate.setText("#"+msg.getId() + " at " + msg.getDate());
+      		
       		  txtMessage.setText(msg.getMsg());
 
       		  
@@ -347,8 +348,8 @@ public class LatestMessages extends ListActivity implements Runnable {
       		//	 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getCircle().getImage(), 0, msg.getCircle().getImage().length));
       		//	 //layout.addView(imageView);
       		// } else {
-      			 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
-      			 layout.removeView(imageView);
+      		//	 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
+      		//	 layout.removeView(imageView);
       		// }
 			 
       		       		 
@@ -362,17 +363,33 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private ArrayList<MuteswanMessage> loadRecentMessages(
 			ArrayList<MuteswanMessage> msgs, Integer first, Integer last) {
 
-		if (circleExtra != null) {
-			return (getLatestMessages(msgs, circleExtra, first, last));
-		} else {
-			return (getLatestMessages(msgs, first, last));
-		}
+		//if (circleExtra != null) {
+		//	return (getLatestMessages(msgs, circleExtra, first, last));
+		//} else {
+		//	return (getLatestMessages(msgs, first, last));
+		//}
 
-		
+		return (getLatestMessages(msgs, first, last));
 	}
 
+	
+	final Handler newMsgCheckEventHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			Bundle b = msg.getData();
+			
+			Log.v("LatestMessages", "Setting circle to " + b.getString("circle") + " and state to " + b.getString("state"));
+			if (b.getString("circle") != null && b.getString("state") != null) {
+				
+				newMsgCheckState.put(b.getString("circle"),b.getString("state"));
+			}
+			
+		}
+	};
 
 	final Handler dismissDialog = new Handler() {
+		
+		
 		
         @Override
         public void handleMessage(Message msg) {
@@ -396,11 +413,15 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
     };
 	protected IMessageService newMsgService;
+
     
 	
 	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Circle r,
 			Integer start, Integer last) {
 		IdentityStore idStore = new IdentityStore(this);
+		
+		
+		
 		Integer lastId = r.getLastMsgId();
 		
 		
@@ -433,7 +454,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			//updateDialogText.sendMessage(m);
 			msg = r.getMsgFromDb(i.toString());
 
-			if (msg == null && circleExtra != null) {
+			if (msg == null) {
 				try {
 					m = new Message();
 					b = new Bundle();
@@ -519,65 +540,217 @@ public class LatestMessages extends ListActivity implements Runnable {
 		return (msgs);
 	}
 
-	public ArrayList<MuteswanMessage> getLatestMessages(Integer first, Integer last) {
-		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
-
-		for (Circle r : store) {
-			updateLatestMessages(msgs, r, first, last);
-		}
-
-		return (msgs);
-	}
+//	public ArrayList<MuteswanMessage> getLatestMessages(Integer first, Integer last) {
+//		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
+//
+//		for (Circle r : store) {
+//			//newMsgCheckThread = new Thread(this);
+//	        //newMsgCheckThread.start();
+//			//circleExtra = muteswan.genHexHash(r.getFullText());
+//			
+//			updateLatestMessages(msgs, r, first, last);
+//		}
+//
+//		return (msgs);
+//	}
 
 	public ArrayList<MuteswanMessage> getLatestMessages(
 			ArrayList<MuteswanMessage> msgs, Integer first, Integer amount) {
 
-		for (Circle r : store) {
-			updateLatestMessages(msgs, r, first, amount);
+		
+		
+		
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		
+		boolean alwaysCheckLatest = defPrefs.getBoolean("alwaysCheckLatest", false);
+		
+		
+		// If we are checking all messages but do not want to check for latest, its really easy
+		if (!alwaysCheckLatest && circleExtra == null) {
+			for (Circle r : store) {
+				updateLatestMessages(msgs, r, first, amount);
+			}
+	
+			dismissDialog.sendEmptyMessage(0);
+			dataSetChanged.sendEmptyMessage(0);
+
+			return (msgs);
 		}
+		
+		
+		// If we are checking all messages and want to check the latest, it gets more complicated
+		if (alwaysCheckLatest && circleExtra == null) {
+			for (Circle r : store) {
+				 getLastestMessageCountFromTor(r);
+			
+			}
+		// If we are checking only one circle we always check the latest no matter what
+		} else if (circleExtra != null) {
+			Circle circle = circleMap.get(circleExtra);
+			getLastestMessageCountFromTor(circle);
+		}
+		
+		while (newMsgCheckState.isEmpty()) {
+		  try {
+			    Log.v("LatestMessages", "Waiting for first population of check messages.");
+				Thread.currentThread().sleep(250);
+			  } catch (InterruptedException e) {
+				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
+			  }
+		}
+		
+		boolean stillWorking = true;
+		while (stillWorking) {
+			
+			if (newMsgCheckState.isEmpty()) {
+				stillWorking = false;
+				continue;
+			}
+			
+			String curCircle = popFirstDoneMsgCheck();
+			
+			if (curCircle != null && curCircle != "null") {
+				Log.v("LatestMessages", "CurCircle is " + curCircle);
+				updateLatestMessages(msgs, store.asHashMap().get(curCircle), first, amount);
+			} else {
+			
+			  try {
+				Thread.currentThread().sleep(500);
+			  } catch (InterruptedException e) {
+				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
+			  }
+			}
+			
+			
+			
+		}
+	
+		dismissDialog.sendEmptyMessage(0);
+		dataSetChanged.sendEmptyMessage(0);
 
 		return (msgs);
 	}
 
+	
+
+	private String popFirstDoneMsgCheck() {
+		
+		
+		for (String key : newMsgCheckState.keySet()) {
+			String circle = key;
+			String state = newMsgCheckState.get(key);
+			//Log.v("LatestMessages", "popFirstDoneMsgCheck circle is " + key + " and state is " + state);
+			if (state != null && state.equals("done")) {
+				newMsgCheckState.remove(key);
+				return(circle);
+			}
+		}
+		
+		return("null");
+	}
 
 	@Override
 	public void run() {
 		Log.v("LatestMessages","Running!");
 		
-		Circle circle = circleMap.get(circleExtra);
-		if (circle != null) {
-
-			Integer lastMsg = circle.getLastTorMessageId();
-			if (lastMsg != null ) {
-				circle.updateLastMessage(lastMsg);
-			}
-			Log.v("LatestMessages","Circle has last message of: " + circle.getLastMsgId());
-		}
 		
+		
+		//Circle circle = circleMap.get(circleExtra);
+		
+		//if (circle != null) {
+			
+		//	getLastestMessageCountFromTor(circle);
+	
+		//}
+		
+		
+
 		final int start = messageViewCount;
 		loadRecentMessages(messageList,start,5);
-		dismissDialog.sendEmptyMessage(0);
-		dataSetChanged.sendEmptyMessage(0);
+		//dismissDialog.sendEmptyMessage(0);
+		//dataSetChanged.sendEmptyMessage(0);
+		
+		
+	
 		
 	}
-	
-    
-	private ServiceConnection mNewMsgConn = new ServiceConnection() {
 
-		public void onServiceConnected(ComponentName className,
-                IBinder service) {
-        	newMsgService = IMessageService.Stub.asInterface(service);
-        	Log.v("Muteswan", "onServiceConnected called.");
-        	if (newMsgService == null) {
-        		Log.e("Muteswan", "newMsgService is null ");
+	private void getLastestMessageCountFromTor(final Circle circle) {
+
+		Log.v("LatestMessages","getLatestMessages got circle passed down " + circle.getShortname());
+		
+//		final Handler metaNewMsgCheckEventHandler = new Handler() {
+//			@Override
+//			public void handleMessage(Message msg) {
+//				Bundle b = msg.getData();
+//				
+//				
+//				
+//				Log.v("LatestMessages", "metaNewMsgCheckEventhandler got " + b.getString("circle") + " and state is " + b.getString("state"));
+//				
+//				
+//				Message m = new Message();
+//        		Bundle b2 = new Bundle();
+//        		b2.putString("circle", b.getString("circle"));
+//        		b2.putString("state", b.getString("state"));
+//				m.setData(b2);
+//				newMsgCheckEventHandler.sendMessage(msg);
+//				
+//				
+//				
+//			}
+//		};
+//		
+		
+        Thread nThread = new Thread() {
+        	@SuppressWarnings("static-access")
+			public void run() {
+		
+        		Log.v("LatestMessages",Thread.currentThread().getName() + " is launched!");
+        		
+        		try {
+					Thread.currentThread().sleep(2000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		
+        		Message m = Message.obtain();
+        		Bundle b = new Bundle();
+        		
+        		b.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        		b.putString("state", "starting");
+        		m.setData(b);
+        		Log.v("LatestMessages","Sending Message with value " + b.getString("circle"));
+        		newMsgCheckEventHandler.sendMessage(m);
+        		
+        		
+        		//Message m1 = Message.obtain();
+        		//Bundle b1 = new Bundle();
+        		//b1.putString("txt", "Checking for new messages in " + circle.getShortname());
+        		//m1.setData(b1);
+        		//updateDialogText.sendMessage(m1);
+		
+		
+        		Integer lastMsg = circle.getLastTorMessageId();
+        		if (lastMsg != null ) {
+        			circle.updateLastMessage(lastMsg);
+        		}
+        		Log.v("LatestMessages","Circle has last message of: " + circle.getLastMsgId());
+        		
+        		Message m2 = Message.obtain();
+        		Bundle b2 = new Bundle();
+        		
+        		b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        		b2.putString("state", "done");
+        		m2.setData(b2);
+        		newMsgCheckEventHandler.sendMessage(m2);
+        		
         	}
-
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-           newMsgService = null;
-        }
-    };
-       
+        };
+	
+        nThread.start();
+        
+	}
     
 }

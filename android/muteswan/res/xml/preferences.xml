@@ -8,6 +8,10 @@
 <ListPreference android:title="Maximum Download" android:summary="Maximum amount of messages to download in background." android:key="numMsgDownload" android:entries="@array/nummsgdownloaddisplay" android:entryValues="@array/nummsgdownload"></ListPreference>
 </PreferenceCategory>
 
+<!--   <PreferenceCategory android:title="Always Check for Latest Messages"> -->
+<CheckBoxPreference android:title="Latest Messages" android:summary="Always check for latest messages when viewing messages in all circle." android:key="alwaysCheckLatest"></CheckBoxPreference>
+<!--  </PreferenceCategory> -->
+
 <!--  <PreferenceCategory android:title="Message List"><CheckBoxPreference android:title="Always Use Cached Index" android:summary="If checked, the message list will not download the message index on start." android:key="alwaysUseLastMessage"></CheckBoxPreference>
 </PreferenceCategory> -->
 </PreferenceScreen>

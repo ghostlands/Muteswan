@@ -55,6 +55,7 @@ public class WriteMsg extends Activity {
 
 	       Bundle extras = getIntent().getExtras();
 	       CircleStore rs = new CircleStore(getApplicationContext());
+	
 	       circle = new Circle(this,extras.getString("circle"));
 	       initialText = extras.getString("initialText");
 	       
