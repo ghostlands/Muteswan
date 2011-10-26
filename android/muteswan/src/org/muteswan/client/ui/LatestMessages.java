@@ -88,6 +88,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public void onDestroy() {
 		super.onDestroy();
+		gettingMsgsDialog = null;
 		//if (newMsgService != null) {
 		//	unbindService(mNewMsgConn);
 		//}
@@ -170,6 +171,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 
 	private void showDialog() {
 		gettingMsgsDialog = ProgressDialog.show(this, "", "Checking for new messages...", true);
+		gettingMsgsDialog.setCancelable(true);
 	}
 	
 	public View.OnClickListener listItemClicked = new View.OnClickListener() {
@@ -318,7 +320,8 @@ public class LatestMessages extends ListActivity implements Runnable {
               txtCircle.setText(msg.getCircle().getShortname());
       		  txtCircle.setClickable(true);
       		  txtCircle.setOnClickListener(showCircle);
-      		  txtDate.setText("#"+msg.getId() + " at " + msg.getDate());
+      		  //txtDate.setText("#"+msg.getId() + " at " + msg.getDate());
+      		txtDate.setText(msg.getDate());
       		
       		  txtMessage.setText(msg.getMsg());
 
@@ -393,6 +396,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
         @Override
         public void handleMessage(Message msg) {
+        	  if (gettingMsgsDialog != null)
         	    gettingMsgsDialog.dismiss();
         }
     };
@@ -409,7 +413,8 @@ public class LatestMessages extends ListActivity implements Runnable {
     	
     	@Override
     	public void handleMessage(Message msg) {
-    		gettingMsgsDialog.setMessage(msg.getData().getString("txt"));
+    		if (gettingMsgsDialog != null)
+    		  gettingMsgsDialog.setMessage(msg.getData().getString("txt"));
     	}
     };
 	protected IMessageService newMsgService;

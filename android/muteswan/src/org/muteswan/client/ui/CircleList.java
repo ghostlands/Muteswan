@@ -53,6 +53,8 @@ public class CircleList extends ListActivity {
 	private CircleStore store;
 	private ArrayAdapter<Circle> listAdapter;
 	
+	
+	
 	@Override
 	public void onResume() {
 		super.onResume();

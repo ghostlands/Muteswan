@@ -119,15 +119,18 @@ public class muteswan extends Activity implements Runnable {
 		}
 		
 		
-		TorStatus checkTorStatus = new TorStatus();
-		if (checkTorStatus.checkStatus()) {
+		if (alreadyCheckedTor == false) {
+		  TorStatus checkTorStatus = new TorStatus();
+		  if (checkTorStatus.checkStatus()) {
 			checkTorDialogDismiss.sendEmptyMessage(0);
-		} else {
+		  } else {
 			//TextView msg = new TextView(getApplicationContext());
 			//msg.setText("Sorry, Tor is not available.");
 			//checkTorDialog.setContentView(msg);
 			//checkTorDialog.setMessage((CharSequence) "Sorry, Tor is not available.");
 			dialogTorNotAvailable.sendEmptyMessage(0);
+		  }
+		  alreadyCheckedTor = true;
 		}
 		  
 	}
@@ -139,6 +142,7 @@ public class muteswan extends Activity implements Runnable {
 	private Handler checkTorDialogDismiss = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
+	        	  if (checkTorDialog != null)
 	              	checkTorDialog.dismiss();
 	        }
 	 };
@@ -168,6 +172,7 @@ public class muteswan extends Activity implements Runnable {
 		        //setProgressBarIndeterminateVisibility(false);
 		 }
 	 };
+	private boolean alreadyCheckedTor;
 	
 	 
 	 
@@ -177,7 +182,11 @@ public class muteswan extends Activity implements Runnable {
 		 // TorStatus torStatus = new TorStatus(torService);
 	     // torStatus.checkView(postButton);
 
-	      
+		 
+		 if (alreadyCheckedTor == false) {
+		   showCheckTorDialog();
+		   alreadyCheckedTor = true;
+		 }
 			
 	        
 	 }
@@ -186,6 +195,7 @@ public class muteswan extends Activity implements Runnable {
 		
 		super.onDestroy();
 		
+		checkTorDialog = null;
 		if (newMsgService != null) {
 			unbindService(mNewMsgConn);
 		}
@@ -264,7 +274,7 @@ public class muteswan extends Activity implements Runnable {
         mCreateCircleButton.setOnClickListener(mCreateCircle); 
       
         
-        showCheckTorDialog();
+        
              
         //if (!isBound) {
         //	Log.v("Muteswan", "IMessageService is not bound.");
@@ -281,8 +291,9 @@ public class muteswan extends Activity implements Runnable {
     
     private void showCheckTorDialog() {
     	
-    	checkTorDialog = ProgressDialog.show(this, "", "Verifying secure connection to Tor network..", true);
-		
+    	if (checkTorDialog == null) {
+    	  checkTorDialog = ProgressDialog.show(this, "", "Verifying secure connection to Tor network..", true);
+    	}
 	}
 
 

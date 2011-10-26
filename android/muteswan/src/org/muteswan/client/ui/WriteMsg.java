@@ -160,6 +160,7 @@ public class WriteMsg extends Activity {
 	    		}
 	    		
 	    		sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
+	    		sendingMsgDialog.setCancelable(true);
 	    		  
     		    final Handler dismissDialog = new Handler() {
     				
