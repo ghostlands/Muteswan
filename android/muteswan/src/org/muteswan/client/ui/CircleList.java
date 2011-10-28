@@ -1,3 +1,19 @@
+/*
+This file is part of Muteswan.
+
+Muteswan is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Muteswan is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package org.muteswan.client.ui;
 
 import java.io.IOException;
@@ -13,6 +29,7 @@ import org.muteswan.client.data.CircleStore;
 import org.apache.http.client.ClientProtocolException;
 
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,11 +39,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -62,6 +82,7 @@ public class CircleList extends ListActivity {
         circleList = getArray();
         listAdapter = new ArrayAdapter<Circle>(this,
                 android.R.layout.simple_list_item_1, circleList);
+        //listAdapter = new CircleListAdapter(this);
           setListAdapter(listAdapter);
 	}
 	
@@ -109,6 +130,7 @@ public class CircleList extends ListActivity {
       
           listAdapter = new ArrayAdapter<Circle>(this,
                 android.R.layout.simple_list_item_1, circleList);
+          //listAdapter = new CircleListAdapter(this);
           setListAdapter(listAdapter);
        
         
@@ -127,6 +149,58 @@ public class CircleList extends ListActivity {
     	return(circleList);
     }
     
+    
+    public class CircleListAdapter extends BaseAdapter {
+
+    	private Context context;
+    	
+    	
+    	public CircleListAdapter(Context context) {
+			this.context = context;
+		}
+    	
+		@Override
+		public int getCount() {
+			
+			return(circleList.length);
+			
+		}
+
+		@Override
+		public Object getItem(int position) {
+			
+			return(circleList[position]);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return(position);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			
+			 RelativeLayout layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.circlelistentry,
+     				  parent, false);
+			 
+			 TextView txtCircle = (TextView) layout.findViewById(R.id.android_circleListName);
+			 //txtCircle.setOnClickListener(onListItemClick);
+			 txtCircle.setText(circleList[position].getShortname());
+			 
+			//layout.setOnClickListener(onListItemClick(,layout,position,position));
+			return layout;
+		}
+    	
+    }
+    
+    public View.OnClickListener listItemClicked = new View.OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			
+		}
+	    
+    };
     
     protected void onListItemClick(ListView parent, View v, int position, long id)
     	 	{

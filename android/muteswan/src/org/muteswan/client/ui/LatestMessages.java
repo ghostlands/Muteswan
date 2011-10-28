@@ -1,3 +1,19 @@
+/*
+This file is part of Muteswan.
+
+Muteswan is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Muteswan is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package org.muteswan.client.ui;
 
 import java.io.IOException;
@@ -81,6 +97,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private Thread newMsgCheckThread;
 	private HashMap<String, String> newMsgCheckState = new HashMap<String,String>();
 	
+	protected IMessageService newMsgService;
+	
+	
 	public void onResume() {
 		super.onResume();
 		//TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
@@ -139,10 +158,13 @@ public class LatestMessages extends ListActivity implements Runnable {
         listAdapter = new LatestMessagesListAdapter(this);
         setListAdapter(listAdapter);
         
+        
         newMsgCheckThread = new Thread(this);
         newMsgCheckThread.start();
       
         showDialog();
+        
+        
 
         
     }
@@ -162,6 +184,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		//messageList.clear();
 		Log.v("LatestMessages", "Start is " + start);
 		//loadRecentMessages(messageList,start,5);
+		
 		Thread thread = new Thread(this);
 		thread.start();
 		showDialog();		
@@ -305,21 +328,25 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  TextView txtSigs = (TextView) layout.findViewById(R.id.android_latestmessagesSignatures);
       		  
       		  
-      		  TextView txtReply = (TextView) layout.findViewById(R.id.android_latestmessagesReplyButton);
+      		  //TextView txtReply = (TextView) layout.findViewById(R.id.android_latestmessagesReplyButton);
       		  TextView txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
 
 
-      		  txtReply.setOnClickListener(replyClicked);
+      		  //txtReply.setOnClickListener(replyClicked);
       		  txtRepost.setOnClickListener(repostClicked);
-              replyButtons.put(txtReply,position);
+              //replyButtons.put(txtReply,position);
               repostButtons.put(txtRepost,position);
   
       		
       		  
       		  //txtCircle.setText(msg.getCircle().getShortname() + "/" + msg.getId());
-              txtCircle.setText(msg.getCircle().getShortname());
-      		  txtCircle.setClickable(true);
-      		  txtCircle.setOnClickListener(showCircle);
+              if (circleExtra == null) {
+            	txtCircle.setText(msg.getCircle().getShortname());
+      		  	txtCircle.setClickable(true);
+      		  	txtCircle.setOnClickListener(showCircle);
+			  } else {
+				  layout.removeView(txtCircle);
+			  }
       		  //txtDate.setText("#"+msg.getId() + " at " + msg.getDate());
       		txtDate.setText(msg.getDate());
       		
@@ -345,7 +372,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			 layout.setClickable(true);
 			 layout.setOnClickListener(listItemClicked);
 			 
-      		 // images are not showed right now, uncomment to show them
+      		 // images are not shown right now, uncomment to show them
 			 //if (msg.getCircle().getImage() != null) {
       		//	 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
       		//	 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getCircle().getImage(), 0, msg.getCircle().getImage().length));
@@ -417,7 +444,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     		  gettingMsgsDialog.setMessage(msg.getData().getString("txt"));
     	}
     };
-	protected IMessageService newMsgService;
+	
 
     
 	
@@ -586,13 +613,13 @@ public class LatestMessages extends ListActivity implements Runnable {
 		// If we are checking all messages and want to check the latest, it gets more complicated
 		if (alwaysCheckLatest && circleExtra == null) {
 			for (Circle r : store) {
-				 getLastestMessageCountFromTor(r);
+				getLastestMessageCountFromTor(r);
 			
 			}
 		// If we are checking only one circle we always check the latest no matter what
 		} else if (circleExtra != null) {
 			Circle circle = circleMap.get(circleExtra);
-			getLastestMessageCountFromTor(circle);
+			 getLastestMessageCountFromTor(circle);
 		}
 		
 		while (newMsgCheckState.isEmpty()) {
@@ -682,6 +709,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 
 	private void getLastestMessageCountFromTor(final Circle circle) {
 
+		
+		
 		Log.v("LatestMessages","getLatestMessages got circle passed down " + circle.getShortname());
 		
 //		final Handler metaNewMsgCheckEventHandler = new Handler() {
@@ -754,7 +783,8 @@ public class LatestMessages extends ListActivity implements Runnable {
         	}
         };
 	
-        nThread.start();
+        
+          nThread.start();
         
 	}
     

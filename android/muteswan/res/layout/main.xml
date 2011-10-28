@@ -3,9 +3,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#24282b"
-    android:gravity="center"
-    > 
+    android:background="#24282b" android:gravity="top"> 
     
     
    <!--   <TextView  
@@ -21,10 +19,9 @@
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:gravity="center"
+    android:gravity="top"
     android:padding="15sp"
-    android:id="@+id/mainLayoutTable"
-    >
+    android:id="@+id/mainLayoutTable" >
     
 
     
@@ -40,11 +37,19 @@
          android:layout_width="fill_parent" 
          android:layout_height="wrap_content" 
          /> -->
+          <ImageView
+    android:layout_height="120sp"
+    android:layout_width="120sp"
+    android:id="@+id/logoView"
+    android:src="@drawable/icon"
+    android:gravity="top"
+   
+    android:layout_gravity="top"/>   
     
     <TableRow android:gravity="center" >
       
        <Button android:id="@+id/mLatestMessages"
-    		android:text="Latest Messages"
+    		android:text="All Posts"
     		android:textSize="14sp"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content" 
@@ -79,25 +84,17 @@
  	
  	
 
-  <ImageView
-    android:layout_height="120sp"
-    android:layout_width="120sp"
-    android:id="@+id/logoView"
-    android:src="@drawable/icon"
-   
-    android:layout_centerInParent="true"
-    />   
  
+ 
+ <!--  
  	<TableLayout
  	xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_below="@id/logoView"
     android:gravity="center"
- 
     android:paddingLeft="20sp"
     android:paddingRight="20sp"
-   
     android:id="@+id/circleCmdsTable"
  	>
  	
@@ -137,7 +134,7 @@
  			 			
   </TableRow>
     
-   <!--     <TableRow>
+        <TableRow>
     
     	  <Button android:id="@+id/mCreateIdentity"
  			android:text="Create Identity"
@@ -151,15 +148,15 @@
  			android:textSize="14sp"
  			android:layout_width="wrap_content"
  			android:layout_height="wrap_content"/>  
-    </TableRow>  -->
+    </TableRow>  
     
     
-    </TableLayout>
+    </TableLayout> -->
  
 
  
  
-  <Button
+  <!--  <Button
       android:id="@+id/panicButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
@@ -188,7 +185,7 @@
       android:layout_toRightOf="@id/shareOrbotButton"
       android:layout_alignParentBottom="true"
       android:text="Share Muteswan"    
-    />
+    /> -->
     
  
 </RelativeLayout> 

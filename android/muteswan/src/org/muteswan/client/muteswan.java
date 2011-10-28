@@ -1,3 +1,19 @@
+/*
+This file is part of Muteswan.
+
+Muteswan is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Muteswan is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package org.muteswan.client;
 
 import java.io.IOException;
@@ -36,6 +52,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -136,7 +154,11 @@ public class muteswan extends Activity implements Runnable {
 	}
 	
 	
-	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+	}
 	
 
 	private Handler checkTorDialogDismiss = new Handler() {
@@ -150,8 +172,10 @@ public class muteswan extends Activity implements Runnable {
 	 private Handler dialogTorNotAvailable = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
+	        	   if (checkTorDialog != null) {
 	              	checkTorDialog.setMessage("Sorry, Tor is not available at this time. You will still be able to access old data but you will not be able to send messages or read new messages.");
 	              	checkTorDialog.setCancelable(true);
+	        	   }
 	        }
 	 };
 	 
@@ -246,32 +270,32 @@ public class muteswan extends Activity implements Runnable {
 		
 		
 		
-		Button panicButton = (Button) findViewById(R.id.panicButton);
-		panicButton.setOnClickListener(panicButtonClicked);
+		//Button panicButton = (Button) findViewById(R.id.panicButton);
+		//panicButton.setOnClickListener(panicButtonClicked);
 		
-		Button shareOrbotButton = (Button) findViewById(R.id.shareOrbotButton);
-		shareOrbotButton.setOnClickListener(shareOrbotButtonClicked);
-		Button shareMuteswanButton = (Button) findViewById(R.id.shareMuteswanButton);
-		shareMuteswanButton.setOnClickListener(shareMuteswanButtonClicked);
+		//Button shareOrbotButton = (Button) findViewById(R.id.shareOrbotButton);
+		//shareOrbotButton.setOnClickListener(shareOrbotButtonClicked);
+		//Button shareMuteswanButton = (Button) findViewById(R.id.shareMuteswanButton);
+		//shareMuteswanButton.setOnClickListener(shareMuteswanButtonClicked);
         
        
         final Button mManageCirclesButton = (Button) findViewById(R.id.mManageCircles);
         mManageCirclesButton.setOnClickListener(mManageCircles);
         
-        final Button mReadMsgsButton = (Button) findViewById(R.id.mReadMsgs);
-        mReadMsgsButton.setOnClickListener(mReadMsgs); 
+        //final Button mReadMsgsButton = (Button) findViewById(R.id.mReadMsgs);
+        //mReadMsgsButton.setOnClickListener(mReadMsgs); 
         
-        final Button mWriteMsgButton = (Button) findViewById(R.id.mWriteMsg);
-        mWriteMsgButton.setOnClickListener(mWriteMsg); 
+        //final Button mWriteMsgButton = (Button) findViewById(R.id.mWriteMsg);
+        //mWriteMsgButton.setOnClickListener(mWriteMsg); 
         
-        final Button mShareCircleButton = (Button) findViewById(R.id.mShare);
-        mShareCircleButton.setOnClickListener(mShareCircle); 
+        //final Button mShareCircleButton = (Button) findViewById(R.id.mShare);
+        //mShareCircleButton.setOnClickListener(mShareCircle); 
         
-        final Button mScanCircleButton = (Button) findViewById(R.id.mScan);
-        mScanCircleButton.setOnClickListener(mScanCircle); 
+        //final Button mScanCircleButton = (Button) findViewById(R.id.mScan);
+        //mScanCircleButton.setOnClickListener(mScanCircle); 
         
-        final Button mCreateCircleButton = (Button) findViewById(R.id.mCreateCircle);
-        mCreateCircleButton.setOnClickListener(mCreateCircle); 
+        //final Button mCreateCircleButton = (Button) findViewById(R.id.mCreateCircle);
+        //mCreateCircleButton.setOnClickListener(mCreateCircle); 
       
         
         
@@ -409,6 +433,22 @@ public class muteswan extends Activity implements Runnable {
 		//} else if (item.toString().equals("Create Identity")) {
 		//	startActivity(new Intent(this,GenerateIdentity.class));
 		//	return true;
+		} else if (item.toString().equals("Share Muteswan")) {
+			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan.apk");
+			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+			startActivity(intent);
+		} else if (item.toString().equals("Share Orbot")) {
+			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+			intent.putExtra("ENCODE_DATA","https://www.torproject.org/dist/android/0.2.2.25-alpha-orbot-1.0.5.2.apk");
+			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+			startActivity(intent);
+		} else if (item.toString().equals("Reset Muteswan")) {
+			Intent intent = new Intent(Intent.ACTION_DELETE);
+    		String packageName = "org.muteswan.client";
+    		Uri data = Uri.fromParts("package", packageName, null);
+    		intent.setData(data);
+    		startActivity(intent);
 		} else if (item.toString().equals("Options")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;

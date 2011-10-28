@@ -3,7 +3,10 @@
    
     <!--   <item android:id="@+id/newmessage"
         android:title="New Message" /> -->
+        <item android:id="@+id/shareOrbot" android:title="Share Orbot"/>
+        <item android:id="@+id/shareMuteswan" android:title="Share Muteswan"/>
         <item android:id="@+id/mainMenuOptions" android:title="Options"/>
+        <item android:id="@+id/mainMenuOptions" android:title="Reset Muteswan"/>
         
         <!-- IDENTITIES DISABLED -->
         <!--   <item android:id="@+id/mainMenuIdentities" android:title="Identities"/> -->

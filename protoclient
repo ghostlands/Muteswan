@@ -1,4 +1,21 @@
-#!/nix/var/nix/profiles/default/bin/perl
+#!/usr/bin/perl
+
+
+
+#This file is part of Muteswan.
+
+#Muteswan is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#Muteswan is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+
+#You should have received a copy of the GNU Affero General Public License
+#along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 
 use YAML;
 use Crypt::CBC;
@@ -341,7 +358,7 @@ sub rmsg_sub {
 	  print DB $res->content();
 	  close(DB);
 	  
-	  my $json = new JSON( 'allow_nonref' => 1 );
+	  my $json = JSON->new->allow_nonref;
 	  my $jsonObj = $json->decode($res->content());
 	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}));
 	  print Dump($plaintext);
@@ -438,7 +455,7 @@ sub longpoll_sub {
 	  print DB $res->content();
 	  close(DB);
 	  
-	  my $json = new JSON( 'allow_nonref' => 1 );
+	  my $json = JSON->new->allow_nonref;
 	  my $jsonObj = $json->decode($res->content());
 	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}));
 	  print Dump($plaintext);
@@ -521,7 +538,7 @@ sub submit_message {
 	my $message = shift;
 
 
-	my $json = new JSON( 'allow_nonref' => 1 );
+	my $json = JSON->new->allow_nonref;
 	my $json_txt = $json->encode( { 'message' => encode_base64($message)} );
 
 

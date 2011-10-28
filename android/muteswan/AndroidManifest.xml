@@ -7,6 +7,7 @@
           android:label="@string/app_name" 
           android:theme="@android:style/Theme.Light">
         <activity android:name=".muteswan"
+                  android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,6 +28,8 @@
         
         
         <activity android:name=".ui.MsgList"
+        		  android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
+        		  
                   android:label="@string/app_name" />
         <activity android:name=".ui.TorNotAvailable"
                   android:label="@string/app_name" />
@@ -35,8 +38,12 @@
         <activity android:name=".ui.CreateCircle"
                   android:label="@string/app_name" />
         <activity android:name=".ui.CircleList"
+                  android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
+                  
                   android:label="@string/app_name" />
         <activity android:name=".ui.LatestMessages"
+                  android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
+                  
                   android:label="@string/app_name" />
         <activity android:name=".ui.GenerateIdentity"
                   android:label="@string/app_name" />
