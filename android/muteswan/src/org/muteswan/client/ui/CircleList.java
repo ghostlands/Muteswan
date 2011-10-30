@@ -43,6 +43,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -71,7 +73,7 @@ public class CircleList extends ListActivity {
 
 	
 	private CircleStore store;
-	private ArrayAdapter<Circle> listAdapter;
+	private CircleListAdapter listAdapter;
 	
 	
 	
@@ -80,9 +82,9 @@ public class CircleList extends ListActivity {
 		super.onResume();
     	store = new CircleStore(this,true);
         circleList = getArray();
-        listAdapter = new ArrayAdapter<Circle>(this,
-                android.R.layout.simple_list_item_1, circleList);
-        //listAdapter = new CircleListAdapter(this);
+        //listAdapter = new ArrayAdapter<Circle>(this,
+        //        android.R.layout.simple_list_item_1, circleList);
+        listAdapter = new CircleListAdapter(this);
           setListAdapter(listAdapter);
 	}
 	
@@ -128,9 +130,9 @@ public class CircleList extends ListActivity {
         registerForContextMenu(getListView());
 
       
-          listAdapter = new ArrayAdapter<Circle>(this,
-                android.R.layout.simple_list_item_1, circleList);
-          //listAdapter = new CircleListAdapter(this);
+          //listAdapter = new ArrayAdapter<Circle>(this,
+          //      android.R.layout.simple_list_item_1, circleList);
+          listAdapter = new CircleListAdapter(this);
           setListAdapter(listAdapter);
        
         
@@ -177,6 +179,27 @@ public class CircleList extends ListActivity {
 			return(position);
 		}
 
+		
+		   public View.OnClickListener circleClicked = new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		Integer position = (Integer) v.getTag(R.id.android_circleListName);
+		    		showMsgList(position);
+		    	}
+		    };
+		    
+		    public View.OnClickListener circleShareClicked = new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		Integer position = (Integer) v.getTag(R.id.circleListShare);
+		    		shareCircle(position);
+		    	}
+		    };
+		    public View.OnClickListener circleDeleteClicked = new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		Integer position = (Integer) v.getTag(R.id.circleListDelete);
+		    		deleteCircle(position);
+		    	}
+		    };
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			
@@ -184,10 +207,25 @@ public class CircleList extends ListActivity {
      				  parent, false);
 			 
 			 TextView txtCircle = (TextView) layout.findViewById(R.id.android_circleListName);
-			 //txtCircle.setOnClickListener(onListItemClick);
+			 txtCircle.setClickable(true);
+			 txtCircle.setTag(R.id.android_circleListName, position);
+			 txtCircle.setOnClickListener(circleClicked);
 			 txtCircle.setText(circleList[position].getShortname());
 			 
-			//layout.setOnClickListener(onListItemClick(,layout,position,position));
+			 
+			 
+			
+			 Button shareCircleButton = (Button) layout.findViewById(R.id.circleListShare);
+			 shareCircleButton.setClickable(true);
+			 shareCircleButton.setTag(R.id.circleListShare, position);
+			 shareCircleButton.setOnClickListener(circleShareClicked);
+			 
+			 
+			 ImageView deleteCircleButton = (ImageView) layout.findViewById(R.id.circleListDelete);
+			 deleteCircleButton.setClickable(true);
+			 deleteCircleButton.setTag(R.id.circleListDelete, position);
+			 deleteCircleButton.setOnClickListener(circleDeleteClicked);
+			 
 			return layout;
 		}
     	

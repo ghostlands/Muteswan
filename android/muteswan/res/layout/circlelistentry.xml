@@ -4,12 +4,12 @@
     android:id="@+id/circleListEntryLayout"
     android:orientation="horizontal"
     android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:paddingRight="5px"
-    android:layout_height="wrap_content" android:gravity="right">
+    android:gravity="left">
     
     <TextView
-    android:layout_alignParentLeft="true"
-    android:layout_alignParentRight="false"
+    
     android:id="@+id/android:circleListName"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -17,16 +17,29 @@
     android:clickable="true"
     android:typeface="sans"
     android:textSize="22sp"
-    />
+   />
      
-     
-     <Button android:id="@+id/circleListShare" 
-     		 android:text="Share" 
-     		 android:layout_alignParentRight="true"
-     		 android:layout_width="wrap_content" 
+  
+    
+      <ImageView android:id="@+id/circleListDelete"
+             android:src="@android:drawable/ic_notification_clear_all"
+             android:adjustViewBounds="true"
+             android:paddingBottom="5sp"
+             android:layout_alignParentRight="true"
+     		 android:text="Delete"
+     		 android:layout_width="wrap_content"
      		 android:layout_height="wrap_content" />
-    
-    
+     		 
+     		 
+      <Button android:id="@+id/circleListShare"
+      		  android:layout_alignParentRight="true"
+      		  android:layout_below="@id/circleListDelete"
+     		 android:text="Share"
+     		 
+     	     android:paddingTop="5sp"
+     		 android:layout_width="wrap_content"
+     		 android:layout_height="35sp" />
+     
         
   
 
