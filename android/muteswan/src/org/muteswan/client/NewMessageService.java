@@ -172,7 +172,8 @@ public class NewMessageService extends Service {
 		Notification notify = new Notification(icon,title,when);
 		
 		
-		
+		notify.flags |= Notification.FLAG_AUTO_CANCEL;
+	
 		
 		
 		if (content == null)

@@ -490,7 +490,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 				try {
 					m = new Message();
 					b = new Bundle();
-					b.putString("txt", "Downloading..." + i);
+					b.putString("txt", "[" + r.getShortname() + "] downloading..." + i);
 					m.setData(b);
 					updateDialogText.sendMessage(m);
 					msg = r.getMsgFromTor(i.toString());

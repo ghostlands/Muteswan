@@ -38,6 +38,7 @@ import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -64,7 +65,7 @@ public class CircleList extends ListActivity {
 	public static String[] actionPrompts = new String[] { "Select a circle to share.", 
 														  "Select a circle to read messages.", 
 														  "Select a circle to write a message.",
-														  "Long-press a circle for actions.",
+														  "",
 														  "New circle added"};
 	public Integer action;
 	Bundle extra;
@@ -88,9 +89,20 @@ public class CircleList extends ListActivity {
           setListAdapter(listAdapter);
 	}
 	
+	public View.OnClickListener postClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		Intent intent = new Intent(getApplicationContext(),CircleList.class);
+    		intent.putExtra("action",CircleList.WRITE);
+    		startActivity(intent);
+    		
+    	}
+    };
+	
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         
        
 
@@ -101,6 +113,10 @@ public class CircleList extends ListActivity {
     	store = new CircleStore(this,true);
 
         setContentView(R.layout.circlelist);
+        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
+        
+        TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
+		postButton.setOnClickListener(postClicked);
         
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
@@ -183,7 +199,7 @@ public class CircleList extends ListActivity {
 		   public View.OnClickListener circleClicked = new View.OnClickListener() {
 		    	public void onClick(View v) {
 		    		Integer position = (Integer) v.getTag(R.id.android_circleListName);
-		    		showMsgList(position);
+		    		dispatchActivity(position);
 		    	}
 		    };
 		    
@@ -206,25 +222,35 @@ public class CircleList extends ListActivity {
 			 RelativeLayout layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.circlelistentry,
      				  parent, false);
 			 
+			 layout.setTag(R.id.android_circleListName, position);
+			 
 			 TextView txtCircle = (TextView) layout.findViewById(R.id.android_circleListName);
 			 txtCircle.setClickable(true);
 			 txtCircle.setTag(R.id.android_circleListName, position);
 			 txtCircle.setOnClickListener(circleClicked);
 			 txtCircle.setText(circleList[position].getShortname());
 			 
+			 layout.setClickable(true);
+			 layout.setOnClickListener(circleClicked);
 			 
-			 
-			
 			 Button shareCircleButton = (Button) layout.findViewById(R.id.circleListShare);
-			 shareCircleButton.setClickable(true);
-			 shareCircleButton.setTag(R.id.circleListShare, position);
-			 shareCircleButton.setOnClickListener(circleShareClicked);
-			 
-			 
 			 ImageView deleteCircleButton = (ImageView) layout.findViewById(R.id.circleListDelete);
-			 deleteCircleButton.setClickable(true);
-			 deleteCircleButton.setTag(R.id.circleListDelete, position);
-			 deleteCircleButton.setOnClickListener(circleDeleteClicked);
+			 if (action == ANY) {
+			 
+			   shareCircleButton.setClickable(true);
+			   shareCircleButton.setTag(R.id.circleListShare, position);
+			   shareCircleButton.setOnClickListener(circleShareClicked);
+			 
+			   
+			   deleteCircleButton.setClickable(true);
+			   deleteCircleButton.setTag(R.id.circleListDelete, position);
+			   deleteCircleButton.setOnClickListener(circleDeleteClicked);
+			 } else {
+				 shareCircleButton.setVisibility(View.GONE);
+				 deleteCircleButton.setVisibility(View.GONE);
+			 }
+			 
+			 
 			 
 			return layout;
 		}
@@ -253,14 +279,14 @@ public class CircleList extends ListActivity {
 		if (action == WRITE) {
 			intent = new Intent(getApplicationContext(),WriteMsg.class);
 			intent.putExtra("circle", circleList[position].getFullText());
-		} else if (action == READ) {
+		} else if (action == READ || action == ANY) {
 			intent = new Intent(getApplicationContext(),LatestMessages.class);
 			intent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",circleList[position].getFullText());;
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");;
-	    } else if (action == ANY || action == SCAN) {
+	    } else if (action == SCAN) {
 	    	return;
 	    }
 		

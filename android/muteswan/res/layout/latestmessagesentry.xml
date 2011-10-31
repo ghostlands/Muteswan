@@ -5,6 +5,7 @@
     android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:paddingRight="5px"
+    android:background="@drawable/simpleborder"
     android:layout_height="wrap_content" android:gravity="top">
     
   <!--   <ImageView
@@ -37,10 +38,10 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="Circle"
-    android:textColor="#0011ee"
+    android:textColor="#568281"
     android:clickable="true"
     android:typeface="sans"
-        android:textSize="22sp"
+    android:textSize="22sp"
     
     />
      
@@ -102,7 +103,8 @@
      android:gravity="center"
      android:text="Repost"
      android:padding="5sp"
-     android:textColor="#0011ee"
+     android:textColor="#568281"
+    
     android:clickable="true"
 
      
