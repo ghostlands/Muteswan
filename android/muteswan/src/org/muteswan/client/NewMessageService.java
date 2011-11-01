@@ -175,7 +175,6 @@ public class NewMessageService extends Service {
 		notify.flags |= Notification.FLAG_AUTO_CANCEL;
 	
 		
-		
 		if (content == null)
 			return;
 		

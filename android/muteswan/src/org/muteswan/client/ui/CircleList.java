@@ -28,11 +28,15 @@ import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.apache.http.client.ClientProtocolException;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
@@ -113,10 +117,11 @@ public class CircleList extends ListActivity {
     	store = new CircleStore(this,true);
 
         setContentView(R.layout.circlelist);
-        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
         
-        TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
-		postButton.setOnClickListener(postClicked);
+        // don't use title bar post button for now
+        //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
+        //TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
+		//postButton.setOnClickListener(postClicked);
         
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
@@ -168,6 +173,13 @@ public class CircleList extends ListActivity {
     }
     
     
+    
+    
+    
+		
+		
+	
+    
     public class CircleListAdapter extends BaseAdapter {
 
     	private Context context;
@@ -211,8 +223,43 @@ public class CircleList extends ListActivity {
 		    };
 		    public View.OnClickListener circleDeleteClicked = new View.OnClickListener() {
 		    	public void onClick(View v) {
-		    		Integer position = (Integer) v.getTag(R.id.circleListDelete);
-		    		deleteCircle(position);
+		    		final Integer position = (Integer) v.getTag(R.id.circleListDelete);
+		    		//Message m = Message.obtain();
+	        		//Bundle b = new Bundle();
+		    		//b.putInt("position", position);
+		    		//m.setData(b);
+		    		//showCircleDeleteDialog.sendMessage(m);
+		    		
+		    		
+		    		AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
+		    		builder.setMessage("Are you sure you want to delete this circle?")
+		    		       .setCancelable(false)
+		    		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    		           public void onClick(DialogInterface dialog, int id) {
+		    		        	   deleteCircle(position);
+		    		           }
+		    		       })
+		    		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		    		           public void onClick(DialogInterface dialog, int id) {
+		    		                dialog.cancel();
+		    		           }
+		    		       });
+		    		AlertDialog alert = builder.create();
+		    		alert.show();
+		    		
+		    	
+		    		
+		    		
+		    	}
+
+				
+		    };
+		    
+		    public View.OnClickListener circlePostClicked = new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+					intent.putExtra("circle", circleList[(Integer) v.getTag(R.id.circleListPost)].getFullText());
+					startActivity(intent);
 		    	}
 		    };
 		
@@ -233,6 +280,7 @@ public class CircleList extends ListActivity {
 			 layout.setClickable(true);
 			 layout.setOnClickListener(circleClicked);
 			 
+			 Button postCircleButton = (Button) layout.findViewById(R.id.circleListPost);
 			 Button shareCircleButton = (Button) layout.findViewById(R.id.circleListShare);
 			 ImageView deleteCircleButton = (ImageView) layout.findViewById(R.id.circleListDelete);
 			 if (action == ANY) {
@@ -245,9 +293,14 @@ public class CircleList extends ListActivity {
 			   deleteCircleButton.setClickable(true);
 			   deleteCircleButton.setTag(R.id.circleListDelete, position);
 			   deleteCircleButton.setOnClickListener(circleDeleteClicked);
+
+			   postCircleButton.setClickable(true);
+			   postCircleButton.setTag(R.id.circleListPost,position);
+			   postCircleButton.setOnClickListener(circlePostClicked);
 			 } else {
 				 shareCircleButton.setVisibility(View.GONE);
 				 deleteCircleButton.setVisibility(View.GONE);
+				 postCircleButton.setVisibility(View.GONE);
 			 }
 			 
 			 
