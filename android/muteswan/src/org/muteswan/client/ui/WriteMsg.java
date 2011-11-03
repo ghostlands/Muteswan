@@ -22,6 +22,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -36,11 +38,14 @@ import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.data.MuteswanMessage;
+import org.muteswan.client.ui.LatestMessages.LatestMessagesListAdapter;
 import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -50,32 +55,89 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class WriteMsg extends Activity {
+public class WriteMsg extends ListActivity {
 
+	protected static final String SENT = "sent.";
 	Circle circle;
 	boolean[] signSelections;
 	CharSequence[] signIdentities;
 	Identity[] identities;
 	String initialText;
 	
+	
+	
+	final ArrayList<Circle> circles = new ArrayList<Circle>();
+
+	Boolean[] checkedCircles;
+	ListView listView;
+	
+	
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
 	       Bundle extras = getIntent().getExtras();
-	       CircleStore rs = new CircleStore(getApplicationContext());
+	       CircleStore cs = new CircleStore(getApplicationContext(),true);
 	
-	       circle = new Circle(this,extras.getString("circle"));
-	       initialText = extras.getString("initialText");
+	       
+	       if (extras != null) {
+	        circle = new Circle(this,extras.getString("circle"));
+	        initialText = extras.getString("initialText");
+	       }
+	       
+	       
+	       
+	       //initialize circles list
+	       Log.v("CircleSize", "Circle store size: " + cs.size());
+	       
+	       checkedCircles = new Boolean[cs.size()];
+	       for (Circle c : cs) {
+	    	   
+	    	   circles.add(c);
+	    	   if (circle != null && c.getShortname().equals(circle.getShortname())) {
+	    		   checkedCircles[cs.indexOf(c)] = true;
+	    	   } else {
+	    	       checkedCircles[cs.indexOf(c)] = false;
+	    	   }
+	       }
+	       
+	       //setListAdapter(new ArrayAdapter<String>(this,
+	       //	   android.R.layout.simple_list_item_multiple_choice, circleStrings));
 	       
 	       setContentView(R.layout.writemsg);
+	       
+	       
+	       if (circle == null) {
+	         setListAdapter(new WriteMsgListAdapter(null));
+	         listView = getListView();
+	         listView.setItemsCanFocus(false);
+	         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+	         listView.setClickable(false);
+	       } else {
+	    	   TextView tv = (TextView) findViewById(R.id.newPostLabel);
+		       tv.setText("");
+	       }
+	       
+	   
+	       
+	       
 	       
 	       TextView prompt = (TextView) findViewById(R.id.android_writemsgPrompt);
 	       if (circle != null && prompt != null)
@@ -94,23 +156,84 @@ public class WriteMsg extends Activity {
 	       }
 	       
 	      
-
-	       
 	       final Button postButton = (Button) findViewById(R.id.submitMsg);
 	       postButton.setOnClickListener(submitMsg);
-	       
-	       //TorStatus torStatus = new TorStatus(muteswan.torService);
-	       //torStatus.checkButton(postButton);
-	       
-	       //final Button selectSigButton = (Button) findViewById(R.id.selectSigButton);
-	       //selectSigButton.setOnClickListener(selectSigButtonHandler);
 	       
 	       if (initialText != null) {
 	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
 	    	newMsgText.setText(initialText);
 	       }
+	         
+	      
 	       
 	}
+	
+	
+	
+	@Override
+    protected void onListItemClick(ListView lv, View v, int pos, long id)
+{
+            super.onListItemClick(lv, v, pos, id);
+            
+            CheckedTextView tv = (CheckedTextView) v.findViewById(R.id.writeMsgCircleTextView);
+           
+            if (tv.isChecked()) {
+            	checkedCircles[pos] = false;
+            	tv.setChecked(false);
+            } else {
+            	checkedCircles[pos] = true;
+            	tv.setChecked(true);
+            }
+            
+    }
+
+
+
+	public class WriteMsgListAdapter extends BaseAdapter {
+
+		private Context context;
+		
+		public WriteMsgListAdapter(Context context) {
+			
+			this.context = context;
+		}
+		
+		@Override
+		public int getCount() {
+			
+			return circles.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return circles.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.writemsgcirclelist,
+    				  parent, false);
+			
+			
+			
+			CheckedTextView circleTextView = (CheckedTextView) layout.findViewById(R.id.writeMsgCircleTextView);
+			
+			circleTextView.setText(circles.get(position).getShortname());
+			
+			if (checkedCircles[position] == true)
+				circleTextView.setChecked(true);
+			
+			return layout;
+		}
+
+
+	}
+	
 	
 	 @Override
      protected Dialog onCreateDialog( int id )
@@ -155,6 +278,70 @@ public class WriteMsg extends Activity {
 	protected ProgressDialog sendingMsgDialog;
 
 	
+	private HashMap<String,String> sendingDialogData = new HashMap<String,String>();
+	
+	 final Handler updateSendDialog = new Handler() {
+	
+	        @Override
+	        public void handleMessage(Message msg) {
+	              	Bundle b = msg.getData();
+	        	
+	              	
+	              	
+	        		//sendingMsgDialog.dismiss();
+					sendingMsgDialog.setCancelable(true);
+					sendingMsgDialog.setMessage("Message posted: " + b.get("circles"));
+					
+					if (b.get("circle") != null) {
+						sendingDialogData.put((String) b.get("circle"), (String)b.get("status"));
+						sendingMsgDialog.setMessage(renderDialog(false));
+					}
+					
+					
+					//FIXME: not workable
+					Boolean finishedSending = true;
+					for (String key : sendingDialogData.keySet()) {
+						if (!sendingDialogData.get(key).equals(WriteMsg.SENT)) {
+							finishedSending = false;
+							continue;
+						}
+					}
+					if (finishedSending == true) {
+						sendingMsgDialog.dismiss();
+						
+						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
+			    		builder.setMessage("All messages sent successfully.")
+			    		       .setCancelable(true);
+			    		       
+			    		AlertDialog alert = builder.create();
+			    		alert.show();
+						//sendingMsgDialog.setMessage("All messages sent successfully.");
+					}
+					
+				
+					//for (Circle c : circles) {
+					//	if (checkedCircles[circles.indexOf(c)] == true && b.get("status") != null && b.get("status").equals(WriteMsg.SENT)) {
+					//		CheckedTextView tv = (CheckedTextView) listView.getChildAt(circles.indexOf(c));
+					//		tv.setChecked(false);
+					//	}
+					//}
+					
+	              	//Toast.makeText(getApplicationContext(), "Message posted.", Toast.LENGTH_LONG).show();
+	        }
+	 };
+
+
+	 private String renderDialog(Boolean finished) {
+		 String dialogText = "Sending messages:";
+		 
+		 for (String key : sendingDialogData.keySet()) {
+			 dialogText = dialogText + "\n" + key + "..." + sendingDialogData.get(key);
+		 }
+		 
+		 return dialogText;
+	 }
+
+	
 	
 	public Button.OnClickListener submitMsg = new Button.OnClickListener() {
 	    public void onClick(final View v) {
@@ -162,9 +349,18 @@ public class WriteMsg extends Activity {
 	    	Editable txt = newMsgText.getText();
 	    	final String txtData = txt.toString();
 	    	
-	    		    	
 	    	
-	    		
+	    	
+	    	sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
+    		sendingMsgDialog.setCancelable(true);
+	    	
+	    	//submitMsg(txtData);
+
+	    	
+			
+	    	
+	    	
+	    	
 	    		//FIXME: max sigs?
 	    		final Identity[] signIds = new Identity[50];
 	    		int j = 0;
@@ -175,32 +371,63 @@ public class WriteMsg extends Activity {
 	    			}
 	    		}
 	    		
-	    		sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
-	    		sendingMsgDialog.setCancelable(true);
+	    		
 	    		  
-    		    final Handler dismissDialog = new Handler() {
-    				
-    		        @Override
-    		        public void handleMessage(Message msg) {
-    		              	sendingMsgDialog.dismiss();
-							
-    		              	Toast.makeText(v.getContext(), "Message posted.", Toast.LENGTH_LONG).show();
-    		        }
-    		    };
+			   // final Handler dismissDialog = new Handler() {
+					
+			   //     @Override
+			   //     public void handleMessage(Message msg) {
+			   //           	sendingMsgDialog.dismiss();
+				//			
+			     //         	Toast.makeText(v.getContext(), "Message posted.", Toast.LENGTH_LONG).show();
+			      //  }
+			    //};
 	    		
 	    		
-	    		TextView txt2 = new TextView(v.getContext());
+	    		
+	    		
+			 for (final Circle cir: circles) {
+				 
+				 
+				 if (checkedCircles[circles.indexOf(cir)] == false)
+					 continue;
+				 
+				 
+				 
+				
+	    		//TextView txt2 = new TextView(v.getContext());
 	    		if (signIds[0] != null) {
 				    	
 				    
 				    	Log.v("WriteMsg", "Posting with signatures...");
-
+				    	
 				    	 new Thread() {
 							  public void run() {
+								  Bundle b = new Bundle();
+								  Message msg = Message.obtain();
+								  b.putString("circle", cir.getShortname());
+								  b.putString("status", "sending...");
+							      msg.setData(b);
+							      updateSendDialog.sendMessage(msg);
 								
 									try {
-										circle.postMsg(txtData,signIds);
-										dismissDialog.sendEmptyMessage(0);
+										Integer httpCode = cir.postMsg(txtData,signIds);
+										
+										Bundle b2 = new Bundle();
+										Message msg2 = Message.obtain();
+										b2.putString("circle", cir.getShortname());
+										msg2.setData(b2);
+									    
+										
+										if (httpCode == 200) {
+										 b2.putString("status", WriteMsg.SENT);
+										} else if (httpCode >= 500) {
+									     b2.putString("status", "server error.");
+										} else if (httpCode < 0) {
+										 b2.putString("status", "timeout.");
+										}
+										updateSendDialog.sendMessage(msg2);
+										
 									} catch (InvalidKeyException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
@@ -236,12 +463,36 @@ public class WriteMsg extends Activity {
 				    	
 	    		} else {
 	    		  
-	    		  
+	    			
 				  new Thread() {
+					 
+					  
+					  
 					  public void run() {
+						  Bundle b = new Bundle();
+						  Message msg = Message.obtain();
+					      msg.setData(b);
+					      b.putString("circle", cir.getShortname());
+					      b.putString("status", "sending...");
+					      updateSendDialog.sendMessage(msg);
+						  
 						try {
-							circle.postMsg(txtData);
-							dismissDialog.sendEmptyMessage(0);
+							Integer httpCode = cir.postMsg(txtData);
+							Bundle b2 = new Bundle();
+							Message msg2 = Message.obtain();
+							b2.putString("circle", cir.getShortname());
+							msg2.setData(b2);
+
+							
+							if (httpCode == 200) {
+							 b2.putString("status", WriteMsg.SENT);
+							} else if (httpCode >= 500) {
+							 b2.putString("status", "server error.");
+							} else if (httpCode < 0) {
+							 b2.putString("status", "timeout.");
+							}
+							updateSendDialog.sendMessage(msg2);
+							//dismissDialog.sendEmptyMessage(0);
 						} catch (NoSuchAlgorithmException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -264,15 +515,18 @@ public class WriteMsg extends Activity {
 
 	    		}
 	    	}
-	    
 	    	
-	    
-	    };
+			
+			
+			 
+	    	
+	    	
+	    }
 	
 	    	
 			
     	 
 	    	
-	
-	
+	};
 }
+

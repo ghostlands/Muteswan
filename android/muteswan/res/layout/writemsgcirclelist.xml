@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout android:orientation="horizontal" android:id="@+id/writeMsgCircleListLayout" android:layout_width="fill_parent" android:layout_height="wrap_content" xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckedTextView android:text="CheckTextView" android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+                     android:id="@+id/writeMsgCircleTextView" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content" 
+                   
+                     android:textSize="20sp"></CheckedTextView>
+    </LinearLayout>
+
+

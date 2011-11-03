@@ -293,7 +293,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		    	}
 		    };
 		
-		    
 		
 		public LatestMessagesListAdapter(Context context) {
 			this.context = context;
@@ -593,7 +592,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		
 		boolean alwaysCheckLatest = defPrefs.getBoolean("alwaysCheckLatest", false);
 		
 		

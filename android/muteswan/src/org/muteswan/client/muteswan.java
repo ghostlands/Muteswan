@@ -34,6 +34,7 @@ import org.muteswan.client.ui.CreateCircle;
 import org.muteswan.client.ui.GenerateIdentity;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
+import org.muteswan.client.ui.WriteMsg;
 
 import org.muteswan.client.ui.Preferences;
 import org.muteswan.client.ui.CircleList;
@@ -327,8 +328,8 @@ public class muteswan extends Activity implements Runnable {
 
 	public View.OnClickListener postClicked = new View.OnClickListener() {
     	public void onClick(View v) {
-    		Intent intent = new Intent(getApplicationContext(),CircleList.class);
-    		intent.putExtra("action",CircleList.WRITE);
+    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+    		//intent.putExtra("action",CircleList.WRITE);
     		startActivity(intent);
     	}
     };

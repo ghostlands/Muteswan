@@ -565,7 +565,9 @@ public class Circle {
 	}
 	
 	
-	public void postMsg(JSONObject jsonObj) {
+	
+	// return the HTTP code, if IO error returns -1, protocol error -2, -3 key error 
+	public Integer postMsg(JSONObject jsonObj) {
 		
 		HttpPost httpPost = new HttpPost("http://" + server + "/" + keyHash);
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
@@ -579,7 +581,7 @@ public class Circle {
 				} catch (NoSuchAlgorithmException e1) {
 					// TODO Auto-generated catch block
 					//e1.printStackTrace();
-					return;
+					return(-3);
 				}
 				IdentityStore idStore = new IdentityStore(context);
 				RSAPrivateKey rsaPrivKey = null;
@@ -603,7 +605,7 @@ public class Circle {
 				
 				if (rsaPrivKey == null) {
 					Log.e("Circle", "Could not find appropriate identity for " + getShortname() + " in idstore.");
-					return;
+					return(-3);
 				}
 				
 				   
@@ -631,7 +633,7 @@ public class Circle {
 				} catch (NoSuchAlgorithmException e1) {
 					// TODO Auto-generated catch block
 					//e1.printStackTrace();
-					return;
+					return(-3);
 				}
 				
 				IdentityStore idStore = new IdentityStore(context);
@@ -663,7 +665,7 @@ public class Circle {
 				
 				if (rsaPrivKey == null) {
 					Log.e("Circle", "Could not find appropriate identity for " + getShortname() + " in idstore.");
-					return;
+					return(-3);
 				}
 				
 
@@ -690,26 +692,27 @@ public class Circle {
 		
 		
 		httpPost.setEntity(entity);
-		Log.v("Circle", "ARGH WTF ");
+		
 
 		try {
 			// POST MESSAGE
-			muteswanHttp.httpClient.execute(httpPost);
+			HttpResponse response = muteswanHttp.httpClient.execute(httpPost);
+			return(response.getStatusLine().getStatusCode());
 
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-			return;
+			return(-2);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			return;
+			e.printStackTrace();
+			return(-1);
 		}
 		
 	}
 	
 	
-	public void postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException {
+	public Integer postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException {
 		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
 		
@@ -717,10 +720,10 @@ public class Circle {
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("message", base64EncData);
 		
-		postMsg(jsonObj);
+		return(postMsg(jsonObj));
 	}
 	
-	public void postMsg(String msg, Identity[] identities) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, InvalidKeyException, SignatureException, InvalidKeySpecException, IOException {
+	public Integer postMsg(String msg, Identity[] identities) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, InvalidKeyException, SignatureException, InvalidKeySpecException, IOException {
 		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
 		
@@ -757,7 +760,7 @@ public class Circle {
 		jsonObj.put("signatures", jsonArray);
 		
 		
-		postMsg(jsonObj);
+		return(postMsg(jsonObj));
 		
 	}
 	

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
 
@@ -11,23 +11,45 @@
     android:id="@+id/android_writemsgPrompt"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:text="Write Message"
-    android:gravity="center"
-    android:textSize="20sp"
+    android:layout_alignParentLeft="true"
+    android:text="New Post"
+    android:maxWidth="50sp"
+    android:textSize="18sp"
    />
     
+    
+       
+    <Button android:id="@+id/submitMsg"
+    		android:text="Send"
+    		android:layout_alignParentRight="true"
+    		android:textSize="12sp"
+    		android:layout_width="110sp" 
+    		android:layout_height="35sp" />
+    		
     <EditText  android:id="@+id/newMsgText"
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
+       android:layout_below="@id/submitMsg"
        android:minHeight="100sp"
        android:maxHeight="120sp"/>
+       
+    <TextView android:id="@+id/newPostLabel"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_below="@id/newMsgText"
+       android:text="Post to these circles:"/>
+       
+      <ListView android:id="@+id/android:list"
+    	
+    	android:layout_below="@id/newPostLabel"
+    	
+    	android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"/>
    
    <!--  REMOVE SIGN MESSAGE features -->
    <!--  <Button android:id="@+id/selectSigButton" android:text="Sign Message"
     	android:layout_width="fill_parent"
     	android:layout_height="wrap_content"/> -->
     
-    <Button android:id="@+id/submitMsg" android:text="Post Message" android:layout_width="fill_parent" android:layout_height="wrap_content" />
     
-    
-</LinearLayout>
+</RelativeLayout>
