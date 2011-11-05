@@ -62,6 +62,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -69,6 +70,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -84,6 +89,7 @@ import android.widget.LinearLayout.LayoutParams;
 
 public class LatestMessages extends ListActivity implements Runnable {
 
+	protected static final int MSGDOWNLOADAMOUNT = 5;
 	private Bundle extra;
 	private String circleExtra;
 	private CircleStore store;
@@ -94,15 +100,18 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private int messageViewCount;
 	HashMap<View, AlertDialog> moreButtons;
 	private ProgressDialog gettingMsgsDialog;
-	private Thread newMsgCheckThread;
+	
 	private HashMap<String, String> newMsgCheckState = new HashMap<String,String>();
 	
 	protected IMessageService newMsgService;
+	private ImageView spinneyIcon;
+	private RotateAnimation ranimnation;
 	
 	
 	public void onResume() {
 		super.onResume();
-		//TextView torOnlineView = (TextView) findViewById(R.id.torOnlineNotifier);
+		refresh();
+		
 	}
 	
 	public void onDestroy() {
@@ -113,9 +122,39 @@ public class LatestMessages extends ListActivity implements Runnable {
 		//}
 	}
 	
+	OnScrollListener scrollListener = new OnScrollListener() {
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {}
+		
+		
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+			
+			int lastInScreen = firstVisibleItem + visibleItemCount;
+			
+			if (lastInScreen == 0)
+				return;
+			
+			Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
+			
+			if (lastInScreen == totalItemCount && newMsgCheckState.isEmpty()) {
+				Log.v("LatestMessages", "End of list.");
+				if (refreshing == false) {
+					messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
+					refresh();
+				}
+				//messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
+				//refresh();
+			}
+			
+		}
+	};
+	private boolean refreshing;
+	
+	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        
        
 
         store = new CircleStore(this,true);
@@ -138,9 +177,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         
 
         
-        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
-		TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
-		postButton.setOnClickListener(postClicked);
         
 		//Intent serviceIntent = new Intent(this,NewMessageService.class);
         //boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
@@ -148,8 +184,13 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		
 	
+        final Button postButton = (Button) findViewById(R.id.latestmessagesPost);
+        postButton.setOnClickListener(postClicked);
         
-		
+        
+        final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
+        refreshButton.setOnClickListener(refreshClicked);
+        
 		messageViewCount = 0;
 		moreButtons = new HashMap<View,AlertDialog>();
         //messageList = loadRecentMessages(messageList,0,5);
@@ -159,10 +200,15 @@ public class LatestMessages extends ListActivity implements Runnable {
         setListAdapter(listAdapter);
         
         
-        newMsgCheckThread = new Thread(this);
-        newMsgCheckThread.start();
+        View footerView = ((LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.latestmessagesfooter, null, false);
+        getListView().addFooterView(footerView);
+        getListView().setOnScrollListener(scrollListener);
+        
+        //newMsgCheckThread = new Thread(this);
+        //newMsgCheckThread.start();
       
-        showDialog();
+        //showDialog();
+        //spinIcon();
         
         
 
@@ -178,23 +224,38 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 
+		// use this to load more messages from db
+		//Integer start = messageViewCount;
+		//messageViewCount = messageViewCount + 5;
 		
-		Integer start = messageViewCount;
-		messageViewCount = messageViewCount + 5;
-		//messageList.clear();
-		Log.v("LatestMessages", "Start is " + start);
-		//loadRecentMessages(messageList,start,5);
+		refresh();
 		
-		Thread thread = new Thread(this);
-		thread.start();
-		showDialog();		
+		
+		
+		
 		return true;
 		
+	}
+	
+	private void refresh() {
+		refreshing = true;
+		Thread thread = new Thread(this);
+		thread.start();
+		spinIcon();
 	}
 
 	private void showDialog() {
 		gettingMsgsDialog = ProgressDialog.show(this, "", "Checking for new messages...", true);
 		gettingMsgsDialog.setCancelable(true);
+	}
+	
+	private void spinIcon() {
+		spinneyIcon = (ImageView) findViewById(R.id.checkingMessagesIcon);
+		ranimnation = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+		ranimnation.setDuration((long) 2*1500);
+		ranimnation.setRepeatCount(RotateAnimation.INFINITE);
+		
+		spinneyIcon.startAnimation(ranimnation);
 	}
 	
 	public View.OnClickListener listItemClicked = new View.OnClickListener() {
@@ -254,13 +315,17 @@ public class LatestMessages extends ListActivity implements Runnable {
     		  intent.putExtra("circle",circleMap.get(circleExtra).getFullText());
     		  startActivity(intent);
     		} else {
-    		   Intent intent = new Intent(getApplicationContext(),CircleList.class);
-      		  intent.putExtra("action",CircleList.WRITE);
+    		   Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
       		  startActivity(intent);
     		}
     	}
     };
     
+    public View.OnClickListener refreshClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		refresh();
+    	}
+    };
     
 	public class LatestMessagesListAdapter extends BaseAdapter {
 
@@ -352,20 +417,22 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  txtMessage.setText(msg.getMsg());
 
       		  
-      		  String sigDataStr = "-- \n";
-      		  LinkedList<Identity> list = msg.getValidSigs();
-			  if (list == null) {
-				  sigDataStr = "";
-			  } else if (list.size() == 0) {
-      			  sigDataStr = "No valid signatures.";
-      		  } else {
+      		  
+      		  // not verifying signatures right now
+      		  //String sigDataStr = "-- \n";
+      		  //LinkedList<Identity> list = msg.getValidSigs();
+			  //if (list == null) {
+			  //	  sigDataStr = "";
+			  //} else if (list.size() == 0) {
+      		  //	  sigDataStr = "No valid signatures.";
+      		  //} else {
       			  
-      		   for (Identity id : msg.getValidSigs()) {
-      			    sigDataStr = sigDataStr + id.getName() + "\n";
-      		   }
+      		  // for (Identity id : msg.getValidSigs()) {
+      		  //	    sigDataStr = sigDataStr + id.getName() + "\n";
+      		  // }
       		   
-      		  txtSigs.setText(sigDataStr);
-      		  }
+      		  //txtSigs.setText(sigDataStr);
+      		  //}
       		  
 			
 			 layout.setClickable(true);
@@ -424,6 +491,8 @@ public class LatestMessages extends ListActivity implements Runnable {
         public void handleMessage(Message msg) {
         	  if (gettingMsgsDialog != null)
         	    gettingMsgsDialog.dismiss();
+        	  if (spinneyIcon != null)
+        		  ranimnation.cancel();
         }
     };
 	
@@ -526,6 +595,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 					SimpleDateFormat df = new SimpleDateFormat(
 							"yyyy-MM-dd HH:mm:ss");
 					MuteswanMessage omsg = msgs.get(j);
+					
+					// skip over identical messages
+					if (omsg.getId() == msg.getId() 
+							&& omsg.getCircle().getFullText().equals(msg.getCircle().getFullText()))
+						continue RING;
 
 					try {
 						Date mDate = df.parse(msg.getDate());
@@ -591,30 +665,30 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		
 		
-		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		boolean alwaysCheckLatest = defPrefs.getBoolean("alwaysCheckLatest", false);
+		// populate list from db initially
+		for (Circle r : store) {
+			if (circleExtra != null && !circleMap.get(circleExtra).getFullText().equals(r.getFullText()))
+				continue;
+			updateLatestMessages(msgs, r, first, amount);
+		}
+		dataSetChanged.sendEmptyMessage(0);
 		
-		
-		// If we are checking all messages but do not want to check for latest, its really easy
-		if (!alwaysCheckLatest && circleExtra == null) {
-			for (Circle r : store) {
-				updateLatestMessages(msgs, r, first, amount);
-			}
-	
+		// we are just loading more messages here, no need to check again. the user can use the refresh button
+		// for that
+		if (messageViewCount >= LatestMessages.MSGDOWNLOADAMOUNT) {
 			dismissDialog.sendEmptyMessage(0);
-			dataSetChanged.sendEmptyMessage(0);
-
-			return (msgs);
+			refreshing = false;
+			return(msgs);
 		}
 		
 		
-		// If we are checking all messages and want to check the latest, it gets more complicated
-		if (alwaysCheckLatest && circleExtra == null) {
+		
+		// get the latest message counts
+		if (circleExtra == null) {
 			for (Circle r : store) {
 				getLastestMessageCountFromTor(r);
 			
 			}
-		// If we are checking only one circle we always check the latest no matter what
 		} else if (circleExtra != null) {
 			Circle circle = circleMap.get(circleExtra);
 			 getLastestMessageCountFromTor(circle);
@@ -641,7 +715,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 			
 			if (curCircle != null && curCircle != "null") {
 				Log.v("LatestMessages", "CurCircle is " + curCircle);
+				//dataSetChanged.sendEmptyMessage(0);
 				updateLatestMessages(msgs, store.asHashMap().get(curCircle), first, amount);
+				dataSetChanged.sendEmptyMessage(0);
 			} else {
 			
 			  try {
@@ -655,6 +731,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 			
 		}
 	
+		
+		newMsgCheckState.clear();
+		refreshing = false;
 		dismissDialog.sendEmptyMessage(0);
 		dataSetChanged.sendEmptyMessage(0);
 
@@ -696,7 +775,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 
 		final int start = messageViewCount;
-		loadRecentMessages(messageList,start,5);
+		loadRecentMessages(messageList,start,LatestMessages.MSGDOWNLOADAMOUNT);
 		//dismissDialog.sendEmptyMessage(0);
 		//dataSetChanged.sendEmptyMessage(0);
 		

@@ -47,23 +47,16 @@
      		
      		 		 
       <Button android:id="@+id/circleListShare"
-      		  android:layout_alignParentRight="true"
+      		  android:layout_alignParentLeft="true"
       		  android:layout_below="@id/circleListDelete"
+      		  
      		 android:text="Share"
      		 android:textSize="12sp"
      	     android:paddingTop="5sp"
      		 android:layout_width="wrap_content"
      		 android:layout_height="35sp" />
      		 
-     		  <Button android:id="@+id/circleListPost"
-     		 android:layout_toLeftOf="@id/circleListShare"
-     		 android:layout_alignBaseline="@id/circleListShare"
-            
-             android:textSize="12sp"
-     	     android:paddingTop="5sp"
-     		 android:layout_width="wrap_content"
-     		 android:layout_height="35sp"
-     		 android:text="Post" />
+     		  
      
         </RelativeLayout>
 </RelativeLayout>

@@ -94,7 +94,7 @@ public class muteswan extends Activity implements Runnable {
 
 	private boolean justCreated;
 	
-	private TextView postButton;
+	
 	private ProgressDialog checkTorDialog;
 	
 	
@@ -232,7 +232,7 @@ public class muteswan extends Activity implements Runnable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        
 
         
         // Check tor status
@@ -260,15 +260,14 @@ public class muteswan extends Activity implements Runnable {
      
 
         setContentView(R.layout.main);
-        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
+        
 
   	   
         final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
-        postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
-		postButton.setOnClickListener(postClicked);
-		
+       
+        
 		
 		
 		//Button panicButton = (Button) findViewById(R.id.panicButton);
@@ -329,7 +328,7 @@ public class muteswan extends Activity implements Runnable {
 	public View.OnClickListener postClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-    		//intent.putExtra("action",CircleList.WRITE);
+    		
     		startActivity(intent);
     	}
     };

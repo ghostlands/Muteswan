@@ -124,16 +124,16 @@ public class WriteMsg extends ListActivity {
 	       setContentView(R.layout.writemsg);
 	       
 	       
-	       if (circle == null) {
+	      // if (circle == null) {
 	         setListAdapter(new WriteMsgListAdapter(null));
 	         listView = getListView();
 	         listView.setItemsCanFocus(false);
 	         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 	         listView.setClickable(false);
-	       } else {
-	    	   TextView tv = (TextView) findViewById(R.id.newPostLabel);
-		       tv.setText("");
-	       }
+	       //} else {
+	    	//   TextView tv = (TextView) findViewById(R.id.newPostLabel);
+		    //   tv.setText("");
+	       //}
 	       
 	   
 	       
@@ -311,7 +311,7 @@ public class WriteMsg extends ListActivity {
 						
 						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
 			    		builder.setMessage("All messages sent successfully.")
-			    		       .setCancelable(true);
+			    		       .setCancelable(true).setPositiveButton("OK", null);
 			    		       
 			    		AlertDialog alert = builder.create();
 			    		alert.show();

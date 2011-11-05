@@ -255,13 +255,7 @@ public class CircleList extends ListActivity {
 				
 		    };
 		    
-		    public View.OnClickListener circlePostClicked = new View.OnClickListener() {
-		    	public void onClick(View v) {
-		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-					intent.putExtra("circle", circleList[(Integer) v.getTag(R.id.circleListPost)].getFullText());
-					startActivity(intent);
-		    	}
-		    };
+		   
 		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
@@ -280,7 +274,7 @@ public class CircleList extends ListActivity {
 			 layout.setClickable(true);
 			 layout.setOnClickListener(circleClicked);
 			 
-			 Button postCircleButton = (Button) layout.findViewById(R.id.circleListPost);
+			
 			 Button shareCircleButton = (Button) layout.findViewById(R.id.circleListShare);
 			 ImageView deleteCircleButton = (ImageView) layout.findViewById(R.id.circleListDelete);
 			 if (action == ANY) {
@@ -294,13 +288,11 @@ public class CircleList extends ListActivity {
 			   deleteCircleButton.setTag(R.id.circleListDelete, position);
 			   deleteCircleButton.setOnClickListener(circleDeleteClicked);
 
-			   postCircleButton.setClickable(true);
-			   postCircleButton.setTag(R.id.circleListPost,position);
-			   postCircleButton.setOnClickListener(circlePostClicked);
+			  
 			 } else {
 				 shareCircleButton.setVisibility(View.GONE);
 				 deleteCircleButton.setVisibility(View.GONE);
-				 postCircleButton.setVisibility(View.GONE);
+				 
 			 }
 			 
 			 

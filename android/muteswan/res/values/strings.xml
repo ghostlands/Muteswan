@@ -7,7 +7,7 @@
     <string name="msglistprompt">Message List</string>
     <string name="foundkeys">Found keys...</string>
     
-    <string name="app_name">muteswanclient</string>
+    <string name="app_name">Muteswan</string>
     <string name="newMsgTextDefault">...</string>
     <string name="newcircleprompt">Create Circle</string>
     <string name="service_run_message">Service running...</string>
