@@ -111,9 +111,9 @@ public class CreateCircle extends Activity implements Runnable {
 			//	e.printStackTrace();
 			//}
 	    	
-	    	Intent intent = new Intent(getApplicationContext(),EditCircle.class);
-	    	intent.putExtra("circle",circleFullText);
-	      	startActivity(intent);
+	    	//Intent intent = new Intent(getApplicationContext(),EditCircle.class);
+	    	//intent.putExtra("circle",circleFullText);
+	      	//startActivity(intent);
 
 	 }
 

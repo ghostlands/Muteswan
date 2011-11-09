@@ -12,6 +12,9 @@
 <!--   <CheckBoxPreference android:title="Check for Latest" android:summary="Always check and download the latest messages when viewing." android:key="alwaysCheckLatest"></CheckBoxPreference> -->
 <!--  </PreferenceCategory> -->
 
+<CheckBoxPreference android:title="Verbose" android:summary="Show extra information during operations." android:key="verbose"></CheckBoxPreference> -->
+
+
 <!--  <PreferenceCategory android:title="Message List"><CheckBoxPreference android:title="Always Use Cached Index" android:summary="If checked, the message list will not download the message index on start." android:key="alwaysUseLastMessage"></CheckBoxPreference>
 </PreferenceCategory> -->
 </PreferenceScreen>
