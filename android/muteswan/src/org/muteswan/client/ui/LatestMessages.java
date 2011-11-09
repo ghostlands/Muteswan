@@ -740,7 +740,9 @@ final Handler setSpinneyDownloading = new Handler() {
 		newMsgCheckState.clear();
 		refreshing = false;
 		dismissDialog.sendEmptyMessage(0);
+		//sortMessageList.sendEmptyMessage(0);
 		dataSetChanged.sendEmptyMessage(0);
+		
 
 		return (msgs);
 	}

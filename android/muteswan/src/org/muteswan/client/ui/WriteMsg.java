@@ -311,10 +311,15 @@ public class WriteMsg extends ListActivity {
 						
 						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
 			    		builder.setMessage("All messages sent successfully.")
-			    		       .setCancelable(true).setPositiveButton("OK", null);
+			    		       .setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			    		           public void onClick(DialogInterface dialog, int id) {
+			    		               finish();
+			    		           }}
+			    		    		   );
 			    		       
 			    		AlertDialog alert = builder.create();
 			    		alert.show();
+			    		
 						//sendingMsgDialog.setMessage("All messages sent successfully.");
 					}
 					
