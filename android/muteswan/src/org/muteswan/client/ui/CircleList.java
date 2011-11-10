@@ -224,11 +224,7 @@ public class CircleList extends ListActivity {
 		    public View.OnClickListener circleDeleteClicked = new View.OnClickListener() {
 		    	public void onClick(View v) {
 		    		final Integer position = (Integer) v.getTag(R.id.circleListDelete);
-		    		//Message m = Message.obtain();
-	        		//Bundle b = new Bundle();
-		    		//b.putInt("position", position);
-		    		//m.setData(b);
-		    		//showCircleDeleteDialog.sendMessage(m);
+		    		
 		    		
 		    		
 		    		AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);

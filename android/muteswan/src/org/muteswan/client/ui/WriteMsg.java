@@ -75,7 +75,7 @@ import android.widget.Toast;
 
 public class WriteMsg extends ListActivity {
 
-	protected static final String SENT = "sent.";
+	protected static final String SENT = "sent";
 	Circle circle;
 	boolean[] signSelections;
 	CharSequence[] signIdentities;
@@ -285,7 +285,24 @@ public class WriteMsg extends ListActivity {
 	        @Override
 	        public void handleMessage(Message msg) {
 	              	Bundle b = msg.getData();
-	        	
+	              	sendingMsgDialog.setCancelable(true);
+	              	
+	              	if (b.getString("error") != null) {
+	              		
+	              		sendingMsgDialog.dismiss();
+						
+						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
+			    		builder.setMessage("A problem occurred: " + b.getString("error"))
+			    		       .setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			    		           public void onClick(DialogInterface dialog, int id) {
+			    		               
+			    		           }}
+			    		    		   );
+			    		       
+			    		AlertDialog alert = builder.create();
+			    		alert.show();
+	              		return;
+	              	}
 	              	
 	              	
 	        		//sendingMsgDialog.dismiss();
@@ -301,6 +318,12 @@ public class WriteMsg extends ListActivity {
 					//FIXME: not workable
 					Boolean finishedSending = true;
 					for (String key : sendingDialogData.keySet()) {
+						if (checkedCircles[b.getInt("position")] == true && sendingDialogData.get(key).equals(WriteMsg.SENT)) {
+							checkedCircles[b.getInt("position")] = false;
+							//circleTextView.setChecked(true);
+						}
+						
+						
 						if (!sendingDialogData.get(key).equals(WriteMsg.SENT)) {
 							finishedSending = false;
 							continue;
@@ -340,7 +363,7 @@ public class WriteMsg extends ListActivity {
 		 String dialogText = "Sending messages:";
 		 
 		 for (String key : sendingDialogData.keySet()) {
-			 dialogText = dialogText + "\n" + key + "..." + sendingDialogData.get(key);
+			 dialogText = dialogText + "\n" + key + ": " + sendingDialogData.get(key);
 		 }
 		 
 		 return dialogText;
@@ -390,7 +413,7 @@ public class WriteMsg extends ListActivity {
 	    		
 	    		
 	    		
-	    		
+	    	 Boolean atleastOneCircle = false;
 			 for (final Circle cir: circles) {
 				 
 				 
@@ -398,7 +421,7 @@ public class WriteMsg extends ListActivity {
 					 continue;
 				 
 				 
-				 
+				atleastOneCircle = true; 
 				
 	    		//TextView txt2 = new TextView(v.getContext());
 	    		if (signIds[0] != null) {
@@ -421,15 +444,16 @@ public class WriteMsg extends ListActivity {
 										Bundle b2 = new Bundle();
 										Message msg2 = Message.obtain();
 										b2.putString("circle", cir.getShortname());
+										b2.putInt("position",circles.indexOf(cir));
 										msg2.setData(b2);
 									    
 										
 										if (httpCode == 200) {
 										 b2.putString("status", WriteMsg.SENT);
 										} else if (httpCode >= 500) {
-									     b2.putString("status", "server error.");
+									     b2.putString("status", "server error");
 										} else if (httpCode < 0) {
-										 b2.putString("status", "timeout.");
+										 b2.putString("status", "timeout");
 										}
 										updateSendDialog.sendMessage(msg2);
 										
@@ -486,15 +510,17 @@ public class WriteMsg extends ListActivity {
 							Bundle b2 = new Bundle();
 							Message msg2 = Message.obtain();
 							b2.putString("circle", cir.getShortname());
+							b2.putInt("position",circles.indexOf(cir));
 							msg2.setData(b2);
 
 							
 							if (httpCode == 200) {
 							 b2.putString("status", WriteMsg.SENT);
+						
 							} else if (httpCode >= 500) {
-							 b2.putString("status", "server error.");
+							 b2.putString("status", "server error");
 							} else if (httpCode < 0) {
-							 b2.putString("status", "timeout.");
+							 b2.putString("status", "timeout");
 							}
 							updateSendDialog.sendMessage(msg2);
 							//dismissDialog.sendEmptyMessage(0);
@@ -523,7 +549,13 @@ public class WriteMsg extends ListActivity {
 	    	
 			
 			
-			 
+			 if (atleastOneCircle == false) {
+				 Bundle b2 = new Bundle();
+					Message msg2 = Message.obtain();
+					b2.putString("error", "No circle selected.");
+					msg2.setData(b2);
+					updateSendDialog.sendMessage(msg2);
+			 }
 	    	
 	    	
 	    }

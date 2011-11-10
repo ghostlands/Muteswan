@@ -86,6 +86,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private boolean moreMessages = false;
 	private RotateAnimation ranimnation;
 	
+	private final CompareDates comparatorDates = new CompareDates();
+	
 	
 	public void onResume() {
 		super.onResume();
@@ -133,6 +135,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	};
 	private boolean refreshing;
 	private boolean verbose;
+	private long previousRefreshTime = 0;
 	
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -214,9 +217,16 @@ public class LatestMessages extends ListActivity implements Runnable {
 	}
 	
 	private void refresh() {
+		
+		if (previousRefreshTime != 0 && ((System.currentTimeMillis()/1000) - previousRefreshTime) < 1) {
+			Log.v("LatestMessages", "Refresh called within 1 second, not running.");
+			return;
+		}
+		
 		Log.v("LatestMessages", "Refreshing at start of refresh(): " + refreshing);
 		Log.v("LatestMessages", "moreMessages at start of refresh(): " + moreMessages);
 		refreshing = true;
+		previousRefreshTime = System.currentTimeMillis()/1000;
 		Thread thread = new Thread(this);
 		thread.start();
 		spinIcon();
@@ -482,7 +492,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         	  if (gettingMsgsDialog != null)
         	    gettingMsgsDialog.dismiss();
         	  if (spinneyIcon != null) {
-        		  
         		  spinneyIcon.setImageResource(R.drawable.refresh_done);
         		  ranimnation.cancel();
         	  }
@@ -500,14 +509,21 @@ public class LatestMessages extends ListActivity implements Runnable {
         	    listAdapter.notifyDataSetChanged();
         }
     };
+	
     
     final Handler sortMessageList = new Handler() {
 		
         @Override
         public void handleMessage(Message msg) {
         		//listAdapter.sort(new CompareDates());
-        		Collections.sort(messageList, new CompareDates());
-        	    
+        		
+        		Collections.sort(messageList, comparatorDates);
+        		
+        		
+        		Log.v("LatestMessages", "sortMessageList handler refreshing: " + refreshing);
+        		
+        		listAdapter.notifyDataSetChanged();
+        		refreshing = false;
         }
     };
 	
@@ -597,7 +613,7 @@ final Handler setSpinneyDownloading = new Handler() {
 		if (lastId <= 0)
 			return;
 
-		Log.v("CircleStore", "Update messages, lastId is " + lastId
+		Log.v("LatestMessages", "Update messages, lastId is " + lastId
 				+ " and last is " + last + " (" + (lastId - last) + ")");
 		for (Integer i = lastId; i > lastId - last; i--) {
 			if (i <= 0)
@@ -636,6 +652,7 @@ final Handler setSpinneyDownloading = new Handler() {
 				
 			} else {
 				msg.verifySignatures(idStore);
+				Log.v("LatestMessages", "Adding " + msg.getId());
 				msgs.add(0,msg);
 			}
 
@@ -668,17 +685,23 @@ final Handler setSpinneyDownloading = new Handler() {
 				continue;
 			updateLatestMessages(msgs, r, first, amount);
 		}
-		sortMessageList.sendEmptyMessage(0);
-		dataSetChanged.sendEmptyMessage(0);
+		
 		
 		// we are just loading more messages here, no need to check again. the user can use the refresh button
 		// for that
 		if (moreMessages == true) {
 			Log.v("LatestMessages", "messageViewCount is " + messageViewCount);
 			dismissDialog.sendEmptyMessage(0);
-			refreshing = false;
+			sortMessageList.sendEmptyMessage(0);
+			//dataSetChanged.sendEmptyMessage(0);
+			//refreshing = false;
 			moreMessages = false;
 			return(msgs);
+		} else {
+			sortMessageList.sendEmptyMessage(0);
+			// AGHH FIXME please
+			refreshing = true;
+			//dataSetChanged.sendEmptyMessage(0);
 		}
 		
 		
@@ -738,11 +761,11 @@ final Handler setSpinneyDownloading = new Handler() {
 	
 		
 		newMsgCheckState.clear();
-		refreshing = false;
-		dismissDialog.sendEmptyMessage(0);
-		//sortMessageList.sendEmptyMessage(0);
-		dataSetChanged.sendEmptyMessage(0);
 		
+		dismissDialog.sendEmptyMessage(0);
+		sortMessageList.sendEmptyMessage(0);
+		//dataSetChanged.sendEmptyMessage(0);
+		//refreshing = false;
 
 		return (msgs);
 	}
