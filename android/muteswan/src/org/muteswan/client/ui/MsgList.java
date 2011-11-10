@@ -40,7 +40,6 @@ import org.muteswan.client.data.CircleStore;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 
-import com.google.zxing.client.a.r;
 
 import android.app.Activity;
 import android.app.ListActivity;
