@@ -493,7 +493,8 @@ public class LatestMessages extends ListActivity implements Runnable {
         	    gettingMsgsDialog.dismiss();
         	  if (spinneyIcon != null) {
         		  spinneyIcon.setImageResource(R.drawable.refresh_done);
-        		  ranimnation.cancel();
+        		  //ranimnation.cancel();
+        		  spinneyIcon.setAnimation(null);
         	  }
         }
     };
