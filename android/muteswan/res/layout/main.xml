@@ -88,7 +88,10 @@
     android:textSize="12sp"
     android:layout_below="@id/mainLayoutTable"
     android:layout_alignParentRight="true"
-    android:gravity="center"/>
+    android:layout_alignParentBottom="true"
+    android:textColor="#ffffffff"
+    android:gravity="bottom"
+    />
  	
  	
  	
