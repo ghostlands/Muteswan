@@ -20,7 +20,6 @@
     	    <groupId>uk.ac.cam.cl.dtg.android.tor.TorProxyLib</groupId>
     	    <artifactId>TorProxyLib</artifactId>
     	    <version>1.0.0</version>
-	    <scope>compile</scope>
     	    <!-- <systemPath>${project.basedir}/lib/TorProxyLib.jar</systemPath> -->
 	</dependency>
 
