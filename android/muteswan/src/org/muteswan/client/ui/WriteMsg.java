@@ -90,6 +90,16 @@ public class WriteMsg extends ListActivity {
 	ListView listView;
 	
 	
+	public void onResume() {
+		super.onResume();
+		sendingMsgDialog = null;
+	}
+	
+	public void onDestroy() {
+		super.onDestroy();
+		sendingMsgDialog = null;
+	}
+	
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
@@ -285,11 +295,14 @@ public class WriteMsg extends ListActivity {
 	        @Override
 	        public void handleMessage(Message msg) {
 	              	Bundle b = msg.getData();
-	              	sendingMsgDialog.setCancelable(true);
+	              	
+	              	
+	              	
 	              	
 	              	if (b.getString("error") != null) {
 	              		
-	              		sendingMsgDialog.dismiss();
+	              		if (sendingMsgDialog != null)
+	              		  sendingMsgDialog.dismiss();
 						
 						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
 			    		builder.setMessage("A problem occurred: " + b.getString("error"))
@@ -306,12 +319,15 @@ public class WriteMsg extends ListActivity {
 	              	
 	              	
 	        		//sendingMsgDialog.dismiss();
-					sendingMsgDialog.setCancelable(true);
-					sendingMsgDialog.setMessage("Message posted: " + b.get("circles"));
+					//sendingMsgDialog.setCancelable(true);
+	              	if (sendingMsgDialog != null)
+					  sendingMsgDialog.setMessage("Message posted: " + b.get("circles"));
 					
 					if (b.get("circle") != null) {
 						sendingDialogData.put((String) b.get("circle"), (String)b.get("status"));
-						sendingMsgDialog.setMessage(renderDialog(false));
+						
+						if (sendingMsgDialog != null)
+						 sendingMsgDialog.setMessage(renderDialog(false));
 					}
 					
 					
@@ -330,7 +346,8 @@ public class WriteMsg extends ListActivity {
 						}
 					}
 					if (finishedSending == true) {
-						sendingMsgDialog.dismiss();
+						if (sendingMsgDialog != null)
+						  sendingMsgDialog.dismiss();
 						
 						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
 			    		builder.setMessage("All messages sent successfully.")
