@@ -54,6 +54,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -307,7 +309,20 @@ public class muteswan extends Activity implements Runnable {
         //}
      
 	    
-	  
+        PackageInfo pinfo = null;
+        String versionNameString = null;
+		try {
+			pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+			versionNameString = pinfo.versionName;
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        
+        final TextView versionName = (TextView) findViewById(R.id.versionName);
+        if (versionNameString != null)
+          versionName.setText(versionNameString);
 	    
 		 
 		    

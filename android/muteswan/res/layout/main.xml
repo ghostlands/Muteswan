@@ -76,10 +76,20 @@
     </TableRow>
     
    
-     
  	
  			
  </TableLayout>	
+ 	
+    <TextView
+    android:id="@+id/versionName"
+    android:layout_width="wrap_content" 
+    android:layout_height="wrap_content" 
+    android:text="VERSION"
+    android:textSize="12sp"
+    android:layout_below="@id/mainLayoutTable"
+    android:layout_alignParentRight="true"
+    android:gravity="center"/>
+ 	
  	
  	
  	
@@ -186,6 +196,8 @@
       android:layout_alignParentBottom="true"
       android:text="Share Muteswan"    
     /> -->
+    
+    
     
  
 </RelativeLayout> 
