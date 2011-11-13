@@ -19,6 +19,7 @@ package org.muteswan.client.ui;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +48,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -320,6 +322,79 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
     };
     
+    
+    public static class RelativeDateFormat {
+
+    	 private static final long ONE_MINUTE = 60000L;
+    	 private static final long ONE_HOUR = 3600000L;
+    	 private static final long ONE_DAY = 86400000L;
+    	 private static final long ONE_WEEK = 604800000L;
+
+    	 public static String format(Date date) {
+
+    	  long delta = new Date().getTime() - date.getTime();
+    	  if (delta < 1L * ONE_MINUTE) {
+    	   return toSeconds(delta) == 1 ? "one second" : toSeconds(delta)
+    	     + " seconds ago";
+    	  }
+    	  if (delta < 2L * ONE_MINUTE) {
+    	   return "one minute";
+    	  }
+    	  if (delta < 45L * ONE_MINUTE) {
+    	   return toMinutes(delta) + " minutes";
+    	  }
+    	  if (delta < 90L * ONE_MINUTE) {
+    	   return "one hour";
+    	  }
+    	  if (delta < 24L * ONE_HOUR) {
+    	   return toHours(delta) + " hours";
+    	  }
+    	  if (delta < 48L * ONE_HOUR) {
+    	   return "yesterday";
+    	  }
+    	  if (delta < 5L * ONE_DAY) {
+    	   return toDays(delta) + " days";
+    	  }
+    	  /*
+    	  if (delta < 12L * 4L * ONE_WEEK) {
+    	   long months = toMonths(delta);
+    	   return months <= 1 ? "one month ago" : months + " months ago";
+    	  } else {
+    	   long years = toYears(delta);
+    	   return years <= 1 ? "one year ago" : years + " years ago";
+    	  }*/
+    	  return null;
+    	 }
+    	 
+
+    	 private static long toSeconds(long date) {
+    	  return date / 1000L;
+    	 }
+
+    	 private static long toMinutes(long date) {
+    	  return toSeconds(date) / 60L;
+    	 }
+
+    	 private static long toHours(long date) {
+    	  return toMinutes(date) / 60L;
+    	 }
+
+    	 private static long toDays(long date) {
+    	  return toHours(date) / 24L;
+    	 }
+
+    	 private static long toMonths(long date) {
+    	  return toDays(date) / 30L;
+    	 }
+
+    	 private static long toYears(long date) {
+    	  return toMonths(date) / 365L;
+    	 }
+
+    	}
+
+
+    
 	public class LatestMessagesListAdapter extends ArrayAdapter {
 
 		
@@ -405,14 +480,40 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  	txtCircle.setClickable(true);
       		  	txtCircle.setOnClickListener(showCircle);
 			  } else {
-				  layout.removeView(txtCircle);
+				  //txtCircle.setText(" ");
+				  //layout.removeView(txtCircle);
+				  txtCircle.setVisibility(View.INVISIBLE);
 			  }
       		//txtDate.setText("#"+msg.getId() + " " + msg.getDate());
-      		txtDate.setText(msg.getDate());
-      		
+      		//txtDate.setText(msg.getDate());
+              //DateFormat df = new DateFormat();
+              
+              
+              SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+              Date msgDate = null;
+             
+			try {
+				msgDate = df.parse(msg.getDate());
+				String dateString = RelativeDateFormat.format(msgDate);
+				 if (dateString != null) {
+					 txtDate.setText(dateString);
+				 } else {
+					 txtDate.setText(msg.getDate());
+				 }
+			} catch (ParseException e) {
+				txtDate.setText("Error parsing date");
+				
+			}
+              //RelativeDateFormat relativeDate = new RelativeDateFormat();
+              //relativeDate.format(msgDate);
+			 
+				 
+				 
+			
+			
+			 
+			 
       		  txtMessage.setText(msg.getMsg());
-
-      		  
       		  
       		  // not verifying signatures right now
       		  //String sigDataStr = "-- \n";
