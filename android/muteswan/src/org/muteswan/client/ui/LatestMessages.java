@@ -488,12 +488,13 @@ public class LatestMessages extends ListActivity implements Runnable {
       		//txtDate.setText(msg.getDate());
               //DateFormat df = new DateFormat();
               
-              
+              //We assume local time zone since we wrote the timestamp converted from GMT
               SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
               Date msgDate = null;
              
 			try {
 				msgDate = df.parse(msg.getDate());
+				Log.v("LatestMessages","MessageDate for " + msg.getId() + ": " + msg.getDate());
 				String dateString = RelativeDateFormat.format(msgDate);
 				 if (dateString != null) {
 					 txtDate.setText(dateString);

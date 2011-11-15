@@ -25,6 +25,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -455,10 +456,11 @@ public class Circle {
 		try {
 			Date d = format.parse(lastModified.getValue());
 			//date = d.getMonth()+1 + "/" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
-			SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-			//FIXME: hardcoded timezone!
-			//TimeZone tz = TimeZone.getTimeZone( "EDT" );
-	        //df.setTimeZone( tz );
+			SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss zzz" );
+			
+			Calendar cal = Calendar.getInstance();
+			TimeZone tz = cal.getTimeZone();
+	        df.setTimeZone( tz );
 	        date = df.format(d);
 		} catch (ParseException e) {
 			return(null);
