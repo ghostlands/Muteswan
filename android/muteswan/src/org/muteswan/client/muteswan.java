@@ -50,6 +50,7 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -184,26 +185,58 @@ public class muteswan extends Activity implements Runnable {
 	        		
 	        		   
 	        		  checkTorDialog.cancel();
+	        		  
+	        		  offerToStartTor();
 	        		
-	        		  AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
-	        		    noTorDialog.setTitle("Tor Unavailable");
-	        		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly. Only cached data will be available otherwise.");
-	        		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
-	        		      public void onClick(DialogInterface dialogInterface, int i) {
-	        		      //  Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
-	        		    	Intent intent = new Intent("org.torproject.android.START_TOR");
-	        		        startActivity(intent);
-	        		      }
-	        		    });
-	        		    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
-	        		      public void onClick(DialogInterface dialogInterface, int i) {}
-	        		    });
-	        		    noTorDialog.create();
-	        		    noTorDialog.show();
+	        		  
 
 	        		
 	        	   }
 	        }
+
+			private void offerToStartTor() {
+				AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
+    		    noTorDialog.setTitle("Tor Unavailable");
+    		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly. Only cached data will be available otherwise.");
+    		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
+    		      public void onClick(DialogInterface dialogInterface, int i) {
+    		      //  Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
+    		    	Intent intent = null;
+    		    	try {
+    		    	  intent = new Intent("org.torproject.android.START_TOR");
+    		    	  startActivity(intent);
+    		    	} catch (ActivityNotFoundException e) {
+    		    	  offerToInstallTor();
+    		          
+    		    	}
+    		      }
+    		    });
+    		    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
+    		      public void onClick(DialogInterface dialogInterface, int i) {}
+    		    });
+    		    noTorDialog.create();
+    		    noTorDialog.show();
+			}
+			
+			private void offerToInstallTor() {
+				AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
+    		    noTorDialog.setTitle("Install Tor?");
+    		    noTorDialog.setMessage("Tor is not currently installed. Do you want to install it from the market?");
+    		    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+    		      public void onClick(DialogInterface dialogInterface, int i) {
+    		        Uri uri = Uri.parse("market://search?q=pname:org.torproject.android");
+    		    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+    		        startActivity(intent);
+    		      }
+    		    });
+    		    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+    		      public void onClick(DialogInterface dialogInterface, int i) {}
+    		    });
+    		    noTorDialog.create();
+    		    noTorDialog.show();
+			}
+			
+			
 	 };
 	 
 	
