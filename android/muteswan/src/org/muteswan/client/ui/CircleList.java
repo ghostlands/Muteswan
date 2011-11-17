@@ -427,6 +427,7 @@ public class CircleList extends ListActivity {
 		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 		intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
 		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+		intent.putExtra("ENCODE_SHOW_CONTENTS", false);
 		startActivity(intent);
 	}
 

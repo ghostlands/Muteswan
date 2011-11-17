@@ -3,14 +3,23 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-<CheckBoxPreference android:title="New Message Notification" android:summary="Continually check for new messages in the background." android:key="backgroundMessageCheck"></CheckBoxPreference>
+<CheckBoxPreference android:title="New Message Service" android:summary="Continually check for new messages in the background." android:key="backgroundMessageCheck"></CheckBoxPreference>
 <!-- <ListPreference android:title="Check Interval" android:key="checkMsgInterval" android:entries="@array/msgcheckintervaldisplay" android:summary="Check messages at provided interval." android:entryValues="@array/msgcheckinterval"></ListPreference> -->
-<ListPreference android:title="Maximum Download" android:summary="Maximum amount of messages to download in the background server, per circle." android:key="numMsgDownload" android:entries="@array/nummsgdownloaddisplay" android:entryValues="@array/nummsgdownload"></ListPreference>
+<!--   <ListPreference android:title="Maximum Download" android:summary="Maximum amount of messages to download in the background server, per circle." android:key="numMsgDownload" android:entries="@array/nummsgdownloaddisplay" android:entryValues="@array/nummsgdownload"></ListPreference> -->
 
 
 <!--   <PreferenceCategory android:title="Always Check for Latest Messages"> -->
 <!--   <CheckBoxPreference android:title="Check for Latest" android:summary="Always check and download the latest messages when viewing." android:key="alwaysCheckLatest"></CheckBoxPreference> -->
 <!--  </PreferenceCategory> -->
+<EditTextPreference
+            android:key="defaultCreateCircleServer"
+	            android:title="Default Circle Server"
+	            android:summary="The server to use by default when creating new circles."
+	            android:defaultValue="@string/defaultcircleserver" />
+	 
+
+
+
 
 <CheckBoxPreference android:title="Verbose" android:summary="Show extra information during operations." android:key="verbose"></CheckBoxPreference> -->
 

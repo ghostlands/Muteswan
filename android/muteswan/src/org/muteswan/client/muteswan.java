@@ -18,6 +18,7 @@ package org.muteswan.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -46,10 +47,12 @@ import org.torproject.android.service.ITorService;
 import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -133,7 +136,7 @@ public class muteswan extends Activity implements Runnable {
 			
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
-		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
+		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
 		if (backgroundMessageCheck == true) {
 			Intent serviceIntent = new Intent(this,NewMessageService.class);
 			startService(serviceIntent);
@@ -176,8 +179,29 @@ public class muteswan extends Activity implements Runnable {
 	        @Override
 	        public void handleMessage(Message msg) {
 	        	   if (checkTorDialog != null) {
-	              	checkTorDialog.setMessage("Sorry, Tor is not available at this time. You will still be able to access old data but you will not be able to send messages or read new messages.");
-	              	checkTorDialog.setCancelable(true);
+	              	//checkTorDialog.setMessage("Sorry, Tor is not available at this time. You will still be able to access old data but you will not be able to send messages or read new messages.");
+	              	//checkTorDialog.setCancelable(true);
+	        		
+	        		   
+	        		  checkTorDialog.cancel();
+	        		
+	        		  AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
+	        		    noTorDialog.setTitle("Tor Unavailable");
+	        		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly. Only cached data will be available otherwise.");
+	        		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
+	        		      public void onClick(DialogInterface dialogInterface, int i) {
+	        		      //  Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
+	        		    	Intent intent = new Intent("org.torproject.android.START_TOR");
+	        		        startActivity(intent);
+	        		      }
+	        		    });
+	        		    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
+	        		      public void onClick(DialogInterface dialogInterface, int i) {}
+	        		    });
+	        		    noTorDialog.create();
+	        		    noTorDialog.show();
+
+	        		
 	        	   }
 	        }
 	 };
