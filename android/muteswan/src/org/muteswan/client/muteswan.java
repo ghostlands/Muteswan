@@ -200,7 +200,7 @@ public class muteswan extends Activity implements Runnable {
     		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly. Only cached data will be available otherwise.");
     		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
     		      public void onClick(DialogInterface dialogInterface, int i) {
-    		      //  Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
+    		      
     		    	Intent intent = null;
     		    	try {
     		    	  intent = new Intent("org.torproject.android.START_TOR");

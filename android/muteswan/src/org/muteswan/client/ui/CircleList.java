@@ -30,10 +30,12 @@ import org.apache.http.client.ClientProtocolException;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -326,7 +328,14 @@ public class CircleList extends ListActivity {
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",circleList[position].getFullText());;
-			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");;
+			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+			try {
+			  startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+		    	  offerToInstallBarcodeScanner();
+		          
+		    	}
+			return;
 	    } else if (action == SCAN) {
 	    	return;
 	    }
@@ -340,6 +349,25 @@ public class CircleList extends ListActivity {
 
 	}
 	
+	private void offerToInstallBarcodeScanner() {
+		AlertDialog.Builder noTorDialog = new AlertDialog.Builder(CircleList.this);
+	    noTorDialog.setTitle("Install BarcodeScanner?");
+	    noTorDialog.setMessage("BarcodeScanner is not currently installed. Do you want to install it from the market?");
+	    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	    	Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
+	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+	        startActivity(intent);
+	      }
+	    });
+	    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {}
+	    });
+	    noTorDialog.create();
+	    noTorDialog.show();
+		
+	}
+
 	public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
 			super.onCreateContextMenu(menu, v, menuInfo);
@@ -382,7 +410,11 @@ public class CircleList extends ListActivity {
         public void onClick( View v ) {
         	Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-	        startActivityForResult(intent, 0);
+	        try {
+	           startActivityForResult(intent, 0);
+	        } catch (ActivityNotFoundException e) {
+	        	offerToInstallBarcodeScanner();
+	        }
          }
      };
 	
