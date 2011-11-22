@@ -36,14 +36,17 @@ import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.MuteswanMessage;
 
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffColorFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -55,6 +58,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
@@ -82,6 +86,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private ProgressDialog gettingMsgsDialog;
 	
 	private HashMap<String, Integer> newMsgCheckState = new HashMap<String,Integer>();
+	private HashMap<String, String> newMsgCheckResults = new HashMap<String,String>();
 	
 	protected IMessageService newMsgService;
 	private ImageView spinneyIcon;
@@ -120,14 +125,20 @@ public class LatestMessages extends ListActivity implements Runnable {
 			if (lastInScreen == 0)
 				return;
 			
-			Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
+			//if (totalItemCount == 4) {
+			//	
+			//	Log.v("LatestMessages", "totalItemCount is 4.");
+			//	return;
+			//}
 			
-			if (lastInScreen == totalItemCount && newMsgCheckState.isEmpty()) {
-				Log.v("LatestMessages", "End of list.");
-				if (refreshing == false) {
-					messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
+			//Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
+			
+			if (lastInScreen == totalItemCount) {
+				Log.v("LatestMessages", "End of list: " + moreMessages);
+				if (moreMessages == false) {
 					moreMessages = true;
-					refresh();
+					messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
+					loadmore();
 				}
 				//messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
 				//refresh();
@@ -138,6 +149,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private boolean refreshing;
 	private boolean verbose;
 	private long previousRefreshTime = 0;
+	private long previousLoadMoreTime;
 	
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -174,8 +186,8 @@ public class LatestMessages extends ListActivity implements Runnable {
         postButton.setOnClickListener(postClicked);
         
         
-        final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
-        refreshButton.setOnClickListener(refreshClicked);
+        //final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
+        //refreshButton.setOnClickListener(refreshClicked);
         
 		messageViewCount = 0;
 		moreButtons = new HashMap<View,AlertDialog>();
@@ -217,7 +229,26 @@ public class LatestMessages extends ListActivity implements Runnable {
 		return true;
 		
 	}
+
 	
+	// loadmore loads more messages as we scroll down
+	private void loadmore() {
+		if (previousLoadMoreTime != 0 && ((System.currentTimeMillis()/1000) - previousLoadMoreTime) < 1) {
+			Log.v("LatestMessages", "Loadmore called within 1 second, not running.");
+			moreMessages = false;
+			return;
+		}
+		
+		Log.v("LatestMessages", "moreMessages at start of refresh(): " + moreMessages);
+		previousLoadMoreTime = System.currentTimeMillis()/1000;
+		Thread thread = new Thread(this);
+		thread.start();
+		
+
+	}
+	
+	
+	// refresh() checks for latest
 	private void refresh() {
 		
 		if (previousRefreshTime != 0 && ((System.currentTimeMillis()/1000) - previousRefreshTime) < 1) {
@@ -226,7 +257,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		}
 		
 		Log.v("LatestMessages", "Refreshing at start of refresh(): " + refreshing);
-		Log.v("LatestMessages", "moreMessages at start of refresh(): " + moreMessages);
 		refreshing = true;
 		previousRefreshTime = System.currentTimeMillis()/1000;
 		Thread thread = new Thread(this);
@@ -247,7 +277,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 		ranimnation = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 		ranimnation.setDuration((long) 2*1000);
 		ranimnation.setRepeatCount(RotateAnimation.INFINITE);
-		
+		final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
+		refreshButton.setOnClickListener(null);
 		spinneyIcon.startAnimation(ranimnation);
 	}
 	
@@ -319,6 +350,13 @@ public class LatestMessages extends ListActivity implements Runnable {
     		messageViewCount = 0;
     		messageList.clear();
     		refresh();
+    	}
+    };
+    
+    public View.OnClickListener showAlertDialog = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		alertDialog.create();
+    		alertDialog.show();
     	}
     };
     
@@ -561,29 +599,46 @@ public class LatestMessages extends ListActivity implements Runnable {
 		public void handleMessage(Message msg) {
 			Bundle b = msg.getData();
 			
+			
+			
 			Log.v("LatestMessages", "Setting circle to " + b.getString("circle") + " and state to " + b.getString("state"));
 			if (b.getString("circle") != null && b.getString("state") != null) {
 				Integer msgDelta = b.getInt("msgDelta");
 				if (!b.getString("state").equals("done"))
 				 newMsgCheckState.put(b.getString("circle"),-1);
+				 newMsgCheckResults.put(b.getString("circle"), b.getString("state"));
+				
+				 
+				 
+				 // if anything has failed we don't want to change the spinney state
+				 boolean someFailed = false;					
+				 for (String status : newMsgCheckResults.keySet()) {
+					if (newMsgCheckResults.get(status).equals("failed")) {
+						someFailed = true;
+						break;
+					}
+				}
+				 
 				
 				
-				
-				if (b.getString("state").equals("starting")) {
+				if (b.getString("state").equals("starting") && !someFailed) {
 					spinneyIcon.setImageResource(R.drawable.refresh_checking);
-				} else if (b.getString("state").equals("done")) {
-					newMsgCheckState.put(b.getString("circle"),msgDelta);;
+				} else if (b.getString("state").equals("done") && !someFailed) {
+					newMsgCheckState.put(b.getString("circle"),msgDelta);
 					spinneyIcon.setImageResource(R.drawable.refresh_downloading);
+				} else if(someFailed) {
+					newMsgCheckState.put(b.getString("circle"),0);
+					spinneyIcon.setImageResource(R.drawable.refresh_yellow);
 				}
 				if (gettingMsgsDialog != null) {
 					gettingMsgsDialog.setMessage(circleMap.get(b.getString("circle")).getShortname() + ": checking for new messages.");
 				}
 			}
 			
-			
-			
 		}
 	};
+	protected Builder alertDialog;
+	
 
 	final Handler dismissDialog = new Handler() {
 		
@@ -594,12 +649,94 @@ public class LatestMessages extends ListActivity implements Runnable {
         	  if (gettingMsgsDialog != null)
         	    gettingMsgsDialog.dismiss();
         	  if (spinneyIcon != null) {
-        		  spinneyIcon.setImageResource(R.drawable.refresh_done);
-        		  //ranimnation.cancel();
+        		  
+        		  boolean allFailed = true;
+        		  boolean someFailed = false;
+        		  Log.v("LatestMessages", "New message check is empty? " + newMsgCheckResults.isEmpty());
+        		  for (String status : newMsgCheckResults.keySet()) {
+        			  Log.v("LatestMessages", "checking state in dismiss dialog: " + newMsgCheckResults.get(status));
+        			  if (newMsgCheckResults.get(status).equals("done")) {
+        				  allFailed = false;
+        				  continue;
+        			  }
+        			  
+        			  if (newMsgCheckResults.get(status).equals("failed")) {
+        				  
+        				  someFailed = true;
+        				  continue;
+        			  }
+        			  
+        		  }
+        		  
+        		 
+        		  final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
+        		  if (allFailed == true) {
+        			  alertDialog = getAllFailedAlertDialog();
+        			  spinneyIcon.setImageResource(R.drawable.refresh_red);
+        			  refreshButton.setOnClickListener(showAlertDialog);
+        		  } else if (someFailed == true) {
+        			  spinneyIcon.setImageResource(R.drawable.refresh_yellow);
+        			  alertDialog = getSomeFailedAlertDialog();
+        			  refreshButton.setOnClickListener(showAlertDialog);
+        		  } else {
+        			  spinneyIcon.setImageResource(R.drawable.refresh_done);
+        			  refreshButton.setOnClickListener(refreshClicked);
+        		  }
+        		  
+        		  
+        		  //refreshButton.setOnClickListener(refreshClicked);
+        		  newMsgCheckResults.clear();
         		  spinneyIcon.setAnimation(null);
         	  }
         }
     };
+    
+    private AlertDialog.Builder getSomeFailedAlertDialog() {
+    	AlertDialog.Builder someFailedAlert = new AlertDialog.Builder(LatestMessages.this);
+    	
+    	
+    	String alertMessage = "Although some circles were updated, the following circles could not be contacted: \n";
+    	for (String status : newMsgCheckResults.keySet()) {
+    		if (newMsgCheckResults.get(status).equals("failed")) {
+    			// FIXME string painting
+    			alertMessage = alertMessage + " " + circleMap.get(status).getShortname() + "\n";
+    		}
+    	}
+    	
+	    someFailedAlert.setTitle("Some Errors Checking for Latest Messages");
+	    someFailedAlert.setMessage(alertMessage);
+	    someFailedAlert.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	        refresh();
+	      }
+	    });
+	    someFailedAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {}
+	    });
+	    
+	    return(someFailedAlert);
+    }
+    
+    private AlertDialog.Builder getAllFailedAlertDialog() {
+    	AlertDialog.Builder allFailedAlert = new AlertDialog.Builder(LatestMessages.this);
+    	
+    	
+    	String alertMessage = "No new messages were found or could be downloaded. This is usually due to network connectivity or problems with Tor. If this persists, you can restart Tor.";
+    	
+    	
+	    allFailedAlert.setTitle("Error Checking for Latest Messages");
+	    allFailedAlert.setMessage(alertMessage);
+	    allFailedAlert.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	        refresh();
+	      }
+	    });
+	    allFailedAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {}
+	    });
+	    
+	    return(allFailedAlert);
+    }
 	
     
     
@@ -613,20 +750,35 @@ public class LatestMessages extends ListActivity implements Runnable {
         }
     };
 	
+	
+    boolean sorting = false;
     
     final Handler sortMessageList = new Handler() {
 		
         @Override
         public void handleMessage(Message msg) {
-        		//listAdapter.sort(new CompareDates());
         		
-        		Collections.sort(messageList, comparatorDates);
+       	
+        		if (sorting == false) {
+        			sorting = true;
+        			
+        			Thread.currentThread();
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+        		
+        		    Collections.sort(messageList, comparatorDates);
+        		    listAdapter.notifyDataSetChanged();
+        		    
+        		    sorting = false;
+        		} else {
+        			Log.v("LatestMessages", "Concurrent sort request!");
+        		}
         		
         		
-        		Log.v("LatestMessages", "sortMessageList handler refreshing: " + refreshing);
-        		
-        		listAdapter.notifyDataSetChanged();
-        		refreshing = false;
         }
     };
 	
@@ -657,7 +809,7 @@ final Handler setSpinneyDownloading = new Handler() {
         	MuteswanMessage msg1 = (MuteswanMessage) obj1;
         	MuteswanMessage msg2 = (MuteswanMessage) obj2;
         	
-        	Log.v("LatestMessages", "Comparing " + msg1.getId() + " with " + msg2.getId());
+        	//Log.v("LatestMessages", "Comparing " + msg1.getId() + " with " + msg2.getId());
         	
         	SimpleDateFormat df = new SimpleDateFormat(
 					"yyyy-MM-dd HH:mm:ss");
@@ -697,7 +849,7 @@ final Handler setSpinneyDownloading = new Handler() {
 		Log.v("LatestMessages","circle " + r.getShortname());
 		
 		
-		Integer lastId = r.getLastMsgId();
+		Integer lastId = r.getLastCurMsgId();
 		
 		
 		Message m = new Message();
@@ -723,6 +875,7 @@ final Handler setSpinneyDownloading = new Handler() {
 				break;
 			MuteswanMessage msg = null;
 
+			Log.v("LatestMessages", "Reading message " + i + " moreMessages " + moreMessages + " refreshing " + refreshing);
 			msg = r.getMsgFromDb(i.toString());
 
 			if (msg == null) {
@@ -755,7 +908,7 @@ final Handler setSpinneyDownloading = new Handler() {
 				
 			} else {
 				msg.verifySignatures(idStore);
-				Log.v("LatestMessages", "Adding " + msg.getId());
+				//Log.v("LatestMessages", "Adding " + msg.getId());
 				msgs.add(0,msg);
 			}
 
@@ -790,12 +943,12 @@ final Handler setSpinneyDownloading = new Handler() {
 		}
 		
 		
-		// we are just loading more messages here, no need to check again. the user can use the refresh button
-		// for that
+		// we are just loading more messages here, no need to check for new messages and potentially download. 
 		if (moreMessages == true) {
 			Log.v("LatestMessages", "messageViewCount is " + messageViewCount);
-			dismissDialog.sendEmptyMessage(0);
-			sortMessageList.sendEmptyMessage(0);
+			//dismissDialog.sendEmptyMessage(0);
+			//if (refreshing == false)
+			  sortMessageList.sendEmptyMessage(0);
 			//dataSetChanged.sendEmptyMessage(0);
 			//refreshing = false;
 			moreMessages = false;
@@ -803,7 +956,7 @@ final Handler setSpinneyDownloading = new Handler() {
 		} else {
 			sortMessageList.sendEmptyMessage(0);
 			// AGHH FIXME please
-			refreshing = true;
+			//refreshing = true;
 			//dataSetChanged.sendEmptyMessage(0);
 		}
 		
@@ -863,12 +1016,13 @@ final Handler setSpinneyDownloading = new Handler() {
 		}
 	
 		
-		newMsgCheckState.clear();
+		
 		
 		dismissDialog.sendEmptyMessage(0);
+		//newMsgCheckState.clear();
 		sortMessageList.sendEmptyMessage(0);
 		//dataSetChanged.sendEmptyMessage(0);
-		//refreshing = false;
+		refreshing = false;
 
 		return (msgs);
 	}
@@ -885,6 +1039,7 @@ final Handler setSpinneyDownloading = new Handler() {
 			//Log.v("LatestMessages", "popFirstDoneMsgCheck circle is " + key + " and delta is " + delta);
 			if (delta != null &&  newMsgCheckState.get(key) != -1) {
 				newMsgCheckState.remove(key);
+				
 				retVal[0] = circle;
 				retVal[1] = delta;
 				return retVal;
@@ -947,19 +1102,28 @@ final Handler setSpinneyDownloading = new Handler() {
 		
         		Integer prevLastMsgId = circle.getLastMsgId();
         		Integer lastMsg = circle.getLastTorMessageId();
-        		if (lastMsg != null ) {
+        		if (lastMsg != null && lastMsg != 0) {
         			circle.updateLastMessage(lastMsg);
+        			Integer delta = lastMsg - prevLastMsgId;
+        			Message m2 = Message.obtain();
+        			Bundle b2 = new Bundle();
+        			Log.v("LatestMessages","Circle has last message of: " + circle.getLastCurMsgId() + " and delta of " + delta);
+        			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        			b2.putString("state", "done");
+        			b2.putInt("msgDelta", delta);
+        			m2.setData(b2);
+        			newMsgCheckEventHandler.sendMessage(m2);
+        		} else {
+        			Message m2 = Message.obtain();
+        			Bundle b2 = new Bundle();
+        			Log.v("LatestMessages","Circle failed to get last message: " + circle.getShortname());
+        			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        			b2.putString("state", "failed");
+        			m2.setData(b2);
+        			newMsgCheckEventHandler.sendMessage(m2);
+        			
         		}
         		
-        		Integer delta = lastMsg - prevLastMsgId;
-        		Message m2 = Message.obtain();
-        		Bundle b2 = new Bundle();
-        		Log.v("LatestMessages","Circle has last message of: " + circle.getLastMsgId() + " and delta of " + delta);
-        		b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
-        		b2.putString("state", "done");
-        		b2.putInt("msgDelta", delta);
-        		m2.setData(b2);
-        		newMsgCheckEventHandler.sendMessage(m2);
         		
         	}
         };

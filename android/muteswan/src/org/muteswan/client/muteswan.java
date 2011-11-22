@@ -389,6 +389,7 @@ public class muteswan extends Activity implements Runnable {
     	
     	if (checkTorDialog == null) {
     	  checkTorDialog = ProgressDialog.show(this, "", "Verifying secure connection to Tor network..", true);
+    	  checkTorDialog.setCancelable(true);
     	}
 	}
 

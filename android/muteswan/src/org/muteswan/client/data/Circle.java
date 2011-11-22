@@ -172,12 +172,12 @@ public class Circle {
 		this.keyHash = muteswan.genHexHash(key);
 		this.context = context;
 		initHttp();
-		this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
+		//this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
 		
 	    muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
 		
-	    initManifest();
+	    //initManifest();
 	    
 		//this.add(newCircle);
 	}
@@ -190,16 +190,25 @@ public class Circle {
 		this.context = context;
 
 		this.keyHash = muteswan.genHexHash(key);
-		this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
+		//this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
 	    muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
-	    initManifest();
+	    //initManifest();
 	}
+	
+	
+	
+	public Circle.OpenHelper getOpenHelper() {
+		if (this.openHelper == null)
+			this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
+		return(this.openHelper);
+	}
+	
 	
 	
 	private void initManifest() {
 		String circleHash = muteswan.genHexHash(getFullText());
-		SQLiteDatabase db = this.openHelper.getWritableDatabase();
+		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase();
 		
 		Cursor cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "description" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getString(0) != null) {
@@ -327,18 +336,13 @@ public class Circle {
 	 */
 	public Integer getLastMsgId() {
 		
-		//if (curLastMsgId != null && curLastMsgId != 0) {
-        // 	return(curLastMsgId);
-		//}
-		
 		String circleHash = muteswan.genHexHash(getFullText());
-		SQLiteDatabase db = this.openHelper.getWritableDatabase();
+		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
 
 		Integer lastMessageId = null;
 		
 		
-		
-		
+
 		Cursor cursor = db.query(Circle.OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { circleHash }, null, null, "lastMessage desc" );
 		if (cursor.moveToFirst()) {
 			lastMessageId = cursor.getInt(0);
@@ -347,8 +351,14 @@ public class Circle {
 		db.close();
 				
 
-		
+		curLastMsgId = lastMessageId;
 		return(lastMessageId);
+	}
+	
+	public Integer getLastCurMsgId() {
+		if (curLastMsgId == 0)
+			curLastMsgId = getLastMsgId();
+		return(curLastMsgId);
 	}
 	
 	

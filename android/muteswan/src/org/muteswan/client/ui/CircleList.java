@@ -115,8 +115,10 @@ public class CircleList extends ListActivity {
         extra = getIntent().getExtras();
         action = extra.getInt("action");
         initialText = extra.getString("initialText");
-        
+     
+        Log.v("CircleList", "Before CircleStore constructor.");
     	store = new CircleStore(this,true);
+    	Log.v("CircleList", "After CircleStore constructor.");
 
         setContentView(R.layout.circlelist);
         

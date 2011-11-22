@@ -102,7 +102,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	
 	  final public void deleteCircle(Circle circle) {
 		  SQLiteDatabase db = openHelper.getWritableDatabase();
-		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + openHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
+		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
 		  delete.bindString(1, circle.getKey());
 		  delete.bindString(2, circle.getShortname());
 		  delete.bindString(3, circle.getServer());
@@ -110,11 +110,11 @@ final public class CircleStore extends LinkedList<Circle> {
 		  db.close();
 		  
 		  
-		  SQLiteDatabase rdb = circle.openHelper.getWritableDatabase();
+		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase();
 		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
 		  delete.bindString(1, muteswan.genHexHash(circle.getFullText()));
 		  delete.execute();
-		  circle.openHelper.deleteData(rdb);
+		  circle.getOpenHelper().deleteData(rdb);
 		  rdb.close();
 	  }
 	
@@ -179,7 +179,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  insrt.execute();
 		  db.close();
 		  
-		  SQLiteDatabase rdb = circle.openHelper.getWritableDatabase();
+		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase();
 		  //muteswan.genHexHash(circle.getFullText()));
  		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 		  insert.bindString(1,muteswan.genHexHash(circle.getFullText()));
