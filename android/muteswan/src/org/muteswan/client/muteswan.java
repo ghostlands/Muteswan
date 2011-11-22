@@ -267,10 +267,10 @@ public class muteswan extends Activity implements Runnable {
 	     // torStatus.checkView(postButton);
 
 		 
-		 if (alreadyCheckedTor == false) {
+		 //if (alreadyCheckedTor == false) {
 		   showCheckTorDialog();
-		   alreadyCheckedTor = true;
-		 }
+		 //  alreadyCheckedTor = true;
+		 //}
 			
 	        
 	 }

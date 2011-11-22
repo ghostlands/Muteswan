@@ -73,7 +73,7 @@ import android.widget.TextView;
 
 public class LatestMessages extends ListActivity implements Runnable {
 
-	protected static final int MSGDOWNLOADAMOUNT = 5;
+	protected static final int MSGDOWNLOADAMOUNT = 7;
 	private Bundle extra;
 	private String circleExtra;
 	private CircleStore store;
@@ -98,6 +98,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public void onResume() {
 		super.onResume();
+		//init();
 		messageViewCount = 0;
 		messageList.clear();
 		refresh();
@@ -152,18 +153,24 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private long previousLoadMoreTime;
 	
 	
-	public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-       
-
-        store = new CircleStore(this,true);
+	private void init() {
+		store = new CircleStore(this,true);
 		circleMap = store.asHashMap();
 		idStore = new IdentityStore(this);
         
         extra = getIntent().getExtras();
         if (extra != null) 
          circleExtra = extra.getString("circle");
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+       
+        
+        init();
+
+        
          
         setContentView(R.layout.latestmessages);
 
@@ -707,6 +714,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 	    someFailedAlert.setMessage(alertMessage);
 	    someFailedAlert.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
+	    	messageViewCount = 0;
+	  		messageList.clear();
 	        refresh();
 	      }
 	    });
@@ -728,6 +737,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 	    allFailedAlert.setMessage(alertMessage);
 	    allFailedAlert.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
+	    	messageViewCount = 0;
+	  		messageList.clear();
 	        refresh();
 	      }
 	    });
@@ -791,11 +802,29 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
     };
     
-final Handler setSpinneyDownloading = new Handler() {
+    final Handler setSpinneyDownloading = new Handler() {
     	
     	@Override
     	public void handleMessage(Message msg) {
     		spinneyIcon.setImageResource(R.drawable.refresh_downloading);
+    	}
+    };
+    
+    final Handler startSpinningHandler = new Handler() {
+    	
+    	@Override
+    	public void handleMessage(Message msg) {
+    		spinIcon();
+    		
+    	}
+    };
+    
+final Handler stopSpinningHandler = new Handler() {
+    	
+    	@Override
+    	public void handleMessage(Message msg) {
+    		spinneyIcon.setAnimation(null);
+    		spinneyIcon.setImageResource(R.drawable.refresh_done);
     	}
     };
 	
@@ -887,6 +916,11 @@ final Handler setSpinneyDownloading = new Handler() {
 					m.setData(b);
 					updateDialogText.sendMessage(m);
 					setSpinneyDownloading.sendEmptyMessage(0);
+					
+					// start spinning if we are not refreshing to give visual indication
+					if (!refreshing)
+						startSpinningHandler.sendEmptyMessage(0);
+					//BOOK
 					msg = r.getMsgFromTor(i.toString());
 					if (msg != null && msg.signatures[0] != null) {
 						r.saveMsgToDb(i, msg.getDate(), msg.getMsg(),
@@ -905,6 +939,10 @@ final Handler setSpinneyDownloading = new Handler() {
 				
 				msg.verifySignatures(idStore);
 				msgs.add(0,msg);
+				
+				// stop spinning if we are not refreshing to show we are done
+				if (!refreshing)
+					stopSpinningHandler.sendEmptyMessage(0);
 				
 			} else {
 				msg.verifySignatures(idStore);
@@ -993,11 +1031,15 @@ final Handler setSpinneyDownloading = new Handler() {
 			String[] circleNewMsgs = popFirstDoneMsgCheck();
 			
 			if (circleNewMsgs != null) {
-				Log.v("LatestMessages", "CurCircle is " + circleNewMsgs[0] + " and delta is " + circleNewMsgs[1]);
+				
+				Integer msgDelta = Integer.parseInt(circleNewMsgs[1]);
+				if (msgDelta >= LatestMessages.MSGDOWNLOADAMOUNT)
+					msgDelta = LatestMessages.MSGDOWNLOADAMOUNT;
+				Log.v("LatestMessages", "CurCircle is " + circleNewMsgs[0] + " and delta is " + msgDelta);
 				//dataSetChanged.sendEmptyMessage(0);
-				if (Integer.parseInt(circleNewMsgs[1]) != 0) {
-				  Log.v("LatestMessages", "Update latest messages because delta is " + circleNewMsgs[1] + " first is " + first);
-				  updateLatestMessages(msgs, store.asHashMap().get(circleNewMsgs[0]), 0, Integer.parseInt(circleNewMsgs[1]));
+				if (msgDelta != 0) {
+				  Log.v("LatestMessages", "Update latest messages because delta is " + msgDelta + " first is " + first);
+				  updateLatestMessages(msgs, store.asHashMap().get(circleNewMsgs[0]), 0, msgDelta);
 				  dataSetChanged.sendEmptyMessage(0);
 				}
 				
@@ -1019,7 +1061,7 @@ final Handler setSpinneyDownloading = new Handler() {
 		
 		
 		dismissDialog.sendEmptyMessage(0);
-		//newMsgCheckState.clear();
+		newMsgCheckState.clear();
 		sortMessageList.sendEmptyMessage(0);
 		//dataSetChanged.sendEmptyMessage(0);
 		refreshing = false;
@@ -1060,6 +1102,17 @@ final Handler setSpinneyDownloading = new Handler() {
 		
 
 		final int start = messageViewCount;
+		
+		
+		// wait for initialization to settle
+		Thread.currentThread();
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		getLatestMessages(messageList, start,LatestMessages.MSGDOWNLOADAMOUNT);
 	
 		

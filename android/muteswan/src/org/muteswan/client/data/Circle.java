@@ -210,6 +210,8 @@ public class Circle {
 		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase();
 		
+	
+		
 		Cursor cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "description" }, null, null, null );
 		if (cursor.moveToFirst() && cursor.getString(0) != null) {
 			setDescription(cursor.getString(0));
@@ -394,8 +396,8 @@ public class Circle {
 		
 		String circleHash = muteswan.genHexHash(this.getFullText());
 		
-		SQLiteDatabase db = openHelper.getReadableDatabase();
-		
+		SQLiteDatabase db = getOpenHelper().getReadableDatabase();
+
 		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
 		if (cursor.moveToFirst()) {
 			String date = cursor.getString(0);
