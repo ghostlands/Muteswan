@@ -73,7 +73,7 @@ import android.widget.TextView;
 
 public class LatestMessages extends ListActivity implements Runnable {
 
-	protected static final int MSGDOWNLOADAMOUNT = 7;
+	protected static final int MSGDOWNLOADAMOUNT = 5;
 	private Bundle extra;
 	private String circleExtra;
 	private CircleStore store;
@@ -101,6 +101,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 		//init();
 		messageViewCount = 0;
 		messageList.clear();
+		
+		
 		refresh();
 		
 	}
@@ -210,8 +212,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         
        
         
-        
-
+        //refresh();
         
     }
 	
@@ -611,11 +612,14 @@ public class LatestMessages extends ListActivity implements Runnable {
 			Log.v("LatestMessages", "Setting circle to " + b.getString("circle") + " and state to " + b.getString("state"));
 			if (b.getString("circle") != null && b.getString("state") != null) {
 				Integer msgDelta = b.getInt("msgDelta");
-				if (!b.getString("state").equals("done"))
+				//if (!b.getString("state").equals("done"))
 				 newMsgCheckState.put(b.getString("circle"),-1);
-				 newMsgCheckResults.put(b.getString("circle"), b.getString("state"));
 				
-				 
+				newMsgCheckResults.put(b.getString("circle"), b.getString("state"));
+				
+				if ((b.getString("state").equals("failed") || b.getString("state").equals("done")) 
+						&& msgDelta != null && msgDelta >= 0)
+				 newMsgCheckState.put(b.getString("circle"),msgDelta);
 				 
 				 // if anything has failed we don't want to change the spinney state
 				 boolean someFailed = false;					
@@ -631,12 +635,15 @@ public class LatestMessages extends ListActivity implements Runnable {
 				if (b.getString("state").equals("starting") && !someFailed) {
 					spinneyIcon.setImageResource(R.drawable.refresh_checking);
 				} else if (b.getString("state").equals("done") && !someFailed) {
-					newMsgCheckState.put(b.getString("circle"),msgDelta);
+					
 					spinneyIcon.setImageResource(R.drawable.refresh_downloading);
-				} else if(someFailed) {
-					newMsgCheckState.put(b.getString("circle"),0);
+				} 
+				
+				if(someFailed) {
+					//newMsgCheckState.put(b.getString("circle"),0);
 					spinneyIcon.setImageResource(R.drawable.refresh_yellow);
 				}
+				
 				if (gettingMsgsDialog != null) {
 					gettingMsgsDialog.setMessage(circleMap.get(b.getString("circle")).getShortname() + ": checking for new messages.");
 				}
@@ -1160,7 +1167,7 @@ final Handler stopSpinningHandler = new Handler() {
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
-        			Log.v("LatestMessages","Circle has last message of: " + circle.getLastCurMsgId() + " and delta of " + delta);
+        			Log.v("LatestMessages","Circle " + muteswan.genHexHash(circle.getFullText()) + " has last message of: " + circle.getLastCurMsgId() + " and delta of " + delta);
         			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
         			b2.putString("state", "done");
         			b2.putInt("msgDelta", delta);
