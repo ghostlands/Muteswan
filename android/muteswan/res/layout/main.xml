@@ -18,7 +18,7 @@
     
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="fill_parent"
     android:gravity="top"
     android:padding="15sp"
     android:id="@+id/mainLayoutTable" >
@@ -43,10 +43,9 @@
     android:id="@+id/logoView"
     android:src="@drawable/wordmark"
     android:gravity="top"
-   
     android:layout_gravity="top"/>   
     
-    <TableRow android:gravity="center" >
+    <TableRow android:gravity="center" android:padding="5sp" >
       
        <ImageView android:id="@+id/mLatestMessages"
     		android:text="All Posts"
@@ -58,6 +57,7 @@
  			android:maxHeight="100sp"
  			android:minHeight="70sp"
  			android:gravity="center"
+ 			android:background="@drawable/imageborder"
  			android:src="@drawable/posts"
     		/>
     </TableRow>
@@ -72,6 +72,7 @@
  			android:maxHeight="100sp"
  			android:minHeight="70sp"
  			android:gravity="center"
+ 			android:background="@drawable/imageborder"
  			android:src="@drawable/circles"
            />	
     		 
