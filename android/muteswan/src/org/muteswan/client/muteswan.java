@@ -75,6 +75,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -322,7 +323,7 @@ public class muteswan extends Activity implements Runnable {
         
 
   	   
-        final Button mLatestMessagesButton = (Button) findViewById(R.id.mLatestMessages);
+        final ImageView mLatestMessagesButton = (ImageView) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
        
@@ -338,7 +339,7 @@ public class muteswan extends Activity implements Runnable {
 		//shareMuteswanButton.setOnClickListener(shareMuteswanButtonClicked);
         
        
-        final Button mManageCirclesButton = (Button) findViewById(R.id.mManageCircles);
+        final ImageView mManageCirclesButton = (ImageView) findViewById(R.id.mManageCircles);
         mManageCirclesButton.setOnClickListener(mManageCircles);
         
         //final Button mReadMsgsButton = (Button) findViewById(R.id.mReadMsgs);

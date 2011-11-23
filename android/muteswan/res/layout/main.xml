@@ -48,7 +48,7 @@
     
     <TableRow android:gravity="center" >
       
-       <Button android:id="@+id/mLatestMessages"
+       <ImageView android:id="@+id/mLatestMessages"
     		android:text="All Posts"
     		android:textSize="14sp"
     		android:layout_width="wrap_content"
@@ -58,9 +58,11 @@
  			android:maxHeight="100sp"
  			android:minHeight="70sp"
  			android:gravity="center"
+ 			android:src="@drawable/posts"
     		/>
-    	
-    	  <Button android:id="@+id/mManageCircles"
+    </TableRow>
+    <TableRow android:gravity="center" >
+    	  <ImageView android:id="@+id/mManageCircles"
  			android:text="Circles"
     		android:textSize="14sp"
  			android:layout_width="wrap_content" 
@@ -70,6 +72,7 @@
  			android:maxHeight="100sp"
  			android:minHeight="70sp"
  			android:gravity="center"
+ 			android:src="@drawable/circles"
            />	
     		 
       
