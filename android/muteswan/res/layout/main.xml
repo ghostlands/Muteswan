@@ -26,7 +26,14 @@
 
     
     
-    
+    <TableRow android:gravity="center" android:padding="5sp">
+    <TextView
+      android:layout_width="wrap_content" 
+      android:layout_height="40sp" 
+      android:text=""
+      android:textSize="24sp"
+      android:gravity="center"/>
+   </TableRow> 
     
     
     <!--   <EditText android:text="@+id/EditText01" android:id="@+id/EditText01" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText> -->
@@ -37,13 +44,25 @@
          android:layout_width="fill_parent" 
          android:layout_height="wrap_content" 
          /> -->
+         
+    <!--  <TableRow android:gravity="center" android:padding="5sp"> -->
           <ImageView
     android:layout_height="120sp"
     android:layout_width="120sp"
     android:id="@+id/logoView"
     android:src="@drawable/wordmark"
     android:gravity="top"
-    android:layout_gravity="top"/>   
+    android:layout_gravity="bottom"/>
+    <!--  </TableRow> -->
+   
+   <TableRow android:gravity="center" android:padding="5sp">
+    <TextView  
+      android:layout_width="wrap_content" 
+      android:layout_height="60sp" 
+      android:text=""
+      android:textSize="24sp"
+      android:gravity="center"/>
+   </TableRow>
     
     <TableRow android:gravity="center" android:padding="5sp" >
       

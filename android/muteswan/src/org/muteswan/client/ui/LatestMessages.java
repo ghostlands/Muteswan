@@ -719,7 +719,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     	
 	    someFailedAlert.setTitle("Some Errors Checking for Latest Messages");
 	    someFailedAlert.setMessage(alertMessage);
-	    someFailedAlert.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+	    someFailedAlert.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	    	messageViewCount = 0;
 	  		messageList.clear();
@@ -742,7 +742,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     	
 	    allFailedAlert.setTitle("Error Checking for Latest Messages");
 	    allFailedAlert.setMessage(alertMessage);
-	    allFailedAlert.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+	    allFailedAlert.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	    	messageViewCount = 0;
 	  		messageList.clear();
