@@ -6,235 +6,80 @@
     android:background="#24282b" android:gravity="top"> 
     
     
-   <!--   <TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="muteswan"
-    android:textSize="24sp"
-    android:gravity="center"
-    
-    /> -->
+ 
     
     
-    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="top"
     android:padding="15sp"
+    
     android:id="@+id/mainLayoutTable" >
     
+    <ImageView
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:id="@+id/logoView"
+    android:paddingTop="40sp"
+    android:paddingBottom="40sp"
+    android:src="@drawable/wordmark"
+    android:gravity="bottom|center"
+    android:layout_gravity="bottom"/>
+
 
     
-    
-    <TableRow android:gravity="center" android:padding="5sp">
-    <TextView
-      android:layout_width="wrap_content" 
-      android:layout_height="40sp" 
-      android:text=""
-      android:textSize="24sp"
-      android:gravity="center"/>
-   </TableRow> 
-    
-    
-    <!--   <EditText android:text="@+id/EditText01" android:id="@+id/EditText01" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText> -->
-    
-    
-    <!--   <ListView  
-         android:id="@android:id/list"
-         android:layout_width="fill_parent" 
-         android:layout_height="wrap_content" 
-         /> -->
-         
-    <!--  <TableRow android:gravity="center" android:padding="5sp"> -->
-          <ImageView
-    android:layout_height="120sp"
-    android:layout_width="120sp"
-    android:id="@+id/logoView"
-    android:src="@drawable/wordmark"
-    android:gravity="top"
-    android:layout_gravity="bottom"/>
-    <!--  </TableRow> -->
+  
    
-   <TableRow android:gravity="center" android:padding="5sp">
-    <TextView  
-      android:layout_width="wrap_content" 
-      android:layout_height="60sp" 
-      android:text=""
-      android:textSize="24sp"
-      android:gravity="center"/>
-   </TableRow>
-    
-    <TableRow android:gravity="center" android:padding="5sp" >
-      
        <ImageView android:id="@+id/mLatestMessages"
     		android:text="All Posts"
     		android:textSize="14sp"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content" 
-    		android:minWidth="120sp"
- 			android:maxWidth="140sp"
- 			android:maxHeight="100sp"
- 			android:minHeight="70sp"
+    		android:layout_centerInParent="true"
  			android:gravity="center"
  			android:background="@drawable/imageborder"
+ 			android:layout_below="@id/logoView"
  			android:src="@drawable/posts"
     		/>
-    </TableRow>
-    <TableRow android:gravity="center" >
+    		
+    		
+    		 <TextView android:id="@+id/imageSeparator" android:text="" 
+    		 android:layout_below="@id/mLatestMessages"  
+    		 
+    		 android:layout_width="wrap_content" 
+    		 android:layout_height="10sp"/>
+    	
     	  <ImageView android:id="@+id/mManageCircles"
  			android:text="Circles"
     		android:textSize="14sp"
  			android:layout_width="wrap_content" 
  			android:layout_height="wrap_content"
- 			android:minWidth="120sp"
- 			android:maxWidth="140sp"
- 			android:maxHeight="100sp"
- 			android:minHeight="70sp"
+ 		    android:layout_centerInParent="true"
+ 		    
  			android:gravity="center"
+ 			android:layout_below="@id/imageSeparator"
  			android:background="@drawable/imageborder"
  			android:src="@drawable/circles"
-           />	
-    		 
+           />
+    		
+   
       
-    </TableRow>
-   <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:gravity="center|bottom">
+   
     <TextView
      android:id="@+id/versionName"
      android:layout_width="wrap_content"
      android:layout_height="40sp"
      android:text="VERSION"
      android:textSize="12sp"
-     android:layout_below="@id/mainLayoutTable"
+   
      android:layout_alignParentRight="true"
      android:layout_alignParentBottom="true"
      android:textColor="#ffffffff"
      android:gravity="bottom|center"
      />
-    </TableRow>
- 	
- 			
- </TableLayout>	
- 	
-   <!--   <TextView
-    android:id="@+id/versionName"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="VERSION"
-    android:textSize="12sp"
-    android:layout_below="@id/mainLayoutTable"
-    android:layout_alignParentRight="true"
-    android:layout_alignParentBottom="true"
-    android:textColor="#ffffffff"
-    android:gravity="bottom"
-    />-->
- 	
- 	
- 	
- 	
+   </RelativeLayout>
 
- 
- 
- <!--  
- 	<TableLayout
- 	xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_below="@id/logoView"
-    android:gravity="center"
-    android:paddingLeft="20sp"
-    android:paddingRight="20sp"
-    android:id="@+id/circleCmdsTable"
- 	>
- 	
- 	<TableRow>
- 	
- 	<Button android:id="@+id/mReadMsgs"
- 			android:text="Read" 
- 			android:layout_height="fill_parent"
- 			android:layout_width="fill_parent" />
- 	
- 	 <Button android:id="@+id/mWriteMsg"
-    		android:textSize="14sp"
- 			android:text="Post" 
- 			android:layout_width="fill_parent" 
- 			android:layout_height="fill_parent" /> 
- 	
- 	
- 	    <Button android:id="@+id/mScan" 
-    		android:text="Scan"
-    		android:textSize="14sp"
-    		android:layout_width="fill_parent"
-    		android:layout_height="fill_parent" />
-    	<Button android:id="@+id/mShare"
- 			android:text="Share" 
- 			android:textSize="14sp"
- 			android:layout_width="fill_parent" 
- 			android:layout_height="fill_parent"
- 			 />    
-  
-    
-    	  
- 	 	  <Button android:id="@+id/mCreateCircle"
- 			android:text="New" 
- 			android:textSize="14sp"
- 			android:layout_width="wrap_content" 
- 			android:layout_height="wrap_content" />
- 			 			
-  </TableRow>
-    
-        <TableRow>
-    
-    	  <Button android:id="@+id/mCreateIdentity"
- 			android:text="Create Identity"
- 			android:textSize="14sp"
- 			android:layout_width="fill_parent"
- 			android:layout_height="fill_parent"
- 			 />
- 			 
- 	 	  <Button android:id="@+id/mIdentities"
- 			android:text="Identities"
- 			android:textSize="14sp"
- 			android:layout_width="wrap_content"
- 			android:layout_height="wrap_content"/>  
-    </TableRow>  
-    
-    
-    </TableLayout> -->
- 
-
- 
- 
-  <!--  <Button
-      android:id="@+id/panicButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentRight="true"
-      android:layout_alignParentLeft="false"
-      android:layout_alignParentTop="false"
-      android:layout_alignParentBottom="true"
-      android:text="Panic!"    
-    />
-    
-    <Button
-      android:id="@+id/shareOrbotButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentRight="false"
-      android:layout_alignParentLeft="true"
-      android:layout_alignParentTop="false"
-      android:layout_alignParentBottom="true"
-      android:text="Share Orbot"    
-    />
-    
-    <Button
-      android:id="@+id/shareMuteswanButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_toRightOf="@id/shareOrbotButton"
-      android:layout_alignParentBottom="true"
-      android:text="Share Muteswan"    
-    /> -->
-    
     
     
  

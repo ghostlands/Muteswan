@@ -129,7 +129,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 				return;
 			
 			
-			
 			Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
 			
 			if (lastInScreen == totalItemCount) {
