@@ -128,9 +128,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 			if (lastInScreen == 0)
 				return;
 			
+			if (firstVisibleItem == 0)
+				return;
 			
-			Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
 			
+			//Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
 			if (lastInScreen == totalItemCount) {
 				Log.v("LatestMessages", "End of list: " + moreMessages);
 				if (moreMessages == false) {
@@ -141,7 +143,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 				//messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
 				//refresh();
 			}
-			
 		}
 	};
 	private boolean refreshing;
@@ -1157,7 +1158,7 @@ final Handler stopSpinningHandler = new Handler() {
 		
         		Integer prevLastMsgId = circle.getLastMsgId();
         		Integer lastMsg = circle.getLastTorMessageId();
-        		if (lastMsg != null && lastMsg != 0) {
+        		if (lastMsg != null && lastMsg >= 0) {
         			circle.updateLastMessage(lastMsg);
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();

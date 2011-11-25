@@ -45,6 +45,7 @@ public class MuteswanHttp {
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
         HttpProtocolParams.setContentCharset(params, "UTF-8");
         HttpProtocolParams.setUseExpectContinue(params,false);
+        params.setIntParameter("http.socket.timeout", 45000);
 
         ClientConnectionManager	ccm = new MyThreadSafeClientConnManager(params,
                     supportedSchemes);

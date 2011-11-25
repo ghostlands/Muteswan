@@ -503,23 +503,26 @@ public class Circle {
     	return(msg);
 	}
 
+	
+	// returns 0 or greater on success, -1 and -2 on failure
 	public Integer getLastTorMessageId() {
 	  
 		
 	   HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
 	   try {
 	    HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+	    
 	    Header lastMessage = resp.getFirstHeader("Last-Message");
 	    
 	    if (lastMessage == null) {
-	    	Log.v("LatestMessages","lastMessage header is null!");
+	    	Log.v("LatestMessages","lastMessage header is null, indicates no messages posted yet.");
 	    	return 0;
 	    }
 	    
 	    Log.v("LatestMessages","lastmessage: " + lastMessage.getValue());
 	    Integer result = Integer.parseInt(lastMessage.getValue());
 	    if (result == null)
-	    	return 0;
+	    	return -1;
 	    	
 		return(result);
 
@@ -530,7 +533,7 @@ public class Circle {
 		// TODO Auto-generated catch block
 	}
 	
-	return(0);
+	return(-1);
 	
 	}
 	
@@ -866,7 +869,7 @@ public class Circle {
 	}
 	
 	public void updateLastMessage(Integer curIndex) {
-		if (curIndex == null || curIndex == 0)
+		if (curIndex == null || curIndex < 0)
 			return;
 		else {
 			curLastMsgId = curIndex;
