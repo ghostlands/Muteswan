@@ -97,13 +97,25 @@
     		 
       
     </TableRow>
-    
-   
+   <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:gravity="center|bottom">
+    <TextView
+     android:id="@+id/versionName"
+     android:layout_width="wrap_content"
+     android:layout_height="40sp"
+     android:text="VERSION"
+     android:textSize="12sp"
+     android:layout_below="@id/mainLayoutTable"
+     android:layout_alignParentRight="true"
+     android:layout_alignParentBottom="true"
+     android:textColor="#ffffffff"
+     android:gravity="bottom|center"
+     />
+    </TableRow>
  	
  			
  </TableLayout>	
  	
-    <TextView
+   <!--   <TextView
     android:id="@+id/versionName"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -114,7 +126,7 @@
     android:layout_alignParentBottom="true"
     android:textColor="#ffffffff"
     android:gravity="bottom"
-    />
+    />-->
  	
  	
  	

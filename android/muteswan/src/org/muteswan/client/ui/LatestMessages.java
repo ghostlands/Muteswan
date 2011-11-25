@@ -128,13 +128,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 			if (lastInScreen == 0)
 				return;
 			
-			//if (totalItemCount == 4) {
-			//	
-			//	Log.v("LatestMessages", "totalItemCount is 4.");
-			//	return;
-			//}
 			
-			//Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
+			
+			Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
 			
 			if (lastInScreen == totalItemCount) {
 				Log.v("LatestMessages", "End of list: " + moreMessages);
