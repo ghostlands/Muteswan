@@ -96,7 +96,7 @@ public class NewMessageService extends Service {
 		
 		checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
 		
-		int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
+		//int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
 		
 		//AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		//alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
@@ -202,6 +202,8 @@ public class NewMessageService extends Service {
 		
 		
 		notify.flags |= Notification.FLAG_AUTO_CANCEL;
+		notify.defaults |= Notification.DEFAULT_SOUND;
+		notify.defaults |= Notification.DEFAULT_LIGHTS;
 	
 		
 		if (content == null)
@@ -233,7 +235,7 @@ public class NewMessageService extends Service {
 			 
 			 
 			    //FIXME: UGLY
-			 	CircleStore rs = new CircleStore(getApplicationContext(),true);
+			 	/*CircleStore rs = new CircleStore(getApplicationContext(),true);
 			 	boolean hasCircle = false;
 			 	for (Circle r : rs) {
 			 		if (circle.getFullText().equals(r.getFullText())) {
@@ -246,7 +248,7 @@ public class NewMessageService extends Service {
 			 		stopList.add(circle);
 			 		pollList.get(circle).interrupt();
 			 	}
-			 	
+			 	*/
 			 
 			    Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
 				notifyIds.put(circle.getFullText(), notifyIdLast++);
