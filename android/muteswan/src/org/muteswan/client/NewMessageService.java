@@ -224,7 +224,7 @@ public class NewMessageService extends Service {
 				
 			 if (pollList.get(circle) == null) {
 				
-				final Integer startLastId = circle.getLastMsgId();
+				final Integer startLastId = circle.getLastMsgId(true);
 				
 				
 				
@@ -251,7 +251,7 @@ public class NewMessageService extends Service {
 				    			torActive = false;
 				    			//return;
 				    		}
-							circle.updateLastMessage(lastId);
+							circle.updateLastMessage(lastId,true);
 						  
 				    	
 					 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
@@ -291,8 +291,9 @@ public class NewMessageService extends Service {
 			        		}
 			        	}
 			        	
-			        	circle.updateLastMessage(lastId);
-			        	circle.saveLastMessage();
+			        	circle.updateLastMessage(lastId,true);
+			        	// updateLastMessage also saves the message
+			        	//circle.saveLastMessage();
 			        	CharSequence notifTitle = "New message in " + circle.getShortname();
 			        	CharSequence notifText = "";
 						try {
@@ -315,8 +316,8 @@ public class NewMessageService extends Service {
 			        		
 			        		if (lastId < nLastId) {
 			        			Log.v("MuteswanService", "Running downloadMessages() for circle " + circle.getShortname());
-			        			circle.updateLastMessage(nLastId);
-			        			circle.saveLastMessage();
+			        			circle.updateLastMessage(nLastId,true);
+			        			//circle.saveLastMessage();
 			        			downloadMessages(circle);
 			        			lastId = nLastId;
 			        		}
@@ -362,7 +363,7 @@ public class NewMessageService extends Service {
 				for (final Circle r : rs) {
 			
 					Integer lastMessage = r.getLastTorMessageId();
-					r.updateLastMessage(lastMessage);
+					r.updateLastMessage(lastMessage,true);
 			
 				Log.v("MuteswanService", "Downloaded messages index for " + r.getShortname());
 				}
@@ -372,7 +373,7 @@ public class NewMessageService extends Service {
 	}
 	
 	private void downloadMessages(Circle circle) {
-		Integer lastIndex = circle.getLastMsgId();
+		Integer lastIndex = circle.getLastMsgId(true);
 		if (lastIndex == null || lastIndex == 0) {
 			Log.v("MuteswanService", "lastIndex is null or 0");
 			return;

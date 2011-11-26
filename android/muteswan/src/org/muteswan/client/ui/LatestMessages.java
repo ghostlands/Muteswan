@@ -110,6 +110,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public void onDestroy() {
 		super.onDestroy();
 		gettingMsgsDialog = null;
+		for (String c : store.asHashMap().keySet()) {
+			store.asHashMap().get(c).closedb();
+		}
 		//if (newMsgService != null) {
 		//	unbindService(mNewMsgConn);
 		//}
@@ -875,13 +878,13 @@ final Handler stopSpinningHandler = new Handler() {
 	
 	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Circle r,
 			Integer start, Integer last) {
-		IdentityStore idStore = new IdentityStore(this);
+		//IdentityStore idStore = new IdentityStore(this);
 		
 		
-		Log.v("LatestMessages","circle " + r.getShortname());
+		Log.v("LatestMessages","updateLatestMessages circle " + r.getShortname());
 		
 		
-		Integer lastId = r.getLastCurMsgId();
+		Integer lastId = r.getLastCurMsgId(false);
 		
 		
 		Message m = new Message();
@@ -907,8 +910,8 @@ final Handler stopSpinningHandler = new Handler() {
 				break;
 			MuteswanMessage msg = null;
 
-			Log.v("LatestMessages", "Reading message " + i + " moreMessages " + moreMessages + " refreshing " + refreshing);
-			msg = r.getMsgFromDb(i.toString());
+			//Log.v("LatestMessages", "Reading message " + i + " moreMessages " + moreMessages + " refreshing " + refreshing);
+			msg = r.getMsgFromDb(i.toString(),false);
 
 			if (msg == null) {
 				//downloaded = true;
@@ -1127,7 +1130,7 @@ final Handler stopSpinningHandler = new Handler() {
 
 		
 		
-		Log.v("LatestMessages","getLatestMessages got circle passed down " + circle.getShortname());
+		//Log.v("LatestMessages","getLatestMessages got circle passed down " + circle.getShortname());
 		
 
 		
@@ -1135,7 +1138,7 @@ final Handler stopSpinningHandler = new Handler() {
         	@SuppressWarnings("static-access")
 			public void run() {
 		
-        		Log.v("LatestMessages",Thread.currentThread().getName() + " is launched!");
+        		//Log.v("LatestMessages",Thread.currentThread().getName() + " is launched!");
         		
         		try {
 					Thread.currentThread().sleep(2000);
@@ -1156,14 +1159,14 @@ final Handler stopSpinningHandler = new Handler() {
         		
         	
 		
-        		Integer prevLastMsgId = circle.getLastMsgId();
+        		Integer prevLastMsgId = circle.getLastMsgId(false);
         		Integer lastMsg = circle.getLastTorMessageId();
         		if (lastMsg != null && lastMsg >= 0) {
-        			circle.updateLastMessage(lastMsg);
+        			circle.updateLastMessage(lastMsg,false);
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
-        			Log.v("LatestMessages","Circle " + muteswan.genHexHash(circle.getFullText()) + " has last message of: " + circle.getLastCurMsgId() + " and delta of " + delta);
+        			Log.v("LatestMessages","Circle " + muteswan.genHexHash(circle.getFullText()) + " has last message of: " + circle.getLastCurMsgId(false) + " and delta of " + delta);
         			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
         			b2.putString("state", "done");
         			b2.putInt("msgDelta", delta);

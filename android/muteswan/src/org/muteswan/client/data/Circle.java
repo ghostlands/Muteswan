@@ -336,7 +336,7 @@ public class Circle {
 	 * Gets the last known message from the database. Does not check tor.
 	 * @return integer
 	 */
-	public Integer getLastMsgId() {
+	public Integer getLastMsgId(boolean closedb) {
 		
 		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
@@ -350,23 +350,25 @@ public class Circle {
 			lastMessageId = cursor.getInt(0);
 		}
 		cursor.close();
-		db.close();
+	
+		if (closedb)
+		  db.close();
 				
 
 		curLastMsgId = lastMessageId;
 		return(lastMessageId);
 	}
 	
-	public Integer getLastCurMsgId() {
+	public Integer getLastCurMsgId(boolean closedb) {
 		if (curLastMsgId == 0)
-			curLastMsgId = getLastMsgId();
+			curLastMsgId = getLastMsgId(closedb);
 		return(curLastMsgId);
 	}
 	
 	
 	public MuteswanMessage getMsg(String id) throws ClientProtocolException, IOException {
 		MuteswanMessage msg = null;
-		msg = getMsgFromDb(id);
+		msg = getMsgFromDb(id,true);
 		if (msg == null) {
 			
 			msg = getMsgFromTor(id);
@@ -387,7 +389,9 @@ public class Circle {
 		
 	}
 	
-	public MuteswanMessage getMsgFromDb(String id) {
+	
+	
+	public MuteswanMessage getMsgFromDb(String id, Boolean closedb) {
 		MuteswanMessage msg = null;
 		
 		if (context == null)
@@ -397,6 +401,18 @@ public class Circle {
 		String circleHash = muteswan.genHexHash(this.getFullText());
 		
 		SQLiteDatabase db = getOpenHelper().getReadableDatabase();
+		
+		msg = getMsgFromDb(db,circleHash,id);
+		
+		if (closedb)
+		 db.close();
+		
+		return(msg);
+		
+	}
+	
+	public MuteswanMessage getMsgFromDbWithIdentities(SQLiteDatabase db, String circleHash, String id) {
+		MuteswanMessage msg = null;
 
 		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
 		if (cursor.moveToFirst()) {
@@ -424,16 +440,31 @@ public class Circle {
 
 			}		
 			cursor.close();
-			db.close();
+			//db.close();
 			return(msg);
 		}
-		cursor.close();
 		
-		db.close();
+		return(null);
 		
-		return(msg);
 	}
 		
+	public MuteswanMessage getMsgFromDb(SQLiteDatabase db, String circleHash, String id) {
+		MuteswanMessage msg = null;
+
+		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
+		if (cursor.moveToFirst()) {
+			String date = cursor.getString(0);
+			String msgData = cursor.getString(1);
+			
+			msg = new MuteswanMessage(this,Integer.parseInt(id),date,msgData);
+
+			//db.close();
+			return(msg);
+		}
+		
+		return(null);
+		
+	}
 	
 	public MuteswanMessage getMsgFromTor(String id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
@@ -857,7 +888,7 @@ public class Circle {
 		return getShortname();
 	}
 
-	public void createLastMessage(Integer curIndex) {
+	public void createLastMessage(Integer curIndex, boolean closedb) {
 		
 		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
@@ -865,34 +896,46 @@ public class Circle {
 		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, curIndex);
 		insrt.executeInsert();
-		db.close();
+		if (closedb)
+		  db.close();
 	}
 	
-	public void updateLastMessage(Integer curIndex) {
+	public void updateLastMessage(Integer curIndex, boolean closedb) {
 		if (curIndex == null || curIndex < 0)
 			return;
 		else {
 			curLastMsgId = curIndex;
 		}
-		saveLastMessage();
+		SQLiteDatabase db = openHelper.getWritableDatabase();
+		saveLastMessage(db);
+		
+		if (closedb)
+			db.close();
+			
 	}
 	
-	public void saveLastMessage() {
+	public void closedb() {
+		if (openHelper != null)
+		 openHelper.close();
+		//db.close();
+	}
+	
+	public void saveLastMessage(SQLiteDatabase db) {
 		String circleHash = muteswan.genHexHash(getFullText());
 		
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		
 		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
 		update.bindLong(1, curLastMsgId);
 		update.bindString(2, circleHash);
 		update.execute();
-		
+		update.close();
 		//if (update.execute() == -1) {
 		//	SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 		//	insert.bindString(1,circleHash);
 		//	insert.bindLong(2, curLastMsgId);
 		//	insert.executeInsert();
 		//}
-		db.close();
+		//db.close();
 	}
 
 	public void updateManifest(JSONObject jsonObj) {
