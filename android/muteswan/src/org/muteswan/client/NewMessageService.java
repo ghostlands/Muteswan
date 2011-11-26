@@ -19,6 +19,7 @@ package org.muteswan.client;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,11 +30,14 @@ import org.muteswan.client.ui.LatestMessages;
 
 import org.apache.http.client.ClientProtocolException;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -62,6 +66,11 @@ public class NewMessageService extends Service {
 	private HashMap<Circle,Thread> pollList = new HashMap<Circle,Thread>();
 	private boolean started = false;
 	protected boolean torActive = false;
+	
+	
+	
+	// long poll is experimental and currently destroys batteries. We should investigate this at another time
+	protected boolean useLongPoll = false;
     
 	
 	@Override
@@ -89,9 +98,8 @@ public class NewMessageService extends Service {
 		
 		int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
 		
-		AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
-		
+		//AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		//alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
 		
 		
 		notificationIntent = new Intent(this, muteswan.class);
@@ -127,25 +135,45 @@ public class NewMessageService extends Service {
 		//if (torStatus.checkStatus() == false)
 		//	return;
 		
-		// Register the available circles and then poll
-		if (started  == false) {
 		
-		   pollList.clear();
-		   Log.v("MuteswanService", "Starting up, we are: " + Thread.currentThread().getId());
-		   CircleStore rs = new CircleStore(getApplicationContext(),true);
-		   for (Circle r : rs) {
-			  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
-			  registerLongpoll(r);
-		  }
-		  runLongpoll();
-		  started = true;
+		 // get a list of running processes and iterate through them
+	     ActivityManager am = (ActivityManager) this
+			                .getSystemService(ACTIVITY_SERVICE);
+			 
+		// get the info from the currently running task
+		List<RunningTaskInfo> taskInfo = am.getRunningTasks(1);	 
+		Log.d("current task :", "CURRENT Activity ::"
+			                + taskInfo.get(0).topActivity.getClassName());
+		if (taskInfo.get(0).topActivity.getClassName().contains("org.muteswan"))
+			return;
+		//ComponentName componentInfo = taskInfo.get(0).topActivity;
+		//Log.v("NewMessageService", "RcomponentInfo.getPackageName();
+		
+		
+		
+		// Startup, do nothing initially
+		//if (started  == false) {
+		
+		//   Log.v("MuteswanService", "Start flag is false, exiting.");
+		//   pollList.clear();
+		  
+		  //runLongpoll();
+		//  started = true;
 		  
 		// Run again
-		} else {
-			Log.v("MuteswanService", "Start flag is true, running runLongpoll.");
+		//} else {
+			Log.v("MuteswanService", "Muteswan is not top activity, starting up...");
+			
+			 Log.v("MuteswanService", "Starting up, we are: " + Thread.currentThread().getId());
+			   CircleStore rs = new CircleStore(getApplicationContext(),true);
+			   for (Circle r : rs) {
+				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
+				  registerPoll(r);
+			  }
+			
 			
 			// FIXME UGLY. make sure the circle list is up to date 
-			CircleStore rs = new CircleStore(getApplicationContext(),true);
+			/*CircleStore rs = new CircleStore(getApplicationContext(),true);
 			for (Circle r : rs) {
 			
 			 boolean has = false;
@@ -157,12 +185,12 @@ public class NewMessageService extends Service {
 			   
 			 }
 			 if (!has)
-		      registerLongpoll(r);
+		      registerPoll(r);
 			 
 			 
-			}
-			runLongpoll();
-		}
+			}*/
+			runPoll();
+		//}
 	}
 
 	
@@ -188,14 +216,14 @@ public class NewMessageService extends Service {
 	}
 	
 	
-	private void registerLongpoll(Circle circle) {
+	private void registerPoll(Circle circle) {
 		if (pollList.containsKey(circle))
 			return;
 		pollList.put(circle,null);
 	}
 
 	
-	private void runLongpoll() {
+	private void runPoll() {
 		
 		 isWorking = true;
 		
@@ -221,124 +249,176 @@ public class NewMessageService extends Service {
 			 
 			    Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
 				notifyIds.put(circle.getFullText(), notifyIdLast++);
-				
-			 if (pollList.get(circle) == null) {
-				
-				final Integer startLastId = circle.getLastMsgId(true);
-				
-				
-				
-			    Thread nThread = new Thread() {
-			    	
-			    // Some explanation needed here unfortunately. This is rather complex
-			    // and annoying so here is a general outline of this algorithm:
-			    // 1. Get the last message id and start polling on
-			    //    on the next id (id++)
-			    // 2. Continue to longpoll and update last id as messages come in
-			    // 3. After 4 successful polls, get a message index. If we are
-			    //    not keeping up the messages (lastId != new message index)
-			    //    then call downloadMessages and grab the latest as needed.
-			    // 4. Continue polling
-				 public void run() {
-				    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
+			
+			
+			 if (useLongPoll == false) {
+				 Thread nThread = new Thread() {
+				    	
+					   
+					 public void run() {
+					    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
-				    		boolean poll = true;
-				    	
-				    		Integer lastId = circle.getLastTorMessageId();
-				    		if (lastId == null || lastId == 0) {
-				    			Log.v("MuteswanService", "Got null or 0 from Tor, bailing out.");
-				    			poll = false;
-				    			torActive = false;
-				    			//return;
-				    		}
-							circle.updateLastMessage(lastId,true);
-						  
-				    	
-					 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
-			       
+					    		boolean poll = true;
+					    		final Integer startLastId = circle.getLastMsgId(true);
+					    		Integer lastId = circle.getLastTorMessageId();
+					    		if (lastId == null || lastId < 0) {
+					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
+					    			poll = false;
+					    			torActive = false;
+					    			//return;
+					    		}
+								circle.updateLastMessage(lastId,false);
+							  
+					    	
+						 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
+				       
+						
+				        int count = 0;
+				        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
+				        
+
+				        
+				        // FIXME: REFACTOR
+				    	  
+				    	 
+				    	 Log.v("NewMessageService", "Got last id of " + startLastId);
+				    	 if (startLastId < lastId) {
+				      
+				    	   Log.v("NewMessageService", "Not using long poll, starting check for " + circle.getShortname());
+				    	   
+				    	   for (Integer i = lastId; i > startLastId; i--) {
+				    		 Log.v("NewMessageService", "Downloading " + i +  " for " + circle.getShortname());
+				    		 try {
+								MuteswanMessage msg = circle.getMsgFromTor(i.toString());
+								if (msg != null && msg.signatures[0] != null) {
+									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg(),
+											msg.signatures);
+								} else if (msg != null) {
+									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg());
+								}
+					        	CharSequence notifTitle = "New message in " + circle.getShortname();
+					        	CharSequence notifText = msg.getMsg();
+					        	showNotification(circle,notifTitle,notifText);
+					        	count++;
+								
+							  } catch (ClientProtocolException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							  } catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							  }
+				    	  }
+				    	}
+				      }
+					};
 					
-			        int count = 0;
-			        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
-			        
+					pollList.put(circle, nThread);
+					nThread.start();
+			 } else  {
+				 if (pollList.get(circle) == null) {
+					 
+					 Thread nThread = new Thread() {
+					    	
+						   
+						 public void run() {
+						    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
-			        while (poll) {
-			        	torActive = true;
-			        	
-			        	
-			        	MuteswanMessage msg = null;
-						try {
-							msg = longpollForNewMessage(circle,++lastId);
+						    		boolean poll = true;
+						    		final Integer startLastId = circle.getLastMsgId(true);
+						    		Integer lastId = circle.getLastTorMessageId();
+						    		if (lastId == null || lastId < 0) {
+						    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
+						    			poll = false;
+						    			torActive = false;
+						    			//return;
+						    		}
+									circle.updateLastMessage(lastId,false);
+								  
+						    	
+							 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
+					       
 							
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							//e1.printStackTrace();
-							Log.v("MuteswanService", "IO exception connecting to tor.");
-							poll = false;
-						}
-						
-						if (msg == null) {
-							Log.v("MuteswanService", "Null msg, continuing.");
-							--lastId;
-						    continue;
-						}
-						
-					
-			        	for (Circle r : stopList) {
-			        		if (r.getFullText().equals(circle.getFullText())) {
-			        			stopList.remove(r);
-			        			Log.v("MuteswanService", "We are on the stop list, bailing out.");
-			        			return;
-			        		}
-			        	}
-			        	
-			        	circle.updateLastMessage(lastId,true);
-			        	// updateLastMessage also saves the message
-			        	//circle.saveLastMessage();
-			        	CharSequence notifTitle = "New message in " + circle.getShortname();
-			        	CharSequence notifText = "";
-						try {
-							notifText = circle.getMsg(lastId.toString()).getMsg();
-						} catch (ClientProtocolException e) {
+					        int count = 0;
+					        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
+					        
+
+					        
+					       
+					         while (poll) {
+					        	torActive = true;
+					        	
+					        	
+					        	MuteswanMessage msg = null;
+								try {
+									msg = longpollForNewMessage(circle,++lastId);
+									
+								} catch (IOException e1) {
+									// TODO Auto-generated catch block
+									//e1.printStackTrace();
+									Log.v("MuteswanService", "IO exception connecting to tor.");
+									poll = false;
+								}
+								
+								if (msg == null) {
+									Log.v("MuteswanService", "Null msg, continuing.");
+									--lastId;
+								    continue;
+								}
+								
+							
+					        	for (Circle r : stopList) {
+					        		if (r.getFullText().equals(circle.getFullText())) {
+					        			stopList.remove(r);
+					        			Log.v("MuteswanService", "We are on the stop list, bailing out.");
+					        			return;
+					        		}
+					        	}
+					        	
+					        	circle.updateLastMessage(lastId,true);
+					        	// updateLastMessage also saves the message
+					        	//circle.saveLastMessage();
+					        	CharSequence notifTitle = "New message in " + circle.getShortname();
+					        	CharSequence notifText = "";
+								try {
+									notifText = circle.getMsg(lastId.toString()).getMsg();
+								} catch (ClientProtocolException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+					        	showNotification(circle,notifTitle,notifText);
+					        	count++;
+					        	
+					        	msg = null;
+					        }
+						 }
+					 }; 
+				 } else if (pollList.get(circle).isInterrupted()) {
+						Log.v("MuteswanService","Service is interrupted.");
+						//pollList.remove(circle);
+				} else if (!(pollList.get(circle).isAlive())) {
+						 Log.v("MuteswanService","Hey, looks like not alive, starting.");
+						 try {
+							pollList.get(circle).join();
+						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
-			        	showNotification(circle,notifTitle,notifText);
-			        	count++;
-			        	
-			        	if (count == 4) {
-			        		Log.v("MuteswanService", "Loop count of 4 reached for " + circle.getShortname());
-			        		count = 0;
-			        		Integer nLastId = circle.getLastTorMessageId();
-			        		
-			        		
-			        		if (lastId < nLastId) {
-			        			Log.v("MuteswanService", "Running downloadMessages() for circle " + circle.getShortname());
-			        			circle.updateLastMessage(nLastId,true);
-			        			//circle.saveLastMessage();
-			        			downloadMessages(circle);
-			        			lastId = nLastId;
-			        		}
-			        	}
-			        	msg = null;
-			        }
-			        
-				 }
-				};
+						 pollList.get(circle).run();
+				} else {
+						 Log.v("MuteswanService", "Circle " + circle.getShortname() + " skipped because already polling.");
+				}
+			 }
 				
-				pollList.put(circle, nThread);
-				nThread.start();
-			} else if (pollList.get(circle).isInterrupted()) {
-				Log.v("MuteswanService","Service is interrupted.");
-				//pollList.remove(circle);
-			} else if (!(pollList.get(circle).isAlive())) {
-				 Log.v("MuteswanService","Hey, looks like not alive, starting.");
-				 pollList.get(circle).run();
-			} else {
-				 Log.v("MuteswanService", "Circle " + circle.getShortname() + " skipped because already polling.");
-			}
+				
+				
+				
+				
+			   
+			
 		  }
 		
 	
@@ -438,7 +518,7 @@ public class NewMessageService extends Service {
 			Log.v("MuteswanService", "Longpoll() called.");
 			
 			
-			runLongpoll();
+			runPoll();
 			
 			isWorking = false;
 		}

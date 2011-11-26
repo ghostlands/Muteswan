@@ -47,6 +47,7 @@ import org.torproject.android.service.ITorService;
 import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -67,6 +68,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -139,9 +141,17 @@ public class muteswan extends Activity implements Runnable {
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
 		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
+		//if (backgroundMessageCheck == true) {
+		//	Intent serviceIntent = new Intent(this,NewMessageService.class);
+		//	startService(serviceIntent);
+		//}
 		if (backgroundMessageCheck == true) {
-			Intent serviceIntent = new Intent(this,NewMessageService.class);
-			startService(serviceIntent);
+		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
+		
+		   int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
+		
+		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
 		}
 		
 		

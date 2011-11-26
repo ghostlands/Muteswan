@@ -4,7 +4,7 @@
 
 
 <CheckBoxPreference android:title="New Message Service" android:summary="Continually check for new messages in the background." android:key="backgroundMessageCheck"></CheckBoxPreference>
-<!-- <ListPreference android:title="Check Interval" android:key="checkMsgInterval" android:entries="@array/msgcheckintervaldisplay" android:summary="Check messages at provided interval." android:entryValues="@array/msgcheckinterval"></ListPreference> -->
+<ListPreference android:title="Check Interval" android:key="checkMsgInterval" android:entries="@array/msgcheckintervaldisplay" android:summary="Check messages at provided interval." android:entryValues="@array/msgcheckinterval"></ListPreference>
 <!--   <ListPreference android:title="Maximum Download" android:summary="Maximum amount of messages to download in the background server, per circle." android:key="numMsgDownload" android:entries="@array/nummsgdownloaddisplay" android:entryValues="@array/nummsgdownload"></ListPreference> -->
 
 
