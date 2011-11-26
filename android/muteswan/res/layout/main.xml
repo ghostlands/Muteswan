@@ -64,21 +64,21 @@
    
       
    
+    
+   </RelativeLayout>
+
     <TextView
      android:id="@+id/versionName"
      android:layout_width="wrap_content"
-     android:layout_height="40sp"
+     android:layout_height="wrap_content"
      android:text="VERSION"
      android:textSize="12sp"
    
      android:layout_alignParentRight="true"
      android:layout_alignParentBottom="true"
      android:textColor="#ffffffff"
-     android:gravity="bottom|center"
+     
      />
-   </RelativeLayout>
-
-    
     
  
 </RelativeLayout> 
