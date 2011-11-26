@@ -138,21 +138,7 @@ public class muteswan extends Activity implements Runnable {
 //			   justCreated = false;
 //		  }
 			
-		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
-		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
-		//if (backgroundMessageCheck == true) {
-		//	Intent serviceIntent = new Intent(this,NewMessageService.class);
-		//	startService(serviceIntent);
-		//}
-		if (backgroundMessageCheck == true) {
-		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
-		
-		   int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
-		
-		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
-		}
 		
 		
 		if (alreadyCheckedTor == false) {
@@ -182,10 +168,36 @@ public class muteswan extends Activity implements Runnable {
 	private Handler checkTorDialogDismiss = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
-	        	  if (checkTorDialog != null)
-	              	checkTorDialog.dismiss();
+	        	  if (checkTorDialog != null) {
+	              	
+	        		
+	        		  
+	              	
+	        		checkTorDialog.dismiss();
+	        	  }
 	        }
+
+			
 	 };
+	 
+	 private void scheduleServiceAlarm() { 
+		  SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+ 		
+ 		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
+ 		  //if (backgroundMessageCheck == true) {
+ 		  //	Intent serviceIntent = new Intent(this,NewMessageService.class);
+ 		  //	startService(serviceIntent);
+ 		  //}
+ 		  if (backgroundMessageCheck == true) {
+ 		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
+ 		
+ 		   int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
+ 		
+ 		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+ 		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(getApplicationContext()));
+ 		  }
+			
+	}
 	 
 	 private Handler dialogTorNotAvailable = new Handler() {
 	        @Override
@@ -280,6 +292,7 @@ public class muteswan extends Activity implements Runnable {
 		 
 		 //if (alreadyCheckedTor == false) {
 		   showCheckTorDialog();
+		   scheduleServiceAlarm();		   
 		 //  alreadyCheckedTor = true;
 		 //}
 			
@@ -401,6 +414,7 @@ public class muteswan extends Activity implements Runnable {
     	if (checkTorDialog == null) {
     	  checkTorDialog = ProgressDialog.show(this, "", "Verifying secure connection to Tor network..", true);
     	  checkTorDialog.setCancelable(true);
+    	  
     	}
 	}
 

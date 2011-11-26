@@ -16,8 +16,12 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
+import java.util.List;
+
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +45,17 @@ public class NewMessageReceiver extends BroadcastReceiver {
 		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
 		if (backgroundMessageCheck == false)
 			return;
+		
+		
+	     ActivityManager am = (ActivityManager)ctx
+	                .getSystemService(android.content.Context.ACTIVITY_SERVICE);
+	 
+	     // get the info from the currently running task
+	     List<RunningTaskInfo> taskInfo = am.getRunningTasks(1);	 
+	     Log.d("current task :", "CURRENT Activity ::"
+	                + taskInfo.get(0).topActivity.getClassName());
+	     if (taskInfo.get(0).topActivity.getClassName().contains("org.muteswan"))
+	    	 return;
    	
    	
    	    Log.v("MuteswanReceiver", "Received alarm, trying to connect to service.");
@@ -48,7 +63,7 @@ public class NewMessageReceiver extends BroadcastReceiver {
    	    int count = 0;
    	    while (msgService == null) {
    		  try {
-				Thread.currentThread().sleep(200);
+				Thread.currentThread().sleep(50);
 				count++;
 				if (count > 3)
 					break;

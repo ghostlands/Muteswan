@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 <string-array name="msgcheckinterval">
- <item>1</item>
  <item>3</item>
  <item>5</item>
  <item>10</item>
@@ -12,7 +11,6 @@
 </string-array>
 
 <string-array name="msgcheckintervaldisplay">
- <item>1 minute</item>
  <item>3 minutes</item>
  <item>5 minutes</item>
  <item>10 minutes</item>

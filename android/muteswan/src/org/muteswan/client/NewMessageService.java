@@ -137,7 +137,7 @@ public class NewMessageService extends Service {
 		
 		
 		 // get a list of running processes and iterate through them
-	     ActivityManager am = (ActivityManager) this
+	  /*   ActivityManager am = (ActivityManager) this
 			                .getSystemService(ACTIVITY_SERVICE);
 			 
 		// get the info from the currently running task
@@ -145,9 +145,10 @@ public class NewMessageService extends Service {
 		Log.d("current task :", "CURRENT Activity ::"
 			                + taskInfo.get(0).topActivity.getClassName());
 		if (taskInfo.get(0).topActivity.getClassName().contains("org.muteswan"))
-			return;
-		//ComponentName componentInfo = taskInfo.get(0).topActivity;
-		//Log.v("NewMessageService", "RcomponentInfo.getPackageName();
+			return; */
+			
+			
+			
 		
 		
 		
@@ -259,7 +260,7 @@ public class NewMessageService extends Service {
 					    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
 					    		boolean poll = true;
-					    		final Integer startLastId = circle.getLastMsgId(true);
+					    		final Integer startLastId = circle.getLastMsgId(false);
 					    		Integer lastId = circle.getLastTorMessageId();
 					    		if (lastId == null || lastId < 0) {
 					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
@@ -267,7 +268,9 @@ public class NewMessageService extends Service {
 					    			torActive = false;
 					    			//return;
 					    		}
-								circle.updateLastMessage(lastId,false);
+					    		
+					    		if (lastId > startLastId)
+								  circle.updateLastMessage(lastId,false);
 							  
 					    	
 						 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
@@ -302,14 +305,15 @@ public class NewMessageService extends Service {
 					        	count++;
 								
 							  } catch (ClientProtocolException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
+								circle.closedb();
 							  } catch (IOException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
+								circle.closedb();
 							  }
 				    	  }
 				    	}
+				    	circle.closedb();
 				      }
 					};
 					
