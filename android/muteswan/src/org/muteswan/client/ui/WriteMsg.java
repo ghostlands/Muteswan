@@ -297,8 +297,6 @@ public class WriteMsg extends ListActivity {
 	              	Bundle b = msg.getData();
 	              	
 	              	
-	              	
-	              	
 	              	if (b.getString("error") != null) {
 	              		
 	              		if (sendingMsgDialog != null)
@@ -399,22 +397,19 @@ public class WriteMsg extends ListActivity {
 	    	sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
     		sendingMsgDialog.setCancelable(true);
 	    	
-	    	//submitMsg(txtData);
-
-	    	
 			
 	    	
 	    	
 	    	
-	    		//FIXME: max sigs?
-	    		final Identity[] signIds = new Identity[50];
-	    		int j = 0;
-	    		for(int i=0; i<signSelections.length; i++) {
-	    			if (signSelections[i] == true) {
-	    				signIds[j] = identities[i];
-	    				j++;
-	    			}
+	    	//FIXME: max sigs?
+	    	final Identity[] signIds = new Identity[50];
+	    	int j = 0;
+	    	for(int i=0; i<signSelections.length; i++) {
+	    		if (signSelections[i] == true) {
+	    			signIds[j] = identities[i];
+	    			j++;
 	    		}
+	    	}
 	    		
 	    		
 	    		  
@@ -439,6 +434,16 @@ public class WriteMsg extends ListActivity {
 				 
 				 
 				atleastOneCircle = true; 
+				
+				
+				if (txtData == null || txtData.equals("")) {
+				 	Bundle b = new Bundle();
+					Message msg = Message.obtain();
+					b.putString("error", "Empty message.");
+					msg.setData(b);
+					updateSendDialog.sendMessage(msg);
+					return;
+				}
 				
 	    		//TextView txt2 = new TextView(v.getContext());
 	    		if (signIds[0] != null) {
@@ -567,7 +572,7 @@ public class WriteMsg extends ListActivity {
 			
 			
 			 if (atleastOneCircle == false) {
-				 Bundle b2 = new Bundle();
+				 	Bundle b2 = new Bundle();
 					Message msg2 = Message.obtain();
 					b2.putString("error", "No circle selected.");
 					msg2.setData(b2);
