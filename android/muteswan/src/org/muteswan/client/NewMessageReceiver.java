@@ -63,7 +63,7 @@ public class NewMessageReceiver extends BroadcastReceiver {
    	    int count = 0;
    	    while (msgService == null) {
    		  try {
-				Thread.currentThread().sleep(50);
+				Thread.currentThread().sleep(200);
 				count++;
 				if (count > 3)
 					break;

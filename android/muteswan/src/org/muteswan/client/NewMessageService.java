@@ -55,7 +55,7 @@ public class NewMessageService extends Service {
 	PendingIntent contentIntent;
 	NotificationManager mNM;
 	HashMap<String,Integer> notifyIds;
-	int notifyIdLast;
+	int notifyId;
 	final int PERSISTANT_NOTIFICATION = 220;
 	private boolean backgroundMessageCheck;
 	private int checkMsgInterval;
@@ -106,7 +106,7 @@ public class NewMessageService extends Service {
 	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notifyIds = new HashMap<String,Integer>();
-		notifyIdLast = 0;
+		notifyId = 0;
 
 		
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
@@ -152,25 +152,26 @@ public class NewMessageService extends Service {
 		
 		
 		
-		// Startup, do nothing initially
-		//if (started  == false) {
+		// Startup
+		if (started  == false) {
 		
-		//   Log.v("MuteswanService", "Start flag is false, exiting.");
-		//   pollList.clear();
-		  
-		  //runLongpoll();
-		//  started = true;
-		  
-		// Run again
-		//} else {
-			Log.v("MuteswanService", "Muteswan is not top activity, starting up...");
-			
-			 Log.v("MuteswanService", "Starting up, we are: " + Thread.currentThread().getId());
-			   CircleStore rs = new CircleStore(getApplicationContext(),true);
-			   for (Circle r : rs) {
+		   Log.v("MuteswanService", "Start flag is false, exiting.");
+		   pollList.clear();
+		   
+		   Log.v("MuteswanService", "Starting up, we are: " + Thread.currentThread().getId());
+		   CircleStore rs = new CircleStore(getApplicationContext(),true);
+		   for (Circle r : rs) {
 				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);
-			  }
+		   }
+		  
+		  //runLongpoll();
+		  started = true;
+		  runPoll();
+		  
+		// Run again
+		} else {
+			
 			
 			
 			// FIXME UGLY. make sure the circle list is up to date 
@@ -191,11 +192,11 @@ public class NewMessageService extends Service {
 			 
 			}*/
 			runPoll();
-		//}
+		}
 	}
 
 	
-	private void showNotification(Circle r, CharSequence title, CharSequence content) {
+	private void showNotification(Circle c, CharSequence title, CharSequence content) {
 		long when = System.currentTimeMillis();
 		int icon = R.drawable.icon;
 		Notification notify = new Notification(icon,title,when);
@@ -205,17 +206,18 @@ public class NewMessageService extends Service {
 		notify.defaults |= Notification.DEFAULT_SOUND;
 		notify.defaults |= Notification.DEFAULT_LIGHTS;
 	
-		
 		if (content == null)
 			return;
 		
-		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
-		msgIntent.putExtra("circle", muteswan.genHexHash(r.getFullText()));
-		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, 0);
-		
+		msgIntent.putExtra("circle", muteswan.genHexHash(c.getFullText()));
+		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+	
+		//PendingIntent.get
+	
+		Log.v("NewMessageService", "Set pending intent to launch " + c.getShortname() + "(" + muteswan.genHexHash(c.getFullText()) + ")");
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
-		mNM.notify((Integer) notifyIds.get(r.getFullText()), notify);
+		mNM.notify((Integer) notifyIds.get(c.getFullText()), notify);
 	}
 	
 	
@@ -229,11 +231,12 @@ public class NewMessageService extends Service {
 	private void runPoll() {
 		
 		 isWorking = true;
+		 notifyIds = new HashMap<String,Integer>();
+		 notifyId = 0;
 		
 		 Log.v("MuteswanService","pollList size " + pollList.size());
 		 for (final Circle circle : pollList.keySet()) {
-			 
-			 
+			
 			    //FIXME: UGLY
 			 	/*CircleStore rs = new CircleStore(getApplicationContext(),true);
 			 	boolean hasCircle = false;
@@ -251,10 +254,10 @@ public class NewMessageService extends Service {
 			 	*/
 			 
 			    Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
-				notifyIds.put(circle.getFullText(), notifyIdLast++);
 			
 			
 			 if (useLongPoll == false) {
+				 //if (pollList.get(circle) == null) {
 				 Thread nThread = new Thread() {
 				    	
 					   
@@ -301,6 +304,8 @@ public class NewMessageService extends Service {
 								} else if (msg != null) {
 									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg());
 								}
+								notifyIds.put(circle.getFullText(), notifyId);
+								notifyId++;
 					        	CharSequence notifTitle = "New message in " + circle.getShortname();
 					        	CharSequence notifText = msg.getMsg();
 					        	showNotification(circle,notifTitle,notifText);
@@ -308,19 +313,25 @@ public class NewMessageService extends Service {
 								
 							  } catch (ClientProtocolException e) {
 								e.printStackTrace();
-								circle.closedb();
 							  } catch (IOException e) {
 								e.printStackTrace();
-								circle.closedb();
 							  }
 				    	  }
 				    	}
 				    	circle.closedb();
+				    	try {
+							Thread.currentThread().join();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 				      }
 					};
-					
-					pollList.put(circle, nThread);
+					//pollList.put(circle, nThread);
 					nThread.start();
+				 //} else {
+					//pollList.get(circle).run();
+				 //}
 			 } else  {
 				 if (pollList.get(circle) == null) {
 					 

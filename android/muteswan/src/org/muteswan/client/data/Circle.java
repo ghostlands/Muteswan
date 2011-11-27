@@ -842,6 +842,7 @@ public class Circle {
 		insrt.bindString(3, date);
 		insrt.bindString(4, msg);
 		insrt.executeInsert();
+		insrt.close();
 		db.close();
 	}
 	
@@ -865,6 +866,7 @@ public class Circle {
 		insrt.bindString(3, date);
 		insrt.bindString(4, msg);
 		insrt.executeInsert();
+		insrt.close();
 	
 		for (int i=0; i<signatures.length; i++) {	
 		  //FIXME: length for signatures
@@ -876,6 +878,7 @@ public class Circle {
 		  insrt.bindString(2, circleHash);
 		  insrt.bindString(3,signatures[i]);
 		  insrt.executeInsert();
+		  insrt.close();
 		}
 		db.close();
 	}

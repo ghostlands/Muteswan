@@ -102,6 +102,15 @@ public class LatestMessages extends ListActivity implements Runnable {
 		messageViewCount = 0;
 		messageList.clear();
 		
+		extra = getIntent().getExtras();
+		
+        if (extra != null) {
+         Log.v("LatestMessages", "onResume extra is " + extra.getString("circle"));
+         circleExtra = extra.getString("circle");
+        } else {
+        	Log.v("LatestMessages", "onResume extra is null.");
+        	circleExtra = null;
+        }
 		
 		refresh();
 		
@@ -160,23 +169,22 @@ public class LatestMessages extends ListActivity implements Runnable {
 		idStore = new IdentityStore(this);
         
         extra = getIntent().getExtras();
-        if (extra != null) 
+        if (extra != null)
          circleExtra = extra.getString("circle");
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-       
         
         init();
-
         
          
         setContentView(R.layout.latestmessages);
 
         
         if (circleExtra != null) {
+         Log.v("LatestMessages", "circleExtra is " + circleMap.get(circleExtra).getShortname());
 		 TextView txtTitle = (TextView) findViewById(R.id.android_latestmessagesprompt);
 		 txtTitle.setText("Messages for " + circleMap.get(circleExtra).getShortname());
 		
