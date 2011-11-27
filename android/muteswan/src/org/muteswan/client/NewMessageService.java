@@ -236,6 +236,17 @@ public class NewMessageService extends Service {
 		
 		 Log.v("MuteswanService","pollList size " + pollList.size());
 		 for (final Circle circle : pollList.keySet()) {
+			 
+			 Thread oldThread = pollList.get(circle);
+			 while (oldThread != null) {
+			        try {
+			            oldThread.join();
+			            oldThread = null;
+			            pollList.put(circle, null);
+			        } catch (InterruptedException e) {
+			        }
+			    }
+
 			
 			    //FIXME: UGLY
 			 	/*CircleStore rs = new CircleStore(getApplicationContext(),true);
@@ -253,7 +264,7 @@ public class NewMessageService extends Service {
 			 	}
 			 	*/
 			 
-			    Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
+		     Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
 			
 			
 			 if (useLongPoll == false) {
@@ -281,14 +292,12 @@ public class NewMessageService extends Service {
 						 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
 				       
 						
-				        int count = 0;
 				        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
 				        
 
 				        
 				        // FIXME: REFACTOR
 				    	  
-				    	 
 				    	 Log.v("NewMessageService", "Got last id of " + startLastId);
 				    	 if (startLastId < lastId) {
 				      
@@ -309,7 +318,6 @@ public class NewMessageService extends Service {
 					        	CharSequence notifTitle = "New message in " + circle.getShortname();
 					        	CharSequence notifText = msg.getMsg();
 					        	showNotification(circle,notifTitle,notifText);
-					        	count++;
 								
 							  } catch (ClientProtocolException e) {
 								e.printStackTrace();
@@ -319,18 +327,14 @@ public class NewMessageService extends Service {
 				    	  }
 				    	}
 				    	circle.closedb();
-				    	try {
-							Thread.currentThread().join();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+				    	
 				      }
 					};
-					//pollList.put(circle, nThread);
+					pollList.put(circle, nThread);
 					nThread.start();
+					
 				 //} else {
-					//pollList.get(circle).run();
+				 //	pollList.get(circle).start();
 				 //}
 			 } else  {
 				 if (pollList.get(circle) == null) {
