@@ -447,7 +447,6 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
 
 
-    
 	public class LatestMessagesListAdapter extends ArrayAdapter {
 
 		
@@ -503,9 +502,16 @@ public class LatestMessages extends ListActivity implements Runnable {
 			return position;
 		}
 
+		
+		
+		
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-      		  RelativeLayout layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
+		public View getView(final int position, final View convertView, final ViewGroup parent) {
+			
+			
+			  RelativeLayout layout = (RelativeLayout) convertView;
+			  if (layout == null)
+      		     layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
       				  parent, false);
       		  
       		  final MuteswanMessage msg = messageList.get(position);
@@ -547,7 +553,7 @@ public class LatestMessages extends ListActivity implements Runnable {
              
 			try {
 				msgDate = df.parse(msg.getDate());
-				Log.v("LatestMessages","MessageDate for " + msg.getId() + ": " + msg.getDate());
+				//Log.v("LatestMessages","MessageDate for " + msg.getId() + ": " + msg.getDate());
 				String dateString = RelativeDateFormat.format(msgDate);
 				 if (dateString != null) {
 					 txtDate.setText(dateString);
