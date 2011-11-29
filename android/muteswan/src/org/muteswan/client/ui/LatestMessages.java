@@ -99,8 +99,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public void onResume() {
 		super.onResume();
 		//init();
-		messageViewCount = 0;
-		messageList.clear();
+		
+		
+		
+		//cleanup();
 		
 		extra = getIntent().getExtras();
 		
@@ -116,15 +118,51 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 	}
 	
+	public void onPause() {
+		super.onPause();
+		cleanup(false);
+	}
+
+	
+	final ArrayList<Thread> oldThreads = new ArrayList<Thread>();
+	private void cleanOldThreads(boolean join) {
+		for (Thread t : oldThreads) {
+			Log.v("LatestMessages", "Cleaning thread " + t.toString());
+			t.interrupt();
+			 while (join == true && t != null) {
+			        try {
+			            t.join();
+			            t = null;
+			        } catch (InterruptedException e) {
+			        }
+			    }
+		}
+	}
+
 	public void onDestroy() {
 		super.onDestroy();
 		gettingMsgsDialog = null;
-		for (String c : store.asHashMap().keySet()) {
-			store.asHashMap().get(c).closedb();
-		}
+		
+		cleanup();
+		
 		//if (newMsgService != null) {
 		//	unbindService(mNewMsgConn);
 		//}
+	}
+	
+	public void cleanup(boolean join) {
+		messageViewCount = 0;
+		messageList.clear();
+  	    newMsgCheckResults.clear();
+		
+		cleanOldThreads(join);
+		for (String c : store.asHashMap().keySet()) {
+			store.asHashMap().get(c).closedb();
+		}
+	}
+	
+	public void cleanup() {
+		cleanup(false);
 	}
 	
 	OnScrollListener scrollListener = new OnScrollListener() {
@@ -248,15 +286,20 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	// loadmore loads more messages as we scroll down
 	private void loadmore() {
+		
+		
+		
 		if (previousLoadMoreTime != 0 && ((System.currentTimeMillis()/1000) - previousLoadMoreTime) < 1) {
 			Log.v("LatestMessages", "Loadmore called within 1 second, not running.");
 			moreMessages = false;
 			return;
 		}
 		
+		
 		Log.v("LatestMessages", "moreMessages at start of refresh(): " + moreMessages);
 		previousLoadMoreTime = System.currentTimeMillis()/1000;
 		Thread thread = new Thread(this);
+		oldThreads.add(thread);
 		thread.start();
 		
 
@@ -271,10 +314,15 @@ public class LatestMessages extends ListActivity implements Runnable {
 			return;
 		}
 		
+		//cleanOldThreads(false);
+		
+		newMsgCheckState.clear();
+		
 		Log.v("LatestMessages", "Refreshing at start of refresh(): " + refreshing);
 		refreshing = true;
 		previousRefreshTime = System.currentTimeMillis()/1000;
 		Thread thread = new Thread(this);
+		oldThreads.add(thread);
 		thread.start();
 		spinIcon();
 		spinneyIcon.setImageResource(R.drawable.refresh);
@@ -681,7 +729,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         		  boolean someFailed = false;
         		  Log.v("LatestMessages", "New message check is empty? " + newMsgCheckResults.isEmpty());
         		  for (String status : newMsgCheckResults.keySet()) {
-        			  Log.v("LatestMessages", "checking state in dismiss dialog: " + newMsgCheckResults.get(status));
+        			  Log.v("LatestMessages", "checking state in dismiss dialog (" + status + ": " + newMsgCheckResults.get(status));
         			  if (newMsgCheckResults.get(status).equals("done")) {
         				  allFailed = false;
         				  continue;
@@ -1037,6 +1085,7 @@ final Handler stopSpinningHandler = new Handler() {
 				Thread.currentThread().sleep(250);
 			  } catch (InterruptedException e) {
 				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
+				  return(null);
 			  }
 		}
 		
@@ -1049,6 +1098,10 @@ final Handler stopSpinningHandler = new Handler() {
 			}
 			
 			String[] circleNewMsgs = popFirstDoneMsgCheck();
+			
+			if (Thread.currentThread().isInterrupted())
+				return(null);
+			
 			
 			if (circleNewMsgs != null) {
 				
@@ -1070,6 +1123,7 @@ final Handler stopSpinningHandler = new Handler() {
 				Thread.currentThread().sleep(500);
 			  } catch (InterruptedException e) {
 				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
+				  return(null);
 			  }
 			}
 			
@@ -1079,9 +1133,9 @@ final Handler stopSpinningHandler = new Handler() {
 	
 		
 		
-		
 		dismissDialog.sendEmptyMessage(0);
 		newMsgCheckState.clear();
+		
 		sortMessageList.sendEmptyMessage(0);
 		//dataSetChanged.sendEmptyMessage(0);
 		refreshing = false;
@@ -1129,8 +1183,7 @@ final Handler stopSpinningHandler = new Handler() {
 		try {
 			Thread.sleep(200);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return;
 		}
 		
 		getLatestMessages(messageList, start,LatestMessages.MSGDOWNLOADAMOUNT);
@@ -1151,16 +1204,9 @@ final Handler stopSpinningHandler = new Handler() {
         Thread nThread = new Thread() {
         	@SuppressWarnings("static-access")
 			public void run() {
+        		if (Thread.currentThread().isInterrupted())
+        			return;
 		
-        		//Log.v("LatestMessages",Thread.currentThread().getName() + " is launched!");
-        		
-        		try {
-					Thread.currentThread().sleep(2000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-        		
         		Message m = Message.obtain();
         		Bundle b = new Bundle();
         		
@@ -1174,7 +1220,13 @@ final Handler stopSpinningHandler = new Handler() {
         	
 		
         		Integer prevLastMsgId = circle.getLastMsgId(false);
+        		
         		Integer lastMsg = circle.getLastTorMessageId();
+        		
+        		if (Thread.currentThread().isInterrupted())
+        			return;
+        		
+        		
         		if (lastMsg != null && lastMsg >= 0) {
         			circle.updateLastMessage(lastMsg,false);
         			Integer delta = lastMsg - prevLastMsgId;
@@ -1201,7 +1253,7 @@ final Handler stopSpinningHandler = new Handler() {
         	}
         };
 	
-        
+          oldThreads.add(nThread);
           nThread.start();
         
 	}

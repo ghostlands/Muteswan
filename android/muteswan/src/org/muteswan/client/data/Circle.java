@@ -562,7 +562,7 @@ public class Circle {
 		e.printStackTrace();
 	} catch (IOException e) {
 		// TODO Auto-generated catch block
-	}
+	} 
 	
 	return(-1);
 	

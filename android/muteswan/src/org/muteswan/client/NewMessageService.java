@@ -277,7 +277,7 @@ public class NewMessageService extends Service {
 
 					    		boolean poll = true;
 					    		final Integer startLastId = circle.getLastMsgId(false);
-					    		Integer lastId = circle.getLastTorMessageId();
+								Integer lastId = circle.getLastTorMessageId();
 					    		if (lastId == null || lastId < 0) {
 					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
 					    			poll = false;
@@ -347,7 +347,7 @@ public class NewMessageService extends Service {
 
 						    		boolean poll = true;
 						    		final Integer startLastId = circle.getLastMsgId(true);
-						    		Integer lastId = circle.getLastTorMessageId();
+									Integer lastId = circle.getLastTorMessageId();
 						    		if (lastId == null || lastId < 0) {
 						    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
 						    			poll = false;
@@ -464,7 +464,8 @@ public class NewMessageService extends Service {
 				for (final Circle r : rs) {
 			
 					Integer lastMessage = r.getLastTorMessageId();
-					r.updateLastMessage(lastMessage,true);
+					if (lastMessage != null)
+					  r.updateLastMessage(lastMessage,true);
 			
 				Log.v("MuteswanService", "Downloaded messages index for " + r.getShortname());
 				}
