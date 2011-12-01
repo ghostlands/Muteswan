@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Mute green: #568281 -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/latestmessagesRelativeLayout"
@@ -7,7 +8,7 @@
     android:paddingRight="5px"
     android:background="@drawable/simpleborder"
     android:layout_height="wrap_content" android:gravity="top">
-    
+
   <!--   <ImageView
   	android:id="@+id/latestmessagesImage"
   	android:layout_width="100sp"
@@ -38,12 +39,11 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="Circle"
-    android:textColor="#568281"
+    android:textColor="#000000"
     android:clickable="true"
     android:typeface="sans"
-    android:textSize="22sp"
-    
-    />
+    android:textSize="13sp" 
+    android:textStyle="bold"/>
      
     
     <TextView  
@@ -55,8 +55,8 @@
     android:gravity="left"
    android:typeface="sans"
     android:paddingBottom="8px"
-    android:textColor="#000000"
-        android:textSize="18sp"
+    android:textColor="#232323"
+        android:textSize="13sp"
     
 
     />
@@ -68,11 +68,12 @@
      
      android:layout_above="@id/android:latestmessagesMessage"
      android:textSize="12sp"
+     android:textColor="#666666"
      android:layout_alignParentRight="true"
      android:layout_alignParentTop="true"
      android:padding="5sp"
      android:gravity="top|right"
-	android:typeface="monospace"
+	android:typeface="sans"
      />
      
     <TextView

@@ -17,15 +17,14 @@
         android:layout_alignParentLeft="true"
         android:id="@+id/android:latestmessagesprompt"
         android:layout_width="190sp" 
-        android:layout_height="65sp" 
+        android:layout_height="45sp" 
         android:text="Messages"
         android:gravity="left"
         android:maxWidth="220sp"
-        android:textSize="24sp"
+        android:textSize="14sp"
         android:paddingRight="30sp"
-        
         android:textColor="#000000"
-        
+	    android:textStyle="bold"
        />
        
        

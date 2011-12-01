@@ -6,57 +6,48 @@
     android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:paddingRight="5px"
-    android:paddingTop="10px"
-    
     android:gravity="left">
-    
+
     <RelativeLayout
-     android:id="@+id/circleListInnerEntryLayout"
-    android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:paddingRight="5px"
-    android:background="@drawable/simpleborder"
-    android:gravity="left">
-    
-    >
-    <TextView
-    android:id="@+id/android:circleListName"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="CircleName"
-    android:clickable="true"
-    android:typeface="sans"
-    android:textSize="22sp"
-    android:textColor="#568281"
-   />
-  
-    
-    
-     		 
-      <ImageView android:id="@+id/circleListDelete"
-             android:src="@android:drawable/ic_notification_clear_all"
-             android:adjustViewBounds="true"
-             android:paddingBottom="5sp"
-             android:layout_alignParentRight="true"
-     		 android:text="Delete"
-     		 android:layout_width="wrap_content"
-     		 android:layout_height="wrap_content" />
-     		 
-     		
-     		 		 
-      <Button android:id="@+id/circleListShare"
-      		  android:layout_alignParentLeft="true"
-      		  android:layout_below="@id/circleListDelete"
-      		  
-     		 android:text="Share"
-     		 android:textSize="12sp"
-     	     android:paddingTop="5sp"
-     		 android:layout_width="wrap_content"
-     		 android:layout_height="35sp" />
-     		 
-     		  
-     
-        </RelativeLayout>
+        android:id="@+id/circleListInnerEntryLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/simpleborder"
+        android:gravity="left"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/android_circleListName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:text="CircleName"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:typeface="sans"
+            android:paddingTop="4dp" 
+            android:textStyle="bold"/>
+        
+        <ImageView
+            android:id="@+id/circleListDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:adjustViewBounds="true"
+            android:src="@android:drawable/ic_delete"
+            android:text="Delete"/>
+
+        <Button
+            android:id="@+id/circleListShare"
+            android:layout_width="wrap_content"
+            android:layout_height="35sp"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/circleListDelete"
+            android:paddingTop="5sp"
+            android:text="Share"
+            android:textSize="12sp" />
+    </RelativeLayout>
+
 </RelativeLayout>

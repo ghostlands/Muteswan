@@ -14,14 +14,14 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:text="@string/newcircleprompt"
-    android:textSize="24sp"
-    />
+    android:textSize="22sp"
+    android:layout_marginLeft="2dp"/>
     
     <LinearLayout
       android:orientation="horizontal"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      >
+      android:layout_marginLeft="2dp">
     
      <TextView
     android:id="@+id/newCircleNamePrompt"
@@ -32,10 +32,7 @@
     
     />
      
-    <EditText android:text=""
-      android:id="@+id/newCircleName"
-      android:layout_width="180sp"
-      android:layout_height="wrap_content"/>
+    
     
     </LinearLayout>
     
@@ -58,7 +55,8 @@
     android:layout_height="wrap_content"
     android:text="(new key)"
     android:visibility="gone"
-    /> 
+    />
+ 
     </LinearLayout>
    
    <LinearLayout
@@ -73,7 +71,24 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:minWidth="50sp"/>
-    <EditText android:text="@string/defaultcircleserver" android:visibility="gone" android:id="@+id/newCircleServer" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
+    
+    <EditText android:text="@string/defaultcircleserver" 
+        android:visibility="gone" 
+        android:id="@+id/newCircleServer" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content">
+    </EditText>
+
+    <EditText
+        android:id="@+id/newCircleName"
+        android:layout_width="180sp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_weight="0.33" >
+
+        <requestFocus />
+    </EditText>
 
    </LinearLayout>
 
