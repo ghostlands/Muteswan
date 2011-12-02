@@ -849,7 +849,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        		
+
+					if (messageList.size() == 0)
+						return;
+					
         		    Collections.sort(messageList, comparatorDates);
         		    listAdapter.notifyDataSetChanged();
         		    
