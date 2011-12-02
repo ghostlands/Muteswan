@@ -559,7 +559,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 			  if (layout == null)
       		     layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
       				  parent, false);
-      		  
+
+			  if (messageList.size() == 0 && position != 0)
+				  return(layout);
+			  
       		  final MuteswanMessage msg = messageList.get(position);
       		  
       		  TextView txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
@@ -943,6 +946,10 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		Log.v("LatestMessages","updateLatestMessages circle " + r.getShortname());
 		
+		if (Thread.currentThread().isInterrupted()) {
+			Log.v("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
+			return;
+		}		
 		
 		Integer lastId = r.getLastCurMsgId(false);
 		
@@ -1254,7 +1261,7 @@ final Handler stopSpinningHandler = new Handler() {
         		
         		Log.v("LatestMessages", "Current thread " + Thread.currentThread().toString());
         		if (lastMsg != null && lastMsg >= 0) {
-        			circle.updateLastMessage(lastMsg,false);
+        			circle.updateLastMessage(lastMsg,true);
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();

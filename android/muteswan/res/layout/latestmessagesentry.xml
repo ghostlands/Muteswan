@@ -71,7 +71,7 @@
      android:textColor="#666666"
      android:layout_alignParentRight="true"
      android:layout_alignParentTop="true"
-     android:padding="5sp"
+     
      android:gravity="top|right"
 	android:typeface="sans"
      />

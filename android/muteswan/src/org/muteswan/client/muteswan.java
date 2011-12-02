@@ -342,10 +342,11 @@ public class muteswan extends Activity implements Runnable {
 	    thread.start();
      
 
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
         
 
-  	   
+        
         final ImageView mLatestMessagesButton = (ImageView) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
         
