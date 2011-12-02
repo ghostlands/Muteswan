@@ -134,6 +134,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			            t.join();
 			            t = null;
 			        } catch (InterruptedException e) {
+			        	Log.v("LatestMessages", "interrupted while trying to join");
 			        }
 			    }
 		}
@@ -143,7 +144,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		super.onDestroy();
 		gettingMsgsDialog = null;
 		
-		cleanup();
+		cleanup(false);
 		
 		//if (newMsgService != null) {
 		//	unbindService(mNewMsgConn);
@@ -161,9 +162,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		}
 	}
 	
-	public void cleanup() {
-		cleanup(false);
-	}
 	
 	OnScrollListener scrollListener = new OnScrollListener() {
 		@Override
@@ -972,8 +970,19 @@ final Handler stopSpinningHandler = new Handler() {
 				break;
 			MuteswanMessage msg = null;
 
+			
+			
 			//Log.v("LatestMessages", "Reading message " + i + " moreMessages " + moreMessages + " refreshing " + refreshing);
-			msg = r.getMsgFromDb(i.toString(),false);
+			if (Thread.currentThread().isInterrupted()) {
+    			Log.v("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
+    			return;
+    		}
+			msg = r.getMsgFromDb(i.toString(),true);
+			if (Thread.currentThread().isInterrupted()) {
+    			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
+    			return;
+    		}
+			
 
 			if (msg == null) {
 				//downloaded = true;
@@ -1005,7 +1014,7 @@ final Handler stopSpinningHandler = new Handler() {
 					e.printStackTrace();
 				}
 				
-				msg.verifySignatures(idStore);
+				//msg.verifySignatures(idStore);
 				msgs.add(0,msg);
 				
 				// stop spinning if we are not refreshing to show we are done
@@ -1013,7 +1022,7 @@ final Handler stopSpinningHandler = new Handler() {
 					stopSpinningHandler.sendEmptyMessage(0);
 				
 			} else {
-				msg.verifySignatures(idStore);
+				//msg.verifySignatures(idStore);
 				//Log.v("LatestMessages", "Adding " + msg.getId());
 				msgs.add(0,msg);
 			}
@@ -1071,7 +1080,7 @@ final Handler stopSpinningHandler = new Handler() {
 		// get the latest message counts
 		if (circleExtra == null) {
 			for (Circle r : store) {
-				getLastestMessageCountFromTor(r);
+				oldThreads.add(getLastestMessageCountFromTor(r));
 			
 			}
 		} else if (circleExtra != null) {
@@ -1091,6 +1100,12 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		boolean stillWorking = true;
 		while (stillWorking) {
+		
+			
+			if (Thread.currentThread().isInterrupted()) {
+    			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
+    			return(null);
+    		}
 			
 			if (newMsgCheckState.isEmpty()) {
 				stillWorking = false;
@@ -1193,7 +1208,7 @@ final Handler stopSpinningHandler = new Handler() {
 		
 	}
 
-	private void getLastestMessageCountFromTor(final Circle circle) {
+	private Thread getLastestMessageCountFromTor(final Circle circle) {
 
 		
 		
@@ -1202,10 +1217,12 @@ final Handler stopSpinningHandler = new Handler() {
 
 		
         Thread nThread = new Thread() {
-        	@SuppressWarnings("static-access")
+        	
 			public void run() {
-        		if (Thread.currentThread().isInterrupted())
+        		if (Thread.currentThread().isInterrupted()) {
+        			Log.v("LatestMessages", "Thread interrupted!");
         			return;
+        		}
 		
         		Message m = Message.obtain();
         		Bundle b = new Bundle();
@@ -1213,20 +1230,29 @@ final Handler stopSpinningHandler = new Handler() {
         		b.putString("circle", muteswan.genHexHash(circle.getFullText()));
         		b.putString("state", "starting");
         		m.setData(b);
-        		Log.v("LatestMessages","Sending Message with value " + b.getString("circle"));
+        		Log.v("LatestMessages","Sending Message with value " + b.getString("circle") + " Current thread " + Thread.currentThread().toString());
         		newMsgCheckEventHandler.sendMessage(m);
-        		
-        		
         	
+        		if (Thread.currentThread().isInterrupted()) {
+        			Log.v("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
+        			return;
+        		}
 		
         		Integer prevLastMsgId = circle.getLastMsgId(false);
+        		if (Thread.currentThread().isInterrupted()) {
+        			Log.v("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
+        			return;
+        		}
         		
         		Integer lastMsg = circle.getLastTorMessageId();
         		
-        		if (Thread.currentThread().isInterrupted())
+        		if (Thread.currentThread().isInterrupted()) {
+        			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
         			return;
+        		}
+        			
         		
-        		
+        		Log.v("LatestMessages", "Current thread " + Thread.currentThread().toString());
         		if (lastMsg != null && lastMsg >= 0) {
         			circle.updateLastMessage(lastMsg,false);
         			Integer delta = lastMsg - prevLastMsgId;
@@ -1253,8 +1279,11 @@ final Handler stopSpinningHandler = new Handler() {
         	}
         };
 	
-          oldThreads.add(nThread);
+          //oldThreads.add(nThread);
+          
+          //Log.v("LatestMessages","Creating thread " + nThread.toString());
           nThread.start();
+          return(nThread);
         
 	}
     

@@ -59,6 +59,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -360,7 +362,7 @@ public class Circle {
 	}
 	
 	public Integer getLastCurMsgId(boolean closedb) {
-		if (curLastMsgId == 0)
+		if (curLastMsgId == null || curLastMsgId == 0)
 			curLastMsgId = getLastMsgId(closedb);
 		return(curLastMsgId);
 	}
@@ -918,8 +920,13 @@ public class Circle {
 	}
 	
 	public void closedb() {
-		if (openHelper != null)
-		 openHelper.close();
+		if (openHelper != null) {
+		 try {
+		  openHelper.close();
+		 } catch (android.database.sqlite.SQLiteException e) {
+			 e.getCause();
+		 }
+		}
 		//db.close();
 	}
 	
@@ -1097,6 +1104,8 @@ private JSONObject parseManifest(HttpResponse resp) {
 
 	   return jsonObj;
    }
+
+
 
 
 		

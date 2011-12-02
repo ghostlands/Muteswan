@@ -549,6 +549,12 @@ public class NewMessageService extends Service {
 			return torActive ;
 		}
 		
+		
+	
+		
+		
+		
+		
 	};
 	final private LinkedList<Circle> stopList = new LinkedList<Circle>();
 	

@@ -1,6 +1,8 @@
 package org.muteswan.client;
 
+
 import org.muteswan.client.IMessageService;
+
 
 interface IMessageService {
 
@@ -9,6 +11,6 @@ interface IMessageService {
   void longPoll();
   boolean isWorking();
   boolean torOnline();
-
+  
 }
 
