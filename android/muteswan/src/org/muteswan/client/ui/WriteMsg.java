@@ -50,6 +50,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -388,9 +389,15 @@ public class WriteMsg extends ListActivity {
 	
 	public Button.OnClickListener submitMsg = new Button.OnClickListener() {
 	    public void onClick(final View v) {
+	    	showVerifySendDialog(v);
+	    }
+	    
+	    
+	    private void postMessage(View v) {
 	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
 	    	Editable txt = newMsgText.getText();
 	    	final String txtData = txt.toString();
+	    
 	    	
 	    	
 	    	
@@ -581,6 +588,33 @@ public class WriteMsg extends ListActivity {
 	    	
 	    	
 	    }
+
+		private void showVerifySendDialog(final View v) {
+		
+			
+			String alertMsg = "Post messages to: \n";
+			for (final Circle cir: circles) {
+		      if (checkedCircles[circles.indexOf(cir)] == true)
+		    	  alertMsg = alertMsg + "  " + cir.getShortname() + "\n";
+			}
+		    	  
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
+    		builder.setMessage(alertMsg);
+    		
+    		
+    		 builder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
+   		      public void onClick(DialogInterface dialogInterface, int i) {
+   		    	  postMessage(v);
+   		      }
+   		    });
+   		   builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+   		      public void onClick(DialogInterface dialogInterface, int i) {}
+   		    });
+    		       
+    		AlertDialog alert = builder.create();
+    		alert.show();
+		}
 	
 	    	
 			
