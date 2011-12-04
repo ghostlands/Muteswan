@@ -84,6 +84,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private int messageViewCount;
 	HashMap<View, AlertDialog> moreButtons;
 	private ProgressDialog gettingMsgsDialog;
+	private ProgressDialog initialLoad;
 	
 	private HashMap<String, Integer> newMsgCheckState = new HashMap<String,Integer>();
 	private HashMap<String, String> newMsgCheckResults = new HashMap<String,String>();
@@ -207,6 +208,8 @@ public class LatestMessages extends ListActivity implements Runnable {
         extra = getIntent().getExtras();
         if (extra != null)
          circleExtra = extra.getString("circle");
+        
+        showInitialLoad();
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -269,7 +272,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public boolean onOptionsItemSelected(MenuItem item) {
 
 	
-		
+		showInitialLoad();
 		messageViewCount = 0;
 		messageList.clear();
 		refresh();
@@ -307,12 +310,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 	// refresh() checks for latest
 	private void refresh() {
 		
-		if (previousRefreshTime != 0 && ((System.currentTimeMillis()/1000) - previousRefreshTime) < 1) {
-			Log.v("LatestMessages", "Refresh called within 1 second, not running.");
+		if (previousRefreshTime != 0 && ((System.currentTimeMillis()/500) - previousRefreshTime) < 1) {
+			Log.v("LatestMessages", "Refresh called within 0.5 second, not running.");
 			return;
 		}
 		
-		//cleanOldThreads(false);
 		
 		newMsgCheckState.clear();
 		
@@ -326,6 +328,12 @@ public class LatestMessages extends ListActivity implements Runnable {
 		spinneyIcon.setImageResource(R.drawable.refresh);
 		if (verbose == true)
 			showDialog();
+	}
+
+	private void showInitialLoad() {
+		
+		initialLoad = ProgressDialog.show(this, "", "Loading messages...", true);
+		
 	}
 
 	private void showDialog() {
@@ -408,6 +416,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     
     public View.OnClickListener refreshClicked = new View.OnClickListener() {
     	public void onClick(View v) {
+    		showInitialLoad();
     		messageViewCount = 0;
     		messageList.clear();
     		refresh();
@@ -560,7 +569,7 @@ public class LatestMessages extends ListActivity implements Runnable {
       		     layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
       				  parent, false);
 
-			  if (messageList.size() == 0 && position != 0)
+			  if (messageList == null || messageList.size() == 0)
 				  return(layout);
 			  
       		  final MuteswanMessage msg = messageList.get(position);
@@ -568,33 +577,23 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  TextView txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
       		  TextView txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
       		  TextView txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
-      		  //TextView txtSigs = (TextView) layout.findViewById(R.id.android_latestmessagesSignatures);
       		  
       		  
-      		  //TextView txtReply = (TextView) layout.findViewById(R.id.android_latestmessagesReplyButton);
       		  TextView txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
 
 
-      		  //txtReply.setOnClickListener(replyClicked);
       		  txtRepost.setOnClickListener(repostClicked);
-              //replyButtons.put(txtReply,position);
               repostButtons.put(txtRepost,position);
   
       		
       		  
-      		  //txtCircle.setText(msg.getCircle().getShortname() + "/" + msg.getId());
               if (circleExtra == null) {
             	txtCircle.setText(msg.getCircle().getShortname());
       		  	txtCircle.setClickable(true);
       		  	txtCircle.setOnClickListener(showCircle);
 			  } else {
-				  //txtCircle.setText(" ");
-				  //layout.removeView(txtCircle);
 				  txtCircle.setVisibility(View.INVISIBLE);
 			  }
-      		//txtDate.setText("#"+msg.getId() + " " + msg.getDate());
-      		//txtDate.setText(msg.getDate());
-              //DateFormat df = new DateFormat();
               
               //We assume local time zone since we wrote the timestamp converted from GMT
               SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
@@ -602,7 +601,6 @@ public class LatestMessages extends ListActivity implements Runnable {
              
 			try {
 				msgDate = df.parse(msg.getDate());
-				//Log.v("LatestMessages","MessageDate for " + msg.getId() + ": " + msg.getDate());
 				String dateString = RelativeDateFormat.format(msgDate);
 				 if (dateString != null) {
 					 txtDate.setText(dateString);
@@ -613,48 +611,14 @@ public class LatestMessages extends ListActivity implements Runnable {
 				txtDate.setText("Error parsing date");
 				
 			}
-              //RelativeDateFormat relativeDate = new RelativeDateFormat();
-              //relativeDate.format(msgDate);
-			 
-				 
-				 
-			
-			
 			 
 			 
       		  txtMessage.setText(msg.getMsg());
-      		  
-      		  // not verifying signatures right now
-      		  //String sigDataStr = "-- \n";
-      		  //LinkedList<Identity> list = msg.getValidSigs();
-			  //if (list == null) {
-			  //	  sigDataStr = "";
-			  //} else if (list.size() == 0) {
-      		  //	  sigDataStr = "No valid signatures.";
-      		  //} else {
-      			  
-      		  // for (Identity id : msg.getValidSigs()) {
-      		  //	    sigDataStr = sigDataStr + id.getName() + "\n";
-      		  // }
-      		   
-      		  //txtSigs.setText(sigDataStr);
-      		  //}
       		  
 			
 			 layout.setClickable(true);
 			 layout.setOnClickListener(listItemClicked);
 			 
-      		 // images are not shown right now, uncomment to show them
-			 //if (msg.getCircle().getImage() != null) {
-      		//	 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
-      		//	 imageView.setImageBitmap(BitmapFactory.decodeByteArray(msg.getCircle().getImage(), 0, msg.getCircle().getImage().length));
-      		//	 //layout.addView(imageView);
-      		// } else {
-      		//	 ImageView imageView = (ImageView) layout.findViewById(R.id.latestmessagesImage);
-      		//	 layout.removeView(imageView);
-      		// }
-			 
-      		       		 
       		 return layout;	
 		}
 		
@@ -838,6 +802,17 @@ public class LatestMessages extends ListActivity implements Runnable {
         @Override
         public void handleMessage(Message msg) {
         		
+        	   Log.v("LatestMessages", "Sorting!");
+        	   if (messageList == null || messageList.size() == 0) {
+        		Log.v("LatestMessages", "Refusing to sort empty or null list.");
+				return;
+        	   }
+        	
+        	 
+   		       if (initialLoad != null) {
+   				initialLoad.dismiss();
+   				initialLoad = null;
+   			   }
        	
         		if (sorting == false) {
         			sorting = true;
@@ -850,17 +825,14 @@ public class LatestMessages extends ListActivity implements Runnable {
 						e.printStackTrace();
 					}
 
-					if (messageList.size() == 0)
-						return;
-					
         		    Collections.sort(messageList, comparatorDates);
         		    listAdapter.notifyDataSetChanged();
         		    
         		    sorting = false;
+        		    
         		} else {
         			Log.v("LatestMessages", "Concurrent sort request!");
         		}
-        		
         		
         }
     };
@@ -1025,7 +997,7 @@ final Handler stopSpinningHandler = new Handler() {
 				}
 				
 				//msg.verifySignatures(idStore);
-				msgs.add(0,msg);
+				msgs.add(msg);
 				
 				// stop spinning if we are not refreshing to show we are done
 				if (!refreshing)
@@ -1034,7 +1006,7 @@ final Handler stopSpinningHandler = new Handler() {
 			} else {
 				//msg.verifySignatures(idStore);
 				//Log.v("LatestMessages", "Adding " + msg.getId());
-				msgs.add(0,msg);
+				msgs.add(msg);
 			}
 
 
@@ -1067,22 +1039,13 @@ final Handler stopSpinningHandler = new Handler() {
 			updateLatestMessages(msgs, r, first, amount);
 		}
 		
+	    sortMessageList.sendEmptyMessage(0);
 		
 		// we are just loading more messages here, no need to check for new messages and potentially download. 
 		if (moreMessages == true) {
 			Log.v("LatestMessages", "messageViewCount is " + messageViewCount);
-			//dismissDialog.sendEmptyMessage(0);
-			//if (refreshing == false)
-			  sortMessageList.sendEmptyMessage(0);
-			//dataSetChanged.sendEmptyMessage(0);
-			//refreshing = false;
 			moreMessages = false;
 			return(msgs);
-		} else {
-			sortMessageList.sendEmptyMessage(0);
-			// AGHH FIXME please
-			//refreshing = true;
-			//dataSetChanged.sendEmptyMessage(0);
 		}
 		
 		
