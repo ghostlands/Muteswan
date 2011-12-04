@@ -21,11 +21,8 @@
         
            <receiver android:name=".NewMessageReceiver"
                         android:exported="true">
-                    <!--   <intent-filter>
-                                <action android:name="de.schoar.nagroid.POLL" />
-                                <category android:name="android.intent.category.DEFAULT" />
-                        </intent-filter> -->
            </receiver>
+           
         
         
         <activity android:name=".ui.MsgList"
