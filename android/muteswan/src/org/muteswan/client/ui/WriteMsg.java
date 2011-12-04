@@ -373,6 +373,7 @@ public class WriteMsg extends ListActivity {
 	              	//Toast.makeText(getApplicationContext(), "Message posted.", Toast.LENGTH_LONG).show();
 	        }
 	 };
+	protected AlertDialog verifyPostAlert;
 
 
 	 private String renderDialog(Boolean finished) {
@@ -394,6 +395,10 @@ public class WriteMsg extends ListActivity {
 	    
 	    
 	    private void postMessage(View v) {
+	    	
+	    	if (verifyPostAlert != null)
+	    		verifyPostAlert.dismiss();
+	    	
 	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
 	    	Editable txt = newMsgText.getText();
 	    	final String txtData = txt.toString();
@@ -608,17 +613,14 @@ public class WriteMsg extends ListActivity {
    		    	  postMessage(v);
    		      }
    		    });
-   		   builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+    		 
+   		    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
    		      public void onClick(DialogInterface dialogInterface, int i) {}
    		    });
     		       
-    		AlertDialog alert = builder.create();
-    		alert.show();
+    		verifyPostAlert = builder.create();
+    		verifyPostAlert.show();
 		}
-	
-	    	
-			
-    	 
 	    	
 	};
 }
