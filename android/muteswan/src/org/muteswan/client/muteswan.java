@@ -442,62 +442,6 @@ public class muteswan extends Activity implements Runnable {
     	}
     };
     
-    public View.OnClickListener shareOrbotButtonClicked = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","https://www.torproject.org/dist/android/0.2.2.25-alpha-orbot-1.0.5.2.apk");
-			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-			startActivity(intent);
-    	}
-    };
-    
-    public View.OnClickListener shareMuteswanButtonClicked = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan.apk");
-			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-			startActivity(intent);
-    	}
-    };
-    
-    public View.OnClickListener mReadMsgs = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		   Intent intent = new Intent(getApplicationContext(),CircleList.class);
-       		  intent.putExtra("action",CircleList.READ);
-       		  startActivity(intent);
-    	}
-    };
-    
-    public View.OnClickListener mWriteMsg = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		   Intent intent = new Intent(getApplicationContext(),CircleList.class);
-       		  intent.putExtra("action",CircleList.WRITE);
-       		  startActivity(intent);
-    	}
-    };
-    
-    public View.OnClickListener mShareCircle = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		  Intent intent = new Intent(getApplicationContext(),CircleList.class);
-       		  intent.putExtra("action",CircleList.SHARE);
-       		  startActivity(intent);
-    	}
-    };
-    
-    public View.OnClickListener mScanCircle = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		Intent intent = new Intent(getApplicationContext(),CircleList.class);
-     		intent.putExtra("action",CircleList.SCAN);
-     		startActivity(intent);
-    	}
-    };
-    
-    public View.OnClickListener mCreateCircle = new View.OnClickListener() {
-    	public void onClick(View v) {
-    		startActivity(new Intent(getApplicationContext(),CreateCircle.class));
-    	}
-    
-    };
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -534,12 +478,12 @@ public class muteswan extends Activity implements Runnable {
 		//	return true;
 		} else if (item.toString().equals("Share Muteswan")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan.apk");
+			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan-latest.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(intent);
 		} else if (item.toString().equals("Share Orbot")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","https://www.torproject.org/dist/android/0.2.2.25-alpha-orbot-1.0.5.2.apk");
+			intent.putExtra("ENCODE_DATA","market://search?q=pname:org.torproject.android");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			startActivity(intent);
 		} else if (item.toString().equals("Reset Muteswan")) {
