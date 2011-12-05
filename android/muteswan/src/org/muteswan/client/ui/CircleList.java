@@ -18,6 +18,7 @@ package org.muteswan.client.ui;
 
 import java.io.IOException;
 
+import org.muteswan.client.ITorVerifyResult;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
@@ -39,6 +40,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
@@ -514,4 +516,7 @@ public class CircleList extends ListActivity {
     	  }
 
 	}
+	
+
+	
 }

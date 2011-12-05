@@ -59,7 +59,6 @@
     </application>
 
 
-<uses-permission android:name="android.permission.GET_TASKS"></uses-permission>
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 <uses-permission android:name="org.torproject.android.service.ITorService"/>
 <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="4" />

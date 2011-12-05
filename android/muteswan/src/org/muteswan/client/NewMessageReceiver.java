@@ -18,6 +18,8 @@ package org.muteswan.client;
 
 import java.util.List;
 
+import org.muteswan.client.ui.LatestMessages;
+
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -47,18 +49,20 @@ public class NewMessageReceiver extends BroadcastReceiver {
 			return;
 		
 		
-	     ActivityManager am = (ActivityManager)ctx
-	                .getSystemService(android.content.Context.ACTIVITY_SERVICE);
+	     //ActivityManager am = (ActivityManager)ctx
+	      //          .getSystemService(android.content.Context.ACTIVITY_SERVICE);
 	 
 	     // get the info from the currently running task
-	     List<RunningTaskInfo> taskInfo = am.getRunningTasks(1);	 
+	     /*List<RunningTaskInfo> taskInfo = am.getRunningTasks(1);	 
 	     Log.d("current task :", "CURRENT Activity ::"
 	                + taskInfo.get(0).topActivity.getClassName());
 	     if (taskInfo.get(0).topActivity.getClassName().contains("org.muteswan"))
-	    	 return;
+	    	 return; */
    	
    	
    	    Log.v("MuteswanReceiver", "Received alarm, trying to connect to service.");
+   	    
+   	    //ctx.sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 
    	    int count = 0;
    	    while (msgService == null) {
@@ -71,19 +75,28 @@ public class NewMessageReceiver extends BroadcastReceiver {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-   	    }	
+   	    }
 	
        if (msgService == null) {
    	     Log.v("MuteswanReceiver", "Service not running, starting.");
 	     ctx.startService(svc);
    	   } else {
+   		   
+   		 try {
+			if (msgService.isUserCheckingMessages()) {
+				 Log.v("MuteswanReceiver", "Someone is checking messages, bailing out of check.");
+				 return;
+			 }
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
    	     Log.v("MuteswanReceiver", "Service already running.");
-   	     //try {
-		   //msgService.longPoll();
-	    //} catch (RemoteException e) {
-		// TODO Auto-generated catch block
-		 // e.printStackTrace();
-	   //}
+   	     try {
+		   msgService.refreshLatest();
+	    } catch (RemoteException e) {
+		  e.printStackTrace();
+	   }
    	  }
    	
    	

@@ -28,6 +28,7 @@ import java.util.HashMap;
 
 import org.apache.http.client.ClientProtocolException;
 import org.muteswan.client.IMessageService;
+import org.muteswan.client.ITorVerifyResult;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
 import org.muteswan.client.data.Circle;
@@ -39,9 +40,12 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
@@ -50,6 +54,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 
 import android.util.Log;
@@ -74,6 +79,7 @@ import android.widget.TextView;
 public class LatestMessages extends ListActivity implements Runnable {
 
 	protected static final int MSGDOWNLOADAMOUNT = 5;
+	public static final String CHECKING_MESSAGES = "currentlycheckingmessages";
 	private Bundle extra;
 	private String circleExtra;
 	private CircleStore store;
@@ -101,7 +107,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 		super.onResume();
 		//init();
 		
-		
+		 if (torNotAvailableReceiver == null)
+			 torNotAvailableReceiver = new TorNotAvailableReceiver();
+		 IntentFilter intentFilter = new IntentFilter(muteswan.TOR_NOT_AVAILABLE);
+		 registerReceiver(torNotAvailableReceiver, intentFilter);
 		
 		//cleanup();
 		
@@ -115,12 +124,16 @@ public class LatestMessages extends ListActivity implements Runnable {
         	circleExtra = null;
         }
 		
+        
+        
 		refresh();
 		
 	}
 	
 	public void onPause() {
 		super.onPause();
+		if (torNotAvailableReceiver != null)
+			unregisterReceiver(torNotAvailableReceiver);
 		cleanup(false);
 	}
 
@@ -314,6 +327,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 			Log.v("LatestMessages", "Refresh called within 0.5 second, not running.");
 			return;
 		}
+		
+		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
 		
 		newMsgCheckState.clear();
@@ -1259,5 +1274,66 @@ final Handler stopSpinningHandler = new Handler() {
           return(nThread);
         
 	}
-    
+	
+	private class TorNotAvailableReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	dialogTorNotAvailable.sendEmptyMessage(0);
+	    }
+	}
+
+	private TorNotAvailableReceiver torNotAvailableReceiver;
+	
+	private Handler dialogTorNotAvailable = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+        		  offerToStartTor();
+        }
+
+		private void offerToStartTor() {
+			AlertDialog.Builder noTorDialog = new AlertDialog.Builder(LatestMessages.this);
+		    noTorDialog.setTitle("Tor Unavailable");
+		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly otherwise new messages will not be available.");
+		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {
+		      
+		    	Intent intent = null;
+		    	try {
+		    	  intent = new Intent("org.torproject.android.START_TOR");
+		    	  startActivity(intent);
+		    	} catch (ActivityNotFoundException e) {
+		    	  offerToInstallTor();
+		          
+		    	}
+		      }
+		    });
+		    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {}
+		    });
+		    noTorDialog.create();
+		    noTorDialog.show();
+		}
+		
+		private void offerToInstallTor() {
+			AlertDialog.Builder noTorDialog = new AlertDialog.Builder(LatestMessages.this);
+		    noTorDialog.setTitle("Install Tor?");
+		    noTorDialog.setMessage("Tor is not currently installed. Do you want to install it from the market?");
+		    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {
+		        Uri uri = Uri.parse("market://search?q=pname:org.torproject.android");
+		    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		        startActivity(intent);
+		      }
+		    });
+		    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {}
+		    });
+		    noTorDialog.create();
+		    noTorDialog.show();
+		}
+		
+		
+ };
+	
+
 }

@@ -2,15 +2,14 @@ package org.muteswan.client;
 
 
 import org.muteswan.client.IMessageService;
+import org.muteswan.client.ITorVerifyResult;
 
 
 interface IMessageService {
 
-  void updateLastMessage();
-  void downloadMessages();
-  void longPoll();
-  boolean isWorking();
-  boolean torOnline();
-  
+  void refreshLatest();
+  void checkTorStatus(ITorVerifyResult resultStatus);
+  boolean isUserCheckingMessages();
+  void setUserChecking(boolean checkValue);  
 }
 

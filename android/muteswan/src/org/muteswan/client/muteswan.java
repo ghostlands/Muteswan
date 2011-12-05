@@ -49,13 +49,16 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -63,6 +66,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -91,9 +95,12 @@ public class muteswan extends Activity implements Runnable {
 	public final static int TOR_STATUS_READY = 0;
 	public final static int TOR_STATUS_ON = 1;
 	public final static int TOR_STATUS_CONNECTING = 2;
+	
+	public final static String TOR_NOT_AVAILABLE = "tornotavailable";
+	public final static String TOR_AVAILABLE = "toravailable";
 
 	
-	public final static String PREFS = "MuteswanPrefs"; 
+	public final static String PREFS = "MuteswanPrefs";
 	private ProgressDialog dialog;
 	
 	
@@ -140,21 +147,30 @@ public class muteswan extends Activity implements Runnable {
 			
 		
 		
-		
-		if (alreadyCheckedTor == false) {
-		  TorStatus checkTorStatus = new TorStatus();
-		  if (checkTorStatus.checkStatus()) {
-			checkTorDialogDismiss.sendEmptyMessage(0);
-		  } else {
-			//TextView msg = new TextView(getApplicationContext());
-			//msg.setText("Sorry, Tor is not available.");
-			//checkTorDialog.setContentView(msg);
-			//checkTorDialog.setMessage((CharSequence) "Sorry, Tor is not available.");
-			dialogTorNotAvailable.sendEmptyMessage(0);
-		  }
-		  alreadyCheckedTor = true;
-		}
+		//ORIGINAL TOR CHECK 
+		//if (alreadyCheckedTor == false) {
+		//  TorStatus checkTorStatus = new TorStatus();
+		//  if (checkTorStatus.checkStatus()) {
+		//	checkTorDialogDismiss.sendEmptyMessage(0);
+		//  } else {
+		//	dialogTorNotAvailable.sendEmptyMessage(0);
+		 // }
+		 // alreadyCheckedTor = true;
+		//}
 		  
+		try {
+			while (newMsgService == null) {
+				Thread.currentThread();
+				Thread.sleep(15);
+			}
+			newMsgService.checkTorStatus(torResultCallback);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -199,22 +215,22 @@ public class muteswan extends Activity implements Runnable {
 			
 	}
 	 
+	 private Handler dialogTorAvailable = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	          	   AlertDialog.Builder dialog = new AlertDialog.Builder(muteswan.this);
+	       		    dialog.setTitle("Tor available");
+	       		    dialog.create();
+	       		    dialog.show();     		
+
+	        		
+	       }
+	 };
+	 
 	 private Handler dialogTorNotAvailable = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
-	        	   if (checkTorDialog != null) {
-	              	//checkTorDialog.setMessage("Sorry, Tor is not available at this time. You will still be able to access old data but you will not be able to send messages or read new messages.");
-	              	//checkTorDialog.setCancelable(true);
-	        		
-	        		   
-	        		  checkTorDialog.cancel();
-	        		  
 	        		  offerToStartTor();
-	        		
-	        		  
-
-	        		
-	        	   }
 	        }
 
 			private void offerToStartTor() {
@@ -272,17 +288,17 @@ public class muteswan extends Activity implements Runnable {
 	 };
 	 
 	 
-	 private Handler stopTitleProgressBar = new Handler() {
-		 @Override
-		 public void handleMessage(Message msg) {
-           	    //setTitle("muteswan");
-		        //setProgressBarIndeterminateVisibility(false);
-		 }
-	 };
 	private boolean alreadyCheckedTor;
+	private Builder torStatusDialog;
 	
 	 
-	 
+	
+	public void onPause() {
+		super.onPause();
+		if (torNotAvailableReceiver != null)
+			unregisterReceiver(torNotAvailableReceiver);
+
+	}
 	public void onResume() {
 		 super.onResume();
 
@@ -291,12 +307,18 @@ public class muteswan extends Activity implements Runnable {
 
 		 
 		 //if (alreadyCheckedTor == false) {
-		   showCheckTorDialog();
+		   //showCheckTorDialog();
 		   scheduleServiceAlarm();		   
 		 //  alreadyCheckedTor = true;
 		 //}
 			
-	        
+		 if (torNotAvailableReceiver == null)
+			 torNotAvailableReceiver = new TorNotAvailableReceiver();
+		 IntentFilter intentFilter = new IntentFilter(muteswan.TOR_NOT_AVAILABLE);
+		 registerReceiver(torNotAvailableReceiver, intentFilter);
+  
+		   
+		 
 	 }
 	
 	public void onDestroy() {
@@ -329,8 +351,9 @@ public class muteswan extends Activity implements Runnable {
         
         
         // SERVICE BIND
-        //Intent serviceIntent = new Intent(this,NewMessageService.class);
-        //boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
+        Intent serviceIntent = new Intent(this,NewMessageService.class);
+        boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
+        
         
         
         // indicate we were just created
@@ -406,8 +429,6 @@ public class muteswan extends Activity implements Runnable {
         if (versionNameString != null)
           versionName.setText(versionNameString);
 	    
-		 
-		    
     }
     
     private void showCheckTorDialog() {
@@ -585,6 +606,12 @@ public class muteswan extends Activity implements Runnable {
 		public void onServiceConnected(ComponentName className,
                 IBinder service) {
         	newMsgService = IMessageService.Stub.asInterface(service);
+        	try {
+				newMsgService.setUserChecking(true);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         	Log.v("Muteswan", "onServiceConnected called.");
         	if (newMsgService == null) {
         		Log.e("Muteswan", "newMsgService is null ");
@@ -624,5 +651,31 @@ public class muteswan extends Activity implements Runnable {
 		
 	}
 	
+	
+	
+	 private final ITorVerifyResult.Stub torResultCallback = new ITorVerifyResult.Stub() {
+
+			@Override
+			public void torFailure() throws RemoteException {
+				dialogTorNotAvailable.sendEmptyMessage(0);
+			}
+
+			@Override
+			public void torSuccess() throws RemoteException {
+				//dialogTorAvailable.sendEmptyMessage(0);
+			}
+			
+	};
+	
+	
+
+	private class TorNotAvailableReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	dialogTorNotAvailable.sendEmptyMessage(0);
+	    }
+	}
+
+	private TorNotAvailableReceiver torNotAvailableReceiver;
     
 }

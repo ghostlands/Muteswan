@@ -37,9 +37,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
@@ -115,14 +117,33 @@ public class NewMessageService extends Service {
 
 		
 		justLaunched = true;
+		
+		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
+		IntentFilter intentFilter = new IntentFilter(LatestMessages.CHECKING_MESSAGES);
+		registerReceiver(isUserCheckingMessagesReceiver, intentFilter);
+
+		init();
 	}
 	
 	@Override
 	public void onDestroy() {
 		stopservice();
-		mNM.cancel(PERSISTANT_NOTIFICATION);
-		AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarm.cancel(NewMessageReceiver.getPendingIntent(this));
+		//mNM.cancel(PERSISTANT_NOTIFICATION);
+		//AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		//alarm.cancel(NewMessageReceiver.getPendingIntent(this));
+		unregisterReceiver(isUserCheckingMessagesReceiver);
+	}
+	
+	private void init() {
+		 pollList.clear();
+		   
+		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
+		 CircleStore rs = new CircleStore(getApplicationContext(),true);
+		 for (Circle r : rs) {
+				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
+				  registerPoll(r);
+		 }
+		 
 	}
 	
 	private void start() {
@@ -156,14 +177,7 @@ public class NewMessageService extends Service {
 		if (started  == false) {
 		
 		   Log.v("MuteswanService", "Start flag is false, exiting.");
-		   pollList.clear();
-		   
-		   Log.v("MuteswanService", "Starting up, we are: " + Thread.currentThread().getId());
-		   CircleStore rs = new CircleStore(getApplicationContext(),true);
-		   for (Circle r : rs) {
-				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
-				  registerPoll(r);
-		   }
+		  
 		  
 		  //runLongpoll();
 		  started = true;
@@ -203,8 +217,8 @@ public class NewMessageService extends Service {
 		
 		
 		notify.flags |= Notification.FLAG_AUTO_CANCEL;
+		notify.flags |= Notification.FLAG_SHOW_LIGHTS;
 		notify.defaults |= Notification.DEFAULT_SOUND;
-		notify.defaults |= Notification.DEFAULT_LIGHTS;
 	
 		if (content == null)
 			return;
@@ -232,7 +246,7 @@ public class NewMessageService extends Service {
 		
 		 isWorking = true;
 		 notifyIds = new HashMap<String,Integer>();
-		 notifyId = 0;
+		 //notifyId = 0;
 		
 		 Log.v("MuteswanService","pollList size " + pollList.size());
 		 for (final Circle circle : pollList.keySet()) {
@@ -313,8 +327,11 @@ public class NewMessageService extends Service {
 								} else if (msg != null) {
 									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg());
 								}
-								notifyIds.put(circle.getFullText(), notifyId);
-								notifyId++;
+								
+								if (!notifyIds.containsKey(circle.getFullText())) {
+									notifyIds.put(circle.getFullText(), notifyId);
+									notifyId++;
+								}
 					        	CharSequence notifTitle = "New message in " + circle.getShortname();
 					        	CharSequence notifText = msg.getMsg();
 					        	showNotification(circle,notifTitle,notifText);
@@ -516,39 +533,41 @@ public class NewMessageService extends Service {
 	}
 		
 	private final IMessageService.Stub binder = new IMessageService.Stub() {
-		public void updateLastMessage() {
-			if (isWorking)
-				return;
-			
-			isWorking = true;
-			getLastMessageAll();
-		}
-		
-		public void downloadMessages() {
-			if (isWorking)
-				return;
-			isWorking = true;
-			downloadMessagesAll();
-		}
-		
-		
-		public boolean isWorking() {
-			return isWorking;
-		}
 
-		public void longPoll() {
-			Log.v("MuteswanService", "Longpoll() called.");
-			
+		public void refreshLatest() {
+			Log.v("MuteswanService", "runPoll() called.");
 			
 			runPoll();
 			
 			isWorking = false;
 		}
 		
-		public boolean torOnline() {
-			return torActive ;
+		
+		public void checkTorStatus(ITorVerifyResult verifyResult) {
+			TorStatus checkTorStatus = new TorStatus();
+			if (checkTorStatus.checkStatus()) {
+				
+				sendBroadcast(new Intent(muteswan.TOR_AVAILABLE));
+			} else {
+				sendBroadcast(new Intent(muteswan.TOR_NOT_AVAILABLE));
+			}
+		}
+
+		@Override
+		public boolean isUserCheckingMessages() throws RemoteException {
+			Log.v("NewMessageService", "isUserCheckingMessages " + isUserCheckingMessages);
+	    	if (isUserCheckingMessages == true) {
+	    		isUserCheckingMessages = false;
+	    		return(true);
+	    	} else {
+	    		return(false);
+	    	}
 		}
 		
+		public void setUserChecking(boolean checkValue) {
+			Log.v("NewMessageService", "setUserChecking " + checkValue);
+			isUserCheckingMessages = checkValue;
+		}
 		
 	
 		
@@ -557,6 +576,8 @@ public class NewMessageService extends Service {
 		
 	};
 	final private LinkedList<Circle> stopList = new LinkedList<Circle>();
+	private boolean isUserCheckingMessages = true;
+	private IsUserCheckingMessagesReceiver isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
 	
 	public IBinder onBind(Intent intent) {
 		Log.v("NewMessageService","onBind called.");
@@ -568,10 +589,18 @@ public class NewMessageService extends Service {
 	private void stopservice() {
 		for (Circle r : pollList.keySet()) {
 			stopList.add(r);
-			pollList.get(r).interrupt();
+			if (pollList.get(r) != null)
+			  pollList.get(r).interrupt();
 		}
 	}
 
 	
-	
+	private class IsUserCheckingMessagesReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	Log.v("NewMessageService", "Got alarm to not check!");
+	    	isUserCheckingMessages = true;
+	    }
+	}
+
 }

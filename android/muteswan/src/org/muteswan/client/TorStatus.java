@@ -60,9 +60,13 @@ public class TorStatus {
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return(false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			Log.v("TorStatus", "Tor not running.");
+			return(false);
+			
 		}
    	 	return(false);
 	 
