@@ -1,0 +1,458 @@
+
+Muteswan Protocol Documentation
+===============================
+James Unger <junger@muteswan.org>
+:Author Initials: JMU
+:toc:
+:icons:
+:numbered:
+:website: http://muteswan.org
+
+
+Introduction
+------------
+Muteswan is an experimental pseudo anonymous instant message system. It is pseudo
+anonymous in the sense that the protocol maintains (using Tor) anonymity while
+message access is dependent upon face to face human trust relationships.  The
+intention is to provide a simple messaging service that is reasonably
+protected from surveillance with encryption, protects sender identity
+and protects receiver identity. Muteswan adopts the notion of a "circle": a
+collection of individuals that share a single symmetric key.  Users share their
+keys with other individuals face to face, in person using QR codes (2
+dimensional bar codes). An Muteswan client in possession of a symmetric key can
+send and receive messages to other people who possess the same key. The
+identity of both sender and receiver are completely protected by Tor.
+
+The idea is that this framework is flexible enough to be used on the one hand
+as a private, secure communication platform and on the other hand as an
+information dissemination tool. For example, two individuals sharing a circle
+with no other people in possession of the key enables private and trusted
+communication. In other cases, identity protection is paramount but access to
+the circle may be more widespread.
+
+Muteswan uses Tor to anonymize messages. A hidden service on the Tor network is
+accessible only to other Tor clients and the server does not know the identity
+of who is making the request nor does the client know the identity of the
+hidden service serving the response. A very simple RESTful protocol is used to
+post, read and list messages. Messages are encrypted using AES and sent to the
+server. Messages are addressable on the server by issuing a GET on the SHA1
+hash of the AES key. 
+
+Intentions, Assumptions and Goals
+---------------------------------
+
+This document is intended to be a technical and design reference. The
+background assumptions, project goals and potential uses of Muteswan are outside
+the scope of this document. However, it is difficult to continue without some
+overall frame to help contextualize the impetus and goals of the project.
+
+Muteswan rests on a few operating assumptions and requirements:
+	- Trust and identity are not always so closely related. There is more
+need today to be able to trust information without knowing the identity/origin
+of the information explicitly. Muteswan should facilitate this where it is possible.
+
+	- Identity must always be protected. Both senders and receivers must
+have plausible deniability.
+
+	- Simple and secure: protocol must be designed such that success of
+any operation requires maximum anonymity. It should be impossible to use Muteswan
+in such a way that leaks your identity. The server should be as small and
+stateless as possible, without any logging features.
+	- The user should always have control of her identity and risk.
+
+The goal of the Muteswan project is to create an experimental communication tool
+that is literally "embedded" in the social and geographic space of its users.
+The dissemination of information and trust networks, though anonymous, may
+perhaps map more closely to real world social relations and thus provide some
+level of trust. This (perhaps limited) level of trust is augmented with the
+protection of message senders/receivers. Together these two properties - limited
+but existent trust and very little individual risk - are desirable, especially
+in contexts where communication is associated with legal or political risk.
+
+
+Protocol Overview
+-----------------
+
+Muteswan is extremely simple.  "Circles", or collective use of shared symmetric AES
+keys plus a server name, provide centralized access to message data. Possessing
+an appropriate AES key along with the name of the Tor hidden server enables
+access to the messages on a given circle.
+
+A client/server protocol was built on top of HTTP using RESTful principles.
+Clients can:
+	- get a single message, 
+	- discover the latest message,
+	- or post a message.
+
+The Muteswan server itself merely acts as a distribution point. It sends clients
+messages and saves messages that are posted to circles but it does not process
+or analyze any messages.
+
+image:Muteswan.jpg
+
+
+Circles
+~~~~~~~
+
+
+Circles are the only organizational unit in Muteswan. They are composed of three
+elements:
+
+	key: a 24-bit AES key,e.g, dba4fe6ef22b494d
+	server: a tor hidden service address, e.g., tckwndlytrphlpyo.onion
+	shortname: name of the circle, without spaces, e.g., testsite
+
+
+Circles are usually represented in text form with a '+' separating the name from the key and an '@' separating the key from the server:
+
+testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion
+
+
+
+Since Muteswan uses symmetric keys, accessing a circle simply involves knowing the
+key and the server. Consequently, the text representation of a circle should
+never be displayed and the key should be treated as any cryptographic secret is
+treated.  Muteswan circles are intended to be shared in person, typically via
+QR code. The circles should be trivial to communicate via QR code but there should
+be absolutely no reason to transfer them digitally, ever. It should be
+mentioned that perhaps one would desire to distribute QR codes openly if the
+intention was to attract a large amount of users to a circle.
+
+
+Identities
+~~~~~~~~~~
+
+Identities are RSA public/private key pairs. A user can generate a
+public/private key pair, provide it with a name, and share the public key with
+any number of people, just as they would a circle. The user can then optionally
+sign any outgoing message thus proving their identity to whoever has the
+appropriate public key. Like circles, public keys are communicate face to face
+using QR codes.
+
+Identities allow individuals to prove authorship at the risk of potentially
+reducing anonymity. However, how a public is distributed is up to the
+individual. If they share it with a few trusted people who do not redistribute
+the key, someone may be able to post messages that to most people are
+anonymous.
+
+A public key can also be anonymously distributed and used to prove authorship,
+whether or not the person who generated the key is known.
+
+Technical components
+--------------------
+
+
+The individual technical components described below. In some cases, more detail
+will be provided in later sections, but this section outlines the core
+operative components.
+
+
+Tor client
+~~~~~~~~~~
+
+Tor acts as a SOCKS proxy on the client node. Tor runs on many platforms,
+including mobile ones. All Muteswan clients need a running local Tor proxy in
+order to function.
+
+
+Tor hidden server
+~~~~~~~~~~~~~~~~~
+
+A Tor hidden service is made available on the Tor network using an RSA key. It
+is accessible from a special address, e.g, tckwndlytrphlpyo.onion. This is
+ideal because it protects anonymity in both directions. The server has no idea
+who is talking to it; the client has no idea who they are talking to. Another
+valuable property of the Tor hidden services is that since it does not resolve
+to a globally routable IP there is no way to accidentally compromise any
+identity protection.
+
+
+
+Configucircle a Tor hidden service is outside the scope of this document.
+However, it is a relatively straightforward process. Once the hidden service is
+configured in the Tor configuration file and the RSA key is available you are
+ready to start Tor and then the Muteswan server itself. The Muteswan server knows
+nothing about Tor: it simply sees HTTP requests originating from localhost. 
+
+
+
+Muteswan client
+~~~~~~~~~~~~~~~
+
+The Muteswan client queries the Tor hidden service address to fetch message
+indexes, individual messages and to post messages. It provides the only
+interface to the user. 
+
+
+
+It is also the only place where Muteswan keys are stored.  The client is
+responsible for managing its own cryptographic stores. At a minimum, this
+requires stocircle key and server information.
+
+
+
+Muteswan server
+~~~~~~~~~~~~~~~
+
+The Muteswan server is a simple HTTP server using RESTful principles. The server
+is essentially stateless: only POST and GET methods are implemented with the
+index fetch being the only operation that is not strictly uploading or
+downloading an actual file.
+
+
+
+Since the server role is so narrow, it can implemented very minimally and
+reduce security risks. Also, it should be noted that a compromise of an Muteswan
+server could reveal other circles hosted on the hidden service but would not
+expose any identities.
+
+
+QR codes
+~~~~~~~~
+
+QR codes are used to transmit circle information to other users. Qrcodes were
+chosen because they provide a very flexible, convenient and most importantly
+they are "embedded in the physical world."
+
+
+
+To transmit a circle to another user, a QR code needs to be generated using the
+full text description of a circle (shortname+key@server). The individual
+receiving the key scans the QR code and imports the circle information into their
+client.
+
+
+Cryptography
+~~~~~~~~~~~~
+
+Muteswan uses standard AES CBC symmetric key cryptography. Every message is
+encrypted with the circle key before it is sent. It is posted to the server based
+on a SHA1 hash of the circle key. The AES cryptography provides protection from
+anyone who has access to the actual tor hidden service as well as a certain
+level of protection if an Muteswan server is compromised.
+
+AES is currently used because it is secure and widely supported. The actual
+cryptographic algorithm is not material and perhaps changing out or selecting
+algorithms is a desirable feature.
+
+NOTE: Currently, the cryptography should be considered a deterrent as opposed
+to iron clad protection. In current implemention, the same initialization
+vector values are used for all keys. This could make key recovery easier for an
+attacker that somehow gains control of the tor hidden server.
+
+
+
+HTTP/REST
+~~~~~~~~~
+
+Muteswan uses a simple RESTful scheme on top of HTTP. Only GET and POST methods are
+used and their URLs are well defined.  
+
+
+There are a few operational contraints of the server that help keep things simple and secure.
+
+ - The server should never alter the contents of a message.
+ - The server may verify message length and return a 413 Request Entity Too Large error if the message content is more than 10MB. FIXME: what should this be?
+ - All information the server provides the client must be in HTTP headers.
+
+
+
+
+JSON is used to encode the message formats. All messages must have a key name
+of "message" which contains the base64 encoded encrypted data. For example:
+--------------------------------------
+{"message":"X6h9V7Ynlz974yj5o+nE+Q--"}
+--------------------------------------
+
+
+HTTP Headers
+~~~~~~~
+
+There are 2 headers currently used.
+
+
+Last-Message: An integer value that represents that last message on a circle. This is returned when a client issues a GET on a circle SHA1 hash.
+
+
+Last-Modified: Standard HTTP field that indicates when a message was posted.
+
+
+
+
+
+
+POST msg
+~~~~~~~~
+
+To post a message to a circle, an Muteswan client uses the POST method with the SHA1
+hash of the circle in the request URI. No other argument is allowed on the URI.
+
+
+
+An example POST request:
+-------------------------------------------------------
+POST /3db7814a7d0e23f66906fbfd087bbd8f523f7180 HTTP/1.1
+Content-Length: 32
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+
+{"message":"X6h9V7Ynlz974yj5o+nE+Q--"}
+-------------------------------------------------------
+
+
+If the container (usually a file system directory) does not exist (that is, no
+messages exist yet), than the container is created and the first message is
+given an id of 1.
+ 
+
+
+All POST requests, if accepted, increment the new message index by one and
+create a file of the same name in the SHA1 hash directory.
+
+
+
+
+
+A message may optionally be signed. If a message is signed, the client must put a JSON array with the key 'signatures' into the payload. Each signature is composed of two colon separated fields. The first field is a SHA1 hash of the RSA public key used to sign the message. The second is the base64 encoded X509 encoded RSA signature. An example signed POST message (newlines introduced for readability):
+----------------------------------------------------------------------------------------
+POST /f573fe7d4a34186b00bcab2b38e52122afe04d83
+Content-Length: 1465
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+
+
+{"message":"YaDTBo9nZBiG+gVt5cQMvCNhY3hdJ3JrVkgxE/x6jhjRW0PBGrrtvrLwXuiP2qigzOVlrm7Thq
+jMe8QXqMNeQDbIso2u8mT+4TzJxtvRYq8mUM9vrZV+6fmRTaz3rkSeqN6XW6Y7MAJxMqK9UM4MF4ZNlDdTy8p9
+e8a06fIx2KkzL1CipEkxS6ocp5+R+Hb1w4JVCsH8F1/QvNZfK+DujuDZCFRq7SDrcfKxtAorTKG33+o3BdHSK1
+7VXLpLdOm/xp7tVq2q6LDRtMpMRYD86ALCTjwI6btmyfPA34LaIYdsUp+BuMswRI1v/MBUrrvN+SLcAoMisJHH
+Ul/tD7/J03FD08zBElNllKnOIuAEt06sYlTzpaU4gw4jKongYHqNB+3eCNerMzkzJOGI9OWfbHD5vQZxmMo+Fb
+KNU9emUcB2QypPP6mRJO4xYrTX0laRMmE826CvmjBDEO9YRXlaU784vtl5J3rmZUjaSis63nDHF4jGcvXqHRpe
+5HNfgnXsbOB6CbRHPeDyJRtxHNtOMkpBoqhDj2ANBd8w2ROrdDC/RxT2Wv6CTbUZSmMo6yeU+Z/1KHRXqr776H
+S+SKKIjrQA1Qla+5q+ZmofcXDliE/pMY0Bma7qRIGXx9Sh+NrSmKzvzTF1X+US4uCPllXZiM0rLf7bx4PjWuSF
+9AOyQ6UGs0itZdLHAJRDDSgPwVwZ0rxkDjsya3126Sk/mKdzRTJ1u6/SZe4gB9fU9Nj9ZB3O+BL6fvqS3V4VU3
+WdvJB4lrUU9gUJ7HwiJqT9AQbCzBgE3PoTdYq5j8wKEliUFwk1pjnnLAI+zRYymwfYlZ70yMEMZpFuAL1Rd7Ll
+QE9M6x1XHowYz4CtKlzpRXE1dMEiCP+VZZQRjxHj4Vt/zaCkdBXzBjyLY/Sp7dMHm8de2Y8gfxcczEPsnmacTP
+VbbPay3DyBn5ISkoSoT5Zx0mzDdfNUXXehMrngkm+QMhJtF8oHzZW8tiuYYh8HqxOJVUNwZSgobfRh+sEnEwnf
+z/3tJN8HXcRl88kZa+/PTUQIV61DdWk/vFVD5giUU2cjEFKbEHZdBybmn1lNUuSM9gUjqi7JUOiFbvSoP4mpU+
+in86WEd8/0+1pRYgV48uOrSmk82bJtVYkH7MX5BKn0fI4P0W/3G4302uHqMlOY74TNwuhKVzyx8vTdwRo+pxbd
+JXUdiDDNBb+Mb1u+ZZOf4rx+3bK7qROWDn+VuWjEC3d+42IOKk3ZhzEVtMrTc255Rs2Mm8DOKcCz8W+Hk7jVHt
+aInz7E4alS5NX3cd8O6VJ4cg--","signatures":["f0181a304e7c98090006bd2f7ceb6effd7ff1c1d:j0
+3n2uQ5G6yrkGmHKwQID1EuRf9K3sl1bvb5KsIO0UnRCorAiD22qx1G7bxNX7Vnnd8wKhFPWNB/XifgkYp8tw--"]}
+-----------------------------------------------------------------------------------------
+
+
+GET msg
+~~~~~~~
+
+Fetching a message is as simple as requesting the message id in the URI. For example, the request to fetch message 53 from the 'testsite' circle would be:
+---------------------------------------------------------
+GET /f573fe7d4a34186b00bcab2b38e52122afe04d83/53 HTTP/1.1
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+
+{"message":"X6h9V7Ynlz974yj5o+nE+Q--"}
+---------------------------------------------------------
+
+
+GET msg index
+~~~~~~~~~~~~~
+
+A list of all available messages can be accessed by issuing a GET request on the SHA1 hash alone:
+------------------------------------------------------
+GET /f573fe7d4a34186b00bcab2b38e52122afe04d83 HTTP/1.1
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+------------------------------------------------------
+
+
+
+The message index is sent to the client in the HTTP response header,
+"Last-Message". The Last-Message header indicates the most recent message id.
+Since all messages are sequential, it implies that message 1 through
+Last-Message are available.
+
+
+
+All messages in a circle are assigned a simple index integer.
+
+
+Implementations
+---------------
+
+There already exist a few implemented components. They are mostly reference
+implementations to proof-of-concept the project. Please keep in mind that all
+of the implementations below assumes a Tor SOCKS proxy server is running on
+localhost at port 9050.
+
+Perl Muteswan server
+~~~~~~~~~~~~~~~~~~~~
+
+A simple operational Muteswan server written in perl using HTTP::Daemon is
+available. It is very simple and implements the three required functionalities:
+GET msg, POST msg and GET msg index.
+
+This daemon is probably not appropriate for large volumes but given the
+simplicity of Muteswan it should be usable to test and develop.
+
+
+Perl prototype cmdline tool
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An Muteswan client is also available for the unix cmdline. It is 100% perl and
+works on OS X as well as other Unixes. It is not particularly user friendly but
+it can send/receive messages, generate keys, produce QR codes and manages its
+own data store.
+
+
+
+To use the cmdline tool, initialize a storefile:
+--------------------------------------
+./protoclient -d storefile init
+--------------------------------------
+with a private password. After this you can run individual commands, such as to
+create a circle.
+
+
+
+Web interface to cmdline tool
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A demonstration client was also built as a wrapper around the cmdline tool.
+This should probably be destroyed but provides a demo of an Muteswan client
+implemented as a local web server.
+
+
+
+As long as the cmdline tool works, the web interface is runable by doing:
+./protoclientd -d storefile -p storefilepassword
+Then access the server by going to localhost:9051
+
+
+
+Android client
+~~~~~~~~~~~~~~
+
+An client for Google's Android OS is functional at this point. This is the most
+useful client situation. Since Muteswan is an instant messaging service
+accessing the service on one's phone is ideal.
+
+
+
+The Android leaves much to be desired in the realm of user interface, code
+quality and error reporting, but it does work at this early stage. It can
+currently perform all the envisioned operations:
+
+	- Share circles and identities as QR codes
+	- Import circles and identities from QR codes
+	- Create a new circle
+	- Post message to a circle
+	- Read messages from circles
+	- A persistent Android service is available to check and download new messages
+	  at interval.
+
+
+
+The Android client depends on two other Android applications: Barcode Scanner
+and Orbot. Orbot is the official Tor port for Android. Barcode Scanner is used
+to offload QR code generation and scanning.
+
