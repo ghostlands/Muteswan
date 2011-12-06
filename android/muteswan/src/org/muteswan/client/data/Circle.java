@@ -460,10 +460,12 @@ public class Circle {
 			
 			msg = new MuteswanMessage(this,Integer.parseInt(id),date,msgData);
 
+			cursor.close();
 			//db.close();
 			return(msg);
 		}
 		
+		cursor.close();
 		return(null);
 		
 	}
