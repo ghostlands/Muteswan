@@ -88,7 +88,7 @@ The Muteswan server itself merely acts as a distribution point. It sends clients
 messages and saves messages that are posted to circles but it does not process
 or analyze any messages.
 
-image:Muteswan.jpg
+image::Muteswan.jpg[]
 
 
 Circles
@@ -255,9 +255,6 @@ There are a few operational contraints of the server that help keep things simpl
  - The server may verify message length and return a 413 Request Entity Too Large error if the message content is more than 10MB. FIXME: what should this be?
  - All information the server provides the client must be in HTTP headers.
 
-
-
-
 JSON is used to encode the message formats. All messages must have a key name
 of "message" which contains the base64 encoded encrypted data. For example:
 --------------------------------------
@@ -266,13 +263,11 @@ of "message" which contains the base64 encoded encrypted data. For example:
 
 
 HTTP Headers
-~~~~~~~
+~~~~~~~~~~~~
 
 There are 2 headers currently used.
 
-
 Last-Message: An integer value that represents that last message on a circle. This is returned when a client issues a GET on a circle SHA1 hash.
-
 
 Last-Modified: Standard HTTP field that indicates when a message was posted.
 
