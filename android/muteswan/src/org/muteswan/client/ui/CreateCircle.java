@@ -53,6 +53,7 @@ import android.widget.TextView;
 
 public class CreateCircle extends Activity implements Runnable {
 
+	public static final String CREATED_CIRCLE_BROADCAST = "CREATEDCIRCLE";
 	private Identity[] identities;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
@@ -101,6 +102,11 @@ public class CreateCircle extends Activity implements Runnable {
 	    	
         	CircleStore newStore = new CircleStore(getApplicationContext(),true);
         	newStore.updateStore(circleFullText);
+        	
+	        Intent joinCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
+	        joinCircleIntent.putExtra("circle", muteswan.genHexHash(circleFullText));
+	        sendBroadcast(joinCircleIntent);
+        	
 
 	    	newCircleResult.setText("Created circle " + name.getText().toString());
 	    	

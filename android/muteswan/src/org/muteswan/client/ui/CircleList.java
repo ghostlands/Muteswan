@@ -68,6 +68,8 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 public class CircleList extends ListActivity {
 
 
+	public static final String DELETED_CIRCLE_BROADCAST = "DELETEDCIRCLE";
+	public static final String JOINED_CIRCLE_BROADCAST = "JOINEDCIRCLE";
 	public static int SHARE = 0;
 	public static int READ = 1;
 	public static int WRITE = 2;
@@ -155,19 +157,15 @@ public class CircleList extends ListActivity {
         } else {
           circlelist.setVisibility(View.GONE);
         }
-
         
         
         circleList = getArray();
         registerForContextMenu(getListView());
-
       
         //listAdapter = new ArrayAdapter<Circle>(this,
         //      android.R.layout.simple_list_item_1, circleList);
         //listAdapter = new CircleListAdapter(this);
         //setListAdapter(listAdapter);
-          
-          
        
         
     }
@@ -196,11 +194,6 @@ public class CircleList extends ListActivity {
     	return(circleList);
     }
     
-    
-    
-    
-    
-		
 		
 	
     
@@ -456,6 +449,11 @@ public class CircleList extends ListActivity {
 	private void deleteCircle(int position) {
 		CircleStore store = new CircleStore(getApplicationContext());
 		store.deleteCircle(circleList[position]);
+		
+		Intent deleteCircleIntent = new Intent(CircleList.DELETED_CIRCLE_BROADCAST);
+		deleteCircleIntent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
+		sendBroadcast(deleteCircleIntent);
+		
 		Toast.makeText(this,
 				"Deleted circle " + circleList[position].getShortname() + " from saved keys.", 
 					  Toast.LENGTH_LONG).show();
@@ -511,11 +509,13 @@ public class CircleList extends ListActivity {
       	              CircleStore store = new CircleStore(getApplicationContext(),true);
     	              Circle circle = new Circle(getApplicationContext(),contents);
     	              store.updateStore(contents);
-    	               
     	              
-    	              //this.activeCircle = circle;
-    	    //          selectMsg(circle);
-    	            
+    	              
+    	              Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
+    	      		  joinCircleIntent.putExtra("circle", muteswan.genHexHash(circle.getFullText()));
+    	      		  sendBroadcast(joinCircleIntent);
+    	              
+    	              
     	            // IDENTITY
     	            } else {
     	            	String[] parts = contents.split(":");
@@ -524,8 +524,6 @@ public class CircleList extends ListActivity {
     	            	idStore.addToDb(identity);
     	            }
     	            
-    	            
-    	            
             } else if (resultCode == RESULT_CANCELED) {
             	
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
@@ -533,6 +531,10 @@ public class CircleList extends ListActivity {
 	            CircleStore store = new CircleStore(getApplicationContext(),true);
             	Circle circle = new Circle(getApplicationContext(),testSite);
 	            store.updateStore(testSite);
+	            
+    	        Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
+    	      	joinCircleIntent.putExtra("circle", muteswan.genHexHash(circle.getFullText()));
+    	      	sendBroadcast(joinCircleIntent);
 	            
             
             }

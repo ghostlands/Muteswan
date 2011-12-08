@@ -26,6 +26,8 @@ import java.util.TimerTask;
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.ui.CircleList;
+import org.muteswan.client.ui.CreateCircle;
 import org.muteswan.client.ui.LatestMessages;
 
 import org.apache.http.client.ClientProtocolException;
@@ -115,12 +117,13 @@ public class NewMessageService extends Service {
 		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
 		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
-
-		
 		justLaunched = true;
 		
 		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
 		registerReceiver(isUserCheckingMessagesReceiver, new IntentFilter(LatestMessages.CHECKING_MESSAGES));
+		registerReceiver(deletedCircleReceiver, new IntentFilter(CircleList.DELETED_CIRCLE_BROADCAST));
+		registerReceiver(joinedCircleReceiver, new IntentFilter(CircleList.JOINED_CIRCLE_BROADCAST));
+		registerReceiver(createdCircleReceiver, new IntentFilter(CreateCircle.CREATED_CIRCLE_BROADCAST));
 		
 		init();
 	}
@@ -618,7 +621,13 @@ public class NewMessageService extends Service {
 	};
 	final private LinkedList<Circle> stopList = new LinkedList<Circle>();
 	private boolean isUserCheckingMessages = true;
+	
+	
+
 	private IsUserCheckingMessagesReceiver isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
+	private DeletedCircleReceiver deletedCircleReceiver = new DeletedCircleReceiver();
+	private JoinedCircleReceiver joinedCircleReceiver = new JoinedCircleReceiver();
+	private CreatedCircleReceiver createdCircleReceiver = new CreatedCircleReceiver();
 	
 	public IBinder onBind(Intent intent) {
 		Log.v("NewMessageService","onBind called.");
@@ -643,5 +652,34 @@ public class NewMessageService extends Service {
 	    	isUserCheckingMessages = true;
 	    }
 	}
+	
+	private class DeletedCircleReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	Log.v("NewMessageService", "Got deleted circle receiver!");
+	    	init();
+	    }
+	}
+	
+	private class JoinedCircleReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	Log.v("NewMessageService", "Got joined circle receiver!");
+	    	init();
+	    }
+	}
+	
+	private class CreatedCircleReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	Log.v("NewMessageService", "Got created circle receiver!");
+	    	init();
+	    }
+	}
+	
+
+	
+
+	
 
 }
