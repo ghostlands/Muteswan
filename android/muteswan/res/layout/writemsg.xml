@@ -29,9 +29,9 @@
     <EditText  android:id="@+id/newMsgText"
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
-       android:layout_below="@id/submitMsg"
-       android:minHeight="100sp"
-       android:maxHeight="120sp"/>
+       android:inputType="textCapSentences|textMultiLine"
+       android:capitalize="sentences"
+       android:layout_below="@id/submitMsg"/>
        
     <TextView android:id="@+id/newPostLabel"
        android:layout_width="wrap_content"
