@@ -198,6 +198,10 @@ public class Circle {
 	    //initManifest();
 	}
 	
+	public void setCurLastMsgId(int lastMsg) {
+		curLastMsgId = lastMsg;
+	}
+	
 	
 	
 	public Circle.OpenHelper getOpenHelper() {

@@ -1004,6 +1004,9 @@ final Handler stopSpinningHandler = new Handler() {
 					m.setData(b);
 					updateDialogText.sendMessage(m);
 					setSpinneyDownloading.sendEmptyMessage(0);
+					
+				    if (!refreshing)
+					   startSpinningHandler.sendEmptyMessage(0);
 
 					try {
 						msgService.downloadMsgFromTor(muteswan.genHexHash(r.getFullText()), i);
@@ -1254,6 +1257,7 @@ final Handler stopSpinningHandler = new Handler() {
         		if (lastMsg != null && lastMsg >= 0) {
         			//circle.updateLastMessage(lastMsg,true);
         			try {
+        				circle.setCurLastMsgId(lastMsg);
 						msgService.updateLastMessage(muteswan.genHexHash(circle.getFullText()),lastMsg);
 					} catch (RemoteException e) {
 						Log.v("LatestMessages", "Error updating latest message using msgService!");
