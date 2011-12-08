@@ -17,6 +17,9 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 package org.muteswan.client.ui;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.muteswan.client.ITorVerifyResult;
 import org.muteswan.client.NewMessageService;
@@ -95,6 +98,9 @@ public class CircleList extends ListActivity {
         //        android.R.layout.simple_list_item_1, circleList);
         listAdapter = new CircleListAdapter(this);
           setListAdapter(listAdapter);
+          
+          Arrays.sort(circleList, comparatorCircles);
+		  listAdapter.notifyDataSetChanged();
 	}
 	
 	public View.OnClickListener postClicked = new View.OnClickListener() {
@@ -156,13 +162,26 @@ public class CircleList extends ListActivity {
         registerForContextMenu(getListView());
 
       
-          //listAdapter = new ArrayAdapter<Circle>(this,
-          //      android.R.layout.simple_list_item_1, circleList);
-          listAdapter = new CircleListAdapter(this);
-          setListAdapter(listAdapter);
+        //listAdapter = new ArrayAdapter<Circle>(this,
+        //      android.R.layout.simple_list_item_1, circleList);
+        //listAdapter = new CircleListAdapter(this);
+        //setListAdapter(listAdapter);
+          
+          
        
         
     }
+	
+	private ComparatorCircles comparatorCircles = new ComparatorCircles();
+	class ComparatorCircles implements Comparator {
+		 public int compare(Object obj1, Object obj2)
+	        {
+			 	Circle circle1 = (Circle) obj1;
+			 	Circle circle2 = (Circle) obj2;
+			 	
+			 	return(circle1.getShortname().compareTo(circle2.getShortname()));
+	        }
+	}
     
     //FIXME: should be part of store
     private Circle[] getArray() {
@@ -261,8 +280,12 @@ public class CircleList extends ListActivity {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			
-			 RelativeLayout layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.circlelistentry,
-     				  parent, false);
+			
+			 RelativeLayout layout = (RelativeLayout) convertView;
+			  if (layout == null)
+				  layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.circlelistentry,
+	     				  parent, false);
+			  
 			 
 			 layout.setTag(R.id.android_circleListName, position);
 			 
