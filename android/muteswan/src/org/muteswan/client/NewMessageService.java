@@ -73,6 +73,7 @@ public class NewMessageService extends Service {
 	
 	// long poll is experimental and currently destroys batteries. We should investigate this at another time
 	protected boolean useLongPoll = false;
+	private CircleStore circleStore;
     
 	
 	@Override
@@ -119,9 +120,8 @@ public class NewMessageService extends Service {
 		justLaunched = true;
 		
 		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
-		IntentFilter intentFilter = new IntentFilter(LatestMessages.CHECKING_MESSAGES);
-		registerReceiver(isUserCheckingMessagesReceiver, intentFilter);
-
+		registerReceiver(isUserCheckingMessagesReceiver, new IntentFilter(LatestMessages.CHECKING_MESSAGES));
+		
 		init();
 	}
 	
@@ -138,8 +138,8 @@ public class NewMessageService extends Service {
 		 pollList.clear();
 		   
 		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
-		 CircleStore rs = new CircleStore(getApplicationContext(),true);
-		 for (Circle r : rs) {
+		 circleStore = new CircleStore(getApplicationContext(),true);
+		 for (Circle r : circleStore) {
 				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);
 		 }
@@ -320,7 +320,7 @@ public class NewMessageService extends Service {
 				    	   for (Integer i = lastId; i > startLastId; i--) {
 				    		 Log.v("NewMessageService", "Downloading " + i +  " for " + circle.getShortname());
 				    		 try {
-								MuteswanMessage msg = circle.getMsgFromTor(i.toString());
+								MuteswanMessage msg = circle.getMsgFromTor(i);
 								if (msg != null && msg.signatures[0] != null) {
 									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg(),
 											msg.signatures);
@@ -568,8 +568,49 @@ public class NewMessageService extends Service {
 			Log.v("NewMessageService", "setUserChecking " + checkValue);
 			isUserCheckingMessages = checkValue;
 		}
+
+
+		@Override
+		public int getLastTorMsgId(String circleHash) throws RemoteException {
+			Integer lastId = circleStore.asHashMap().get(circleHash).getLastTorMessageId();
+			return(lastId);
+		}
 		
-	
+
+		@Override
+		public int downloadMsgFromTor(String circleHash, int id) throws RemoteException {
+			// TODO Auto-generated method stub
+			Circle circle = circleStore.asHashMap().get(circleHash);
+			MuteswanMessage msg;
+			try {
+				msg = circle.getMsgFromTor(id);
+				if (msg != null && msg.signatures[0] != null) {
+					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg(),
+							msg.signatures);
+					return(0);
+				} else if (msg != null) {
+					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg());
+					return(0);
+				}
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return -1;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return -2;
+			}
+			
+			return -3;
+		}
+
+
+		@Override
+		public void updateLastMessage(String circleHash, int lastMsg) throws RemoteException {
+			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, true);
+		}
+		
 		
 		
 		

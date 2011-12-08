@@ -373,7 +373,7 @@ public class Circle {
 		msg = getMsgFromDb(id,true);
 		if (msg == null) {
 			
-			msg = getMsgFromTor(id);
+			msg = getMsgFromTor(Integer.parseInt(id));
 			
 			if (msg == null)
 				return null;
@@ -470,13 +470,13 @@ public class Circle {
 		
 	}
 	
-	public MuteswanMessage getMsgFromTor(String id) throws ClientProtocolException, IOException {
+	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
 		Log.v("Circle", "Fetching message " + id);
     	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
     	Log.v("Circle", "Fetched message " + id);
     	
-    	return(parseMsgFromTor(Integer.parseInt(id),resp));
+    	return(parseMsgFromTor(id,resp));
     	
 	}
 	
@@ -913,7 +913,7 @@ public class Circle {
 		else {
 			curLastMsgId = curIndex;
 		}
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
 		saveLastMessage(db);
 		
 		if (closedb)

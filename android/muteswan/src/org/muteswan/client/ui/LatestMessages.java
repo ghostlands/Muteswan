@@ -29,6 +29,7 @@ import java.util.HashMap;
 import org.apache.http.client.ClientProtocolException;
 import org.muteswan.client.IMessageService;
 import org.muteswan.client.ITorVerifyResult;
+import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
 import org.muteswan.client.data.Circle;
@@ -42,10 +43,12 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
@@ -53,6 +56,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -95,7 +99,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private HashMap<String, Integer> newMsgCheckState = new HashMap<String,Integer>();
 	private HashMap<String, String> newMsgCheckResults = new HashMap<String,String>();
 	
-	protected IMessageService newMsgService;
+	protected IMessageService msgService;
 	private ImageView spinneyIcon;
 	private boolean moreMessages = false;
 	private RotateAnimation ranimnation;
@@ -160,9 +164,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		cleanup(false);
 		
-		//if (newMsgService != null) {
-		//	unbindService(mNewMsgConn);
-		//}
+		if (msgService != null) {
+			unbindService(msgServiceConn);
+		}
 	}
 	
 	public void cleanup(boolean join) {
@@ -227,7 +231,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+       
         
         init();
         
@@ -348,6 +352,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private void showInitialLoad() {
 		
 		initialLoad = ProgressDialog.show(this, "", "Loading messages...", true);
+		initialLoad.setCancelable(true);
 		
 	}
 
@@ -583,11 +588,19 @@ public class LatestMessages extends ListActivity implements Runnable {
 			  if (layout == null)
       		     layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
       				  parent, false);
+			  
+			  
+				  
 
 			  if (messageList == null || messageList.size() == 0)
 				  return(layout);
 			  
       		  final MuteswanMessage msg = messageList.get(position);
+      		  
+      		  if (msg == null) {
+      			  Log.e("LatestMessages", "Msg is null in getView!");
+      			  return(layout);
+      		  }
       		  
       		  TextView txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
       		  TextView txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
@@ -909,6 +922,8 @@ final Handler stopSpinningHandler = new Handler() {
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (NullPointerException e) {
+				Log.v("LatestMessages", "Invalid message date!");
 			}
 			
 			if (mDate == null || oDate == null) {
@@ -983,40 +998,32 @@ final Handler stopSpinningHandler = new Handler() {
 
 			if (msg == null) {
 				//downloaded = true;
-				try {
 					m = new Message();
 					b = new Bundle();
 					b.putString("txt", "[" + r.getShortname() + "] downloading..." + i);
 					m.setData(b);
 					updateDialogText.sendMessage(m);
 					setSpinneyDownloading.sendEmptyMessage(0);
-					
-					// start spinning if we are not refreshing to give visual indication
-					if (!refreshing)
-						startSpinningHandler.sendEmptyMessage(0);
-					//BOOK
-					msg = r.getMsgFromTor(i.toString());
-					if (msg != null && msg.signatures[0] != null) {
-						r.saveMsgToDb(i, msg.getDate(), msg.getMsg(),
-								msg.signatures);
-					} else if (msg != null) {
-						r.saveMsgToDb(i, msg.getDate(), msg.getMsg());
+
+					try {
+						msgService.downloadMsgFromTor(muteswan.genHexHash(r.getFullText()), i);
+					} catch (RemoteException e) {
+						Log.e("LatestMessages", "Error downloading message " + i + " from msgService!");
 					}
-					// r.saveMsgToDb(i, msg.getDate(), msg)
-				} catch (ClientProtocolException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+					msg = r.getMsgFromDb(i.toString(),true);
+					
+					if (msg == null) {
+						Log.e("LatestMessages", "Message " + i + " is still null after downloading it from service!");
+						continue;
+					}
+					
 				
-				//msg.verifySignatures(idStore);
-				msgs.add(msg);
+				    //msg.verifySignatures(idStore);
+				    msgs.add(msg);
 				
-				// stop spinning if we are not refreshing to show we are done
-				if (!refreshing)
-					stopSpinningHandler.sendEmptyMessage(0);
+				    // stop spinning if we are not refreshing to show we are done
+				    if (!refreshing)
+					   stopSpinningHandler.sendEmptyMessage(0);
 				
 			} else {
 				//msg.verifySignatures(idStore);
@@ -1173,7 +1180,8 @@ final Handler stopSpinningHandler = new Handler() {
 	public void run() {
 		Log.v("LatestMessages","Running!");
 		
-		
+		Intent serviceIntent = new Intent(this,NewMessageService.class);
+        bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
 	
 		
 		
@@ -1190,10 +1198,6 @@ final Handler stopSpinningHandler = new Handler() {
 		}
 		
 		getLatestMessages(messageList, start,LatestMessages.MSGDOWNLOADAMOUNT);
-	
-		
-	
-		
 	}
 
 	private Thread getLastestMessageCountFromTor(final Circle circle) {
@@ -1231,8 +1235,14 @@ final Handler stopSpinningHandler = new Handler() {
         			Log.v("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
         			return;
         		}
-        		
-        		Integer lastMsg = circle.getLastTorMessageId();
+        	
+        		Integer lastMsg = null;
+				try {
+					lastMsg = msgService.getLastTorMsgId(muteswan.genHexHash(circle.getFullText()));
+				} catch (RemoteException e) {
+					Log.e("LatestMessages", "Error getting latest message from service!");
+					e.printStackTrace();
+				}
         		
         		if (Thread.currentThread().isInterrupted()) {
         			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
@@ -1242,7 +1252,13 @@ final Handler stopSpinningHandler = new Handler() {
         		
         		Log.v("LatestMessages", "Current thread " + Thread.currentThread().toString());
         		if (lastMsg != null && lastMsg >= 0) {
-        			circle.updateLastMessage(lastMsg,true);
+        			//circle.updateLastMessage(lastMsg,true);
+        			try {
+						msgService.updateLastMessage(muteswan.genHexHash(circle.getFullText()),lastMsg);
+					} catch (RemoteException e) {
+						Log.v("LatestMessages", "Error updating latest message using msgService!");
+						return;
+					}
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
@@ -1333,6 +1349,28 @@ final Handler stopSpinningHandler = new Handler() {
 		}
 		
 		
+ };
+ 
+ 
+ private ServiceConnection msgServiceConn = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className,
+             IBinder service) {
+     	msgService = IMessageService.Stub.asInterface(service);
+     	try {
+				msgService.setUserChecking(true);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+     	Log.v("LatestMessages", "onServiceConnected called.");
+     	if (msgService == null) {
+     		Log.e("LatestMessages", "msgService is null ");
+     	}
+
+     }
+
+     public void onServiceDisconnected(ComponentName className) {
+        msgService = null;
+     }
  };
 	
 

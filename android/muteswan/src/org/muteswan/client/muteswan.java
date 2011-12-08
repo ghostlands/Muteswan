@@ -80,6 +80,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -331,14 +332,12 @@ public class muteswan extends Activity implements Runnable {
 		}
 	}
 	
-	
-	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-
+       
         
         // Check tor status
         //Intent torServiceIntent = new Intent();
