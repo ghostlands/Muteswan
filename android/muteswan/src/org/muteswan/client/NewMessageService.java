@@ -135,6 +135,9 @@ public class NewMessageService extends Service {
 		//AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		//alarm.cancel(NewMessageReceiver.getPendingIntent(this));
 		unregisterReceiver(isUserCheckingMessagesReceiver);
+		unregisterReceiver(deletedCircleReceiver);
+		unregisterReceiver(joinedCircleReceiver);
+		unregisterReceiver(createdCircleReceiver);
 	}
 	
 	private void init() {
