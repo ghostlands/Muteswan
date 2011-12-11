@@ -61,8 +61,8 @@
         android:layout_below="@id/android:latestmessagesprompt"
         android:background="#ffffff"
         android:cacheColorHint="#00000000"
-        android:divider="#00000000"
-        android:dividerHeight="5sp"
+        android:divider="#ffcccccc"
+        android:dividerHeight="1sp"
         android:footerDividersEnabled="false"
         android:textColor="#000000" />
 

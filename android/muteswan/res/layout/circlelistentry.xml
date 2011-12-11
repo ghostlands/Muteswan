@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/circleListEntryLayout"
     android:orientation="horizontal"
@@ -23,13 +21,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
+            android:paddingTop="4sp"
+            android:paddingLeft="3sp"
             android:text="CircleName"
             android:textColor="#000000"
             android:textSize="14sp"
-            android:typeface="sans"
-            android:paddingTop="4dp" 
-            android:textStyle="bold"/>
-        
+            android:textStyle="bold"
+            android:typeface="sans" />
+
         <ImageView
             android:id="@+id/circleListDelete"
             android:layout_width="wrap_content"
@@ -37,17 +36,16 @@
             android:layout_alignParentRight="true"
             android:adjustViewBounds="true"
             android:src="@android:drawable/ic_delete"
-            android:text="Delete"/>
+            android:text="Delete" />
 
         <Button
             android:id="@+id/circleListShare"
             android:layout_width="wrap_content"
             android:layout_height="35sp"
             android:layout_alignParentLeft="true"
-            android:layout_below="@id/circleListDelete"
-            android:paddingTop="5sp"
+            android:layout_below="@+id/circleListDelete"
             android:text="Share"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
     </RelativeLayout>
 
 </RelativeLayout>

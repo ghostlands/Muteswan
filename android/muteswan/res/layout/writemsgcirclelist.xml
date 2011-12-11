@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <LinearLayout android:orientation="horizontal" android:id="@+id/writeMsgCircleListLayout" android:layout_width="fill_parent" android:layout_height="wrap_content" xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckedTextView android:text="CheckTextView" android:checkMark="?android:attr/listChoiceIndicatorMultiple"
-                     android:id="@+id/writeMsgCircleTextView" 
-                     android:layout_width="fill_parent" 
-                     android:layout_height="wrap_content" 
-                   
-                     android:textSize="20sp"></CheckedTextView>
-    </LinearLayout>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/writeMsgCircleListLayout" 
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
+
+    <CheckedTextView
+        android:id="@+id/writeMsgCircleTextView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+        android:text="CheckTextView"
+        android:textSize="14sp"
+        android:textStyle="bold" 
+        android:gravity="center_vertical" />
+
+</LinearLayout>
 
 
