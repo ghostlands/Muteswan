@@ -350,9 +350,13 @@ public class LatestMessages extends ListActivity implements Runnable {
 	}
 
 	private void showInitialLoad() {
-		
-		initialLoad = ProgressDialog.show(this, "", "Loading messages...", true);
-		initialLoad.setCancelable(true);
+	
+		if (initialLoad == null) {
+		   initialLoad = ProgressDialog.show(this, "", "Loading messages...", true);
+		   initialLoad.setCancelable(true);
+		} else {
+		   initialLoad.show();
+		}
 		
 	}
 
