@@ -203,13 +203,16 @@ public class LatestMessages extends ListActivity implements Runnable {
 				Log.v("LatestMessages", "End of list: " + moreMessages);
 				if (moreMessages == false) {
 					moreMessages = true;
-					messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
+					messageViewCount = messageViewCount + getMsgDownloadAmount();
 					loadmore();
 				}
 				//messageViewCount = messageViewCount + LatestMessages.MSGDOWNLOADAMOUNT;
 				//refresh();
 			}
 		}
+
+
+		
 	};
 	private boolean refreshing;
 	private boolean verbose;
@@ -453,6 +456,14 @@ public class LatestMessages extends ListActivity implements Runnable {
     		alertDialog.show();
     	}
     };
+
+    private int getMsgDownloadAmount() {
+    	if (circleExtra == null && store.size() > 2) {
+    	  return(LatestMessages.MSGDOWNLOADAMOUNT);
+    	} else {
+    	  return(LatestMessages.MSGDOWNLOADAMOUNT+10);
+    	}
+	}
     
     
     public static class RelativeDateFormat {
@@ -1123,8 +1134,8 @@ final Handler stopSpinningHandler = new Handler() {
 			if (circleNewMsgs != null) {
 				
 				Integer msgDelta = Integer.parseInt(circleNewMsgs[1]);
-				if (msgDelta >= LatestMessages.MSGDOWNLOADAMOUNT)
-					msgDelta = LatestMessages.MSGDOWNLOADAMOUNT;
+				if (msgDelta >= getMsgDownloadAmount())
+					msgDelta = getMsgDownloadAmount();
 				Log.v("LatestMessages", "CurCircle is " + circleNewMsgs[0] + " and delta is " + msgDelta);
 				//dataSetChanged.sendEmptyMessage(0);
 				if (msgDelta != 0) {
@@ -1204,7 +1215,7 @@ final Handler stopSpinningHandler = new Handler() {
 			return;
 		}
 		
-		getLatestMessages(messageList, start,LatestMessages.MSGDOWNLOADAMOUNT);
+		getLatestMessages(messageList, start,getMsgDownloadAmount());
 	}
 
 	private Thread getLastestMessageCountFromTor(final Circle circle) {
