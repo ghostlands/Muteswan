@@ -7,12 +7,14 @@
     android:layout_alignParentLeft="true"
     android:layout_alignParentTop="true"
     android:gravity="left"
-    android:orientation="vertical">
+    android:background="#24282b"
+    android:orientation="horizontal">
 
 	<ImageView
-	android:layout_width="wrap_content"
+	android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="#24282b"
+    android:gravity="left"
     android:src="@drawable/titlebar" />
 	
 </LinearLayout>
