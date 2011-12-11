@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/titlebar"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentTop="true"
+    android:gravity="left"
+    android:orientation="vertical">
+
+	<ImageView
+	android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#24282b"
+    android:src="@drawable/titlebar" />
+	
+</LinearLayout>
