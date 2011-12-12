@@ -94,6 +94,9 @@ public class CircleList extends ListActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
+		
+		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
+		
     	store = new CircleStore(this,true);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
