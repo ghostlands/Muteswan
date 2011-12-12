@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.http.client.ClientProtocolException;
 import org.muteswan.client.IMessageService;
@@ -96,8 +97,8 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private ProgressDialog gettingMsgsDialog;
 	private ProgressDialog initialLoad;
 	
-	private HashMap<String, Integer> newMsgCheckState = new HashMap<String,Integer>();
-	private HashMap<String, String> newMsgCheckResults = new HashMap<String,String>();
+	private ConcurrentHashMap<String, Integer> newMsgCheckState = new ConcurrentHashMap<String,Integer>();
+	private ConcurrentHashMap<String, String> newMsgCheckResults = new ConcurrentHashMap<String,String>();
 	
 	protected IMessageService msgService;
 	private ImageView spinneyIcon;
@@ -1024,10 +1025,17 @@ final Handler stopSpinningHandler = new Handler() {
 					   startSpinningHandler.sendEmptyMessage(0);
 
 					try {
+						Log.v("LatestMessages", "I am " + Thread.currentThread());
 						msgService.downloadMsgFromTor(muteswan.genHexHash(r.getFullText()), i);
 					} catch (RemoteException e) {
 						Log.e("LatestMessages", "Error downloading message " + i + " from msgService!");
 					}
+					
+					if (Thread.currentThread().isInterrupted()) {
+		    			Log.v("LatestMessages", "Interrupted after downloading " + Thread.currentThread().toString());
+		    			return;
+		    		}
+					
 					msg = r.getMsgFromDb(i.toString(),true);
 					
 					if (msg == null) {
@@ -1106,7 +1114,7 @@ final Handler stopSpinningHandler = new Handler() {
 			    Log.v("LatestMessages", "Waiting for first population of check messages.");
 				Thread.currentThread().sleep(250);
 			  } catch (InterruptedException e) {
-				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
+				  Log.v("LatestMessages", "Error: thread interrupted " + e.getMessage());
 				  return(null);
 			  }
 		}
@@ -1248,7 +1256,7 @@ final Handler stopSpinningHandler = new Handler() {
         			return;
         		}
 		
-        		Integer prevLastMsgId = circle.getLastMsgId(false);
+        		Integer prevLastMsgId = circle.getLastMsgId(true);
         		if (Thread.currentThread().isInterrupted()) {
         			Log.v("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
         			return;

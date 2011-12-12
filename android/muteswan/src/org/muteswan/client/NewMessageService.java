@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Circle;
@@ -71,7 +72,7 @@ public class NewMessageService extends Service {
 	private boolean started = false;
 	protected boolean torActive = false;
 	
-	
+	protected LinkedBlockingQueue linkedQueue = new LinkedBlockingQueue<Circle>();
 	
 	// long poll is experimental and currently destroys batteries. We should investigate this at another time
 	protected boolean useLongPoll = false;
@@ -479,64 +480,6 @@ public class NewMessageService extends Service {
 	}
 
 	
-	private void getLastMessageAll() {
-		final CircleStore rs = new CircleStore(getApplicationContext(), true);
-
-		new Thread() {
-			public void run() {
-				for (final Circle r : rs) {
-			
-					Integer lastMessage = r.getLastTorMessageId();
-					if (lastMessage != null)
-					  r.updateLastMessage(lastMessage,true);
-			
-				Log.v("MuteswanService", "Downloaded messages index for " + r.getShortname());
-				}
-				isWorking = false;
-		 }
-		}.start();
-	}
-	
-	private void downloadMessages(Circle circle) {
-		Integer lastIndex = circle.getLastMsgId(true);
-		if (lastIndex == null || lastIndex == 0) {
-			Log.v("MuteswanService", "lastIndex is null or 0");
-			return;
-		}
-		
-		Log.v("MuteswanService", "lastIndex is " + lastIndex);
-		MSG: for (Integer i=lastIndex; i>lastIndex - numMsgDownload; i--) {
-			if (i == 0)
-				break MSG;
-			
-			try {
-				circle.getMsg(i.toString());
-				Log.v("MuteswanService", "(downloadMessages) Downloaded msg " + i.toString());
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-	}
-	
-	private void downloadMessagesAll() {
-		final CircleStore store = new CircleStore(getApplicationContext(),true);
-		
-			
-		Thread nthread = new Thread() {
-			public void run() {
-				for (final Circle r : store) {
-					downloadMessages(r);
-				}
-			}
-		};
-		
-		nthread.start();
-	}
 		
 	private final IMessageService.Stub binder = new IMessageService.Stub() {
 
@@ -585,29 +528,48 @@ public class NewMessageService extends Service {
 
 		@Override
 		public int downloadMsgFromTor(String circleHash, int id) throws RemoteException {
-			// TODO Auto-generated method stub
 			Circle circle = circleStore.asHashMap().get(circleHash);
 			MuteswanMessage msg;
+		
+			if (!linkedQueue.contains(circle)) {
+			  linkedQueue.add(circle);
+			} else {
+				Log.v("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
+				while (linkedQueue.contains(circle)) {
+					try {
+						Thread.currentThread().sleep(250);
+					} catch (InterruptedException e) {
+						return(-4);
+					}
+				}
+				linkedQueue.add(circle);
+			}
+			
+			
 			try {
 				msg = circle.getMsgFromTor(id);
+				Log.v("NewMessageService", "I am " + Thread.currentThread());
 				if (msg != null && msg.signatures[0] != null) {
 					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg(),
 							msg.signatures);
+					linkedQueue.remove(circle);
 					return(0);
 				} else if (msg != null) {
 					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg());
+					linkedQueue.remove(circle);
 					return(0);
 				}
 			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				linkedQueue.remove(circle);
 				return -1;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				linkedQueue.remove(circle);
 				return -2;
 			}
 			
+			linkedQueue.remove(circle);
 			return -3;
 		}
 
