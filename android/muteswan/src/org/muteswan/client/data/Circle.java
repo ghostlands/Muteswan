@@ -838,7 +838,7 @@ public class Circle {
 			return;	
 		
 		String circleHash = muteswan.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
 		if (msgExists(db,id)) {
 			db.close();
 			return;
