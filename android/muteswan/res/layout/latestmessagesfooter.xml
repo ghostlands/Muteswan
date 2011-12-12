@@ -8,7 +8,7 @@
           
           
           <TextView
-			android:id="@id/android:empty"
+			android:id="@+id/latestmessagesFooterText"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
 			android:gravity="center"

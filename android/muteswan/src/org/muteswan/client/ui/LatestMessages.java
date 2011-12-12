@@ -219,6 +219,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private boolean verbose;
 	private long previousRefreshTime = 0;
 	private long previousLoadMoreTime;
+	private View footerView;
 	
 	
 	private void init() {
@@ -272,7 +273,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         listAdapter = new LatestMessagesListAdapter(this,R.id.android_latestmessagesprompt);
         
         
-        View footerView = ((LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.latestmessagesfooter, null, false);
+        footerView = ((LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.latestmessagesfooter, null, false);
         getListView().addFooterView(footerView);
         getListView().setOnScrollListener(scrollListener);
         setListAdapter(listAdapter);
@@ -767,11 +768,16 @@ public class LatestMessages extends ListActivity implements Runnable {
         			  spinneyIcon.setImageResource(R.drawable.refresh_done);
         			  refreshButton.setOnClickListener(refreshClicked);
         		  }
-        		 
+        		
+        		  
+        		  // FIXME: make this check cleaner, or in the right place, or something
         		  // clear the initial load dialog if it is up. it should only be up if there are zero messages
         		  if (initialLoad != null) {
            				initialLoad.dismiss();
            				initialLoad = null;
+           				
+           				TextView footerText = (TextView) footerView.findViewById(R.id.latestmessagesFooterText);
+           				footerText.setText("This circle currently does not have any messages. You can post one, if you like.");
            	   	  }
         		  
         		  //refreshButton.setOnClickListener(refreshClicked);
