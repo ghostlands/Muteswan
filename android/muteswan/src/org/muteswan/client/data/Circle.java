@@ -443,8 +443,7 @@ public class Circle {
 			   msg = new MuteswanMessage(this,Integer.parseInt(id),date,msgData,signatures);
 			} else {
 			   msg = new MuteswanMessage(this,Integer.parseInt(id),date,msgData);
-
-			}		
+			}
 			cursor.close();
 			//db.close();
 			return(msg);
@@ -836,6 +835,9 @@ public class Circle {
 	public void saveMsgToDb(Integer id, String date, String msg) {
 		if (context == null) 
 			return;	
+		
+		if (id == null || date == null || msg == null)
+			return;
 		
 		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
