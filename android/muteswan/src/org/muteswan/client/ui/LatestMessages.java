@@ -270,12 +270,13 @@ public class LatestMessages extends ListActivity implements Runnable {
        
 		
         listAdapter = new LatestMessagesListAdapter(this,R.id.android_latestmessagesprompt);
-        setListAdapter(listAdapter);
         
         
         View footerView = ((LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.latestmessagesfooter, null, false);
         getListView().addFooterView(footerView);
         getListView().setOnScrollListener(scrollListener);
+        setListAdapter(listAdapter);
+        
         
        
         
@@ -608,7 +609,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			  
 				  
 
-			  if (messageList == null || messageList.size() == 0)
+			  if (messageList == null || messageList.size() == 0 || (messageList.size() == 1 && position > 1))
 				  return(layout);
 			  
       		  final MuteswanMessage msg = messageList.get(position);
@@ -766,7 +767,12 @@ public class LatestMessages extends ListActivity implements Runnable {
         			  spinneyIcon.setImageResource(R.drawable.refresh_done);
         			  refreshButton.setOnClickListener(refreshClicked);
         		  }
-        		  
+        		 
+        		  // clear the initial load dialog if it is up. it should only be up if there are zero messages
+        		  if (initialLoad != null) {
+           				initialLoad.dismiss();
+           				initialLoad = null;
+           	   	  }
         		  
         		  //refreshButton.setOnClickListener(refreshClicked);
         		  newMsgCheckResults.clear();
