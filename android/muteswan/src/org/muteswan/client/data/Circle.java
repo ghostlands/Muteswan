@@ -17,6 +17,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 package org.muteswan.client.data;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
@@ -455,6 +456,9 @@ public class Circle {
 		
 	public MuteswanMessage getMsgFromDb(SQLiteDatabase db, String circleHash, String id) {
 		MuteswanMessage msg = null;
+		
+		if (Thread.currentThread().isInterrupted())
+			return(null);
 
 		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
 		if (cursor.moveToFirst()) {
@@ -473,7 +477,7 @@ public class Circle {
 		
 	}
 	
-	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException {
+	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException, InterruptedIOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
 		Log.v("Circle", "Fetching message " + id);
     	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);

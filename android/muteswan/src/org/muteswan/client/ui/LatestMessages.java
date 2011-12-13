@@ -177,9 +177,9 @@ public class LatestMessages extends ListActivity implements Runnable {
   	    newMsgCheckResults.clear();
 		
 		cleanOldThreads(join);
-		for (String c : store.asHashMap().keySet()) {
-			store.asHashMap().get(c).closedb();
-		}
+		//for (String c : store.asHashMap().keySet()) {
+		//	store.asHashMap().get(c).closedb();
+		//}
 	}
 	
 	
@@ -1119,7 +1119,7 @@ final Handler stopSpinningHandler = new Handler() {
 			}
 		} else if (circleExtra != null) {
 			Circle circle = circleMap.get(circleExtra);
-			 getLastestMessageCountFromTor(circle);
+			 oldThreads.add(getLastestMessageCountFromTor(circle));
 		}
 		
 		while (newMsgCheckState.isEmpty()) {
