@@ -118,6 +118,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		 registerReceiver(torNotAvailableReceiver, intentFilter);
 		
 		//cleanup();
+		 messageList.clear();
 		
 		extra = getIntent().getExtras();
 		
@@ -172,7 +173,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	public void cleanup(boolean join) {
 		messageViewCount = 0;
-		messageList.clear();
+		//messageList.clear();
   	    newMsgCheckResults.clear();
 		
 		cleanOldThreads(join);
@@ -1298,6 +1299,11 @@ final Handler stopSpinningHandler = new Handler() {
 						Log.v("LatestMessages", "Error updating latest message using msgService!");
 						return;
 					}
+        		
+        			
+        			if (prevLastMsgId == null)
+        				prevLastMsgId = lastMsg;
+        			
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
