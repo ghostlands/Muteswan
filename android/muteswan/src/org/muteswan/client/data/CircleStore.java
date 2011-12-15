@@ -76,13 +76,15 @@ final public class CircleStore extends LinkedList<Circle> {
 
 
 	
-	public CircleStore(Context applicationContext, boolean readDb) {
+	public CircleStore(Context applicationContext, boolean readDb, boolean initCache) {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	  
 
-		if (readDb) {
-          initStore();
+		if (readDb && initCache) {
+          initStore(true);
+		} else if (readDb) {
+			initStore(false);
 		}
 	}
 	
@@ -131,7 +133,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  
 	  
 	  
-	  private void initStore() {
+	  private void initStore(boolean initCache) {
 		  SQLiteDatabase db = openHelper.getReadableDatabase();
 			
 		  Cursor cursor = db.query(openHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
@@ -140,8 +142,11 @@ final public class CircleStore extends LinkedList<Circle> {
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
 				Circle r = new Circle(context,key,shortname,server);
-				if (r != null) 
+				if (r != null) { 
 				   add(r);
+				   if (initCache)
+				     r.initCache();
+				}
 		  }
 		  cursor.close();
 		  db.close();

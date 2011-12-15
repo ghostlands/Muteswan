@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.TimeZone;
 
 import javax.crypto.BadPaddingException;
@@ -95,6 +96,8 @@ public class Circle {
 	private String longDescription;
 	private String description;
 	private String[] keylist;
+	
+	private HashMap msgCache = new HashMap<Integer,MuteswanMessage>();
 
 	public class OpenHelper extends SQLiteOpenHelper {
 
@@ -337,6 +340,24 @@ public class Circle {
 	public String getKey() {
 		return key;
 	}
+
+	
+	
+	public void initCache() {
+		String circleHash = muteswan.genHexHash(getFullText());
+		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
+		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId","date", "message" }, "ringHash = ?", new String[] { circleHash }, null, null, "id desc limit 25" );
+		while (cursor.moveToNext()) {
+			String msgId = cursor.getString(0);
+			String date = cursor.getString(1);
+			String msgData = cursor.getString(2);
+			
+			msgCache.put(Integer.parseInt(msgId),new MuteswanMessage(this,Integer.parseInt(msgId),date,msgData));
+		}
+		
+		cursor.close();
+		db.close();
+	}
 	
 	
 	/**
@@ -400,6 +421,11 @@ public class Circle {
 	
 	public MuteswanMessage getMsgFromDb(String id, Boolean closedb) {
 		MuteswanMessage msg = null;
+		
+		if (msgCache.containsKey(Integer.parseInt(id))) {
+			Log.v("Circle", "Fetched from msgCache: " + id);
+			return (MuteswanMessage) (msgCache.get(Integer.parseInt(id)));
+		}
 		
 		if (context == null)
 			return(null);

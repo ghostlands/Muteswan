@@ -97,7 +97,7 @@ public class CircleList extends ListActivity {
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
-    	store = new CircleStore(this,true);
+    	store = new CircleStore(this,true,false);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
         //        android.R.layout.simple_list_item_1, circleList);
@@ -129,16 +129,10 @@ public class CircleList extends ListActivity {
         initialText = extra.getString("initialText");
      
         Log.v("CircleList", "Before CircleStore constructor.");
-    	store = new CircleStore(this,true);
+    	store = new CircleStore(this,true,false);
     	Log.v("CircleList", "After CircleStore constructor.");
 
         setContentView(R.layout.circlelist);
-        
-        // don't use title bar post button for now
-        //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.customtitlebar);
-        //TextView postButton = (TextView) findViewById(R.id.latestmessagesTitlePostButton);
-		//postButton.setOnClickListener(postClicked);
-        
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         LinearLayout circlelist = (LinearLayout) findViewById(R.id.circlelistButtons);
@@ -509,7 +503,7 @@ public class CircleList extends ListActivity {
     	            // RING
     	            if (atIndex != -1) {
     	            
-      	              CircleStore store = new CircleStore(getApplicationContext(),true);
+      	              CircleStore store = new CircleStore(getApplicationContext(),true,false);
     	              Circle circle = new Circle(getApplicationContext(),contents);
     	              store.updateStore(contents);
     	              
@@ -531,7 +525,7 @@ public class CircleList extends ListActivity {
             	
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
-	            CircleStore store = new CircleStore(getApplicationContext(),true);
+	            CircleStore store = new CircleStore(getApplicationContext(),true,false);
             	Circle circle = new Circle(getApplicationContext(),testSite);
 	            store.updateStore(testSite);
 	            

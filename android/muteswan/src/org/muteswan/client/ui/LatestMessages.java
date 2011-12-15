@@ -224,13 +224,18 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 	
 	private void init() {
-		store = new CircleStore(this,true);
-		circleMap = store.asHashMap();
-		idStore = new IdentityStore(this);
+		//idStore = new IdentityStore(this);
         
         extra = getIntent().getExtras();
-        if (extra != null)
+        if (extra != null) {
+		 store = new CircleStore(this,true,false);
+		 circleMap = store.asHashMap();
          circleExtra = extra.getString("circle");
+         circleMap.get(circleExtra).initCache();
+        } else {
+		 store = new CircleStore(this,true,true);
+		 circleMap = store.asHashMap();
+        }
         
         showInitialLoad();
 	}
@@ -1307,7 +1312,7 @@ final Handler stopSpinningHandler = new Handler() {
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
-        			Log.v("LatestMessages","Circle " + muteswan.genHexHash(circle.getFullText()) + " has last message of: " + circle.getLastCurMsgId(false) + " and delta of " + delta);
+        			Log.v("LatestMessages","Circle " + muteswan.genHexHash(circle.getFullText()) + " has last message of: " + lastMsg + " and delta of " + delta);
         			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
         			b2.putString("state", "done");
         			b2.putInt("msgDelta", delta);

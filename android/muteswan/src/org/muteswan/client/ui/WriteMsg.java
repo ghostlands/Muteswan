@@ -105,7 +105,7 @@ public class WriteMsg extends ListActivity {
 	       super.onCreate(savedInstanceState);
 
 	       Bundle extras = getIntent().getExtras();
-	       CircleStore cs = new CircleStore(getApplicationContext(),true);
+	       CircleStore cs = new CircleStore(getApplicationContext(),true,false);
 	
 	       
 	       if (extras != null) {

@@ -76,7 +76,7 @@ public class EditCircle extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		Bundle extras = getIntent().getExtras();
-	    CircleStore rs = new CircleStore(getApplicationContext(),true);
+	    CircleStore rs = new CircleStore(getApplicationContext(),true,false);
 	    HashMap<String,Circle> hashMap = rs.asHashMap();
 	    circle = hashMap.get(muteswan.genHexHash(extras.getString("circle")));
 		setContentView(R.layout.editcircle);
