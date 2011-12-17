@@ -102,35 +102,22 @@ public class CreateCircle extends Activity implements Runnable {
 	    	
 	    	String circleFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server.getText().toString();
 	    	
-	    	newCircleResult.setText(circleFullText);
+	    	//newCircleResult.setText(circleFullText);
 	    	
 	    	
         	CircleStore newStore = new CircleStore(getApplicationContext(),true,false);
         	newStore.updateStore(circleFullText);
         	
-	        Intent joinCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
-	        joinCircleIntent.putExtra("circle", muteswan.genHexHash(circleFullText));
-	        sendBroadcast(joinCircleIntent);
+	        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
+	        createdCircleIntent.putExtra("circle", muteswan.genHexHash(circleFullText));
+	        sendBroadcast(createdCircleIntent);
         	
-
-	    	newCircleResult.setText("Created circle " + name.getText().toString());
-	    	
-	    	//try {
-			//	Thread.currentThread().sleep(1000);
-			//} catch (InterruptedException e) {
-			//	// TODO Auto-generated catch block
-			//	e.printStackTrace();
-			//}
-	    	
-	    	//Intent intent = new Intent(getApplicationContext(),EditCircle.class);
-	    	//intent.putExtra("circle",circleFullText);
-	      	//startActivity(intent);
-
+	        finish();
 	 }
 	    
 	
 
-};
+   };
 
 public View.OnClickListener titleBarClicked = new View.OnClickListener() {
    	public void onClick(View v) {
