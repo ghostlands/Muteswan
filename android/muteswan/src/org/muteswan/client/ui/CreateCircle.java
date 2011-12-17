@@ -47,6 +47,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -61,6 +62,10 @@ public class CreateCircle extends Activity implements Runnable {
 	       setContentView(R.layout.createcircle);
 	       TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
 	    
+	       
+	       final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
+	       titleBarImage.setOnClickListener(titleBarClicked);
+	       
 	       String genKeyStr;
 	       
 	    	//byte[] key = new byte[24];
@@ -122,9 +127,18 @@ public class CreateCircle extends Activity implements Runnable {
 	      	//startActivity(intent);
 
 	 }
-
+	    
+	
 
 };
+
+public View.OnClickListener titleBarClicked = new View.OnClickListener() {
+   	public void onClick(View v) {
+    		  Intent intent = new Intent(getApplicationContext(),muteswan.class);
+      		  startActivity(intent);
+   	}
+ };
+
 
 	@Override
 	public void run() {

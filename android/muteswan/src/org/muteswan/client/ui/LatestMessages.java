@@ -268,6 +268,9 @@ public class LatestMessages extends ListActivity implements Runnable {
         final Button postButton = (Button) findViewById(R.id.latestmessagesPost);
         postButton.setOnClickListener(postClicked);
         
+        final ImageView titleBarImage = (ImageView) findViewById(R.id.latestmessagesTitle);
+        titleBarImage.setOnClickListener(titleBarClicked);
+        
         
         //final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
         //refreshButton.setOnClickListener(refreshClicked);
@@ -449,6 +452,14 @@ public class LatestMessages extends ListActivity implements Runnable {
     		}
     	}
     };
+    
+    public View.OnClickListener titleBarClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		  Intent intent = new Intent(getApplicationContext(),muteswan.class);
+      		  startActivity(intent);
+    		}
+    };
+    
     
     public View.OnClickListener refreshClicked = new View.OnClickListener() {
     	public void onClick(View v) {

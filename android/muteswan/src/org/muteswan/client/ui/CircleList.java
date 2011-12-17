@@ -116,6 +116,13 @@ public class CircleList extends ListActivity {
     		
     	}
     };
+    
+    public View.OnClickListener titleBarClicked = new View.OnClickListener() {
+    	public void onClick(View v) {
+    		  Intent intent = new Intent(getApplicationContext(),muteswan.class);
+      		  startActivity(intent);
+    		}
+    };
 	
 	
 	@Override
@@ -137,6 +144,9 @@ public class CircleList extends ListActivity {
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         LinearLayout circlelist = (LinearLayout) findViewById(R.id.circlelistButtons);
         txt.setText(actionPrompts[action]);
+        
+        final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
+        titleBarImage.setOnClickListener(titleBarClicked);
         
 	   if (action == SCAN) {
 		Intent intent = new Intent("com.google.zxing.client.android.SCAN");

@@ -14,6 +14,7 @@
         android:layout_alignParentTop="true"
         android:background="#24282b"
         android:gravity="left"
+        android:clickable="true"
         android:src="@drawable/titlebar" />
 
     <ImageView
