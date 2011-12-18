@@ -417,39 +417,16 @@ public class WriteMsg extends ListActivity {
 	    
 	    	
 	    	
-	    	
-	    	sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
-    		sendingMsgDialog.setCancelable(true);
+	    
+    	    sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
+   		    sendingMsgDialog.setCancelable(true);
 	    	
     		Intent serviceIntent = new Intent(getApplicationContext(),NewMessageService.class);
             bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
+	    
+          
 	    	
 	    	
-	    	
-	    	//FIXME: max sigs?
-	    	final Identity[] signIds = new Identity[50];
-	    	int j = 0;
-	    	for(int i=0; i<signSelections.length; i++) {
-	    		if (signSelections[i] == true) {
-	    			signIds[j] = identities[i];
-	    			j++;
-	    		}
-	    	}
-	    		
-	    		
-	    		  
-			   // final Handler dismissDialog = new Handler() {
-					
-			   //     @Override
-			   //     public void handleMessage(Message msg) {
-			   //           	sendingMsgDialog.dismiss();
-				//			
-			     //         	Toast.makeText(v.getContext(), "Message posted.", Toast.LENGTH_LONG).show();
-			      //  }
-			    //};
-	    		
-	    		
-	    		
 	    	 Boolean atleastOneCircle = false;
 			 for (final Circle cir: circles) {
 				 
@@ -470,75 +447,6 @@ public class WriteMsg extends ListActivity {
 					return;
 				}
 				
-	    		//TextView txt2 = new TextView(v.getContext());
-	    		if (signIds[0] != null) {
-				    	
-				    
-				    	Log.v("WriteMsg", "Posting with signatures...");
-				    	
-				    	 new Thread() {
-							  public void run() {
-								  Bundle b = new Bundle();
-								  Message msg = Message.obtain();
-								  b.putString("circle", cir.getShortname());
-								  b.putString("status", "sending...");
-							      msg.setData(b);
-							      updateSendDialog.sendMessage(msg);
-								
-									try {
-										Integer httpCode = cir.postMsg(txtData,signIds);
-										
-										Bundle b2 = new Bundle();
-										Message msg2 = Message.obtain();
-										b2.putString("circle", cir.getShortname());
-										b2.putInt("position",circles.indexOf(cir));
-										msg2.setData(b2);
-									    
-										
-										if (httpCode == 200) {
-										 b2.putString("status", WriteMsg.SENT);
-										} else if (httpCode >= 500) {
-									     b2.putString("status", "server error");
-										} else if (httpCode < 0) {
-										 b2.putString("status", "timeout");
-										}
-										updateSendDialog.sendMessage(msg2);
-										
-									} catch (InvalidKeyException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (NoSuchAlgorithmException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (NoSuchPaddingException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (IllegalBlockSizeException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (BadPaddingException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (SignatureException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (InvalidKeySpecException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (JSONException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-							  }
-								
-						 }.start();
-				    	
-	    		} else {
-	    		  
 	    			
 				  new Thread() {
 					 
@@ -553,10 +461,24 @@ public class WriteMsg extends ListActivity {
 					      updateSendDialog.sendMessage(msg);
 						  
 						try {
+							  while (msgService == null) {
+					            	Thread.currentThread();
+									try {
+										Thread.sleep(10);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+					            }	
+							
+							
+							
 							Integer httpCode = msgService.postMsg(muteswan.genHexHash(cir.getFullText()), txtData);
 							Bundle b2 = new Bundle();
 							Message msg2 = Message.obtain();
 							b2.putString("circle", cir.getShortname());
+							if (circles == null) {
+								Log.v("WriteMsg", "WTF...circles is null");
+							}
 							b2.putInt("position",circles.indexOf(cir));
 							msg2.setData(b2);
 
@@ -578,7 +500,6 @@ public class WriteMsg extends ListActivity {
 				  }.start();
 				  
 
-	    		}
 	    	}
 	    	
 			
