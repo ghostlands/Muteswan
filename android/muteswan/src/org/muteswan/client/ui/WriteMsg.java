@@ -91,6 +91,9 @@ public class WriteMsg extends ListActivity {
 	
 	
 	protected IMessageService msgService;
+	protected AlertDialog verifyPostAlert;
+	protected ArrayList<Thread> threads = new ArrayList<Thread>();
+
 	
 	
 	
@@ -111,6 +114,10 @@ public class WriteMsg extends ListActivity {
 		if (msgService != null) {
 			unbindService(msgServiceConn);
 		}
+		
+		for (Thread t : threads)
+			t.interrupt();
+		
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -385,8 +392,7 @@ public class WriteMsg extends ListActivity {
 	              	//Toast.makeText(getApplicationContext(), "Message posted.", Toast.LENGTH_LONG).show();
 	        }
 	 };
-	protected AlertDialog verifyPostAlert;
-
+	
 
 	 private String renderDialog(Boolean finished) {
 		 String dialogText = "Sending messages:";
@@ -448,7 +454,7 @@ public class WriteMsg extends ListActivity {
 				}
 				
 	    			
-				  new Thread() {
+				  Thread nThread =  new Thread() {
 					 
 					  
 					  
@@ -476,9 +482,6 @@ public class WriteMsg extends ListActivity {
 							Bundle b2 = new Bundle();
 							Message msg2 = Message.obtain();
 							b2.putString("circle", cir.getShortname());
-							if (circles == null) {
-								Log.v("WriteMsg", "WTF...circles is null");
-							}
 							b2.putInt("position",circles.indexOf(cir));
 							msg2.setData(b2);
 
@@ -491,13 +494,20 @@ public class WriteMsg extends ListActivity {
 							} else if (httpCode < 0) {
 							 b2.putString("status", "timeout");
 							}
+							
+						
+							if (Thread.currentThread().isInterrupted())
+								return;
+							
 							updateSendDialog.sendMessage(msg2);
 							//dismissDialog.sendEmptyMessage(0);
 						} catch (RemoteException e) {
 							e.printStackTrace();
 						}
 					  }
-				  }.start();
+				  };
+				  nThread.start();
+				  threads.add(nThread);
 				  
 
 	    	}
