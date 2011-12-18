@@ -245,6 +245,8 @@ public class CircleList extends ListActivity {
 		   public View.OnClickListener circleClicked = new View.OnClickListener() {
 		    	public void onClick(View v) {
 		    		Integer position = (Integer) v.getTag(R.id.android_circleListName);
+		    		RelativeLayout innerLayout = (RelativeLayout) v.findViewById(R.id.circleListInnerEntryLayout);
+		    		innerLayout.setBackgroundColor(R.drawable.darkerborder);
 		    		dispatchActivity(position);
 		    	}
 		    };
@@ -303,6 +305,7 @@ public class CircleList extends ListActivity {
 			 txtCircle.setClickable(true);
 			 txtCircle.setTag(R.id.android_circleListName, position);
 			 txtCircle.setOnClickListener(circleClicked);
+			 
 			 
 			 if (newCircle != null && circleList[position].getShortname().equals(newCircle)) {
 				 txtCircle.setText(circleList[position].getShortname() + " (new!)");
