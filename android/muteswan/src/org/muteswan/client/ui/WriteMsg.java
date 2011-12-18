@@ -29,6 +29,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.muteswan.client.IMessageService;
+import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.TorStatus;
 import org.muteswan.client.muteswan;
@@ -47,13 +49,17 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.text.Editable;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -84,6 +90,9 @@ public class WriteMsg extends ListActivity {
 	String initialText;
 	
 	
+	protected IMessageService msgService;
+	
+	
 	
 	final ArrayList<Circle> circles = new ArrayList<Circle>();
 
@@ -99,6 +108,9 @@ public class WriteMsg extends ListActivity {
 	public void onDestroy() {
 		super.onDestroy();
 		sendingMsgDialog = null;
+		if (msgService != null) {
+			unbindService(msgServiceConn);
+		}
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -409,7 +421,8 @@ public class WriteMsg extends ListActivity {
 	    	sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
     		sendingMsgDialog.setCancelable(true);
 	    	
-			
+    		Intent serviceIntent = new Intent(getApplicationContext(),NewMessageService.class);
+            bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
 	    	
 	    	
 	    	
@@ -540,7 +553,7 @@ public class WriteMsg extends ListActivity {
 					      updateSendDialog.sendMessage(msg);
 						  
 						try {
-							Integer httpCode = cir.postMsg(txtData);
+							Integer httpCode = msgService.postMsg(muteswan.genHexHash(cir.getFullText()), txtData);
 							Bundle b2 = new Bundle();
 							Message msg2 = Message.obtain();
 							b2.putString("circle", cir.getShortname());
@@ -558,22 +571,9 @@ public class WriteMsg extends ListActivity {
 							}
 							updateSendDialog.sendMessage(msg2);
 							//dismissDialog.sendEmptyMessage(0);
-						} catch (NoSuchAlgorithmException e) {
-							// TODO Auto-generated catch block
+						} catch (RemoteException e) {
 							e.printStackTrace();
-						} catch (NoSuchPaddingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IllegalBlockSizeException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (BadPaddingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}  
+						}
 					  }
 				  }.start();
 				  
@@ -623,5 +623,26 @@ public class WriteMsg extends ListActivity {
 		}
 	    	
 	};
+	
+	private ServiceConnection msgServiceConn = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className,
+             IBinder service) {
+     	msgService = IMessageService.Stub.asInterface(service);
+     	try {
+				msgService.setUserChecking(true);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+     	Log.v("LatestMessages", "onServiceConnected called.");
+     	if (msgService == null) {
+     		Log.e("LatestMessages", "msgService is null ");
+     	}
+
+     }
+
+     public void onServiceDisconnected(ComponentName className) {
+        msgService = null;
+     }
+ };
 }
 

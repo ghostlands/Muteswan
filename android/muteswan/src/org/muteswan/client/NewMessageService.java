@@ -17,6 +17,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 package org.muteswan.client;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +25,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import org.json.JSONException;
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
@@ -577,6 +583,30 @@ public class NewMessageService extends Service {
 		@Override
 		public void updateLastMessage(String circleHash, int lastMsg) throws RemoteException {
 			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, true);
+		}
+
+
+		@Override
+		public int postMsg(String circleHash, String msgContent) throws RemoteException {
+			try {
+				return(circleStore.asHashMap().get(circleHash).postMsg(msgContent));
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return(-1);
 		}
 		
 		

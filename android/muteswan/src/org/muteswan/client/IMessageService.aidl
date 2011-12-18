@@ -16,6 +16,8 @@ interface IMessageService {
   int getLastTorMsgId(String circleHash);
   int downloadMsgFromTor(String circleHash, int id);
   void updateLastMessage(String circleHash, int lastMsg);
+  
+  int postMsg(String circleHash, String msgContent); 
 			
   
 }
