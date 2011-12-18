@@ -500,12 +500,20 @@ public class muteswan extends Activity implements Runnable {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan-latest.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-			startActivity(intent);
+			try {
+			  startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+			  offerToInstallBarcodeScanner();
+			}
 		} else if (item.toString().equals("Share Orbot")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA","market://search?q=pname:org.torproject.android");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-			startActivity(intent);
+			try {
+			  startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+			  offerToInstallBarcodeScanner();
+			}
 		} else if (item.toString().equals("Reset Muteswan")) {
 			Intent intent = new Intent(Intent.ACTION_DELETE);
     		String packageName = "org.muteswan.client";
@@ -676,5 +684,26 @@ public class muteswan extends Activity implements Runnable {
 	}
 
 	private TorNotAvailableReceiver torNotAvailableReceiver;
+	
+	
+	private void offerToInstallBarcodeScanner() {
+		AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
+	    noTorDialog.setTitle("Install BarcodeScanner?");
+	    noTorDialog.setMessage("BarcodeScanner is not currently installed. Do you want to install it from the market?");
+	    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	    	Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
+	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+	        startActivity(intent);
+	      }
+	    });
+	    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {}
+	    });
+	    noTorDialog.create();
+	    noTorDialog.show();
+		
+	}
+	
     
 }

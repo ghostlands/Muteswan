@@ -375,7 +375,7 @@ public class CircleList extends ListActivity {
 			} catch (ActivityNotFoundException e) {
 		    	  offerToInstallBarcodeScanner();
 		          
-		    	}
+		    }
 			return;
 	    } else if (action == SCAN) {
 	    	return;
@@ -506,7 +506,11 @@ public class CircleList extends ListActivity {
 		intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
 		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 		intent.putExtra("ENCODE_SHOW_CONTENTS", false);
-		startActivity(intent);
+        try {
+	        startActivityForResult(intent, 0);
+	    } catch (ActivityNotFoundException e) {
+	       	offerToInstallBarcodeScanner();
+	    }
 	}
 
 	private void showMsgList(Integer position) {
