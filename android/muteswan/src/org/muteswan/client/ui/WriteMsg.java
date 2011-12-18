@@ -101,6 +101,7 @@ public class WriteMsg extends ListActivity {
 
 	Boolean[] checkedCircles;
 	ListView listView;
+	private Button postButton;
 	
 	
 	public void onResume() {
@@ -139,7 +140,6 @@ public class WriteMsg extends ListActivity {
 	       
 	       checkedCircles = new Boolean[cs.size()];
 	       for (Circle c : cs) {
-	    	   
 	    	   circles.add(c);
 	    	   if (circle != null && c.getShortname().equals(circle.getShortname())) {
 	    		   checkedCircles[cs.indexOf(c)] = true;
@@ -148,26 +148,15 @@ public class WriteMsg extends ListActivity {
 	    	   }
 	       }
 	       
-	       //setListAdapter(new ArrayAdapter<String>(this,
-	       //	   android.R.layout.simple_list_item_multiple_choice, circleStrings));
 	       
 	       setContentView(R.layout.writemsg);
 	       
 	       
-	      // if (circle == null) {
-	         setListAdapter(new WriteMsgListAdapter(null));
-	         listView = getListView();
-	         listView.setItemsCanFocus(false);
-	         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-	         listView.setClickable(false);
-	       //} else {
-	    	//   TextView tv = (TextView) findViewById(R.id.newPostLabel);
-		    //   tv.setText("");
-	       //}
-	       
-	   
-	       
-	       
+	       setListAdapter(new WriteMsgListAdapter(null));
+	       listView = getListView();
+	       listView.setItemsCanFocus(false);
+	       listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+	       listView.setClickable(false);
 	       
 	       TextView prompt = (TextView) findViewById(R.id.android_writemsgPrompt);
 	       if (circle != null && prompt != null)
@@ -186,7 +175,7 @@ public class WriteMsg extends ListActivity {
 	       }
 	       
 	      
-	       final Button postButton = (Button) findViewById(R.id.submitMsg);
+	       postButton = (Button) findViewById(R.id.submitMsg);
 	       postButton.setOnClickListener(submitMsg);
 	       
 	       if (initialText != null) {
@@ -194,8 +183,6 @@ public class WriteMsg extends ListActivity {
 	    	newMsgText.setText(initialText);
 	       }
 	         
-	      
-	       
 	}
 	
 	
@@ -378,18 +365,9 @@ public class WriteMsg extends ListActivity {
 			    		AlertDialog alert = builder.create();
 			    		alert.show();
 			    		
-						//sendingMsgDialog.setMessage("All messages sent successfully.");
 					}
 					
 				
-					//for (Circle c : circles) {
-					//	if (checkedCircles[circles.indexOf(c)] == true && b.get("status") != null && b.get("status").equals(WriteMsg.SENT)) {
-					//		CheckedTextView tv = (CheckedTextView) listView.getChildAt(circles.indexOf(c));
-					//		tv.setChecked(false);
-					//	}
-					//}
-					
-	              	//Toast.makeText(getApplicationContext(), "Message posted.", Toast.LENGTH_LONG).show();
 	        }
 	 };
 	
@@ -420,12 +398,15 @@ public class WriteMsg extends ListActivity {
 	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
 	    	Editable txt = newMsgText.getText();
 	    	final String txtData = txt.toString();
-	    
-	    	
 	    	
 	    
     	    sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
    		    sendingMsgDialog.setCancelable(true);
+
+   		    disablePostButton();
+   		    
+   		    
+   		    
 	    	
     		Intent serviceIntent = new Intent(getApplicationContext(),NewMessageService.class);
             bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
@@ -575,5 +556,14 @@ public class WriteMsg extends ListActivity {
         msgService = null;
      }
  };
+
+
+	protected void disablePostButton() {
+		postButton.setEnabled(false);
+	}
+	
+	protected void enablePostButton() {
+		postButton.setEnabled(true);
+	}
 }
 
