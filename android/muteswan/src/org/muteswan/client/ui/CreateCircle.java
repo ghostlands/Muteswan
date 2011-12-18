@@ -111,8 +111,13 @@ public class CreateCircle extends Activity implements Runnable {
 	        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
 	        createdCircleIntent.putExtra("circle", muteswan.genHexHash(circleFullText));
 	        sendBroadcast(createdCircleIntent);
+	        
+	        Intent circleListIntent = new Intent(getApplicationContext(),CircleList.class);
+	        circleListIntent.putExtra("newCircle", name.getText().toString());
+	        circleListIntent.putExtra("action", CircleList.ANY);
+	        startActivity(circleListIntent);
         	
-	        finish();
+	        //finish();
 	 }
 	    
 	

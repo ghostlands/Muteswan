@@ -95,7 +95,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private int messageViewCount;
 	HashMap<View, AlertDialog> moreButtons;
 	private ProgressDialog gettingMsgsDialog;
-	private ProgressDialog initialLoad;
 	
 	private ConcurrentHashMap<String, Integer> newMsgCheckState = new ConcurrentHashMap<String,Integer>();
 	private ConcurrentHashMap<String, String> newMsgCheckResults = new ConcurrentHashMap<String,String>();
@@ -237,7 +236,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		 circleMap = store.asHashMap();
         }
         
-        showInitialLoad();
+        //showInitialLoad();
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -366,12 +365,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 
 	private void showInitialLoad() {
 	
-		if (initialLoad == null) {
-		   initialLoad = ProgressDialog.show(this, "", "Loading messages...", true);
-		   initialLoad.setCancelable(true);
-		} else {
-		   initialLoad.show();
-		}
 		
 	}
 
@@ -788,13 +781,8 @@ public class LatestMessages extends ListActivity implements Runnable {
         		
         		  
         		  // FIXME: make this check cleaner, or in the right place, or something
-        		  // clear the initial load dialog if it is up. it should only be up if there are zero messages
-        		  if (initialLoad != null) {
-           				initialLoad.dismiss();
-           				initialLoad = null;
-           				
-           				TextView footerText = (TextView) footerView.findViewById(R.id.latestmessagesFooterText);
-           				footerText.setText("This circle currently does not have any messages. You can post one, if you like.");
+        		  if (!getFooterText().equals("")) {
+           				setFooterText("This circle currently does not have any messages. You can post one, if you like.");
            	   	  }
         		  
         		  //refreshButton.setOnClickListener(refreshClicked);
@@ -882,10 +870,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         	   }
         	
         	 
-   		       if (initialLoad != null) {
-   				initialLoad.dismiss();
-   				initialLoad = null;
-   			   }
+   			   setFooterText("");
        	
         		if (sorting == false) {
         			sorting = true;
@@ -1092,6 +1077,18 @@ final Handler stopSpinningHandler = new Handler() {
 	}
 
 	
+
+	protected void setFooterText(String footerString) {
+      	TextView footerText = (TextView) footerView.findViewById(R.id.latestmessagesFooterText);
+      	footerText.setText(footerString);
+		
+	}
+	
+	protected CharSequence getFooterText() {
+      	TextView footerText = (TextView) footerView.findViewById(R.id.latestmessagesFooterText);
+      	return(footerText.getText());
+		
+	}
 
 	public ArrayList<MuteswanMessage> getLatestMessages(
 			ArrayList<MuteswanMessage> msgs, String circleHash, Integer first,

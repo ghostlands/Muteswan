@@ -84,6 +84,7 @@ public class CircleList extends ListActivity {
 	Bundle extra;
 	public Circle[] circleList;
 	private String initialText;
+	private String newCircle;
 
 	
 	private CircleStore store;
@@ -133,6 +134,7 @@ public class CircleList extends ListActivity {
 
         extra = getIntent().getExtras();
         action = extra.getInt("action");
+        newCircle = extra.getString("newCircle");
         initialText = extra.getString("initialText");
      
         Log.v("CircleList", "Before CircleStore constructor.");
@@ -183,6 +185,14 @@ public class CircleList extends ListActivity {
 	        {
 			 	Circle circle1 = (Circle) obj1;
 			 	Circle circle2 = (Circle) obj2;
+			 	
+			 	if (newCircle != null && circle1.getShortname().equals(newCircle)) {
+			 		return(-1);
+			 	}
+			 	
+			 	if (newCircle != null && circle2.getShortname().equals(newCircle)) {
+			 		return(1);
+			 	}
 			 	
 			 	return(circle1.getShortname().compareTo(circle2.getShortname()));
 	        }
@@ -293,7 +303,12 @@ public class CircleList extends ListActivity {
 			 txtCircle.setClickable(true);
 			 txtCircle.setTag(R.id.android_circleListName, position);
 			 txtCircle.setOnClickListener(circleClicked);
-			 txtCircle.setText(circleList[position].getShortname());
+			 
+			 if (newCircle != null && circleList[position].getShortname().equals(newCircle)) {
+				 txtCircle.setText(circleList[position].getShortname() + " (new!)");
+			 } else {
+				 txtCircle.setText(circleList[position].getShortname());
+			 }
 			 
 			 layout.setClickable(true);
 			 layout.setOnClickListener(circleClicked);
@@ -521,6 +536,8 @@ public class CircleList extends ListActivity {
     	              Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
     	      		  joinCircleIntent.putExtra("circle", muteswan.genHexHash(circle.getFullText()));
     	      		  sendBroadcast(joinCircleIntent);
+    	      		  
+    	      		  newCircle = circle.getShortname();
     	              
     	              
     	            // IDENTITY
@@ -542,6 +559,8 @@ public class CircleList extends ListActivity {
     	        Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
     	      	joinCircleIntent.putExtra("circle", muteswan.genHexHash(circle.getFullText()));
     	      	sendBroadcast(joinCircleIntent);
+    	      	
+    	        newCircle = circle.getShortname();
 	            
             
             }
