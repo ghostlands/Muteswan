@@ -64,6 +64,7 @@ import android.text.Editable;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
@@ -102,6 +103,12 @@ public class WriteMsg extends ListActivity {
 	Boolean[] checkedCircles;
 	ListView listView;
 	private Button postButton;
+	
+	private View.OnClickListener newMsgTextClicked  = new View.OnClickListener() {
+        public void onClick( View v ) {
+        	enablePostButton();
+        }
+	 };
 	
 	
 	public void onResume() {
@@ -178,8 +185,10 @@ public class WriteMsg extends ListActivity {
 	       postButton = (Button) findViewById(R.id.submitMsg);
 	       postButton.setOnClickListener(submitMsg);
 	       
+	       EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
+	       newMsgText.setOnClickListener(newMsgTextClicked);
+	       
 	       if (initialText != null) {
-	    	EditText newMsgText = (EditText) findViewById(R.id.newMsgText);
 	    	newMsgText.setText(initialText);
 	       }
 	         
@@ -458,7 +467,6 @@ public class WriteMsg extends ListActivity {
 					            }	
 							
 							
-							
 							Integer httpCode = msgService.postMsg(muteswan.genHexHash(cir.getFullText()), txtData);
 							Bundle b2 = new Bundle();
 							Message msg2 = Message.obtain();
@@ -565,5 +573,6 @@ public class WriteMsg extends ListActivity {
 	protected void enablePostButton() {
 		postButton.setEnabled(true);
 	}
+	
 }
 
