@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.http.client.ClientProtocolException;
+import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.IMessageService;
 import org.muteswan.client.ITorVerifyResult;
 import org.muteswan.client.NewMessageService;
@@ -220,10 +221,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private long previousRefreshTime = 0;
 	private long previousLoadMoreTime;
 	private View footerView;
+	private AlertDialogs alertDialogs;
 	
 	
 	private void init() {
-		//idStore = new IdentityStore(this);
         
         extra = getIntent().getExtras();
         if (extra != null) {
@@ -236,7 +237,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		 circleMap = store.asHashMap();
         }
         
-        //showInitialLoad();
 	}
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -260,7 +260,9 @@ public class LatestMessages extends ListActivity implements Runnable {
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		verbose = defPrefs.getBoolean("verbose", false);
 		
-        
+
+		// initialize alert dialogs
+	    alertDialogs = new AlertDialogs(this);
 		
 		
 	
@@ -270,9 +272,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         final ImageView titleBarImage = (ImageView) findViewById(R.id.latestmessagesTitle);
         titleBarImage.setOnClickListener(titleBarClicked);
         
-        
-        //final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
-        //refreshButton.setOnClickListener(refreshClicked);
         
 		messageViewCount = 0;
 		moreButtons = new HashMap<View,AlertDialog>();
@@ -289,7 +288,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         
        
         
-        //refresh();
         
     }
 	
@@ -550,11 +548,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
 
 
-	public class LatestMessagesListAdapter extends ArrayAdapter {
-
-		
-		//private Context context;
-	
+	public class LatestMessagesListAdapter extends ArrayAdapter<MuteswanMessage> {
 		
 		 public LatestMessagesListAdapter(Context context, int textViewResourceId) {
 			super(context, textViewResourceId);
@@ -585,18 +579,13 @@ public class LatestMessages extends ListActivity implements Runnable {
 		    };
 		
 		
-		//public LatestMessagesListAdapter(Context context) {
-		//	this.context = context;
-			//this.messages = messages;
-		//}
-		
 		@Override
 		public int getCount() {
 			return(messageList.size());
 		}
 
 		@Override
-		public Object getItem(int position) {
+		public MuteswanMessage getItem(int position) {
 			return(messageList.get(position));
 		}
 
@@ -757,7 +746,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         			  }
         			  
         			  if (newMsgCheckResults.get(status).equals("failed")) {
-        				  
         				  someFailed = true;
         				  continue;
         			  }
@@ -1352,62 +1340,13 @@ final Handler stopSpinningHandler = new Handler() {
 	private class TorNotAvailableReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	dialogTorNotAvailable.sendEmptyMessage(0);
+	    	alertDialogs.dialogTorNotAvailable.sendEmptyMessage(0);
 	    }
 	}
 
 	private TorNotAvailableReceiver torNotAvailableReceiver;
 	
-	private Handler dialogTorNotAvailable = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-        		  offerToStartTor();
-        }
-
-		private void offerToStartTor() {
-			AlertDialog.Builder noTorDialog = new AlertDialog.Builder(LatestMessages.this);
-		    noTorDialog.setTitle("Tor Unavailable");
-		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly otherwise new messages will not be available.");
-		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
-		      public void onClick(DialogInterface dialogInterface, int i) {
-		      
-		    	Intent intent = null;
-		    	try {
-		    	  intent = new Intent("org.torproject.android.START_TOR");
-		    	  startActivity(intent);
-		    	} catch (ActivityNotFoundException e) {
-		    	  offerToInstallTor();
-		          
-		    	}
-		      }
-		    });
-		    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
-		      public void onClick(DialogInterface dialogInterface, int i) {}
-		    });
-		    noTorDialog.create();
-		    noTorDialog.show();
-		}
-		
-		private void offerToInstallTor() {
-			AlertDialog.Builder noTorDialog = new AlertDialog.Builder(LatestMessages.this);
-		    noTorDialog.setTitle("Install Tor?");
-		    noTorDialog.setMessage("Tor is not currently installed. Do you want to install it from the market?");
-		    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-		      public void onClick(DialogInterface dialogInterface, int i) {
-		        Uri uri = Uri.parse("market://search?q=pname:org.torproject.android");
-		    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		        startActivity(intent);
-		      }
-		    });
-		    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-		      public void onClick(DialogInterface dialogInterface, int i) {}
-		    });
-		    noTorDialog.create();
-		    noTorDialog.show();
-		}
-		
-		
- };
+	
  
  
  private ServiceConnection msgServiceConn = new ServiceConnection() {

@@ -228,56 +228,7 @@ public class muteswan extends Activity implements Runnable {
 	       }
 	 };
 	 
-	 private Handler dialogTorNotAvailable = new Handler() {
-	        @Override
-	        public void handleMessage(Message msg) {
-	        		  offerToStartTor();
-	        }
 
-			private void offerToStartTor() {
-				AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
-    		    noTorDialog.setTitle("Tor Unavailable");
-    		    noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly. Only cached data will be available otherwise.");
-    		    noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
-    		      public void onClick(DialogInterface dialogInterface, int i) {
-    		      
-    		    	Intent intent = null;
-    		    	try {
-    		    	  intent = new Intent("org.torproject.android.START_TOR");
-    		    	  startActivity(intent);
-    		    	} catch (ActivityNotFoundException e) {
-    		    	  offerToInstallTor();
-    		          
-    		    	}
-    		      }
-    		    });
-    		    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
-    		      public void onClick(DialogInterface dialogInterface, int i) {}
-    		    });
-    		    noTorDialog.create();
-    		    noTorDialog.show();
-			}
-			
-			private void offerToInstallTor() {
-				AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
-    		    noTorDialog.setTitle("Install Tor?");
-    		    noTorDialog.setMessage("Tor is not currently installed. Do you want to install it from the market?");
-    		    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-    		      public void onClick(DialogInterface dialogInterface, int i) {
-    		        Uri uri = Uri.parse("market://search?q=pname:org.torproject.android");
-    		    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-    		        startActivity(intent);
-    		      }
-    		    });
-    		    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-    		      public void onClick(DialogInterface dialogInterface, int i) {}
-    		    });
-    		    noTorDialog.create();
-    		    noTorDialog.show();
-			}
-			
-			
-	 };
 	 
 	
 	 
@@ -291,6 +242,7 @@ public class muteswan extends Activity implements Runnable {
 	 
 	private boolean alreadyCheckedTor;
 	private Builder torStatusDialog;
+	private AlertDialogs alertDialogs;
 	
 	 
 	
@@ -356,15 +308,17 @@ public class muteswan extends Activity implements Runnable {
         
         
         // indicate we were just created
-       
         justCreated = true;
         
 
+        // start work activities
         Thread thread = new Thread(this); 
 	    thread.start();
-     
+    
+	    
+	    // initialize alert dialogs
+	    alertDialogs = new AlertDialogs(this);
 
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
         
 
@@ -375,51 +329,17 @@ public class muteswan extends Activity implements Runnable {
        
         
 		
-		
-		//Button panicButton = (Button) findViewById(R.id.panicButton);
-		//panicButton.setOnClickListener(panicButtonClicked);
-		
-		//Button shareOrbotButton = (Button) findViewById(R.id.shareOrbotButton);
-		//shareOrbotButton.setOnClickListener(shareOrbotButtonClicked);
-		//Button shareMuteswanButton = (Button) findViewById(R.id.shareMuteswanButton);
-		//shareMuteswanButton.setOnClickListener(shareMuteswanButtonClicked);
-        
-       
         final ImageView mManageCirclesButton = (ImageView) findViewById(R.id.mManageCircles);
         mManageCirclesButton.setOnClickListener(mManageCircles);
         
-        //final Button mReadMsgsButton = (Button) findViewById(R.id.mReadMsgs);
-        //mReadMsgsButton.setOnClickListener(mReadMsgs); 
-        
-        //final Button mWriteMsgButton = (Button) findViewById(R.id.mWriteMsg);
-        //mWriteMsgButton.setOnClickListener(mWriteMsg); 
-        
-        //final Button mShareCircleButton = (Button) findViewById(R.id.mShare);
-        //mShareCircleButton.setOnClickListener(mShareCircle); 
-        
-        //final Button mScanCircleButton = (Button) findViewById(R.id.mScan);
-        //mScanCircleButton.setOnClickListener(mScanCircle); 
-        
-        //final Button mCreateCircleButton = (Button) findViewById(R.id.mCreateCircle);
-        //mCreateCircleButton.setOnClickListener(mCreateCircle); 
-      
-        
         
              
-        //if (!isBound) {
-        //	Log.v("Muteswan", "IMessageService is not bound.");
-        //} else {
-        //	Log.v("Muteswan", "IMessageService is bound.");
-        //}
-     
-	    
         PackageInfo pinfo = null;
         String versionNameString = null;
 		try {
 			pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
 			versionNameString = pinfo.versionName;
 		} catch (NameNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
@@ -503,7 +423,7 @@ public class muteswan extends Activity implements Runnable {
 			try {
 			  startActivity(intent);
 			} catch (ActivityNotFoundException e) {
-			  offerToInstallBarcodeScanner();
+			  alertDialogs.offerToInstallBarcodeScanner();
 			}
 		} else if (item.toString().equals("Share Orbot")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
@@ -512,7 +432,7 @@ public class muteswan extends Activity implements Runnable {
 			try {
 			  startActivity(intent);
 			} catch (ActivityNotFoundException e) {
-			  offerToInstallBarcodeScanner();
+			  alertDialogs.offerToInstallBarcodeScanner();
 			}
 		} else if (item.toString().equals("Reset Muteswan")) {
 			Intent intent = new Intent(Intent.ACTION_DELETE);
@@ -664,12 +584,11 @@ public class muteswan extends Activity implements Runnable {
 
 			@Override
 			public void torFailure() throws RemoteException {
-				dialogTorNotAvailable.sendEmptyMessage(0);
+				alertDialogs.dialogTorNotAvailable.sendEmptyMessage(0);
 			}
 
 			@Override
 			public void torSuccess() throws RemoteException {
-				//dialogTorAvailable.sendEmptyMessage(0);
 			}
 			
 	};
@@ -679,31 +598,14 @@ public class muteswan extends Activity implements Runnable {
 	private class TorNotAvailableReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	dialogTorNotAvailable.sendEmptyMessage(0);
+			alertDialogs.dialogTorNotAvailable.sendEmptyMessage(0);
 	    }
 	}
 
 	private TorNotAvailableReceiver torNotAvailableReceiver;
 	
 	
-	private void offerToInstallBarcodeScanner() {
-		AlertDialog.Builder noTorDialog = new AlertDialog.Builder(muteswan.this);
-	    noTorDialog.setTitle("Install BarcodeScanner?");
-	    noTorDialog.setMessage("BarcodeScanner is not currently installed. Do you want to install it from the market?");
-	    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-	      public void onClick(DialogInterface dialogInterface, int i) {
-	    	Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
-	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-	        startActivity(intent);
-	      }
-	    });
-	    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-	      public void onClick(DialogInterface dialogInterface, int i) {}
-	    });
-	    noTorDialog.create();
-	    noTorDialog.show();
-		
-	}
+	
 	
     
 }

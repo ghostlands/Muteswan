@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
+import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.ITorVerifyResult;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
@@ -124,6 +125,7 @@ public class CircleList extends ListActivity {
       		  startActivity(intent);
     		}
     };
+	private AlertDialogs alertDialogs;
 	
 	
 	@Override
@@ -170,13 +172,8 @@ public class CircleList extends ListActivity {
         
         circleList = getArray();
         registerForContextMenu(getListView());
-      
-        //listAdapter = new ArrayAdapter<Circle>(this,
-        //      android.R.layout.simple_list_item_1, circleList);
-        //listAdapter = new CircleListAdapter(this);
-        //setListAdapter(listAdapter);
-       
-        
+    
+        alertDialogs = new AlertDialogs(this);
     }
 	
 	private ComparatorCircles comparatorCircles = new ComparatorCircles();
@@ -376,7 +373,7 @@ public class CircleList extends ListActivity {
 			try {
 			  startActivity(intent);
 			} catch (ActivityNotFoundException e) {
-		    	  offerToInstallBarcodeScanner();
+		    	  alertDialogs.offerToInstallBarcodeScanner();
 		          
 		    }
 			return;
@@ -393,24 +390,7 @@ public class CircleList extends ListActivity {
 
 	}
 	
-	private void offerToInstallBarcodeScanner() {
-		AlertDialog.Builder noTorDialog = new AlertDialog.Builder(CircleList.this);
-	    noTorDialog.setTitle("Install BarcodeScanner?");
-	    noTorDialog.setMessage("BarcodeScanner is not currently installed. Do you want to install it from the market?");
-	    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-	      public void onClick(DialogInterface dialogInterface, int i) {
-	    	Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
-	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-	        startActivity(intent);
-	      }
-	    });
-	    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-	      public void onClick(DialogInterface dialogInterface, int i) {}
-	    });
-	    noTorDialog.create();
-	    noTorDialog.show();
-		
-	}
+
 
 	public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
@@ -457,7 +437,7 @@ public class CircleList extends ListActivity {
 	        try {
 	           startActivityForResult(intent, 0);
 	        } catch (ActivityNotFoundException e) {
-	        	offerToInstallBarcodeScanner();
+	        	alertDialogs.offerToInstallBarcodeScanner();
 	        }
          }
      };
@@ -512,7 +492,7 @@ public class CircleList extends ListActivity {
         try {
 	        startActivityForResult(intent, 0);
 	    } catch (ActivityNotFoundException e) {
-	       	offerToInstallBarcodeScanner();
+	       	alertDialogs.offerToInstallBarcodeScanner();
 	    }
 	}
 
