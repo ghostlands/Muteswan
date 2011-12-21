@@ -35,21 +35,34 @@ public class TorStatus {
 	
 	
 	public boolean checkStatus() {
-		HttpGet httpGet = new HttpGet("http://torcheck.xenobite.eu/");
+		//HttpGet httpGet = new HttpGet("http://torcheck.xenobite.eu/");
+		HttpGet httpGet = new HttpGet("http://eqt5g4fuenphqinx.onion/");
 	
     	try {
 			HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
 			
 			
-			
+		
+			// this tor check is weirdly reporting that we are not on tor even if we are right now.
+			// I'm simply using www.google.com. Becuase we always use our MuteswanHttp client, unless
+			// some non tor thing is running on port 9050
 			String checkContent = EntityUtils.toString(resp.getEntity());
-			if (checkContent.contains("So you are NOT using Tor to reach the web!")) {
-				Log.v("TorStatus", "Tor failed check.");
-				return(false);
-			} else if (checkContent.contains("So you are using Tor successfully to reach the web!")) {
+		
+			if (checkContent.contains("Welcome to .onion.")) {
 				Log.v("TorStatus","Looks like Tor is good.");
 				return(true);
+			} else {
+				Log.v("TorStatus", "Tor failed check.");
+				return(false);
 			}
+			
+			//if (checkContent.contains("So you are NOT using Tor to reach the web!")) {
+			//	Log.v("TorStatus", "Tor failed check.");
+			//	return(false);
+			//} else if (checkContent.contains("So you are using Tor successfully to reach the web!")) {
+			//	Log.v("TorStatus","Looks like Tor is good.");
+			//	return(true);
+			//}
 			
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
@@ -59,7 +72,6 @@ public class TorStatus {
 			return(false);
 			
 		}
-   	 	return(false);
 	 
 	}
 	

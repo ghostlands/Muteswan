@@ -180,15 +180,7 @@ public class muteswan extends Activity implements Runnable {
 	public void onResume() {
 		 super.onResume();
 
-		 // TorStatus torStatus = new TorStatus(torService);
-	     // torStatus.checkView(postButton);
-
-		 
-		 //if (alreadyCheckedTor == false) {
-		   //showCheckTorDialog();
 		   scheduleServiceAlarm();		   
-		 //  alreadyCheckedTor = true;
-		 //}
 			
 		 if (torNotAvailableReceiver == null)
 			 torNotAvailableReceiver = new TorNotAvailableReceiver();
