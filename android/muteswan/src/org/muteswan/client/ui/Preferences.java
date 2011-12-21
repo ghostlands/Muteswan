@@ -16,9 +16,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
-import android.R;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
 public class Preferences extends PreferenceActivity {

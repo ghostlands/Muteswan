@@ -17,10 +17,8 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 package org.muteswan.client.ui;
 
 import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 
 public class TorNotAvailable extends Activity {

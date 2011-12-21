@@ -17,7 +17,6 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 package org.muteswan.client.data;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
@@ -29,11 +28,11 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.muteswan.client.Base64;
-import org.muteswan.client.Crypto;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.muteswan.client.Base64;
+import org.muteswan.client.Crypto;
 
 import android.util.Log;
 
@@ -101,7 +100,6 @@ public class MuteswanMessage {
 		try {
 			rawMsgBytes = Base64.decode(base64Msg);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -149,8 +147,6 @@ public class MuteswanMessage {
 		try {
 			sig = Signature.getInstance("MD5WithRSA");
 		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			//e1.printStackTrace();
 			return(null);
 		}
 		
@@ -175,24 +171,19 @@ public class MuteswanMessage {
 					    sig.update(getMsg().getBytes("UTF8"));
 					    if (sig.verify(sigBytes)) {
 							addValidSig(identity);
-							//Log.v("Message", "Verified identity " + identity.getName());
+							Log.v("Message", "Verified identity " + identity.getName());
 					      } else {
-					    	  //Log.v("Message", "Failed to verify signature.");
+					    	Log.v("Message", "Failed to verify signature.");
 					      }
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (SignatureException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (InvalidKeyException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (NoSuchAlgorithmException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (InvalidKeySpecException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				  

@@ -16,47 +16,24 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Circle;
-import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.ui.CreateCircle;
-import org.muteswan.client.ui.GenerateIdentity;
+import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
-import org.muteswan.client.ui.WriteMsg;
-
 import org.muteswan.client.ui.Preferences;
-import org.muteswan.client.ui.CircleList;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.util.EntityUtils;
+import org.muteswan.client.ui.WriteMsg;
 import org.torproject.android.service.ITorService;
 
-import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
-import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -66,7 +43,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -79,8 +55,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -109,56 +83,12 @@ public class muteswan extends Activity implements Runnable {
 
     IMessageService newMsgService;
 
-	private boolean justCreated;
-	
-	
 	private ProgressDialog checkTorDialog;
 	
 	
 	@Override
 	public void run() {
 		
-		//dialog.show();
-		//dialogWaitOnNewMsgService.sendEmptyMessage(0);
-        //Intent serviceIntent = new Intent(this,NewMessageService.class);
-      
-		
-//		while (newMsgService == null) {
-//			try {
-//				Thread.currentThread().sleep(500);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//   
-//		
-//		  try {
-//				if (!newMsgService.isWorking()) {
-//					startService(serviceIntent);
-//				}
-//			} catch (RemoteException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//		
-//		  if (justCreated) {
-//			   justCreated = false;
-//		  }
-			
-		
-		
-		//ORIGINAL TOR CHECK 
-		//if (alreadyCheckedTor == false) {
-		//  TorStatus checkTorStatus = new TorStatus();
-		//  if (checkTorStatus.checkStatus()) {
-		//	checkTorDialogDismiss.sendEmptyMessage(0);
-		//  } else {
-		//	dialogTorNotAvailable.sendEmptyMessage(0);
-		 // }
-		 // alreadyCheckedTor = true;
-		//}
-		  
 		try {
 			while (newMsgService == null) {
 				Thread.currentThread();
@@ -166,10 +96,8 @@ public class muteswan extends Activity implements Runnable {
 			}
 			newMsgService.checkTorStatus(torResultCallback);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -182,6 +110,7 @@ public class muteswan extends Activity implements Runnable {
 	}
 	
 
+	@SuppressWarnings("unused")
 	private Handler checkTorDialogDismiss = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
@@ -201,10 +130,6 @@ public class muteswan extends Activity implements Runnable {
 		  SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
  		
  		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
- 		  //if (backgroundMessageCheck == true) {
- 		  //	Intent serviceIntent = new Intent(this,NewMessageService.class);
- 		  //	startService(serviceIntent);
- 		  //}
  		  if (backgroundMessageCheck == true) {
  		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
  		
@@ -216,7 +141,8 @@ public class muteswan extends Activity implements Runnable {
 			
 	}
 	 
-	 private Handler dialogTorAvailable = new Handler() {
+	 @SuppressWarnings("unused")
+	private Handler dialogTorAvailable = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
 	          	   AlertDialog.Builder dialog = new AlertDialog.Builder(muteswan.this);
@@ -232,7 +158,8 @@ public class muteswan extends Activity implements Runnable {
 	 
 	
 	 
-	 private Handler dialogWaitOnNewMsgService = new Handler() {
+	 @SuppressWarnings("unused")
+	private Handler dialogWaitOnNewMsgService = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
 	              	dialog.setMessage("Connecting to new message service.");
@@ -240,8 +167,6 @@ public class muteswan extends Activity implements Runnable {
 	 };
 	 
 	 
-	private boolean alreadyCheckedTor;
-	private Builder torStatusDialog;
 	private AlertDialogs alertDialogs;
 	
 	 
@@ -303,14 +228,10 @@ public class muteswan extends Activity implements Runnable {
         
         // SERVICE BIND
         Intent serviceIntent = new Intent(this,NewMessageService.class);
-        boolean isBound = bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
+        bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
         
         
         
-        // indicate we were just created
-        justCreated = true;
-        
-
         // start work activities
         Thread thread = new Thread(this); 
 	    thread.start();
@@ -350,7 +271,8 @@ public class muteswan extends Activity implements Runnable {
 	    
     }
     
-    private void showCheckTorDialog() {
+    @SuppressWarnings("unused")
+	private void showCheckTorDialog() {
     	
     	if (checkTorDialog == null) {
     	  checkTorDialog = ProgressDialog.show(this, "", "Verifying secure connection to Tor network..", true);
@@ -453,12 +375,6 @@ public class muteswan extends Activity implements Runnable {
     
     
     
-    private void selectMsg(Circle r) {
-    	Intent intent = new Intent(this,LatestMessages.class);
-    	intent.putExtra("circle",r.getFullText());
-    	return;
-    }
-    
     private void showCircles(Integer action) {
     	Intent intent = new Intent(this,CircleList.class);
     	intent.putExtra("action", action);
@@ -468,12 +384,6 @@ public class muteswan extends Activity implements Runnable {
     	return;
     }
     
-    private void createCircle() {
-    	startActivity(new Intent(this,CreateCircle.class));
-    	return;
-    
-    }
-    
     private void showLatestMessages() {
     	startActivity(new Intent(this,LatestMessages.class));
     	return;
@@ -481,21 +391,6 @@ public class muteswan extends Activity implements Runnable {
     
     
  
-    
-  
-    
-    private void createIdentity() {
-    	startActivity(new Intent(this,GenerateIdentity.class));
-    	return;
-    }
-    
-    private void showIdentities() {
-    	startActivity(new Intent(this,IdentityList.class));
-    	return;
-    }
-    
-   
-    
     public Button.OnClickListener mManageCircles = new Button.OnClickListener() {
 	    public void onClick(View v) {
 	        showCircles(CircleList.ANY);
@@ -513,7 +408,8 @@ public class muteswan extends Activity implements Runnable {
     
     
     
-    private ServiceConnection mTorConn = new ServiceConnection() {
+    @SuppressWarnings("unused")
+	private ServiceConnection mTorConn = new ServiceConnection() {
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
         	torService = ITorService.Stub.asInterface(service);
@@ -536,7 +432,6 @@ public class muteswan extends Activity implements Runnable {
         	try {
 				newMsgService.setUserChecking(true);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         	Log.v("Muteswan", "onServiceConnected called.");
@@ -557,7 +452,6 @@ public class muteswan extends Activity implements Runnable {
 		try {
 			sha = MessageDigest.getInstance("SHA");
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		sha.reset();

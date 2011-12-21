@@ -16,46 +16,27 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.InvalidKeySpecException;
 
-
-import org.muteswan.client.Base64;
-import org.muteswan.client.Crypto;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
-
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.CircleStore;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 
 public class CreateCircle extends Activity implements Runnable {
 
 	public static final String CREATED_CIRCLE_BROADCAST = "CREATEDCIRCLE";
-	private Identity[] identities;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
@@ -95,7 +76,6 @@ public class CreateCircle extends Activity implements Runnable {
 	    	EditText name = (EditText) findViewById(R.id.newCircleName);
 	    	EditText server = (EditText) findViewById(R.id.newCircleServer);
 	    	TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
-	    	TextView newCircleResult = (TextView) findViewById(R.id.newCircleResult);
 	    	
 	    	if (name.length() == 0 || server.length() == 0)
 	    		return;

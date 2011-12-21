@@ -16,14 +16,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
-import java.util.List;
-
-import org.muteswan.client.ui.LatestMessages;
-
-import android.app.ActivityManager;
-import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.app.ActivityManager.RunningTaskInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -67,12 +60,12 @@ public class NewMessageReceiver extends BroadcastReceiver {
    	    int count = 0;
    	    while (msgService == null) {
    		  try {
-				Thread.currentThread().sleep(200);
+				Thread.currentThread();
+				Thread.sleep(200);
 				count++;
 				if (count > 3)
 					break;
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
    	    }
@@ -88,7 +81,6 @@ public class NewMessageReceiver extends BroadcastReceiver {
 				 return;
 			 }
 		} catch (RemoteException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
    	     Log.v("MuteswanReceiver", "Service already running.");

@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
@@ -29,23 +28,20 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
-import org.muteswan.client.MuteswanHttp;
-import org.muteswan.client.Base64;
-import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
-import org.muteswan.client.data.Circle;
-import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.ui.WriteMsg.DialogButtonClickHandler;
-import org.muteswan.client.ui.WriteMsg.DialogSelectionClickHandler;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.muteswan.client.Base64;
+import org.muteswan.client.MuteswanHttp;
+import org.muteswan.client.R;
+import org.muteswan.client.muteswan;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.data.Identity;
+import org.muteswan.client.data.IdentityStore;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -93,7 +89,7 @@ public class EditCircle extends Activity {
 
         Spinner policySpinner = (Spinner) findViewById(R.id.editCirclePostPolicy);
         String[] policyList = new String[] { "NONE", "AUTHKEY", "KEYLIST" };
-        ArrayAdapter policyAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, policyList);
+        ArrayAdapter<String> policyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, policyList);
         //createFromResource(
          //       this, policyList, android.R.layout.simple_spinner_item);
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -132,7 +128,7 @@ public class EditCircle extends Activity {
 	    
 	    
 	    Spinner authkeySpinner = (Spinner) findViewById(R.id.editCircleAuthKey);
-	    ArrayAdapter authkeyAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, signIdentities);
+	    ArrayAdapter<CharSequence> authkeyAdapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, signIdentities);
         authkeySpinner.setAdapter(authkeyAdapter);
         if (knownIdentity != 0) {
         	authkeySpinner.setSelection(knownIdentity);

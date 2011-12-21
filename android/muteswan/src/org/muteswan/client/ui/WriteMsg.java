@@ -16,35 +16,18 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import org.muteswan.client.IMessageService;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
-import org.muteswan.client.TorStatus;
 import org.muteswan.client.muteswan;
-import org.muteswan.client.R.id;
-import org.muteswan.client.R.layout;
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.data.MuteswanMessage;
-import org.muteswan.client.ui.LatestMessages.LatestMessagesListAdapter;
-import org.json.JSONException;
+import org.muteswan.client.data.Identity;
+import org.muteswan.client.data.IdentityStore;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -54,7 +37,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -62,24 +44,15 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class WriteMsg extends ListActivity {
 
@@ -159,7 +132,7 @@ public class WriteMsg extends ListActivity {
 	       setContentView(R.layout.writemsg);
 	       
 	       
-	       setListAdapter(new WriteMsgListAdapter(null));
+	       setListAdapter(new WriteMsgListAdapter());
 	       listView = getListView();
 	       listView.setItemsCanFocus(false);
 	       listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -217,12 +190,7 @@ public class WriteMsg extends ListActivity {
 
 	public class WriteMsgListAdapter extends BaseAdapter {
 
-		private Context context;
 		
-		public WriteMsgListAdapter(Context context) {
-			
-			this.context = context;
-		}
 		
 		@Override
 		public int getCount() {

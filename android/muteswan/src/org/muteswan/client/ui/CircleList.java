@@ -16,55 +16,39 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 
 import org.muteswan.client.AlertDialogs;
-import org.muteswan.client.ITorVerifyResult;
-import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
-import org.muteswan.client.data.MuteswanMessage;
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
-import org.apache.http.client.ClientProtocolException;
+import org.muteswan.client.data.Identity;
+import org.muteswan.client.data.IdentityStore;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 public class CircleList extends ListActivity {
 
@@ -103,7 +87,7 @@ public class CircleList extends ListActivity {
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
         //        android.R.layout.simple_list_item_1, circleList);
-        listAdapter = new CircleListAdapter(this);
+        listAdapter = new CircleListAdapter();
           setListAdapter(listAdapter);
           
           Arrays.sort(circleList, comparatorCircles);
@@ -177,11 +161,11 @@ public class CircleList extends ListActivity {
     }
 	
 	private ComparatorCircles comparatorCircles = new ComparatorCircles();
-	class ComparatorCircles implements Comparator {
-		 public int compare(Object obj1, Object obj2)
+	class ComparatorCircles implements Comparator<Circle> {
+		 public int compare(Circle obj1, Circle obj2)
 	        {
-			 	Circle circle1 = (Circle) obj1;
-			 	Circle circle2 = (Circle) obj2;
+			 	Circle circle1 = obj1;
+			 	Circle circle2 = obj2;
 			 	
 			 	if (newCircle != null && circle1.getShortname().equals(newCircle)) {
 			 		return(-1);
@@ -213,12 +197,8 @@ public class CircleList extends ListActivity {
     
     public class CircleListAdapter extends BaseAdapter {
 
-    	private Context context;
     	
     	
-    	public CircleListAdapter(Context context) {
-			this.context = context;
-		}
     	
 		@Override
 		public int getCount() {
@@ -472,12 +452,14 @@ public class CircleList extends ListActivity {
 	}
 
 	
+	@SuppressWarnings("unused")
 	private void viewCircle(Integer position) {
 		Intent intent = new Intent(getApplicationContext(),ViewCircle.class);
 		intent.putExtra("circle",circleList[position].getFullText());
 		startActivity(intent);
 	}
 	
+	@SuppressWarnings("unused")
 	private void editCircle(Integer position) {
 		Intent intent = new Intent(getApplicationContext(),EditCircle.class);
 		intent.putExtra("circle",circleList[position].getFullText());
@@ -508,7 +490,6 @@ public class CircleList extends ListActivity {
     	    if (resultCode == RESULT_OK) {
     	    	    //Handle successful scan
     	            String contents = intent.getStringExtra("SCAN_RESULT");
-    	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
     	            
     	            int atIndex = contents.indexOf("@");
     	            

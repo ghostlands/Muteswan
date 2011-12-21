@@ -16,10 +16,8 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,10 +25,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.http.client.ClientProtocolException;
 import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.IMessageService;
-import org.muteswan.client.ITorVerifyResult;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.muteswan;
@@ -43,7 +39,6 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -52,31 +47,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuff.Mode;
-import android.graphics.PorterDuffColorFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -482,7 +470,6 @@ public class LatestMessages extends ListActivity implements Runnable {
     	 private static final long ONE_MINUTE = 60000L;
     	 private static final long ONE_HOUR = 3600000L;
     	 private static final long ONE_DAY = 86400000L;
-    	 private static final long ONE_WEEK = 604800000L;
 
     	 public static String format(Date date) {
 
@@ -537,13 +524,13 @@ public class LatestMessages extends ListActivity implements Runnable {
     	  return toHours(date) / 24L;
     	 }
 
-    	 private static long toMonths(long date) {
-    	  return toDays(date) / 30L;
-    	 }
+    	 //private static long toMonths(long date) {
+    	 // return toDays(date) / 30L;
+    	 //}
 
-    	 private static long toYears(long date) {
-    	  return toMonths(date) / 365L;
-    	 }
+    	 //private static long toYears(long date) {
+    	 // return toMonths(date) / 365L;
+    	 //}
 
     	}
 
@@ -768,7 +755,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         		  }
         		
         		  
-        		  // FIXME: make this check cleaner, or in the right place, or something
         		  if (!getFooterText().equals("")) {
            				setFooterText("This circle currently does not have any messages. You can post one, if you like.");
            	   	  }
@@ -867,11 +853,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 					try {
 						Thread.sleep(50);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
-        		    Collections.sort(messageList, comparatorDates);
+        		    Collections.sort(messageList, getComparatorDates());
         		    listAdapter.notifyDataSetChanged();
         		    
         		    sorting = false;
@@ -921,12 +906,12 @@ final Handler stopSpinningHandler = new Handler() {
 	
 
     
-    class CompareDates implements Comparator
+    class CompareDates implements Comparator<MuteswanMessage>
     {
-        public int compare(Object obj1, Object obj2)
+        public int compare(MuteswanMessage obj1, MuteswanMessage obj2)
         {
-        	MuteswanMessage msg1 = (MuteswanMessage) obj1;
-        	MuteswanMessage msg2 = (MuteswanMessage) obj2;
+        	MuteswanMessage msg1 =  obj1;
+        	MuteswanMessage msg2 =  obj2;
         	
         	//Log.v("LatestMessages", "Comparing " + msg1.getId() + " with " + msg2.getId());
         	
@@ -938,7 +923,6 @@ final Handler stopSpinningHandler = new Handler() {
 				mDate = df.parse(msg1.getDate());
 				oDate = df.parse(msg2.getDate());
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (NullPointerException e) {
 				Log.v("LatestMessages", "Invalid message date!");
@@ -1054,8 +1038,6 @@ final Handler stopSpinningHandler = new Handler() {
 					   stopSpinningHandler.sendEmptyMessage(0);
 				
 			} else {
-				//msg.verifySignatures(idStore);
-				//Log.v("LatestMessages", "Adding " + msg.getId());
 				msgs.add(msg);
 			}
 
@@ -1126,7 +1108,8 @@ final Handler stopSpinningHandler = new Handler() {
 		while (newMsgCheckState.isEmpty()) {
 		  try {
 			    Log.v("LatestMessages", "Waiting for first population of check messages.");
-				Thread.currentThread().sleep(250);
+				Thread.currentThread();
+				Thread.sleep(250);
 			  } catch (InterruptedException e) {
 				  Log.v("LatestMessages", "Error: thread interrupted " + e.getMessage());
 				  return(null);
@@ -1170,7 +1153,8 @@ final Handler stopSpinningHandler = new Handler() {
 			} else {
 			
 			  try {
-				Thread.currentThread().sleep(500);
+				Thread.currentThread();
+				Thread.sleep(500);
 			  } catch (InterruptedException e) {
 				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
 				  return(null);
@@ -1329,14 +1313,17 @@ final Handler stopSpinningHandler = new Handler() {
         	}
         };
 	
-          //oldThreads.add(nThread);
           
-          //Log.v("LatestMessages","Creating thread " + nThread.toString());
           nThread.start();
           return(nThread);
         
 	}
 	
+	public CompareDates getComparatorDates() {
+		return comparatorDates;
+	}
+
+
 	private class TorNotAvailableReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {

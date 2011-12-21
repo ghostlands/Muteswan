@@ -16,11 +16,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.data;
 
-import java.security.KeyPair;
-import java.security.PublicKey;
 import java.util.LinkedList;
-
-import org.muteswan.client.MuteswanHttp;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -29,6 +25,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
+@SuppressWarnings("serial")
 public class IdentityStore extends LinkedList<Identity> {
 	
 	
@@ -68,7 +65,7 @@ public class IdentityStore extends LinkedList<Identity> {
 		OpenHelper openHelper = new OpenHelper(context);
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		
-		Cursor cursor = db.query(openHelper.TABLE, new String[] { "name", "privateKey", "publicKey", "privKeyHash", "pubKeyHash" }, null, null, null, null, "name desc" );
+		Cursor cursor = db.query(OpenHelper.TABLE, new String[] { "name", "privateKey", "publicKey", "privKeyHash", "pubKeyHash" }, null, null, null, null, "name desc" );
 		
 		while (cursor.moveToNext()) {
 			

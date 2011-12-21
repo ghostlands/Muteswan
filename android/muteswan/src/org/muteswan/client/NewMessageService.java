@@ -20,43 +20,32 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
-import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.CreateCircle;
 import org.muteswan.client.ui.LatestMessages;
 
-import org.apache.http.client.ClientProtocolException;
-
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningTaskInfo;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -68,17 +57,13 @@ public class NewMessageService extends Service {
 	HashMap<String,Integer> notifyIds;
 	int notifyId;
 	final int PERSISTANT_NOTIFICATION = 220;
-	private boolean backgroundMessageCheck;
-	private int checkMsgInterval;
-	private int numMsgDownload;
 	private SharedPreferences defPrefs;
-	private boolean justLaunched = false;
 	protected boolean isWorking;
 	private HashMap<Circle,Thread> pollList = new HashMap<Circle,Thread>();
 	private boolean started = false;
 	protected boolean torActive = false;
 	
-	protected LinkedBlockingQueue linkedQueue = new LinkedBlockingQueue<Circle>();
+	protected LinkedBlockingQueue<Circle> linkedQueue = new LinkedBlockingQueue<Circle>();
 	
 	// long poll is experimental and currently destroys batteries. We should investigate this at another time
 	protected boolean useLongPoll = false;
@@ -106,7 +91,7 @@ public class NewMessageService extends Service {
 		
 		defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
-		checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
+		Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
 		
 		//int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
 		
@@ -121,11 +106,9 @@ public class NewMessageService extends Service {
 		notifyId = 0;
 
 		
-		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
-		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
+		defPrefs.getBoolean("backgroundMessageCheck", false);				
+		Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
-		justLaunched = true;
-		
 		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
 		registerReceiver(isUserCheckingMessagesReceiver, new IntentFilter(LatestMessages.CHECKING_MESSAGES));
 		registerReceiver(deletedCircleReceiver, new IntentFilter(CircleList.DELETED_CIRCLE_BROADCAST));
@@ -161,8 +144,8 @@ public class NewMessageService extends Service {
 	
 	private void start() {
 		
-		backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
-		numMsgDownload = Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
+		defPrefs.getBoolean("backgroundMessageCheck", false);				
+		Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
 		// tor service is now permissioned
 		//TorStatus torStatus = new TorStatus(muteswan.torService);
@@ -198,26 +181,6 @@ public class NewMessageService extends Service {
 		  
 		// Run again
 		} else {
-			
-			
-			
-			// FIXME UGLY. make sure the circle list is up to date 
-			/*CircleStore rs = new CircleStore(getApplicationContext(),true);
-			for (Circle r : rs) {
-			
-			 boolean has = false;
-			 for (Circle pollr : pollList.keySet()) {
-			   if (pollr.getFullText().equals(r.getFullText())) {
-				   has = true;
-			   }
-			   
-			   
-			 }
-			 if (!has)
-		      registerPoll(r);
-			 
-			 
-			}*/
 			runPoll();
 		}
 	}
@@ -259,7 +222,6 @@ public class NewMessageService extends Service {
 		
 		 isWorking = true;
 		 notifyIds = new HashMap<String,Integer>();
-		 //notifyId = 0;
 		
 		 Log.v("MuteswanService","pollList size " + pollList.size());
 		 for (final Circle circle : pollList.keySet()) {
@@ -275,39 +237,19 @@ public class NewMessageService extends Service {
 			    }
 
 			
-			    //FIXME: UGLY
-			 	/*CircleStore rs = new CircleStore(getApplicationContext(),true);
-			 	boolean hasCircle = false;
-			 	for (Circle r : rs) {
-			 		if (circle.getFullText().equals(r.getFullText())) {
-			 			hasCircle = true;
-			 		}
-			 	}
-			 	
-			 	if (hasCircle == false) {
-			 		Log.v("NewMessageService", "We don't have " + circle.getShortname() + " anymore, stopping thread.");
-			 		stopList.add(circle);
-			 		pollList.get(circle).interrupt();
-			 	}
-			 	*/
-			 
 		     Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
 			
 			
-			 if (useLongPoll == false) {
-				 //if (pollList.get(circle) == null) {
 				 Thread nThread = new Thread() {
 				    	
 					   
 					 public void run() {
 					    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
-					    		boolean poll = true;
 					    		final Integer startLastId = circle.getLastMsgId(false);
 								Integer lastId = circle.getLastTorMessageId();
 					    		if (lastId == null || lastId < 0) {
 					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
-					    			poll = false;
 					    			torActive = false;
 					    			//return;
 					    		}
@@ -362,120 +304,13 @@ public class NewMessageService extends Service {
 					};
 					pollList.put(circle, nThread);
 					nThread.start();
-					
-				 //} else {
-				 //	pollList.get(circle).start();
-				 //}
-			 } else  {
-				 if (pollList.get(circle) == null) {
-					 
-					 Thread nThread = new Thread() {
-					    	
-						   
-						 public void run() {
-						    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
-
-						    		boolean poll = true;
-						    		final Integer startLastId = circle.getLastMsgId(true);
-									Integer lastId = circle.getLastTorMessageId();
-						    		if (lastId == null || lastId < 0) {
-						    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
-						    			poll = false;
-						    			torActive = false;
-						    			//return;
-						    		}
-									circle.updateLastMessage(lastId,false);
-								  
-						    	
-							 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
-					       
-							
-					        int count = 0;
-					        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
-					        
-
-					        
-					       
-					         while (poll) {
-					        	torActive = true;
-					        	
-					        	
-					        	MuteswanMessage msg = null;
-								try {
-									msg = longpollForNewMessage(circle,++lastId);
-									
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									//e1.printStackTrace();
-									Log.v("MuteswanService", "IO exception connecting to tor.");
-									poll = false;
-								}
-								
-								if (msg == null) {
-									Log.v("MuteswanService", "Null msg, continuing.");
-									--lastId;
-								    continue;
-								}
-								
-							
-					        	for (Circle r : stopList) {
-					        		if (r.getFullText().equals(circle.getFullText())) {
-					        			stopList.remove(r);
-					        			Log.v("MuteswanService", "We are on the stop list, bailing out.");
-					        			return;
-					        		}
-					        	}
-					        	
-					        	circle.updateLastMessage(lastId,true);
-					        	// updateLastMessage also saves the message
-					        	//circle.saveLastMessage();
-					        	CharSequence notifTitle = "New message in " + circle.getShortname();
-					        	CharSequence notifText = "";
-								try {
-									notifText = circle.getMsg(lastId.toString()).getMsg();
-								} catch (ClientProtocolException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-					        	showNotification(circle,notifTitle,notifText);
-					        	count++;
-					        	
-					        	msg = null;
-					        }
-						 }
-					 }; 
-				 } else if (pollList.get(circle).isInterrupted()) {
-						Log.v("MuteswanService","Service is interrupted.");
-						//pollList.remove(circle);
-				} else if (!(pollList.get(circle).isAlive())) {
-						 Log.v("MuteswanService","Hey, looks like not alive, starting.");
-						 try {
-							pollList.get(circle).join();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						 pollList.get(circle).run();
-				} else {
-						 Log.v("MuteswanService", "Circle " + circle.getShortname() + " skipped because already polling.");
-				}
-			 }
-				
-				
-				
-				
-				
-			   
-			
 		  }
 		
 	
 	}
 	
 	
+	@SuppressWarnings("unused")
 	private MuteswanMessage longpollForNewMessage(final Circle circle, Integer id) throws IOException {
 		if (circle == null) {
 			Log.v("AtffService", "WTF, circle is null.");
@@ -543,7 +378,8 @@ public class NewMessageService extends Service {
 				Log.v("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
 				while (linkedQueue.contains(circle)) {
 					try {
-						Thread.currentThread().sleep(250);
+						Thread.currentThread();
+						Thread.sleep(250);
 					} catch (InterruptedException e) {
 						return(-4);
 					}
@@ -591,19 +427,14 @@ public class NewMessageService extends Service {
 			try {
 				return(circleStore.asHashMap().get(circleHash).postMsg(msgContent));
 			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return(-1);

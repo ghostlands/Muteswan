@@ -35,11 +35,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.muteswan.client.MuteswanHttp;
-import org.muteswan.client.Base64;
-import org.muteswan.client.Crypto;
-import org.muteswan.client.muteswan;
-import org.muteswan.client.data.CircleStore.OpenHelper;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -51,22 +46,17 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.muteswan.client.Base64;
+import org.muteswan.client.Crypto;
+import org.muteswan.client.MuteswanHttp;
+import org.muteswan.client.muteswan;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListAdapter;
 
 public class Circle {
      
@@ -88,8 +78,6 @@ public class Circle {
 
 	private Integer curLastMsgId = 0;
 
-	private SQLiteDatabase rdb;
-
 	private String postPolicy;
 	private String authKey;
 	private byte[] image;
@@ -97,7 +85,7 @@ public class Circle {
 	private String description;
 	private String[] keylist;
 	
-	private HashMap msgCache = new HashMap<Integer,MuteswanMessage>();
+	private HashMap<Integer,MuteswanMessage> msgCache = new HashMap<Integer,MuteswanMessage>();
 
 	public class OpenHelper extends SQLiteOpenHelper {
 
@@ -216,6 +204,7 @@ public class Circle {
 	
 	
 	
+	@SuppressWarnings("unused")
 	private void initManifest() {
 		String circleHash = muteswan.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase();
@@ -1072,8 +1061,6 @@ public class Circle {
 	
    private void saveManifestToDb() {
 	    SQLiteDatabase db = openHelper.getWritableDatabase();
-	    String circleHash = muteswan.genHexHash(getFullText());
-		
 	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFEST);
 	    del.execute();
 	    

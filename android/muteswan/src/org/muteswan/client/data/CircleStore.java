@@ -16,30 +16,18 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.data;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.muteswan.client.muteswan;
-import org.apache.http.client.ClientProtocolException;
-
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListAdapter;
 
+@SuppressWarnings("serial")
 final public class CircleStore extends LinkedList<Circle> {
 	
 	public class OpenHelper extends SQLiteOpenHelper {
@@ -51,7 +39,6 @@ final public class CircleStore extends LinkedList<Circle> {
 			
 		     
 		      public OpenHelper(Context context) {
-				// TODO Auto-generated constructor stub
 		    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
 			}
 
@@ -89,12 +76,8 @@ final public class CircleStore extends LinkedList<Circle> {
 	}
 	
 	public CircleStore(Context applicationContext) {
-		// TODO Auto-generated constructor stub
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
-
-		
-        //initStore();
 	}
 
 	
@@ -136,7 +119,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  private void initStore(boolean initCache) {
 		  SQLiteDatabase db = openHelper.getReadableDatabase();
 			
-		  Cursor cursor = db.query(openHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
+		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);

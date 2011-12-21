@@ -19,19 +19,13 @@ package org.muteswan.client;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 
-import android.content.ServiceConnection;
-import android.os.RemoteException;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
 
 public class TorStatus {
 
@@ -58,12 +52,9 @@ public class TorStatus {
 			}
 			
 		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return(false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 			Log.v("TorStatus", "Tor not running.");
 			return(false);
 			

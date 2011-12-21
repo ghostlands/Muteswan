@@ -59,10 +59,8 @@ public class Crypto {
 		cipher.init(Cipher.ENCRYPT_MODE, secretKey,iv);
 		cipherd.init(Cipher.DECRYPT_MODE, secretKey,iv);
 	} catch (InvalidKeyException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (InvalidAlgorithmParameterException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 		
