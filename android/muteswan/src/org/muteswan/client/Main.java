@@ -62,7 +62,7 @@ import android.widget.TextView;
 
 
 
-public class muteswan extends Activity implements Runnable {
+public class Main extends Activity implements Runnable {
 	//Store store = null;
 	//public static Circle activeCircle = null;
 
@@ -145,7 +145,7 @@ public class muteswan extends Activity implements Runnable {
 	private Handler dialogTorAvailable = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
-	          	   AlertDialog.Builder dialog = new AlertDialog.Builder(muteswan.this);
+	          	   AlertDialog.Builder dialog = new AlertDialog.Builder(Main.this);
 	       		    dialog.setTitle("Tor available");
 	       		    dialog.create();
 	       		    dialog.show();     		
@@ -184,7 +184,7 @@ public class muteswan extends Activity implements Runnable {
 			
 		 if (torNotAvailableReceiver == null)
 			 torNotAvailableReceiver = new TorNotAvailableReceiver();
-		 IntentFilter intentFilter = new IntentFilter(muteswan.TOR_NOT_AVAILABLE);
+		 IntentFilter intentFilter = new IntentFilter(Main.TOR_NOT_AVAILABLE);
 		 registerReceiver(torNotAvailableReceiver, intentFilter);
   
 		   

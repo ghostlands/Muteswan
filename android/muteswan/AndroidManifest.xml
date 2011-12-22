@@ -7,7 +7,7 @@
           android:label="@string/app_name"
           android:theme="@android:style/Theme.Light.NoTitleBar">
          
-        <activity android:name=".muteswan"
+        <activity android:name=".Main"
                   android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
                   android:label="@string/app_name">
             <intent-filter>

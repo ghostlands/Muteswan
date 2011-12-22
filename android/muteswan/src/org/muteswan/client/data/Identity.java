@@ -30,7 +30,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import org.muteswan.client.Base64;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 
 public class Identity {
 	
@@ -143,11 +143,11 @@ public class Identity {
     }
 	
 	public String getPubKeyHash() {
-		return(muteswan.genHexHash(publicKeyEnc.toString()));
+		return(Main.genHexHash(publicKeyEnc.toString()));
 	}
 	
 	public String getPrivKeyHash() {
-		return(muteswan.genHexHash(privateKeyEnc.toString()));
+		return(Main.genHexHash(privateKeyEnc.toString()));
 	}
 
 

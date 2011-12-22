@@ -22,7 +22,7 @@ import java.util.HashMap;
 import org.muteswan.client.IMessageService;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.Identity;
@@ -435,7 +435,7 @@ public class WriteMsg extends ListActivity {
 					            }	
 							
 							
-							Integer httpCode = msgService.postMsg(muteswan.genHexHash(cir.getFullText()), txtData);
+							Integer httpCode = msgService.postMsg(Main.genHexHash(cir.getFullText()), txtData);
 							Bundle b2 = new Bundle();
 							Message msg2 = Message.obtain();
 							b2.putString("circle", cir.getShortname());

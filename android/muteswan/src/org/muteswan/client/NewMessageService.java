@@ -99,7 +99,7 @@ public class NewMessageService extends Service {
 		//alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
 		
 		
-		notificationIntent = new Intent(this, muteswan.class);
+		notificationIntent = new Intent(this, Main.class);
 	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notifyIds = new HashMap<String,Integer>();
@@ -200,12 +200,12 @@ public class NewMessageService extends Service {
 			return;
 		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
-		msgIntent.putExtra("circle", muteswan.genHexHash(c.getFullText()));
+		msgIntent.putExtra("circle", Main.genHexHash(c.getFullText()));
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 	
 		//PendingIntent.get
 	
-		Log.v("NewMessageService", "Set pending intent to launch " + c.getShortname() + "(" + muteswan.genHexHash(c.getFullText()) + ")");
+		Log.v("NewMessageService", "Set pending intent to launch " + c.getShortname() + "(" + Main.genHexHash(c.getFullText()) + ")");
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
 		mNM.notify((Integer) notifyIds.get(c.getFullText()), notify);
 	}
@@ -337,9 +337,9 @@ public class NewMessageService extends Service {
 			TorStatus checkTorStatus = new TorStatus();
 			if (checkTorStatus.checkStatus()) {
 				
-				sendBroadcast(new Intent(muteswan.TOR_AVAILABLE));
+				sendBroadcast(new Intent(Main.TOR_AVAILABLE));
 			} else {
-				sendBroadcast(new Intent(muteswan.TOR_NOT_AVAILABLE));
+				sendBroadcast(new Intent(Main.TOR_NOT_AVAILABLE));
 			}
 		}
 

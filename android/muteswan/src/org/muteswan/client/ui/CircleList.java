@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.Identity;
@@ -105,7 +105,7 @@ public class CircleList extends ListActivity {
     
     public View.OnClickListener titleBarClicked = new View.OnClickListener() {
     	public void onClick(View v) {
-    		  Intent intent = new Intent(getApplicationContext(),muteswan.class);
+    		  Intent intent = new Intent(getApplicationContext(),Main.class);
       		  startActivity(intent);
     		}
     };
@@ -345,7 +345,7 @@ public class CircleList extends ListActivity {
 			intent.putExtra("circle", circleList[position].getFullText());
 		} else if (action == READ || action == ANY) {
 			intent = new Intent(getApplicationContext(),LatestMessages.class);
-			intent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
+			intent.putExtra("circle", Main.genHexHash(circleList[position].getFullText()));
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",circleList[position].getFullText());;
@@ -436,7 +436,7 @@ public class CircleList extends ListActivity {
 		store.deleteCircle(circleList[position]);
 		
 		Intent deleteCircleIntent = new Intent(CircleList.DELETED_CIRCLE_BROADCAST);
-		deleteCircleIntent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
+		deleteCircleIntent.putExtra("circle", Main.genHexHash(circleList[position].getFullText()));
 		sendBroadcast(deleteCircleIntent);
 		
 		Toast.makeText(this,
@@ -480,7 +480,7 @@ public class CircleList extends ListActivity {
 
 	private void showMsgList(Integer position) {
 		Intent intent = new Intent(getApplicationContext(),LatestMessages.class);
-		intent.putExtra("circle", muteswan.genHexHash(circleList[position].getFullText()));
+		intent.putExtra("circle", Main.genHexHash(circleList[position].getFullText()));
 		startActivity(intent);
 	}
 
@@ -502,7 +502,7 @@ public class CircleList extends ListActivity {
     	              
     	              
     	              Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
-    	      		  joinCircleIntent.putExtra("circle", muteswan.genHexHash(circle.getFullText()));
+    	      		  joinCircleIntent.putExtra("circle", Main.genHexHash(circle.getFullText()));
     	      		  sendBroadcast(joinCircleIntent);
     	      		  
     	      		  newCircle = circle.getShortname();
@@ -525,7 +525,7 @@ public class CircleList extends ListActivity {
 	            store.updateStore(testSite);
 	            
     	        Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
-    	      	joinCircleIntent.putExtra("circle", muteswan.genHexHash(circle.getFullText()));
+    	      	joinCircleIntent.putExtra("circle", Main.genHexHash(circle.getFullText()));
     	      	sendBroadcast(joinCircleIntent);
     	      	
     	        newCircle = circle.getShortname();

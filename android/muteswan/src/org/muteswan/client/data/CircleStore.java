@@ -19,7 +19,7 @@ package org.muteswan.client.data;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -97,7 +97,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  
 		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase();
 		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
-		  delete.bindString(1, muteswan.genHexHash(circle.getFullText()));
+		  delete.bindString(1, Main.genHexHash(circle.getFullText()));
 		  delete.execute();
 		  circle.getOpenHelper().deleteData(rdb);
 		  rdb.close();
@@ -170,7 +170,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase();
 		  //muteswan.genHexHash(circle.getFullText()));
  		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-		  insert.bindString(1,muteswan.genHexHash(circle.getFullText()));
+		  insert.bindString(1,Main.genHexHash(circle.getFullText()));
 		  insert.bindLong(2, 0);
 		  insert.executeInsert();
 		  rdb.close();
@@ -183,7 +183,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  public HashMap<String,Circle> asHashMap() {
 		HashMap<String,Circle> map = new HashMap<String,Circle>();
 		for (Circle r : this) {
-			map.put(muteswan.genHexHash(r.getFullText()), r);
+			map.put(Main.genHexHash(r.getFullText()), r);
 		}
 		
 		return map;

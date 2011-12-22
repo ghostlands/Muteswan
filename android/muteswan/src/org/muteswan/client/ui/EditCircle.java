@@ -37,7 +37,7 @@ import org.json.JSONObject;
 import org.muteswan.client.Base64;
 import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.Identity;
@@ -74,7 +74,7 @@ public class EditCircle extends Activity {
 		Bundle extras = getIntent().getExtras();
 	    CircleStore rs = new CircleStore(getApplicationContext(),true,false);
 	    HashMap<String,Circle> hashMap = rs.asHashMap();
-	    circle = hashMap.get(muteswan.genHexHash(extras.getString("circle")));
+	    circle = hashMap.get(Main.genHexHash(extras.getString("circle")));
 		setContentView(R.layout.editcircle);
 		
 

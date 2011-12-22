@@ -21,7 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 import org.muteswan.client.data.CircleStore;
 
 import android.app.Activity;
@@ -89,7 +89,7 @@ public class CreateCircle extends Activity implements Runnable {
         	newStore.updateStore(circleFullText);
         	
 	        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
-	        createdCircleIntent.putExtra("circle", muteswan.genHexHash(circleFullText));
+	        createdCircleIntent.putExtra("circle", Main.genHexHash(circleFullText));
 	        sendBroadcast(createdCircleIntent);
 	        
 	        Intent circleListIntent = new Intent(getApplicationContext(),CircleList.class);
@@ -106,7 +106,7 @@ public class CreateCircle extends Activity implements Runnable {
 
 public View.OnClickListener titleBarClicked = new View.OnClickListener() {
    	public void onClick(View v) {
-    		  Intent intent = new Intent(getApplicationContext(),muteswan.class);
+    		  Intent intent = new Intent(getApplicationContext(),Main.class);
       		  startActivity(intent);
    	}
  };

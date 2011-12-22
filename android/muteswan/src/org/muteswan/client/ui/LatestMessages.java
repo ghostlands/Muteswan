@@ -29,7 +29,7 @@ import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.IMessageService;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.IdentityStore;
@@ -102,7 +102,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		 if (torNotAvailableReceiver == null)
 			 torNotAvailableReceiver = new TorNotAvailableReceiver();
-		 IntentFilter intentFilter = new IntentFilter(muteswan.TOR_NOT_AVAILABLE);
+		 IntentFilter intentFilter = new IntentFilter(Main.TOR_NOT_AVAILABLE);
 		 registerReceiver(torNotAvailableReceiver, intentFilter);
 		
 		//cleanup();
@@ -413,7 +413,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     	for (Circle r : store) {
     		if (r.getShortname().equals(v.getText().toString())) {
     			Intent intent = new Intent(this,LatestMessages.class);
-    			intent.putExtra("circle", muteswan.genHexHash(r.getFullText()));
+    			intent.putExtra("circle", Main.genHexHash(r.getFullText()));
     			startActivity(intent);
     		}
     	}
@@ -434,7 +434,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     
     public View.OnClickListener titleBarClicked = new View.OnClickListener() {
     	public void onClick(View v) {
-    		  Intent intent = new Intent(getApplicationContext(),muteswan.class);
+    		  Intent intent = new Intent(getApplicationContext(),Main.class);
       		  startActivity(intent);
     		}
     };
@@ -1012,7 +1012,7 @@ final Handler stopSpinningHandler = new Handler() {
 
 					try {
 						Log.v("LatestMessages", "I am " + Thread.currentThread());
-						msgService.downloadMsgFromTor(muteswan.genHexHash(r.getFullText()), i);
+						msgService.downloadMsgFromTor(Main.genHexHash(r.getFullText()), i);
 					} catch (RemoteException e) {
 						Log.e("LatestMessages", "Error downloading message " + i + " from msgService!");
 					}
@@ -1243,7 +1243,7 @@ final Handler stopSpinningHandler = new Handler() {
         		Message m = Message.obtain();
         		Bundle b = new Bundle();
         		
-        		b.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        		b.putString("circle", Main.genHexHash(circle.getFullText()));
         		b.putString("state", "starting");
         		m.setData(b);
         		Log.v("LatestMessages","Sending Message with value " + b.getString("circle") + " Current thread " + Thread.currentThread().toString());
@@ -1262,7 +1262,7 @@ final Handler stopSpinningHandler = new Handler() {
         	
         		Integer lastMsg = null;
 				try {
-					lastMsg = msgService.getLastTorMsgId(muteswan.genHexHash(circle.getFullText()));
+					lastMsg = msgService.getLastTorMsgId(Main.genHexHash(circle.getFullText()));
 				} catch (RemoteException e) {
 					Log.e("LatestMessages", "Error getting latest message from service!");
 					e.printStackTrace();
@@ -1279,7 +1279,7 @@ final Handler stopSpinningHandler = new Handler() {
         			//circle.updateLastMessage(lastMsg,true);
         			try {
         				circle.setCurLastMsgId(lastMsg);
-						msgService.updateLastMessage(muteswan.genHexHash(circle.getFullText()),lastMsg);
+						msgService.updateLastMessage(Main.genHexHash(circle.getFullText()),lastMsg);
 					} catch (RemoteException e) {
 						Log.v("LatestMessages", "Error updating latest message using msgService!");
 						return;
@@ -1292,8 +1292,8 @@ final Handler stopSpinningHandler = new Handler() {
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
-        			Log.v("LatestMessages","Circle " + muteswan.genHexHash(circle.getFullText()) + " has last message of: " + lastMsg + " and delta of " + delta);
-        			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        			Log.v("LatestMessages","Circle " + Main.genHexHash(circle.getFullText()) + " has last message of: " + lastMsg + " and delta of " + delta);
+        			b2.putString("circle", Main.genHexHash(circle.getFullText()));
         			b2.putString("state", "done");
         			b2.putInt("msgDelta", delta);
         			m2.setData(b2);
@@ -1302,7 +1302,7 @@ final Handler stopSpinningHandler = new Handler() {
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
         			Log.v("LatestMessages","Circle failed to get last message: " + circle.getShortname());
-        			b2.putString("circle", muteswan.genHexHash(circle.getFullText()));
+        			b2.putString("circle", Main.genHexHash(circle.getFullText()));
         			b2.putString("state", "failed");
         			m2.setData(b2);
         			newMsgCheckEventHandler.sendMessage(m2);

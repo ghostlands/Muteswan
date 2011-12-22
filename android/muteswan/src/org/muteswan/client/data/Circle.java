@@ -49,7 +49,7 @@ import org.json.JSONObject;
 import org.muteswan.client.Base64;
 import org.muteswan.client.Crypto;
 import org.muteswan.client.MuteswanHttp;
-import org.muteswan.client.muteswan;
+import org.muteswan.client.Main;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -163,7 +163,7 @@ public class Circle {
 		this.key = key;
 		this.shortname = name;
 		this.server = srv;
-		this.keyHash = muteswan.genHexHash(key);
+		this.keyHash = Main.genHexHash(key);
 		this.context = context;
 		initHttp();
 		//this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
@@ -183,7 +183,7 @@ public class Circle {
 		this.server = server;
 		this.context = context;
 
-		this.keyHash = muteswan.genHexHash(key);
+		this.keyHash = Main.genHexHash(key);
 		//this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
 	    muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
@@ -198,7 +198,7 @@ public class Circle {
 	
 	public Circle.OpenHelper getOpenHelper() {
 		if (this.openHelper == null)
-			this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
+			this.openHelper = new Circle.OpenHelper(context, Main.genHexHash(getFullText()));
 		return(this.openHelper);
 	}
 	
@@ -206,7 +206,7 @@ public class Circle {
 	
 	@SuppressWarnings("unused")
 	private void initManifest() {
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase();
 		
 	
@@ -333,7 +333,7 @@ public class Circle {
 	
 	
 	public void initCache() {
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
 		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId","date", "message" }, "ringHash = ?", new String[] { circleHash }, null, null, "id desc limit 25" );
 		while (cursor.moveToNext()) {
@@ -355,7 +355,7 @@ public class Circle {
 	 */
 	public Integer getLastMsgId(boolean closedb) {
 		
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
 
 		Integer lastMessageId = null;
@@ -420,7 +420,7 @@ public class Circle {
 			return(null);
 		
 		
-		String circleHash = muteswan.genHexHash(this.getFullText());
+		String circleHash = Main.genHexHash(this.getFullText());
 		
 		SQLiteDatabase db = getOpenHelper().getReadableDatabase();
 		
@@ -839,7 +839,7 @@ public class Circle {
 	}
 	
 	public boolean msgExists(SQLiteDatabase db, Integer id) {
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id.toString(), circleHash }, null, null, "id desc" );
 		if (cursor.getCount() != 0) {
 			cursor.close();
@@ -858,7 +858,7 @@ public class Circle {
 		if (id == null || date == null || msg == null)
 			return;
 		
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
 		if (msgExists(db,id)) {
 			db.close();
@@ -881,7 +881,7 @@ public class Circle {
 		if (context == null) 
 			return;	
 		
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		if (msgExists(db,id)) {
 			db.close();
@@ -922,7 +922,7 @@ public class Circle {
 
 	public void createLastMessage(Integer curIndex, boolean closedb) {
 		
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = openHelper.getWritableDatabase();
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
 		insrt.bindString(1, circleHash);
@@ -958,7 +958,7 @@ public class Circle {
 	}
 	
 	public void saveLastMessage(SQLiteDatabase db) {
-		String circleHash = muteswan.genHexHash(getFullText());
+		String circleHash = Main.genHexHash(getFullText());
 		
 		
 		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
