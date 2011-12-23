@@ -390,6 +390,10 @@ public class NewMessageService extends Service {
 			
 			try {
 				msg = circle.getMsgFromTor(id);
+				
+				if (Thread.currentThread().isInterrupted())
+					return(-4);
+				
 				Log.v("NewMessageService", "I am " + Thread.currentThread());
 				if (msg != null && msg.signatures[0] != null) {
 					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg(),
@@ -418,7 +422,7 @@ public class NewMessageService extends Service {
 
 		@Override
 		public void updateLastMessage(String circleHash, int lastMsg) throws RemoteException {
-			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, true);
+			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, false);
 		}
 
 
