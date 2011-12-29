@@ -391,8 +391,10 @@ public class NewMessageService extends Service {
 			try {
 				msg = circle.getMsgFromTor(id);
 				
-				if (Thread.currentThread().isInterrupted())
+				if (Thread.currentThread().isInterrupted()) {
+					circle.closedb();
 					return(-4);
+				}
 				
 				Log.v("NewMessageService", "I am " + Thread.currentThread());
 				if (msg != null && msg.signatures[0] != null) {
