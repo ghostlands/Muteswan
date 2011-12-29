@@ -422,7 +422,7 @@ public class NewMessageService extends Service {
 
 		@Override
 		public void updateLastMessage(String circleHash, int lastMsg) throws RemoteException {
-			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, false);
+			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, true);
 		}
 
 
