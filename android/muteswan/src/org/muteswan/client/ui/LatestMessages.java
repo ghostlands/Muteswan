@@ -1145,6 +1145,12 @@ final Handler stopSpinningHandler = new Handler() {
 				//dataSetChanged.sendEmptyMessage(0);
 				if (msgDelta != 0) {
 				  Log.v("LatestMessages", "Update latest messages because delta is " + msgDelta + " first is " + first);
+				  try {
+					msgService.downloadMsgRangeFromTor(Main.genHexHash(store.asHashMap().get(circleNewMsgs[0]).getFullText()), msgDelta);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				  updateLatestMessages(msgs, store.asHashMap().get(circleNewMsgs[0]), 0, msgDelta);
 				  dataSetChanged.sendEmptyMessage(0);
 				}

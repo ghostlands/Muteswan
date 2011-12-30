@@ -20,6 +20,7 @@ use HTTP::Daemon;
 use HTTP::Status;
 use Getopt::Std;
 use Digest::SHA qw(sha256_hex);
+use HTTP::Date qw(time2str);
 use MIME::Base64;
 use JSON;
 use Data::Dumper;
@@ -106,6 +107,20 @@ sub handleGet {
 	       print "New data in longpoll request, sending $2.\n";
 	       $conn->send_file_response($directory . "/" . $1 . "/" . $2); 
 
+
+	# send multiple circles
+	} elsif ($path =~ /^\/(\w+)\/(\d+)-(\d+)$/) {
+		if (&invalid_multi_request($1,$2,$3)) {
+			$conn->send_error(RC_FORBIDDEN);
+			return;
+		}
+		my $jsonMessages = &get_multiple_circles($1,$2,$3);	
+		if ($jsonMessages) {
+			my $httpResponse = HTTP::Response->new(200,"OK", undef, $jsonMessages);
+			$conn->send_response($httpResponse);
+		} else {
+			$conn->send_error(RC_FORBIDDEN);
+		}
 
 	# send a file
 	} else {
@@ -280,6 +295,28 @@ sub addMessage {
 	return($msg_id);
 }
 
+sub get_multiple_circles {
+	my $keyHash = shift;
+	my $max = shift;
+	my $min = shift;
+
+	my $json = new JSON();
+
+	print "max $max\n";
+	print "min $min\n";
+	my @msgs;
+	for (my $i = $max; $i>=$min; $i--) {
+		print STDERR "Getting $i\n";
+		my ($jsonString,$timestamp) = get_message("$directory/$keyHash/$i");	
+		my $json_data = $json->decode($jsonString);
+		
+		push(@msgs,{ 'content' => $json_data, 'timestamp' => $timestamp });
+	}
+
+	return($json->encode(\@msgs));
+
+}
+
 sub getIndex {
 	my $keyhash = shift;
 	my @msgs = getMsgs($keyhash);
@@ -323,4 +360,41 @@ sub get_openssl_base64 {
 	}
 	$pubkeyForOpenssl .= "-----END PUBLIC KEY-----\n";
 	return($pubkeyForOpenssl);
+}
+
+
+# assume proper numbers are passed in
+sub invalid_multi_request {
+	my $keyHash = shift;
+	my $max = shift;
+	my $min = shift;
+
+	my $lastMessage = getIndex($keyHash);
+	print STDERR "last message $lastMessage\n";
+
+	if ($max > $lastMessage || $min > $lastMessage) {
+		return("Requested max or min value is greater than latest message.");
+	}
+
+	if ($max <= 0 || $max < $min) {
+		return("Requested max value is out of range.");
+	}
+
+	my $delta = $max - $min;
+	if ($min <= 0 || $delta > 20) {
+		return("Requested minimium is too small.");
+	}
+
+	return(undef);
+
+}
+
+sub get_message {
+	my $file = shift;
+	my $jsonString;
+	open(FILE,"$file") || return;
+	my($mtime) = (stat FILE)[9];
+	my $jsonString = <FILE>;
+	close(FILE);
+	return($jsonString,time2str($mtime));
 }

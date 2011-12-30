@@ -26,6 +26,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -383,7 +384,7 @@ public class Circle {
 	}
 	
 	
-	public MuteswanMessage getMsg(String id) throws ClientProtocolException, IOException {
+	/*public MuteswanMessage getMsg(String id) throws ClientProtocolException, IOException {
 		MuteswanMessage msg = null;
 		msg = getMsgFromDb(id,true);
 		if (msg == null) {
@@ -404,7 +405,7 @@ public class Circle {
 		
 		return(msg);
 		
-	}
+	}*/
 	
 	
 	
@@ -502,28 +503,59 @@ public class Circle {
     	
 	}
 	
-	
-	private MuteswanMessage parseMsgFromTor(Integer id, HttpResponse resp) throws org.apache.http.ParseException, IOException {
+	public ArrayList<MuteswanMessage> getMsgRangeFromTor(int max, int min) throws ClientProtocolException, IOException, InterruptedIOException {
+
+		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
+		
+		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + max + "-" + min);
+		Log.v("Circle", "Fetching messages " + max + " to " + min);
+    	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+		Log.v("Circle", "Fetched messages " + max + " to " + min);
 
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
 		if (jsonString == null) {
-			Log.v("Circle", "WTF, jsonString is null");
+			Log.v("Circle", "getMsgRangeFromTor(): jsonString is null");
 			return null;
 		}
 		
-    	Header lastModified = resp.getFirstHeader("Last-Modified");
-    	MuteswanMessage msg = null;
-    	String date = null;
-    	
-    	if (lastModified == null) {
-			Log.v("Circle", "WTF, lastModified is null");
+		try {
+			JSONArray jsonArray = new JSONArray(jsonString);
+			for (int i = 0; i<jsonArray.length();i++) {
+				JSONObject jsonObj = jsonArray.getJSONObject(i);
+				JSONObject contentObj = jsonObj.getJSONObject("content");
+				String date = parseHttpDate(jsonObj.getString("timestamp"));
+				
+				MuteswanMessage msg = new MuteswanMessage(max,this,contentObj,date);
+				msgs.add(msg);
+				max--;
+			}
+		} catch (JSONException e) {
+			Log.v("Circle", "getMsgRangeFromTor(): jsonString is not parseable: " + jsonString);
 			return null;
-    	}
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return(msgs);
     	
+	}
+
+	private String parseHttpDate(String dateIn) {
+		String date = null;
 		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 		try {
-			Date d = format.parse(lastModified.getValue());
+			Date d = format.parse(dateIn);
 			//date = d.getMonth()+1 + "/" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
 			SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss zzz" );
 			
@@ -536,9 +568,38 @@ public class Circle {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 		}
+		return(date);
+	}
+	
+	private MuteswanMessage parseMsgFromTor(Integer id, HttpResponse resp) throws org.apache.http.ParseException, IOException {
+
+		
+		String jsonString = EntityUtils.toString(resp.getEntity());
+		if (jsonString == null) {
+			Log.v("Circle", "WTF, jsonString is null");
+			return null;
+		}
+		JSONObject jsonObj = null;
+		try {
+			jsonObj = new JSONObject(jsonString);
+		} catch (JSONException e1) {
+			Log.v("Circle", "WTF, jsonString is not parceable");
+			return null;
+		}
+		
+    	Header lastModified = resp.getFirstHeader("Last-Modified");
+    	MuteswanMessage msg = null;
+    	String date = null;
+    	
+    	if (lastModified == null) {
+			Log.v("Circle", "WTF, lastModified is null");
+			return null;
+    	}
+    
+    	date = parseHttpDate(lastModified.getValue());
     	
     	try {
-			msg = new MuteswanMessage(id,this,jsonString,date);
+			msg = new MuteswanMessage(id,this,jsonObj,date);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -608,6 +669,7 @@ public class Circle {
 	
 	}
 	
+	/*
 	public MuteswanMessage getMsgLongpoll(Integer id) throws IOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/longpoll/" + id);
     	HttpResponse resp;
@@ -629,7 +691,7 @@ public class Circle {
 		}
     	return(null);
     	
-	}
+	}*/
 	
 	
 
@@ -866,6 +928,7 @@ public class Circle {
 	
 	// FIXME: should refactor
 	public void saveMsgToDb(Integer id, String date, String msg) {
+		Log.v("Circle","Saving message " + id);
 		if (context == null) 
 			return;	
 		
@@ -887,6 +950,7 @@ public class Circle {
 		insrt.executeInsert();
 		insrt.close();
 		db.close();
+		Log.v("Circle","Saved message " + id);
 	}
 	
 	

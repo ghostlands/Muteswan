@@ -38,7 +38,6 @@ import android.util.Log;
 
 public class MuteswanMessage {
 
-	private JSONObject jsonObj;
 	private String msgData;
 	private String date;
 	private Circle circle;
@@ -66,14 +65,15 @@ public class MuteswanMessage {
 		this.signatures = signatures;
 	}
 	
-	public MuteswanMessage(Integer id, Circle circle, String jsonString, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
-		jsonObj = new JSONObject(jsonString);
+	public MuteswanMessage(Integer id, Circle circle, JSONObject jsonObj, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 		this.date = date;
 		this.circle = circle;
 		
 		String base64Msg = jsonObj.getString("message");
-		JSONArray sigs = null;
-		try {
+		
+		// signatures disabled
+		//JSONArray sigs = null;
+		/*try {
 		  sigs = jsonObj.getJSONArray("signatures");
 		  for (int i=0; i<sigs.length(); i++) {
 			    String sig = sigs.getString(i);
@@ -93,6 +93,7 @@ public class MuteswanMessage {
 		} catch (JSONException e) {
 			
 		}
+		*/
 		
 		
 		

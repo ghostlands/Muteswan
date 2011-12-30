@@ -18,6 +18,7 @@ package org.muteswan.client;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -311,6 +312,7 @@ public class NewMessageService extends Service {
 	
 	
 	@SuppressWarnings("unused")
+	/*
 	private MuteswanMessage longpollForNewMessage(final Circle circle, Integer id) throws IOException {
 		if (circle == null) {
 			Log.v("AtffService", "WTF, circle is null.");
@@ -318,7 +320,7 @@ public class NewMessageService extends Service {
 		Log.v("MuteswanService","Longpoll for " + circle.getShortname());
 		MuteswanMessage msg = circle.getMsgLongpoll(id);
 		return(msg);
-	}
+	}*/
 
 	
 		
@@ -365,13 +367,73 @@ public class NewMessageService extends Service {
 			Integer lastId = circleStore.asHashMap().get(circleHash).getLastTorMessageId();
 			return(lastId);
 		}
+	
+		@Override
+		public int downloadMsgRangeFromTor(String circleHash, int delta) throws RemoteException {
+			Circle circle = circleStore.asHashMap().get(circleHash);
+			ArrayList<MuteswanMessage> msgs;
+			
+			// FIXME: refactor to use common method
+			if (!linkedQueue.contains(circle)) {
+				  linkedQueue.add(circle);
+				} else {
+					Log.v("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
+					while (linkedQueue.contains(circle)) {
+						try {
+							Thread.currentThread();
+							Thread.sleep(250);
+						} catch (InterruptedException e) {
+							circle.closedb();
+							return(-4);
+						}
+					}
+					linkedQueue.add(circle);
+				}	
+			
+			try {
+				Integer lastMessage = circle.getLastCurMsgId(false);
+				msgs = circle.getMsgRangeFromTor(lastMessage,lastMessage-delta);
 		
+				
+				if (Thread.currentThread().isInterrupted() || msgs == null) {
+					Log.v("NewMessageService","msgs is null or was interrupted");
+					linkedQueue.remove(circle);
+					circle.closedb();
+					return(-4);
+				}
+				Log.v("NewMessageService", "We got " + msgs.size() + " downloaded.");
+				
+				for (MuteswanMessage msg : msgs) {
+					Log.v("NewMessageService", "I am " + Thread.currentThread() + " downloading " + msg.getId());
+					if (msg != null && msg.signatures[0] != null) {
+						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getMsg(),
+							msg.signatures);
+					} else if (msg != null) {
+						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getMsg());
+					}
+				}
+				linkedQueue.remove(circle);
+				return 0;	
+				
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+				linkedQueue.remove(circle);
+				return -1;
+			} catch (IOException e) {
+				e.printStackTrace();
+				linkedQueue.remove(circle);
+				return -2;
+			}
+			
+			
+		}
 
 		@Override
 		public int downloadMsgFromTor(String circleHash, int id) throws RemoteException {
 			Circle circle = circleStore.asHashMap().get(circleHash);
 			MuteswanMessage msg;
-		
+
+			// FIXME: refactor to use common method
 			if (!linkedQueue.contains(circle)) {
 			  linkedQueue.add(circle);
 			} else {
