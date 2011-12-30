@@ -568,16 +568,30 @@ public class Circle {
 	   HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
 	   try {
 	    HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+	   
+	    String lastMessage = null;
+	    String jsonString = EntityUtils.toString(resp.getEntity());
+		if (jsonString == null) {
+			Log.e("Circle", "getLastTorMessage(): jsonString is null");
+			return null;
+		}
+		
+		try {
+			JSONObject jsonObj = new JSONObject(jsonString);
+			lastMessage = jsonObj.getString("lastMessage");
+		} catch (JSONException e) {
+			Log.e("Circle", "unable to parse json message");
+			return null;
+		}
+
 	    
-	    Header lastMessage = resp.getFirstHeader("Last-Message");
-	    
-	    if (lastMessage == null) {
+	    if (lastMessage == null || lastMessage.equals("null")) {
 	    	Log.v("LatestMessages","lastMessage header is null, indicates no messages posted yet.");
 	    	return 0;
 	    }
 	    
-	    Log.v("LatestMessages","lastmessage: " + lastMessage.getValue());
-	    Integer result = Integer.parseInt(lastMessage.getValue());
+	    Log.v("LatestMessages","getLastTorMessage(): lastmessage is " + lastMessage);
+	    Integer result = Integer.parseInt(lastMessage);
 	    if (result == null)
 	    	return -1;
 	    	
