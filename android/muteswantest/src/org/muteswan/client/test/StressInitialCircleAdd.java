@@ -54,13 +54,17 @@ public class StressInitialCircleAdd extends ActivityInstrumentationTestCase2<Mai
         	solo.clickOnButton(1);
         	
         	// view testsite and go back repeatedly
+        	int waitSeconds = 8000;
         	for (int i=0; i<20; i++) {
         	  gotoToMain();
         	  gotoAllMessages();
         	  //solo.clickInList(0);
         	  //solo.sleep(5000);
         	  //solo.goBack();
-        	  solo.sleep(3500);
+        	  solo.sleep(waitSeconds);
+        	  if (waitSeconds <= 1000)
+        		  waitSeconds = 9000;
+        	  waitSeconds = waitSeconds - 1000;
         	}
         	
         }
