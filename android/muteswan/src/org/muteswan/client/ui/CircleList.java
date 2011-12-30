@@ -30,12 +30,17 @@ import org.muteswan.client.data.IdentityStore;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +48,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -129,6 +135,9 @@ public class CircleList extends ListActivity {
 
         setContentView(R.layout.circlelist);
         
+        SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		Boolean shareManually = defPrefs.getBoolean("allowManualJoining", false);
+        
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         LinearLayout circlelist = (LinearLayout) findViewById(R.id.circlelistButtons);
         txt.setText(actionPrompts[action]);
@@ -148,7 +157,11 @@ public class CircleList extends ListActivity {
           Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
           addCircle.setOnClickListener(addCircleListener);
           createCircle.setOnClickListener(createCircleListener);
-          circlelist.setVisibility(View.VISIBLE);
+          if (shareManually) {
+            Button addCircleManually = (Button) findViewById(R.id.android_circlelistAddCircleManually);
+            addCircleManually.setOnClickListener(addCircleManuallyListener);
+            addCircleManually.setVisibility(View.VISIBLE);
+          }
         } else {
           circlelist.setVisibility(View.GONE);
         }
@@ -421,6 +434,46 @@ public class CircleList extends ListActivity {
 	        }
          }
      };
+     
+     private Button.OnClickListener addCircleManuallyListener  = new Button.OnClickListener() {
+         public void onClick( View v ) {
+        	 AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
+        	 LayoutInflater layoutInflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        	 View view = layoutInflater.inflate(R.layout.addcirclemanually, null );
+
+        	 builder.setView(view);
+        	
+        	 builder.setMessage("Join Circle Manually");
+        	 final EditText editTxt = (EditText) view.findViewById(R.id.circleListManualJoinCircle);
+        	
+        	 builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                	 
+                	 // FIXME refactor
+                	String circleTxt = editTxt.getText().toString();
+
+     	            CircleStore store = new CircleStore(getApplicationContext(),true,false);
+                 	Circle circle = new Circle(getApplicationContext(),circleTxt);
+                 	if (circle.getShortname() == null)
+                 		Log.v("CircleList","Circle is null after initializing manually.");
+     	            store.updateStore(circleTxt);
+     	            
+         	        Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
+         	      	joinCircleIntent.putExtra("circle", Main.genHexHash(circle.getFullText()));
+         	      	sendBroadcast(joinCircleIntent);
+         	      	
+         	        newCircle = circle.getShortname();
+         	        onResume();
+               	 
+                 }}
+        	 );
+        	 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                 }}
+        	 );
+        	 builder.show();
+         }
+      };
 	
      
      private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
@@ -470,7 +523,7 @@ public class CircleList extends ListActivity {
 		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 		intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
 		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-		intent.putExtra("ENCODE_SHOW_CONTENTS", false);
+		intent.putExtra("ENCODE_SHOW_CONTENTS", true);
         try {
 	        startActivityForResult(intent, 0);
 	    } catch (ActivityNotFoundException e) {

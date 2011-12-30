@@ -27,6 +27,13 @@
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
 	     android:text="Join Circle" />
+	     
+	     <Button
+	     android:id="@+id/android:circlelistAddCircleManually"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:visibility="gone"
+	     android:text="Manual Join" />
     
     </LinearLayout>
     

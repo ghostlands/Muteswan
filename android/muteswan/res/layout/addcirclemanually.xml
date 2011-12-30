@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+        android:id="@+id/circleListAddManuallyLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:gravity="left"
+        android:orientation="horizontal" >
+
+        <EditText
+        	android:id="@+id/circleListManualJoinCircle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:paddingTop="4sp"
+            android:paddingLeft="3sp"
+            android:text=""
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:typeface="sans" />
+
+</RelativeLayout>

@@ -21,6 +21,7 @@
 
 
 
+<CheckBoxPreference android:title="Allow Manual Joining" android:summary="Joins circles by entering circle text directly. Note: potential security risk." android:key="allowManualJoining"></CheckBoxPreference> -->
 <CheckBoxPreference android:title="Verbose" android:summary="Show extra information during operations." android:key="verbose"></CheckBoxPreference> -->
 
 
