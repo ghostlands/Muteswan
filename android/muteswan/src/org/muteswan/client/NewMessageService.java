@@ -381,6 +381,7 @@ public class NewMessageService extends Service {
 						Thread.currentThread();
 						Thread.sleep(250);
 					} catch (InterruptedException e) {
+						circle.closedb();
 						return(-4);
 					}
 				}
@@ -392,6 +393,7 @@ public class NewMessageService extends Service {
 				msg = circle.getMsgFromTor(id);
 				
 				if (Thread.currentThread().isInterrupted()) {
+					linkedQueue.remove(circle);
 					circle.closedb();
 					return(-4);
 				}
