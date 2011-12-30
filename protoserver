@@ -87,7 +87,9 @@ sub handleGet {
         if ($path =~ /^\/(\w+)?$/) {
 		my $index = getIndex($1);
 		my $res = new HTTP::Response ( 200 );
-		#$res->content($index);
+		my $json = JSON->new->allow_nonref;
+		my $json_enc = $json->encode("lastMessage: $index");
+		$res->content($json_enc);
 		$res->header( 'Last-Message' => $index );
 		$conn->send_response($res);
 
