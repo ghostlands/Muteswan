@@ -1,4 +1,5 @@
 /*
+Copyright 2011-2012 James Unger, Rob Wolffe, Chris Churnick.
 This file is part of Muteswan.
 
 Muteswan is free software: you can redistribute it and/or modify
