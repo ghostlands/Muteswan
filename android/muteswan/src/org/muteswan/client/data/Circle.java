@@ -866,10 +866,14 @@ public class Circle {
 	public Integer postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException {
 		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
+		byte[] ivData = crypto.getIVData();
+		Log.v("Circle", "iv data: " + ivData.toString());
 		
 		String base64EncData = Base64.encodeBytes(encData);
+		String base64IVData = Base64.encodeBytes(ivData);
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("message", base64EncData);
+		jsonObj.put("iv", base64IVData);
 		
 		return(postMsg(jsonObj));
 	}

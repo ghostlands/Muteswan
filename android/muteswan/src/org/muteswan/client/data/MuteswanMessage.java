@@ -72,6 +72,14 @@ public class MuteswanMessage {
 		
 		String base64Msg = jsonObj.getString("message");
 		
+		String base64IVData = null;
+		try  {
+		   base64IVData = jsonObj.getString("iv");
+		} catch (JSONException e) {
+			byte[] ivData = new byte[] { '0','1','2','3','4','5','6','7','0','1','2','3','4','5','6','7' };
+			base64IVData = Base64.encodeBytes(ivData);
+		}
+		
 		// signatures disabled
 		//JSONArray sigs = null;
 		/*try {
@@ -96,7 +104,7 @@ public class MuteswanMessage {
 		}
 		*/
 		
-		
+	
 		
 		byte[] rawMsgBytes = null;
 		try {
@@ -105,9 +113,16 @@ public class MuteswanMessage {
 			e.printStackTrace();
 		}
 		
-		
-			
-		cryptoDec = new Crypto(circle.getKey().getBytes(),rawMsgBytes);
+	
+		byte[] ivData = null;
+		try {
+			ivData = Base64.decode(base64IVData);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		Log.v("MuteswanMessage","base64IVData: " + base64IVData);
+		cryptoDec = new Crypto(circle.getKey().getBytes(),rawMsgBytes,ivData);
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
 				
