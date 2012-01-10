@@ -368,10 +368,23 @@ public class NewMessageService extends Service {
 			Integer lastId = circleStore.asHashMap().get(circleHash).getLastTorMessageId();
 			return(lastId);
 		}
-	
+		
+		
 		@Override
-		public int downloadMsgRangeFromTor(String circleHash, int delta) throws RemoteException {
+		public int downloadLatestMsgRangeFromTor(String circleHash, int delta) throws RemoteException {
 			Circle circle = circleStore.asHashMap().get(circleHash);
+			Integer lastMessage = circle.getLastCurMsgId(false);
+			return(downloadMsgRangeFromTor(circle,lastMessage,lastMessage-delta));
+		}
+		
+		@Override
+		public int downloadMsgRangeFromTor(String circleHash, int start, int last) throws RemoteException {
+			Circle circle = circleStore.asHashMap().get(circleHash);
+			return(downloadMsgRangeFromTor(circle,start,last));
+		}
+	
+		private int downloadMsgRangeFromTor(Circle circle, int start, int last) throws RemoteException {
+			
 			ArrayList<MuteswanMessage> msgs;
 			
 			// FIXME: refactor to use common method
@@ -392,8 +405,7 @@ public class NewMessageService extends Service {
 				}	
 			
 			try {
-				Integer lastMessage = circle.getLastCurMsgId(false);
-				msgs = circle.getMsgRangeFromTor(lastMessage,lastMessage-delta);
+				msgs = circle.getMsgRangeFromTor(start,last);
 		
 				
 				if (Thread.currentThread().isInterrupted() || msgs == null) {

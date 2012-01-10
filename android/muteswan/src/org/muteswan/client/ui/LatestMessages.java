@@ -1015,7 +1015,7 @@ final Handler stopSpinningHandler = new Handler() {
 
 					try {
 						Log.v("LatestMessages", "I am " + Thread.currentThread());
-						msgService.downloadMsgFromTor(Main.genHexHash(r.getFullText()), i);
+						msgService.downloadMsgRangeFromTor(Main.genHexHash(r.getFullText()), i, lastId - last);
 					} catch (RemoteException e) {
 						Log.e("LatestMessages", "Error downloading message " + i + " from msgService!");
 					}
@@ -1149,7 +1149,7 @@ final Handler stopSpinningHandler = new Handler() {
 				if (msgDelta != 0) {
 				  Log.v("LatestMessages", "Update latest messages because delta is " + msgDelta + " first is " + first);
 				  try {
-					msgService.downloadMsgRangeFromTor(Main.genHexHash(store.asHashMap().get(circleNewMsgs[0]).getFullText()), msgDelta);
+					msgService.downloadLatestMsgRangeFromTor(Main.genHexHash(store.asHashMap().get(circleNewMsgs[0]).getFullText()), msgDelta);
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
