@@ -58,6 +58,7 @@ import android.widget.TextView;
 public class WriteMsg extends ListActivity {
 
 	protected static final String SENT = "sent";
+	protected static final int MAX_MSG_LENGTH = 2500;
 	Circle circle;
 	boolean[] signSelections;
 	CharSequence[] signIdentities;
@@ -410,7 +411,15 @@ public class WriteMsg extends ListActivity {
 					msg.setData(b);
 					updateSendDialog.sendMessage(msg);
 					return;
+				} else if (txtData.length() > WriteMsg.MAX_MSG_LENGTH) {
+				 	Bundle b = new Bundle();
+					Message msg = Message.obtain();
+					b.putString("error", "Message exceeds 2500 character maximum.");
+					msg.setData(b);
+					updateSendDialog.sendMessage(msg);
+					return;
 				}
+				
 				
 	    			
 				  Thread nThread =  new Thread() {
