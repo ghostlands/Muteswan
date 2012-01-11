@@ -86,7 +86,10 @@ sub handleGet {
 	my $path = shift;
 	my $conn = shift;
 
-        if ($path =~ /^\/(\w+)?$/) {
+        if (!$path || $path eq '/') {
+                my $res = new HTTP::Response ( 401 );
+                $conn->send_response($res);
+        } elsif ($path =~ /^\/(\w+)?$/) {
 		my $index = getIndex($1);
 		my $res = new HTTP::Response ( 200 );
 		my $json = JSON->new->allow_nonref;
