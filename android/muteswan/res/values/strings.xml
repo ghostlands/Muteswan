@@ -14,6 +14,7 @@
     
     <string name="keyselectspinnerprompt">Send without signing</string>
     
-    <string name="defaultcircleserver">tckwndlytrphlpyo.onion</string>
+    <!--<string name="defaultcircleserver">tckwndlytrphlpyo.onion</string> -->
+     <string name="defaultcircleserver">circles.muteswan.org</string>
     
 </resources>

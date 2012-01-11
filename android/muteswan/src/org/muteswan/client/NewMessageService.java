@@ -387,6 +387,9 @@ public class NewMessageService extends Service {
 			
 			ArrayList<MuteswanMessage> msgs;
 			
+			if (last <= 0)
+				last = 1;
+			
 			// FIXME: refactor to use common method
 			if (!linkedQueue.contains(circle)) {
 				  linkedQueue.add(circle);
