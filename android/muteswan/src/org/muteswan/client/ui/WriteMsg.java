@@ -110,8 +110,11 @@ public class WriteMsg extends ListActivity {
 	       CircleStore cs = new CircleStore(getApplicationContext(),true,false);
 	
 	       
-	       if (extras != null) {
+	       if (extras != null && extras.containsKey("circle")) {
 	        circle = new Circle(this,extras.getString("circle"));
+	       }
+	       
+	       if (extras != null && extras.containsKey("initialText")) {
 	        initialText = extras.getString("initialText");
 	       }
 	       

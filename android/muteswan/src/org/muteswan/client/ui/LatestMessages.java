@@ -563,7 +563,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		    	public void onClick(View v) {
 		    		MuteswanMessage msg = messageList.get(repostButtons.get(v));
 		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		    		intent.putExtra("circle",msg.getCircle().getFullText());
 		    		intent.putExtra("initialText",msg.getMsg());
 		    		startActivity(intent);
 		    	}
