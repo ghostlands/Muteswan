@@ -38,6 +38,16 @@
 	      android:layout_marginTop="10sp"
 	      android:text="Name"
 	      android:minWidth="50sp"/>
+	      
+	       <EditText
+	     android:id="@+id/newCircleName"
+	     android:layout_width="180sp"
+	     android:layout_height="wrap_content"
+	     android:layout_weight="0.33" 
+	     android:maxLength="30"
+	     android:inputType="textCapSentences">
+	        <requestFocus />
+	    </EditText>
 	     
 	    </LinearLayout>
 	    
@@ -70,30 +80,33 @@
 	    <TextView 
 	     android:text="Server"
 	     android:id="@+id/newCircleServerPrompt"
-	     android:visibility="gone"
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
 	     android:minWidth="50sp"/>
 	    
-	    <EditText 
-	     android:text="@string/defaultcircleserver" 
-	     android:visibility="gone" 
-	     android:id="@+id/newCircleServer" 
-	     android:layout_width="wrap_content" 
+	    <EditText
+	     android:id="@+id/newCircleServer"
+	     android:layout_width="180sp"
 	     android:layout_height="wrap_content" />
 	
-	    <EditText
-	     android:id="@+id/newCircleName"
-	     android:layout_width="180sp"
-	     android:layout_height="wrap_content"
-	     android:layout_weight="0.33" 
-	     android:maxLength="30"
-	     android:inputType="textCapSentences">
-	        <requestFocus />
-	    </EditText>
+	   
+	    
 	
 	   </LinearLayout>
-	 
+	   
+	     <LinearLayout
+	     android:orientation="horizontal"
+	     android:layout_width="fill_parent"
+	     android:layout_height="wrap_content">
+	     <CheckBox 
+	     		   android:id="@+id/newCircleUseHiddenNode"
+	     		   android:layout_width="wrap_content"
+	               android:layout_height="wrap_content"
+	               android:text="Use hidden server? (slower, more secure)"/>
+	        
+	     </LinearLayout>
+	     
+	     
 	    <Button android:text="Create Circle" android:id="@+id/genCircleButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
 	    <TextView android:text="" android:id="@+id/newCircleResult" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 	

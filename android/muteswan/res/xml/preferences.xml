@@ -12,10 +12,10 @@
 <!--   <CheckBoxPreference android:title="Check for Latest" android:summary="Always check and download the latest messages when viewing." android:key="alwaysCheckLatest"></CheckBoxPreference> -->
 <!--  </PreferenceCategory> -->
 <EditTextPreference
-            android:key="defaultCreateCircleServer"
-	            android:title="Default Circle Server"
-	            android:summary="The server to use by default when creating new circles."
-	            android:defaultValue="@string/defaultcircleserver" />
+            android:key="customCircleServer"
+	            android:title="Custom Server"
+	            android:summary="Specify your own Muteswan server(s), comma separated."
+	            />
 	 
 
 

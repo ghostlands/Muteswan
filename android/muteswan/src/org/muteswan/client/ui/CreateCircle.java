@@ -27,9 +27,12 @@ import org.muteswan.client.data.CircleStore;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,11 +41,28 @@ import android.widget.TextView;
 public class CreateCircle extends Activity implements Runnable {
 
 	public static final String CREATED_CIRCLE_BROADCAST = "CREATEDCIRCLE";
+
+	private EditText serverView;
+
+	private CheckBox useHiddenNode;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
 	       setContentView(R.layout.createcircle);
 	       TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
+	       TextView newCircleServerPrompt = (TextView) findViewById(R.id.newCircleServerPrompt);
+	       serverView = (EditText) findViewById(R.id.newCircleServer);
+	       
+	       useHiddenNode = (CheckBox) findViewById(R.id.newCircleUseHiddenNode);
+	       SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	       String customServer = defPrefs.getString("customCircleServer", "");
+	       if (!customServer.equals("")) {
+	    	   useHiddenNode.setVisibility(View.GONE);
+	    	   serverView.setText(customServer);
+	       } else {
+	    	   serverView.setVisibility(View.GONE);
+	    	   newCircleServerPrompt.setVisibility(View.GONE);
+	       }
 	    
 	       
 	       final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
@@ -75,13 +95,23 @@ public class CreateCircle extends Activity implements Runnable {
 	public Button.OnClickListener genCircle = new Button.OnClickListener() {
 	    public void onClick(View v) {
 	    	EditText name = (EditText) findViewById(R.id.newCircleName);
-	    	EditText server = (EditText) findViewById(R.id.newCircleServer);
 	    	TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
+	    	
+	    	String server = serverView.getText().toString();
+	    
+	    	// if the use hidden node check box is visible, we want to decide what server to use
+	    	// based on the checkbox. if the checkbox is not visible then we want to use the 
+	    	// actual server value
+	    	if (useHiddenNode.isChecked() && useHiddenNode.getVisibility() == View.VISIBLE) {
+	    		server = getString(R.string.defaulthiddencircleserver);
+	    	} else if (useHiddenNode.getVisibility() == View.VISIBLE) {
+	    		server = getString(R.string.defaultcircleserver);
+	    	}
 	    	
 	    	if (name.length() == 0 || server.length() == 0)
 	    		return;
 	    	
-	    	String circleFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server.getText().toString();
+	    	String circleFullText = name.getText().toString() + "+" + keyTxt.getText().toString() + "@" + server;
 	    	
 	    	//newCircleResult.setText(circleFullText);
 	    	

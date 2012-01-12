@@ -16,5 +16,6 @@
     
     <!--<string name="defaultcircleserver">tckwndlytrphlpyo.onion</string> -->
      <string name="defaultcircleserver">circles.muteswan.org</string>
+     <string name="defaulthiddencircleserver">tckwndlytrphlpyo.onion</string>
     
 </resources>
