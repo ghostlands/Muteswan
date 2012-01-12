@@ -540,8 +540,8 @@ public class CircleList extends ListActivity {
 
 	@Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    	  if (requestCode == 0) {
-    	    if (resultCode == RESULT_OK) {
+    	  //if (requestCode == 0) {
+    	    if (requestCode == 0 && resultCode == RESULT_OK) {
     	    	    //Handle successful scan
     	            String contents = intent.getStringExtra("SCAN_RESULT");
     	            
@@ -570,7 +570,7 @@ public class CircleList extends ListActivity {
     	            	idStore.addToDb(identity);
     	            }
     	            
-            } else if (resultCode == RESULT_CANCELED) {
+            } /*else if (resultCode == RESULT_CANCELED) {
             	
             	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
 
@@ -585,8 +585,8 @@ public class CircleList extends ListActivity {
     	        newCircle = circle.getShortname();
 	            
             
-            }
-    	  }
+            }*/
+    	  //}
 
 	}
 	
