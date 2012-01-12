@@ -334,7 +334,12 @@ public class LatestMessages extends ListActivity implements Runnable {
 			Log.v("LatestMessages", "Refresh called within 0.5 second, not running.");
 			return;
 		}
+	
 		
+		if (store.isEmpty()) {
+			setFooterText("You don't have any circles yet, so you can't check for messages. Please join or create a new circle first.");
+			return;
+		}
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
 		
@@ -759,7 +764,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         		
         		  
         		  if (!getFooterText().equals("")) {
-           				setFooterText("This circle currently does not have any messages. You can post one, if you like.");
+           				setFooterText("No messages were found. You can post one, if you like.");
            	   	  }
         		  
         		  //refreshButton.setOnClickListener(refreshClicked);
