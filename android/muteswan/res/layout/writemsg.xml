@@ -38,7 +38,8 @@
 	     android:layout_height="wrap_content"
 	     android:inputType="textCapSentences|textMultiLine"
 	     android:capitalize="sentences"
-	     android:layout_below="@id/submitMsg" 
+	     android:layout_below="@id/submitMsg"
+	     android:maxHeight="250sp"
 	     android:minLines="3" 
 	     android:gravity="top" />
 	       

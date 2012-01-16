@@ -32,6 +32,7 @@
         <activity android:name=".ui.TorNotAvailable"
                   android:label="@string/app_name" />
         <activity android:name=".ui.WriteMsg"
+        		  android:windowSoftInputMode="stateUnchanged"
                   android:label="@string/app_name" />
         <activity android:name=".ui.CreateCircle"
                   android:label="@string/app_name" />
