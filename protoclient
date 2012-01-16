@@ -72,11 +72,11 @@ our %commands = (
 
 ### Main
 my %opts;
-getopt('h:d:e:', \%opts);
+getopt('h:d:e:p:', \%opts);
 my $command = shift(@ARGV);
 our $device = $opts{'d'};
 our $server = $opts{'h'};
-our $master_password = undef;
+our $master_password = $opts{'p'};
 
 my $iv = q(0123456701234567);
 
@@ -104,10 +104,10 @@ sub load_aftff_keys {
 	my $data;
 	return($data) if $command eq 'init';
 
-	$master_password = passwordprompt();
+	$master_password = $master_password || passwordprompt();
 
 	my $enc = read_raw_data();
-	my $plaintext = decrypt($master_password,$enc);
+	my $plaintext = decrypt($master_password,$enc,$iv);
 
 	$data = Load($plaintext);
 	
@@ -118,7 +118,7 @@ sub save_aftff_keys {
 	my $key = shift;
 	my $dumpdata = Dump($aftff_keys);
 	print "SAVING: $dumpdata\n";
-	my $enc = encrypt($key,$dumpdata);
+	my $enc = encrypt($key,$dumpdata,$iv);
 	write_raw_data($enc);
 }
 
@@ -163,6 +163,7 @@ sub write_raw_data {
 sub decrypt {
 	my $key = shift;
 	my $data = shift;
+	my $iv = shift;
 
 	my $cipher = Crypt::CBC->new( '-key' => $key,
 				      '-literal_key'	=> 1,
@@ -180,6 +181,7 @@ sub decrypt {
 sub encrypt {
 	my $key = shift;
 	my $plaintext = shift;
+	my $iv = shift;
 	my $cipher = Crypt::CBC->new( '-key' => $key,
 				       '-literal_key' => 1,
 				       '-header' => 'none',
@@ -311,7 +313,7 @@ sub msg_sub {
 
 	my $message = get_data_from_user();
 
-	my $enc_message = encrypt($$aftff_keys{$keyhash}{key},$message);
+	my $enc_message = encrypt($$aftff_keys{$keyhash}{key},$message,$iv);
 	submit_message($keyhash,$enc_message);
 
 	print "# Message posted.\n";
@@ -361,7 +363,7 @@ sub rmsg_sub {
 	  
 	  my $json = JSON->new->allow_nonref;
 	  my $jsonObj = $json->decode($res->content());
-	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}));
+	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}),decode_base64($$jsonObj{'iv'}));
 	  print Dump($plaintext);
 	}
 
@@ -458,7 +460,7 @@ sub longpoll_sub {
 	  
 	  my $json = JSON->new->allow_nonref;
 	  my $jsonObj = $json->decode($res->content());
-	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}));
+	  my $plaintext = decrypt($$aftff_keys{$keyhash}{key},decode_base64($$jsonObj{'message'}),decode_base64($$jsonObj{'iv'}));
 	  print Dump($plaintext);
 	}
 
