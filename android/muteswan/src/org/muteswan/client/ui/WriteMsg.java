@@ -469,7 +469,6 @@ public class WriteMsg extends ListActivity {
 								return;
 							
 							updateSendDialog.sendMessage(msg2);
-							//dismissDialog.sendEmptyMessage(0);
 						} catch (RemoteException e) {
 							e.printStackTrace();
 						}
@@ -482,9 +481,6 @@ public class WriteMsg extends ListActivity {
 	    	}
 	    	
 			
-			
-	    	
-	    	
 	    }
 
 		private void showVerifySendDialog(final View v) {

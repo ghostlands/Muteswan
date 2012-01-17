@@ -244,7 +244,6 @@ public class LatestMessages extends ListActivity implements Runnable {
          Log.v("LatestMessages", "circleExtra is " + circleMap.get(circleExtra).getShortname());
 		 TextView txtTitle = (TextView) findViewById(R.id.android_latestmessagesprompt);
 		 txtTitle.setText("Messages for " + circleMap.get(circleExtra).getShortname());
-		
         }
         
 
@@ -956,7 +955,6 @@ final Handler stopSpinningHandler = new Handler() {
 	
 	private void updateLatestMessages(ArrayList<MuteswanMessage> msgs, Circle r,
 			Integer start, Integer last) {
-		//IdentityStore idStore = new IdentityStore(this);
 		
 		
 		Log.v("LatestMessages","updateLatestMessages circle " + r.getShortname());

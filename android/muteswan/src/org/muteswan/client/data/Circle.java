@@ -337,7 +337,7 @@ public class Circle {
 	public void initCache() {
 		String circleHash = Main.genHexHash(getFullText());
 		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId","date", "message" }, "ringHash = ?", new String[] { circleHash }, null, null, "id desc limit 25" );
+		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId","date", "message" }, "ringHash = ?", new String[] { circleHash }, null, null, "id desc limit 100" );
 		while (cursor.moveToNext()) {
 			String msgId = cursor.getString(0);
 			String date = cursor.getString(1);
