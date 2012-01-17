@@ -301,6 +301,7 @@ public class WriteMsg extends ListActivity {
 			    		       
 			    		AlertDialog alert = builder.create();
 			    		alert.show();
+			    		enablePostButton();
 	              		return;
 	              	}
 	              	
@@ -396,7 +397,6 @@ public class WriteMsg extends ListActivity {
           
 	    	
 	    	
-	    	 Boolean atleastOneCircle = false;
 			 for (final Circle cir: circles) {
 				 
 				 
@@ -404,7 +404,6 @@ public class WriteMsg extends ListActivity {
 					 continue;
 				 
 				 
-				atleastOneCircle = true; 
 				
 				
 				if (txtData == null || txtData.equals("")) {
@@ -484,13 +483,6 @@ public class WriteMsg extends ListActivity {
 	    	
 			
 			
-			 if (atleastOneCircle == false) {
-				 	Bundle b2 = new Bundle();
-					Message msg2 = Message.obtain();
-					b2.putString("error", "No circle selected.");
-					msg2.setData(b2);
-					updateSendDialog.sendMessage(msg2);
-			 }
 	    	
 	    	
 	    }
@@ -499,25 +491,36 @@ public class WriteMsg extends ListActivity {
 		
 			
 			String alertMsg = "Post messages to: \n";
+			boolean noCheckedCircles = true;
 			for (final Circle cir: circles) {
-		      if (checkedCircles[circles.indexOf(cir)] == true)
+		      if (checkedCircles[circles.indexOf(cir)] == true) {
 		    	  alertMsg = alertMsg + "  " + cir.getShortname() + "\n";
+		    	  noCheckedCircles = false;
+		      }
+		      
 			}
 		    	  
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
-    		builder.setMessage(alertMsg);
+			if (noCheckedCircles) {
+				builder.setMessage("No circles chosen, please select at least one circle.");
+				builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialogInterface, int i) {}
+	   		     });
+			} else {
+    		  builder.setMessage(alertMsg);
     		
     		
     		 builder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
    		      public void onClick(DialogInterface dialogInterface, int i) {
    		    	  postMessage(v);
    		      }
-   		    });
+   		     });
     		 
-   		    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+   		     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
    		      public void onClick(DialogInterface dialogInterface, int i) {}
-   		    });
+   		     });
+			}
     		       
     		verifyPostAlert = builder.create();
     		verifyPostAlert.show();
