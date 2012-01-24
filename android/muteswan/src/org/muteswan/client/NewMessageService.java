@@ -70,6 +70,7 @@ public class NewMessageService extends Service {
 	// long poll is experimental and currently destroys batteries. We should investigate this at another time
 	protected boolean useLongPoll = false;
 	private CircleStore circleStore;
+	private int numMsgDownload = 5;
     
 	
 	@Override
@@ -93,7 +94,6 @@ public class NewMessageService extends Service {
 		
 		defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
-		Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
 		
 		//int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
 		
@@ -105,11 +105,10 @@ public class NewMessageService extends Service {
 	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notifyIds = new HashMap<String,Integer>();
-		notifyId = 0;
+		notifyId = 8392;
 
 		
 		defPrefs.getBoolean("backgroundMessageCheck", false);				
-		Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
 		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
 		registerReceiver(isUserCheckingMessagesReceiver, new IntentFilter(LatestMessages.CHECKING_MESSAGES));
@@ -147,7 +146,6 @@ public class NewMessageService extends Service {
 	private void start() {
 		
 		defPrefs.getBoolean("backgroundMessageCheck", false);				
-		Integer.parseInt(defPrefs.getString("numMsgDownload","5"));
 	
 		// tor service is now permissioned
 		//TorStatus torStatus = new TorStatus(muteswan.torService);
@@ -192,7 +190,11 @@ public class NewMessageService extends Service {
 		long when = System.currentTimeMillis();
 		int icon = R.drawable.icon;
 		Notification notify = new Notification(icon,title,when);
-		
+	
+		if (!notifyIds.containsKey(c.getFullText())) {
+			notifyIds.put(c.getFullText(), notifyId);
+			notifyId++;
+		}
 		
 		notify.flags |= Notification.FLAG_AUTO_CANCEL;
 		notify.flags |= Notification.FLAG_SHOW_LIGHTS;
@@ -203,11 +205,12 @@ public class NewMessageService extends Service {
 		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
 		msgIntent.putExtra("circle", Main.genHexHash(c.getFullText()));
-		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		//PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
 	
-		//PendingIntent.get
 	
 		Log.v("NewMessageService", "Set pending intent to launch " + c.getShortname() + "(" + Main.genHexHash(c.getFullText()) + ")");
+		Log.v("NewMessageService", "Setting notify id of " + notifyId);
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
 		mNM.notify((Integer) notifyIds.get(c.getFullText()), notify);
 	}
@@ -273,8 +276,11 @@ public class NewMessageService extends Service {
 				    	 if (startLastId < lastId) {
 				      
 				    	   Log.v("NewMessageService", "Not using long poll, starting check for " + circle.getShortname());
+				    	   int downloadCount = 0;
 				    	   
 				    	   for (Integer i = lastId; i > startLastId; i--) {
+				    		 if (downloadCount >= numMsgDownload)
+				    		 	 break;
 				    		 Log.v("NewMessageService", "Downloading " + i +  " for " + circle.getShortname());
 				    		 try {
 								MuteswanMessage msg = circle.getMsgFromTor(i);
@@ -285,13 +291,11 @@ public class NewMessageService extends Service {
 									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg());
 								}
 								
-								if (!notifyIds.containsKey(circle.getFullText())) {
-									notifyIds.put(circle.getFullText(), notifyId);
-									notifyId++;
-								}
-					        	CharSequence notifTitle = "New message in " + circle.getShortname();
+								
+					        	CharSequence notifTitle = circle.getShortname();
 					        	CharSequence notifText = msg.getMsg();
 					        	showNotification(circle,notifTitle,notifText);
+					        	downloadCount++;
 								
 							  } catch (ClientProtocolException e) {
 								e.printStackTrace();
