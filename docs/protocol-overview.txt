@@ -348,6 +348,20 @@ Connection: Keep-Alive
 {"message":"X6h9V7Ynlz974yj5o+nE+Q--"}
 ---------------------------------------------------------
 
+GET msg range
+~~~~~~~
+
+Fetching a message range is also possible and reduces latency.  For example,
+the request t o fetch message 56 to 53 from the 'testsite' circle would be:
+---------------------------------------------------------
+GET /f573fe7d4a34186b00bcab2b38e52122afe04d83/56-53 HTTP/1.1
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+
+... (FIXME)
+---------------------------------------------------------
+
+
 
 GET msg index
 ~~~~~~~~~~~~~
