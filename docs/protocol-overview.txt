@@ -168,7 +168,7 @@ identity protection.
 
 
 
-Configucircle a Tor hidden service is outside the scope of this document.
+Configuring a Tor hidden service is outside the scope of this document.
 However, it is a relatively straightforward process. Once the hidden service is
 configured in the Tor configuration file and the RSA key is available you are
 ready to start Tor and then the Muteswan server itself. The Muteswan server knows
