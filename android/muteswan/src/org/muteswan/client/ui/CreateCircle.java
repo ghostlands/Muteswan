@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
 import org.muteswan.client.data.CircleStore;
@@ -45,6 +46,8 @@ public class CreateCircle extends Activity implements Runnable {
 	private EditText serverView;
 
 	private CheckBox useHiddenNode;
+
+	private MuteswanHttp muteswanHttp;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
@@ -52,6 +55,8 @@ public class CreateCircle extends Activity implements Runnable {
 	       TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
 	       TextView newCircleServerPrompt = (TextView) findViewById(R.id.newCircleServerPrompt);
 	       serverView = (EditText) findViewById(R.id.newCircleServer);
+	      
+	       muteswanHttp = new MuteswanHttp();
 	       
 	       useHiddenNode = (CheckBox) findViewById(R.id.newCircleUseHiddenNode);
 	       SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -116,7 +121,7 @@ public class CreateCircle extends Activity implements Runnable {
 	    	//newCircleResult.setText(circleFullText);
 	    	
 	    	
-        	CircleStore newStore = new CircleStore(getApplicationContext(),true,false);
+        	CircleStore newStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
         	newStore.updateStore(circleFullText);
         	
 	        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);

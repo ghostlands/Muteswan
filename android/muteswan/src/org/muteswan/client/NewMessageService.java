@@ -71,6 +71,7 @@ public class NewMessageService extends Service {
 	protected boolean useLongPoll = false;
 	private CircleStore circleStore;
 	private int numMsgDownload = 5;
+	private MuteswanHttp muteswanHttp;
     
 	
 	@Override
@@ -135,7 +136,8 @@ public class NewMessageService extends Service {
 		 pollList.clear();
 		   
 		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
-		 circleStore = new CircleStore(getApplicationContext(),true,false);
+		 muteswanHttp = new MuteswanHttp();
+		 circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 		 for (Circle r : circleStore) {
 				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);

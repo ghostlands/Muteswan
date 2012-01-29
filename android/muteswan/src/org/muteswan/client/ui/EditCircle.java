@@ -68,12 +68,14 @@ public class EditCircle extends Activity {
 	protected byte[] imageBytes;
 	private boolean[] keylistIdentitiesSelected;
 	private CharSequence[] signIdentities;
+	private MuteswanHttp muteswanHttp;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		Bundle extras = getIntent().getExtras();
-	    CircleStore rs = new CircleStore(getApplicationContext(),true,false);
+		muteswanHttp = new MuteswanHttp();
+	    CircleStore rs = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 	    HashMap<String,Circle> hashMap = rs.asHashMap();
 	    circle = hashMap.get(Main.genHexHash(extras.getString("circle")));
 		setContentView(R.layout.editcircle);

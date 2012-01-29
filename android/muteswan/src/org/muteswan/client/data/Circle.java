@@ -178,7 +178,7 @@ public class Circle {
 		//this.add(newCircle);
 	}
 	
-	public Circle(Context context, String key, String shortname, String server) {
+	public Circle(Context context, String key, String shortname, String server, MuteswanHttp muteswanHttp) {
 		super();
 		this.key = key;
 		this.shortname = shortname;
@@ -186,10 +186,8 @@ public class Circle {
 		this.context = context;
 
 		this.keyHash = Main.genHexHash(key);
-		//this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
-	    muteswanHttp = new MuteswanHttp();
+	    this.muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
-	    //initManifest();
 	}
 	
 	public void setCurLastMsgId(int lastMsg) {

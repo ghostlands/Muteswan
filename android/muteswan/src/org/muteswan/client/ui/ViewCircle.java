@@ -19,6 +19,7 @@ package org.muteswan.client.ui;
 
 import java.util.HashMap;
 
+import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
@@ -40,12 +41,14 @@ public class ViewCircle extends Activity implements Runnable {
 
 	
 	private Circle circle;
+	private MuteswanHttp muteswanHttp;
 
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Bundle extras = getIntent().getExtras();
-	    CircleStore rs = new CircleStore(getApplicationContext(),true,false);
+		muteswanHttp = new MuteswanHttp();
+	    CircleStore rs = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 	    HashMap<String,Circle> hashMap = rs.asHashMap();
 	    circle = hashMap.get(Main.genHexHash(extras.getString("circle")));
 		setContentView(R.layout.viewcircle);

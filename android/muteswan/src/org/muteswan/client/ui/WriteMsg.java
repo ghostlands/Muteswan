@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.muteswan.client.IMessageService;
+import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
@@ -84,6 +85,7 @@ public class WriteMsg extends ListActivity {
         	enablePostButton();
         }
 	 };
+	private MuteswanHttp muteswanHttp;
 	
 	
 	public void onResume() {
@@ -107,7 +109,8 @@ public class WriteMsg extends ListActivity {
 	       super.onCreate(savedInstanceState);
 
 	       Bundle extras = getIntent().getExtras();
-	       CircleStore cs = new CircleStore(getApplicationContext(),true,false);
+	       muteswanHttp = new MuteswanHttp();
+	       CircleStore cs = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 	
 	       
 	       if (extras != null && extras.containsKey("circle")) {

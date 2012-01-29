@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.muteswan.client.Main;
+import org.muteswan.client.MuteswanHttp;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -61,18 +62,20 @@ final public class CircleStore extends LinkedList<Circle> {
 
     public Context context;
 	private OpenHelper openHelper;
+	private MuteswanHttp muteswanHttp;
 
 
 	
-	public CircleStore(Context applicationContext, boolean readDb, boolean initCache) {
+	public CircleStore(Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
+	    this.muteswanHttp = muteswanHttp;
 	  
 
 		if (readDb && initCache) {
-          initStore(true);
+          initStore(muteswanHttp,true);
 		} else if (readDb) {
-			initStore(false);
+			initStore(muteswanHttp,false);
 		}
 	}
 	
@@ -117,7 +120,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  
 	  
 	  
-	  private void initStore(boolean initCache) {
+	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
 		  SQLiteDatabase db = openHelper.getReadableDatabase();
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
@@ -125,7 +128,7 @@ final public class CircleStore extends LinkedList<Circle> {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
-				Circle r = new Circle(context,key,shortname,server);
+				Circle r = new Circle(context,key,shortname,server,muteswanHttp);
 				if (r != null) { 
 				   add(r);
 				   if (initCache)
@@ -150,7 +153,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  public void updateStore(String key, String shortname, String server) {
-		  Circle circle = new Circle(context,key,shortname,server);
+		  Circle circle = new Circle(context,key,shortname,server,muteswanHttp);
 		  for (Circle r : this) {
 			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
 				  return;
