@@ -26,6 +26,8 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 
+import android.util.Log;
+
 public class MuteswanHttp {
 
 	public DefaultHttpClient httpClient;
@@ -35,6 +37,8 @@ public class MuteswanHttp {
 	}
     
 	private void initHttp() {
+		
+		Log.v("MuteswanHttp", "Called initHttp!");
 
 		SocksSocketFactory socksFactory = new SocksSocketFactory("127.0.0.1",9050); 
 		

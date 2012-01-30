@@ -38,7 +38,10 @@ public class MyDefaultClientConnectionOperator extends
 	public MyDefaultClientConnectionOperator(SchemeRegistry schemes) {
 		super(schemes);
 	}
-	
+
+	// we have to overload this method so that the http client does not try and
+	// resolve hidden node addresses. we need to give the proxy the actual name, like
+	// socks4a supports
 	@Override
 	public void openConnection(OperatedClientConnection conn, HttpHost target,
 			InetAddress local, HttpContext context, HttpParams params)
