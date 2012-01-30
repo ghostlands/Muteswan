@@ -82,7 +82,6 @@ public class CircleList extends ListActivity {
 	
 	private CircleStore store;
 	private CircleListAdapter listAdapter;
-	private MuteswanHttp muteswanHttp;
 	
 	
 	
@@ -92,8 +91,7 @@ public class CircleList extends ListActivity {
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
-		muteswanHttp = new MuteswanHttp();
-    	store = new CircleStore(this,true,false,muteswanHttp);
+    	store = new CircleStore(this,true,false);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
         //        android.R.layout.simple_list_item_1, circleList);
@@ -134,7 +132,7 @@ public class CircleList extends ListActivity {
         initialText = extra.getString("initialText");
      
         Log.v("CircleList", "Before CircleStore constructor.");
-    	store = new CircleStore(this,true,false,muteswanHttp);
+    	store = new CircleStore(this,true,false);
     	Log.v("CircleList", "After CircleStore constructor.");
 
         setContentView(R.layout.circlelist);
@@ -456,7 +454,7 @@ public class CircleList extends ListActivity {
                 	 // FIXME refactor
                 	String circleTxt = editTxt.getText().toString();
 
-     	            CircleStore store = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+     	            CircleStore store = new CircleStore(getApplicationContext(),true,false);
                  	Circle circle = new Circle(getApplicationContext(),circleTxt);
                  	if (circle.getShortname() == null)
                  		Log.v("CircleList","Circle is null after initializing manually.");
@@ -553,7 +551,7 @@ public class CircleList extends ListActivity {
     	            // RING
     	            if (atIndex != -1) {
     	            
-      	              CircleStore store = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+      	              CircleStore store = new CircleStore(getApplicationContext(),true,false);
     	              Circle circle = new Circle(getApplicationContext(),contents);
     	              store.updateStore(contents);
     	              

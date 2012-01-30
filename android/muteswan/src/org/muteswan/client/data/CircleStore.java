@@ -67,17 +67,17 @@ final public class CircleStore extends LinkedList<Circle> {
 
 
 	
-	public CircleStore(Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
+	public CircleStore(Context applicationContext, boolean readDb, boolean initCache) {
 		Log.v("CircleStore", "Circle store called!");
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
-	    this.muteswanHttp = muteswanHttp;
+	    //this.muteswanHttp = new MuteswanHttp();
 	  
 
 		if (readDb && initCache) {
-          initStore(muteswanHttp,true);
+          initStore(true);
 		} else if (readDb) {
-			initStore(muteswanHttp,false);
+			initStore(false);
 		}
 	}
 	
@@ -122,16 +122,27 @@ final public class CircleStore extends LinkedList<Circle> {
 	  
 	  
 	  
-	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
+	  private void initStore(boolean initCache) {
 		  SQLiteDatabase db = openHelper.getReadableDatabase();
-			
+		
+		 
+		  int httpClientCount = 0;
+		  MuteswanHttp muteswanHttp = new MuteswanHttp();
+		  
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
-				Circle r = new Circle(context,key,shortname,server,muteswanHttp);
-				if (r != null) { 
+				
+				if (httpClientCount == 4) {
+					muteswanHttp = new MuteswanHttp();
+					httpClientCount = 0;
+				}
+				
+				Circle	r = new Circle(context,key,shortname,server,muteswanHttp);
+				if (r != null) {
+				   httpClientCount++;
 				   add(r);
 				   if (initCache)
 				     r.initCache();

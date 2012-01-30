@@ -137,7 +137,7 @@ public class NewMessageService extends Service {
 		   
 		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
 		 muteswanHttp = new MuteswanHttp();
-		 circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+		 circleStore = new CircleStore(getApplicationContext(),true,false);
 		 for (Circle r : circleStore) {
 				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);

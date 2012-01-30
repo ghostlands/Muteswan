@@ -41,14 +41,12 @@ public class ViewCircle extends Activity implements Runnable {
 
 	
 	private Circle circle;
-	private MuteswanHttp muteswanHttp;
 
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Bundle extras = getIntent().getExtras();
-		muteswanHttp = new MuteswanHttp();
-	    CircleStore rs = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+	    CircleStore rs = new CircleStore(getApplicationContext(),true,false);
 	    HashMap<String,Circle> hashMap = rs.asHashMap();
 	    circle = hashMap.get(Main.genHexHash(extras.getString("circle")));
 		setContentView(R.layout.viewcircle);
