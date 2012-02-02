@@ -222,12 +222,12 @@ public class LatestMessages extends ListActivity implements Runnable {
         extra = getIntent().getExtras();
         muteswanHttp = new MuteswanHttp();
         if (extra != null) {
-		 store = new CircleStore(this,true,false,muteswanHttp);
+		 store = new CircleStore(this,true,false);
 		 circleMap = store.asHashMap();
          circleExtra = extra.getString("circle");
          circleMap.get(circleExtra).initCache();
         } else {
-		 store = new CircleStore(this,true,true,muteswanHttp);
+		 store = new CircleStore(this,true,true);
 		 circleMap = store.asHashMap();
         }
         

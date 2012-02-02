@@ -81,6 +81,19 @@ final public class CircleStore extends LinkedList<Circle> {
 		}
 	}
 	
+	public CircleStore(Context applicationContext, boolean readDb, boolean initCache) {
+		Log.v("CircleStore", "Circle store called!");
+		context = applicationContext;
+	    openHelper = new OpenHelper(context);
+	  
+
+		if (readDb && initCache) {
+          initStore(true);
+		} else if (readDb) {
+			initStore(false);
+		}
+	}
+	
 	public CircleStore(Context applicationContext) {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
@@ -141,6 +154,25 @@ final public class CircleStore extends LinkedList<Circle> {
 		  db.close();
 	  }
 	  
+	  private void initStore(boolean initCache) {
+		  SQLiteDatabase db = openHelper.getReadableDatabase();
+			
+		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
+		  while (cursor.moveToNext()) {
+				String shortname = cursor.getString(0);
+				String key = cursor.getString(1);
+				String server = cursor.getString(2);
+				Circle r = new Circle(context,key,shortname,server);
+				if (r != null) { 
+				   add(r);
+				   if (initCache)
+				     r.initCache();
+				}
+		  }
+		  cursor.close();
+		  db.close();
+	  }
+	  
 	  
 	 
 	  
@@ -155,7 +187,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  public void updateStore(String key, String shortname, String server) {
-		  Circle circle = new Circle(context,key,shortname,server,muteswanHttp);
+		  Circle circle = new Circle(context,key,shortname,server);
 		  for (Circle r : this) {
 			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
 				  return;

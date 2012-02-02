@@ -110,7 +110,7 @@ public class WriteMsg extends ListActivity {
 
 	       Bundle extras = getIntent().getExtras();
 	       muteswanHttp = new MuteswanHttp();
-	       CircleStore cs = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+	       CircleStore cs = new CircleStore(getApplicationContext(),true,false);
 	
 	       
 	       if (extras != null && extras.containsKey("circle")) {

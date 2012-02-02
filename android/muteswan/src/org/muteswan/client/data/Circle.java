@@ -54,11 +54,13 @@ import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.Main;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+import android.preference.PreferenceManager;
 
 public class Circle {
      
@@ -168,25 +170,35 @@ public class Circle {
 		this.keyHash = Main.genHexHash(key);
 		this.context = context;
 		initHttp();
-		//this.openHelper = new Circle.OpenHelper(context, muteswan.genHexHash(getFullText()));
 		
-	    muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
 		
-	    //initManifest();
-	    
-		//this.add(newCircle);
 	}
 	
 	public Circle(Context context, String key, String shortname, String server, MuteswanHttp muteswanHttp) {
-		super();
 		this.key = key;
 		this.shortname = shortname;
 		this.server = server;
 		this.context = context;
 
 		this.keyHash = Main.genHexHash(key);
-	    this.muteswanHttp = muteswanHttp;
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        Boolean aggroHttp = defPrefs.getBoolean("aggressivehttp", false);
+
+		if (aggroHttp) {
+	    	  this.muteswanHttp = new MuteswanHttp();
+		} else {
+	    	  this.muteswanHttp = muteswanHttp;
+		}
+	}
+	
+	public Circle(Context context, String key, String shortname, String server) {
+		this.key = key;
+		this.shortname = shortname;
+		this.server = server;
+		this.context = context;
+		this.keyHash = Main.genHexHash(key);
+
 	    curLastMsgId = 0;
 	}
 	

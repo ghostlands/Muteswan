@@ -121,7 +121,7 @@ public class CreateCircle extends Activity implements Runnable {
 	    	//newCircleResult.setText(circleFullText);
 	    	
 	    	
-        	CircleStore newStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+        	CircleStore newStore = new CircleStore(getApplicationContext(),true,false);
         	newStore.updateStore(circleFullText);
         	
 	        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
