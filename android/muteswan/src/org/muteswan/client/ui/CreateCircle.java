@@ -47,6 +47,7 @@ public class CreateCircle extends Activity implements Runnable {
 
 	private CheckBox useHiddenNode;
 
+	private MuteswanHttp muteswanHttp;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
@@ -55,6 +56,7 @@ public class CreateCircle extends Activity implements Runnable {
 	       TextView newCircleServerPrompt = (TextView) findViewById(R.id.newCircleServerPrompt);
 	       serverView = (EditText) findViewById(R.id.newCircleServer);
 	      
+	       muteswanHttp = new MuteswanHttp();
 	       
 	       useHiddenNode = (CheckBox) findViewById(R.id.newCircleUseHiddenNode);
 	       SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -119,7 +121,7 @@ public class CreateCircle extends Activity implements Runnable {
 	    	//newCircleResult.setText(circleFullText);
 	    	
 	    	
-        	CircleStore newStore = new CircleStore(getApplicationContext(),true,false);
+        	CircleStore newStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
         	newStore.updateStore(circleFullText);
         	
 	        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);

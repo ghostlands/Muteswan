@@ -187,7 +187,6 @@ public class Circle {
 
 		this.keyHash = Main.genHexHash(key);
 	    this.muteswanHttp = muteswanHttp;
-		//this.muteswanHttp = new MuteswanHttp();
 	    curLastMsgId = 0;
 	}
 	

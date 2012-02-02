@@ -214,18 +214,20 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private long previousLoadMoreTime;
 	private View footerView;
 	private AlertDialogs alertDialogs;
+	private MuteswanHttp muteswanHttp;
 	
 	
 	private void init() {
         
         extra = getIntent().getExtras();
+        muteswanHttp = new MuteswanHttp();
         if (extra != null) {
-		 store = new CircleStore(this,true,false);
+		 store = new CircleStore(this,true,false,muteswanHttp);
 		 circleMap = store.asHashMap();
          circleExtra = extra.getString("circle");
          circleMap.get(circleExtra).initCache();
         } else {
-		 store = new CircleStore(this,true,true);
+		 store = new CircleStore(this,true,true,muteswanHttp);
 		 circleMap = store.asHashMap();
         }
         
