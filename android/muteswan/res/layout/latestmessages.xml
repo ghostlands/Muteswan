@@ -30,6 +30,8 @@
         android:paddingTop="2sp"
         android:scaleType="fitCenter"
         android:src="@drawable/refresh" />
+    
+   
 
     <Button
         android:id="@+id/latestmessagesPost"
@@ -41,7 +43,19 @@
         android:paddingLeft="20sp"
         android:paddingRight="20sp"
         android:text="Post" />
-    
+     <TextView
+        android:id="@+id/android:checktimedelta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:paddingRight="12sp"
+        android:paddingTop="14sp"
+        android:visibility="gone"
+        android:text="10s"
+        android:textColor="#FFFFFF"
+        android:textSize="10sp"
+        android:textStyle="bold" />
     <TextView
         android:id="@+id/android:latestmessagesprompt"
         android:layout_width="fill_parent"

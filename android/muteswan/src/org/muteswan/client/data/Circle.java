@@ -182,14 +182,14 @@ public class Circle {
 		this.context = context;
 
 		this.keyHash = Main.genHexHash(key);
-		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        Boolean aggroHttp = defPrefs.getBoolean("aggressivehttp", false);
+		//SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+       	//Boolean aggroHttp = defPrefs.getBoolean("aggressivehttp", false);
 
-		if (aggroHttp) {
-	    	  this.muteswanHttp = new MuteswanHttp();
-		} else {
-	    	  this.muteswanHttp = muteswanHttp;
-		}
+		//if (aggroHttp) {
+	  	this.muteswanHttp = new MuteswanHttp();
+		//} else {
+	    //	  this.muteswanHttp = muteswanHttp;
+		//}
 	}
 	
 	public Circle(Context context, String key, String shortname, String server) {
@@ -199,6 +199,7 @@ public class Circle {
 		this.context = context;
 		this.keyHash = Main.genHexHash(key);
 
+		
 	    curLastMsgId = 0;
 	}
 	

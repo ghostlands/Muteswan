@@ -23,7 +23,7 @@
 
 <CheckBoxPreference android:title="Allow Manual Joining" android:summary="Joins circles by entering circle text directly. Note: potential security risk." android:key="allowManualJoining"></CheckBoxPreference>
 <CheckBoxPreference android:title="Verbose" android:summary="Show extra information during operations." android:key="verbose"></CheckBoxPreference>
-<CheckBoxPreference android:title="Aggressive HTTP" android:summary="Spawn many HTTP threads for max performance." android:key="aggressivehttp"></CheckBoxPreference>
+<!--  <CheckBoxPreference android:title="Aggressive HTTP" android:summary="Spawn many HTTP threads for max performance." android:key="aggressivehttp"></CheckBoxPreference>-->
 
 
 <!--  <PreferenceCategory android:title="Message List"><CheckBoxPreference android:title="Always Use Cached Index" android:summary="If checked, the message list will not download the message index on start." android:key="alwaysUseLastMessage"></CheckBoxPreference>

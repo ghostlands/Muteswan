@@ -214,13 +214,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private long previousLoadMoreTime;
 	private View footerView;
 	private AlertDialogs alertDialogs;
-	private MuteswanHttp muteswanHttp;
 	
 	
 	private void init() {
         
         extra = getIntent().getExtras();
-        muteswanHttp = new MuteswanHttp();
         if (extra != null) {
 		 store = new CircleStore(this,true,false);
 		 circleMap = store.asHashMap();
@@ -361,7 +359,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 
 	private void showInitialLoad() {
 	
-		
 	}
 
 	private void showDialog() {
@@ -772,9 +769,19 @@ public class LatestMessages extends ListActivity implements Runnable {
         		  //refreshButton.setOnClickListener(refreshClicked);
         		  newMsgCheckResults.clear();
         		  spinneyIcon.setAnimation(null);
+        		  showCheckTimeDelta();
         	  }
         }
+
     };
+    
+	private void showCheckTimeDelta() {
+		long delta = (System.currentTimeMillis()/1000) - previousRefreshTime;
+		TextView deltaField = (TextView) findViewById(R.id.android_checktimedelta);
+		if (verbose)
+		  deltaField.setVisibility(View.VISIBLE);
+		deltaField.setText(Integer.toString((int)delta) + "s");
+	}
     
     private AlertDialog.Builder getSomeFailedAlertDialog() {
     	AlertDialog.Builder someFailedAlert = new AlertDialog.Builder(LatestMessages.this);
