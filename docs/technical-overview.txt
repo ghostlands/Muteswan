@@ -1,6 +1,6 @@
 
-Muteswan Protocol Documentation
-===============================
+Muteswan Tech Overview
+======================
 James Unger <junger@muteswan.org>
 :Author Initials: JMU
 :toc:
