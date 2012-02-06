@@ -15,9 +15,9 @@ get_header(); ?>
 				<h2>Anonymous friends<br />trusted face-to-face.</h2>
 				<p>Create secure social networks using shared QR codes. Share them with whomever you trust, face-to-face.</p>
 
-				<a href="#market_url" title="Download App">Download App<br />
-					<img src="/public/wp-content/themes/muteswan/i/market.png" alt="Available in Android Market" />
-				</a>
+				<a href="http://muteswan.org/android/muteswan-latest.apk" title="Download App">Download App<br />
+				<!--	<img src="/public/wp-content/themes/muteswan/i/market.png" alt="Available in Android Market" />
+				</a> -->
 
 			</div><!-- #content -->
 			<div style="clear: both;">&nbsp;</div>
