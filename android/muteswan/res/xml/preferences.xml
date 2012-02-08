@@ -3,29 +3,28 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
 
 
+<PreferenceCategory android:title="Automatic Message Check">
 <CheckBoxPreference android:title="New Message Service" android:summary="Continually check for new messages in the background." android:key="backgroundMessageCheck"></CheckBoxPreference>
 <ListPreference android:title="Check Interval" android:key="checkMsgInterval" android:entries="@array/msgcheckintervaldisplay" android:summary="Check messages at provided interval." android:entryValues="@array/msgcheckinterval"></ListPreference>
-<!--   <ListPreference android:title="Maximum Download" android:summary="Maximum amount of messages to download in the background server, per circle." android:key="numMsgDownload" android:entries="@array/nummsgdownloaddisplay" android:entryValues="@array/nummsgdownload"></ListPreference> -->
+</PreferenceCategory>
 
 
-<!--   <PreferenceCategory android:title="Always Check for Latest Messages"> -->
-<!--   <CheckBoxPreference android:title="Check for Latest" android:summary="Always check and download the latest messages when viewing." android:key="alwaysCheckLatest"></CheckBoxPreference> -->
-<!--  </PreferenceCategory> -->
+<PreferenceCategory android:title="Circle Settings">
 <EditTextPreference
             android:key="customCircleServer"
 	            android:title="Custom Server"
-	            android:summary="Specify your own Muteswan server(s), comma separated."
+	            android:summary="Specify your own Muteswan server used when creating circles."
 	            />
+<CheckBoxPreference android:title="Use public server" android:summary="Use the public default server, circles.muteswan.org. Faster, less secure." android:key="usePublicServer"></CheckBoxPreference>
+<CheckBoxPreference android:title="Allow Manual Joining" android:summary="Joins circles by entering circle text directly. Note: potential security risk." android:key="allowManualJoining"></CheckBoxPreference>
+</PreferenceCategory>
 	 
 
 
 
-
-<CheckBoxPreference android:title="Allow Manual Joining" android:summary="Joins circles by entering circle text directly. Note: potential security risk." android:key="allowManualJoining"></CheckBoxPreference>
+<PreferenceCategory android:title="Interface Settings">
 <CheckBoxPreference android:title="Verbose" android:summary="Show extra information during operations." android:key="verbose"></CheckBoxPreference>
-<!--  <CheckBoxPreference android:title="Aggressive HTTP" android:summary="Spawn many HTTP threads for max performance." android:key="aggressivehttp"></CheckBoxPreference>-->
+</PreferenceCategory>
 
 
-<!--  <PreferenceCategory android:title="Message List"><CheckBoxPreference android:title="Always Use Cached Index" android:summary="If checked, the message list will not download the message index on start." android:key="alwaysUseLastMessage"></CheckBoxPreference>
-</PreferenceCategory> -->
 </PreferenceScreen>

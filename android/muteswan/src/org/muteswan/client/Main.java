@@ -355,7 +355,7 @@ public class Main extends Activity implements Runnable {
     		Uri data = Uri.fromParts("package", packageName, null);
     		intent.setData(data);
     		startActivity(intent);
-		} else if (item.toString().equals("Options")) {
+		} else if (item.toString().equals("Settings")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}

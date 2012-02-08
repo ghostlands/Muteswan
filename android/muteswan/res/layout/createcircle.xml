@@ -94,17 +94,6 @@
 	
 	   </LinearLayout>
 	   
-	     <LinearLayout
-	     android:orientation="horizontal"
-	     android:layout_width="fill_parent"
-	     android:layout_height="wrap_content">
-	     <CheckBox 
-	     		   android:id="@+id/newCircleUseHiddenNode"
-	     		   android:layout_width="wrap_content"
-	               android:layout_height="wrap_content"
-	               android:text="Use hidden server? (slower, more secure)"/>
-	        
-	     </LinearLayout>
 	     
 	     
 	    <Button android:text="Create Circle" android:id="@+id/genCircleButton" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>

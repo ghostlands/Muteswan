@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -45,9 +46,8 @@ public class CreateCircle extends Activity implements Runnable {
 
 	private EditText serverView;
 
-	private CheckBox useHiddenNode;
+	private Boolean usePublicServer;
 
-	private MuteswanHttp muteswanHttp;
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
 
@@ -56,18 +56,18 @@ public class CreateCircle extends Activity implements Runnable {
 	       TextView newCircleServerPrompt = (TextView) findViewById(R.id.newCircleServerPrompt);
 	       serverView = (EditText) findViewById(R.id.newCircleServer);
 	      
-	       muteswanHttp = new MuteswanHttp();
 	       
-	       useHiddenNode = (CheckBox) findViewById(R.id.newCircleUseHiddenNode);
 	       SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	       String customServer = defPrefs.getString("customCircleServer", "");
 	       if (!customServer.equals("")) {
-	    	   useHiddenNode.setVisibility(View.GONE);
 	    	   serverView.setText(customServer);
 	       } else {
 	    	   serverView.setVisibility(View.GONE);
 	    	   newCircleServerPrompt.setVisibility(View.GONE);
 	       }
+	       
+	       usePublicServer = defPrefs.getBoolean("usePublicServer", true);
+	       Log.v("CreateCircle","Use public server is: " + usePublicServer);
 	    
 	       
 	       final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
@@ -104,12 +104,9 @@ public class CreateCircle extends Activity implements Runnable {
 	    	
 	    	String server = serverView.getText().toString();
 	    
-	    	// if the use hidden node check box is visible, we want to decide what server to use
-	    	// based on the checkbox. if the checkbox is not visible then we want to use the 
-	    	// actual server value
-	    	if (useHiddenNode.isChecked() && useHiddenNode.getVisibility() == View.VISIBLE) {
+	    	if (!usePublicServer && server.equals("")) {
 	    		server = getString(R.string.defaulthiddencircleserver);
-	    	} else if (useHiddenNode.getVisibility() == View.VISIBLE) {
+	    	} else if (usePublicServer && server.equals("")) {
 	    		server = getString(R.string.defaultcircleserver);
 	    	}
 	    	
