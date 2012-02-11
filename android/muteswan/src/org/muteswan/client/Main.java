@@ -221,7 +221,7 @@ public class Main extends Activity implements Runnable {
         
         // SERVICE BIND
         Intent serviceIntent = new Intent(this,NewMessageService.class);
-        bindService(serviceIntent,mNewMsgConn,Context.BIND_NOT_FOREGROUND);
+        bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
         //,Context.BIND_AUTO_CREATE);
         
         

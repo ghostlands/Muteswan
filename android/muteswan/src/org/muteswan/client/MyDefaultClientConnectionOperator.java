@@ -65,6 +65,7 @@ public class MyDefaultClientConnectionOperator extends
                 ("Connection must not be open.");
         }
 
+        
         final Scheme schm = schemeRegistry.getScheme(target.getSchemeName());
         final SocketFactory sf = schm.getSocketFactory();
 
@@ -84,6 +85,7 @@ public class MyDefaultClientConnectionOperator extends
         }
         prepareSocket(sock, context, params);
         conn.openCompleted(sf.isSecure(sock), params);
+        conn.setSocketTimeout(20000);
 	}
 
 }

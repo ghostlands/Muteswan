@@ -46,7 +46,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -132,6 +134,15 @@ public class NewMessageService extends Service {
 		unregisterReceiver(createdCircleReceiver);
 	}
 	
+	
+    final Handler handleStopSelf = new Handler() {
+    	@Override
+    	public void handleMessage(Message msg) {
+    		stopservice();
+    		stopSelf();
+    	}
+    };
+    
 	private void init() {
 		 pollList.clear();
 		   
@@ -257,8 +268,8 @@ public class NewMessageService extends Service {
 								Integer lastId = circle.getLastTorMessageId();
 					    		if (lastId == null || lastId < 0) {
 					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
-					    			torActive = false;
 					    			//return;
+					    			handleStopSelf.sendEmptyMessage(0);
 					    		}
 					    		
 					    		if (lastId > startLastId)

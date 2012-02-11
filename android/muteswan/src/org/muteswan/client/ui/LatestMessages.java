@@ -1227,7 +1227,7 @@ final Handler stopSpinningHandler = new Handler() {
 		Log.v("LatestMessages","Running!");
 		
 		Intent serviceIntent = new Intent(this,NewMessageService.class);
-        bindService(serviceIntent,msgServiceConn,Context.BIND_NOT_FOREGROUND);
+        bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
 	
 		
 		

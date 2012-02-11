@@ -395,7 +395,7 @@ public class WriteMsg extends ListActivity {
    		    
 	    	
     		Intent serviceIntent = new Intent(getApplicationContext(),NewMessageService.class);
-            bindService(serviceIntent,msgServiceConn,Context.BIND_NOT_FOREGROUND);
+            bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
 	    
           
 	    	
