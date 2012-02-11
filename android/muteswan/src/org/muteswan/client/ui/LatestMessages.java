@@ -276,10 +276,6 @@ public class LatestMessages extends ListActivity implements Runnable {
         getListView().setOnScrollListener(scrollListener);
         setListAdapter(listAdapter);
         
-        
-       
-        
-        
     }
 	
 	@Override
@@ -1284,6 +1280,17 @@ final Handler stopSpinningHandler = new Handler() {
         	
         		Integer lastMsg = null;
 				try {
+					
+					
+					// on slow devices this may not be initialized yet
+					while (msgService == null) {
+							 try {
+								Thread.currentThread().sleep(50);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+					}
+        
 					lastMsg = msgService.getLastTorMsgId(Main.genHexHash(circle.getFullText()));
 				} catch (RemoteException e) {
 					Log.e("LatestMessages", "Error getting latest message from service!");
