@@ -864,7 +864,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         			
         			Thread.currentThread();
 					try {
-						Thread.sleep(50);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
