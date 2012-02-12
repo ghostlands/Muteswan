@@ -247,7 +247,9 @@ public class NewMessageService extends Service {
 			 Thread oldThread = pollList.get(circle);
 			 while (oldThread != null) {
 			        try {
-			            oldThread.join();
+				    	Log.v("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
+			        	oldThread.interrupt();
+			            oldThread.join(250);
 			            oldThread = null;
 			            pollList.put(circle, null);
 			        } catch (InterruptedException e) {
@@ -266,8 +268,10 @@ public class NewMessageService extends Service {
 
 					    		final Integer startLastId = circle.getLastMsgId(false);
 								Integer lastId = circle.getLastTorMessageId();
+						 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
 					    		if (lastId == null || lastId < 0) {
-					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
+					    			Log.v("MuteswanService", "Got null or negative from tor for " + circle.getShortname() + ", bailing out.");
+					    			//pollList.remove(circle);
 					    			return;
 					    			//handleStopSelf.sendEmptyMessage(0);
 					    		}
@@ -276,7 +280,6 @@ public class NewMessageService extends Service {
 								  circle.updateLastMessage(lastId,false);
 							  
 					    	
-						 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
 				       
 						
 				        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
@@ -349,7 +352,6 @@ public class NewMessageService extends Service {
 			
 			runPoll();
 			
-			isWorking = false;
 		}
 	
 		public boolean isPolling() {
