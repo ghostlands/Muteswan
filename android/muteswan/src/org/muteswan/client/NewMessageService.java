@@ -79,6 +79,7 @@ public class NewMessageService extends Service {
 	@Override
 	public void onStart(Intent intent, int startId) {
 		Log.v("MuteswanService", "onStart called.");
+		this.stopForeground(false);
 		start();
 	}
 	
@@ -181,7 +182,6 @@ public class NewMessageService extends Service {
 			
 		
 		
-		
 		// Startup
 		if (started  == false) {
 		
@@ -268,8 +268,8 @@ public class NewMessageService extends Service {
 								Integer lastId = circle.getLastTorMessageId();
 					    		if (lastId == null || lastId < 0) {
 					    			Log.v("MuteswanService", "Got null or negative from tor, bailing out.");
-					    			//return;
-					    			handleStopSelf.sendEmptyMessage(0);
+					    			return;
+					    			//handleStopSelf.sendEmptyMessage(0);
 					    		}
 					    		
 					    		if (lastId > startLastId)
@@ -351,7 +351,10 @@ public class NewMessageService extends Service {
 			
 			isWorking = false;
 		}
-		
+	
+		public boolean isPolling() {
+			return(isWorking);
+		}
 		
 		public void checkTorStatus(ITorVerifyResult verifyResult) {
 			TorStatus checkTorStatus = new TorStatus();

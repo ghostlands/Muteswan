@@ -169,7 +169,6 @@ public class Circle {
 		this.server = srv;
 		this.keyHash = Main.genHexHash(key);
 		this.context = context;
-		initHttp();
 		
 	    curLastMsgId = 0;
 		
@@ -186,7 +185,7 @@ public class Circle {
        	//Boolean aggroHttp = defPrefs.getBoolean("aggressivehttp", false);
 
 		//if (aggroHttp) {
-	  	this.muteswanHttp = new MuteswanHttp();
+	  	this.muteswanHttp = muteswanHttp;
 		//} else {
 	    //	  this.muteswanHttp = muteswanHttp;
 		//}
@@ -722,9 +721,6 @@ public class Circle {
 		
 	
 	
-	private void initHttp() {
-		this.muteswanHttp = new MuteswanHttp();
-	}
 	
 	
 	

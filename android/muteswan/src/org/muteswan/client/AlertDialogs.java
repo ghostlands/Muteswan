@@ -48,7 +48,7 @@ public class AlertDialogs {
 	 private void offerToStartTor() {
 		  AlertDialog.Builder noTorDialog = new AlertDialog.Builder(context);
 	      noTorDialog.setTitle("Tor Unavailable");
-	      noTorDialog.setMessage("Tor is not available at this time. Please start Tor or ensure it is running properly. Only cached data will be available otherwise.");
+	      noTorDialog.setMessage("Tor is not available at this time. Please start or restart Tor or ensure it is running properly. Only cached data will be available otherwise.");
 	      noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	      

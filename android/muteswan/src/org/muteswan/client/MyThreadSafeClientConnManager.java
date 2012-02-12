@@ -35,4 +35,7 @@ public class MyThreadSafeClientConnManager extends ThreadSafeClientConnManager {
 			SchemeRegistry schreg) {
 		return new MyDefaultClientConnectionOperator(schreg);
 	}
+	
+	
+	
 }

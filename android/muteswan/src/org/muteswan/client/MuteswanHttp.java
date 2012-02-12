@@ -19,6 +19,8 @@ package org.muteswan.client;
 
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnPerRoute;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -34,6 +36,15 @@ public class MuteswanHttp {
 	
 	public MuteswanHttp() {
 		initHttp();
+	}
+	
+	private class MaxConnPerRoute implements ConnPerRoute {
+
+		@Override
+		public int getMaxForRoute(HttpRoute route) {
+				return(15);
+		}
+		
 	}
     
 	private void initHttp() {
@@ -52,6 +63,8 @@ public class MuteswanHttp {
         HttpProtocolParams.setUseExpectContinue(params,false);
         params.setIntParameter("http.socket.timeout", 15000);
         params.setIntParameter("http.connection.timeout", 15000);
+        //params.setIntParameter("http.conn-manager.max-per-route", 15);
+        params.setParameter("http.conn-manager.max-per-route", new MaxConnPerRoute());
         
         ClientConnectionManager	ccm = new MyThreadSafeClientConnManager(params,
                     supportedSchemes);
