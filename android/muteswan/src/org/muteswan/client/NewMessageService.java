@@ -249,7 +249,7 @@ public class NewMessageService extends Service {
 			        try {
 				    	Log.v("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
 			        	oldThread.interrupt();
-			            oldThread.join(250);
+			            oldThread.join(50);
 			            oldThread = null;
 			            pollList.put(circle, null);
 			        } catch (InterruptedException e) {
