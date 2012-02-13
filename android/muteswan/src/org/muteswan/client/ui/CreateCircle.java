@@ -50,12 +50,17 @@ public class CreateCircle extends Activity implements Runnable {
 
 	public void onCreate(Bundle savedInstanceState) {
 	       super.onCreate(savedInstanceState);
+	       
+	       
+	       Bundle extras = getIntent().getExtras();
+	       String extraNewCircleName = extras.getString("newCircleName");
 
 	       setContentView(R.layout.createcircle);
 	       TextView keyTxt = (TextView) findViewById(R.id.newCircleKey);
 	       TextView newCircleServerPrompt = (TextView) findViewById(R.id.newCircleServerPrompt);
 	       serverView = (EditText) findViewById(R.id.newCircleServer);
-	      
+	       
+	       
 	       
 	       SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	       String customServer = defPrefs.getString("customCircleServer", "");
@@ -93,6 +98,11 @@ public class CreateCircle extends Activity implements Runnable {
 			keyTxt.setText(genKeyStr);
 	       
 			
+	       if (extraNewCircleName != null) {
+	    	   EditText name = (EditText) findViewById(R.id.newCircleName);
+	    	   name.setText(extraNewCircleName);
+	    	   genCircle.onClick(genCircleButton);
+	       }
 			
 	      		       
 	}

@@ -477,7 +477,32 @@ public class CircleList extends ListActivity {
      
      private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
     	 public void onClick(View v) {
-    		 startActivity(new Intent(getApplicationContext(),CreateCircle.class));
+    		 
+    	 	AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
+    	 	LayoutInflater factory = LayoutInflater.from(CircleList.this);
+    	 	final View textEntryView = factory.inflate(R.layout.alertedittext, null);
+    	 	final EditText alertEditText = (EditText) textEntryView.findViewById(R.id.alertEditText);
+
+	    	builder.setMessage("New Circle Name")
+	    	       .setCancelable(false)
+	    	       .setView(textEntryView)
+	    	       .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   Intent intent = new Intent(getApplicationContext(),CreateCircle.class);
+	    	        	   intent.putExtra("newCircleName", alertEditText.getText().toString());
+	    	        	   startActivityForResult(intent,0);
+	    	           }
+	    	       })
+	    	       .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	                dialog.cancel();
+	    	           }
+	    	       });
+	    	AlertDialog alert = builder.create();
+	    	alert.show();
+	    	
+    		 
+    		 
     	     return;
     	 }
      };
