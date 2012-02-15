@@ -42,7 +42,6 @@ import android.text.Editable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -83,6 +82,7 @@ public class CircleList extends ListActivity {
 	
 	private CircleStore store;
 	private CircleListAdapter listAdapter;
+	private MuteswanHttp muteswanHttp;
 	
 	
 	
@@ -92,6 +92,7 @@ public class CircleList extends ListActivity {
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
+		muteswanHttp = new MuteswanHttp();
     	store = new CircleStore(this,true,false);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
@@ -142,7 +143,7 @@ public class CircleList extends ListActivity {
 		Boolean shareManually = defPrefs.getBoolean("allowManualJoining", false);
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
-        //RelativeLayout circleListButtons = (RelativeLayout) findViewById(R.id.circlelistButtons);
+        LinearLayout circlelist = (LinearLayout) findViewById(R.id.circlelistButtons);
         txt.setText(actionPrompts[action]);
         
         final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
@@ -155,14 +156,18 @@ public class CircleList extends ListActivity {
 	   }
         
         
-        Button addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
-        Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
-        addCircle.setOnClickListener(addCircleListener);
-        createCircle.setOnClickListener(createCircleListener);
-        if (shareManually) {
-          TextView addCircleManually = (TextView) findViewById(R.id.android_circlelistAddCircleManually);
-          addCircleManually.setOnClickListener(addCircleManuallyListener);
-          addCircleManually.setVisibility(View.VISIBLE);
+        if (action == null || action == ANY || action == SCAN) {
+          Button addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
+          Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
+          addCircle.setOnClickListener(addCircleListener);
+          createCircle.setOnClickListener(createCircleListener);
+          if (shareManually) {
+            Button addCircleManually = (Button) findViewById(R.id.android_circlelistAddCircleManually);
+            addCircleManually.setOnClickListener(addCircleManuallyListener);
+            addCircleManually.setVisibility(View.VISIBLE);
+          }
+        } else {
+          circlelist.setVisibility(View.GONE);
         }
         
         
