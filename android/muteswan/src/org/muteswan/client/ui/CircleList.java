@@ -44,6 +44,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -180,14 +181,16 @@ public class CircleList extends ListActivity {
         return true;
     }
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item) {
 
-                if (item.toString().equals("Share Muteswan")) {
-			addCircleManuallyDialog();
-		}
+                if (item.toString().equals("Manual Join")) {
+                	addCircleManuallyDialog();
+                }
+          return true;
+                
+   }	
 
-	}
 	
 	private ComparatorCircles comparatorCircles = new ComparatorCircles();
 	class ComparatorCircles implements Comparator<Circle> {
