@@ -8,34 +8,50 @@
     
     <include layout="@layout/titlebar" />
     
-    <LinearLayout
+    <RelativeLayout
      android:id="@+id/circlelistButtons"
      android:orientation="horizontal"
-     android:layout_width="fill_parent"
-     android:layout_height="wrap_content"
-     android:gravity="center"
-     android:background="#ffffffff">
+     android:layout_width="wrap_content"
+     android:background="@drawable/blackborder"
+     android:layout_height="wrap_content">
      
 	    <Button
 	     android:id="@+id/android:circlelistCreateCircle"
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
+	     android:paddingLeft="15sp"
+	     android:paddingTop="15sp"
+	     android:paddingRight="32sp"
+	     android:paddingBottom="15sp"
+     	 android:background="@drawable/blackborder"
+	     android:textStyle="bold"
 	     android:text="New Circle" />
 	    
 	    <Button
 	     android:id="@+id/android:circlelistAddCircle"
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
+	     android:layout_alignParentRight="true"
+	     android:layout_alignParentLeft="false"
+	     android:paddingLeft="32sp"
+	     android:paddingTop="15sp"
+	     android:paddingRight="15sp"
+	     android:paddingBottom="15sp"
+     	 android:background="@drawable/blackborder"
+	     android:textStyle="bold"
 	     android:text="Join Circle" />
 	     
-	     <Button
+	     <TextView
 	     android:id="@+id/android:circlelistAddCircleManually"
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
 	     android:visibility="gone"
+	     android:layout_centerInParent="true"
+	     android:padding="15sp"
+	     android:textStyle="bold"
 	     android:text="Manual Join" />
     
-    </LinearLayout>
+    </RelativeLayout>
     
     <TextView  
      android:id="@+id/android:circlelistprompt"
