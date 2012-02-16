@@ -139,7 +139,7 @@ public class CircleList extends ListActivity {
         setContentView(R.layout.circlelist);
         
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		Boolean shareManually = defPrefs.getBoolean("allowManualJoining", false);
+	Boolean shareManually = defPrefs.getBoolean("allowManualJoining", false);
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         //RelativeLayout circleListButtons = (RelativeLayout) findViewById(R.id.circlelistButtons);
@@ -148,22 +148,17 @@ public class CircleList extends ListActivity {
         final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
         titleBarImage.setOnClickListener(titleBarClicked);
         
-	   if (action == SCAN) {
+	if (action == SCAN) {
 		Intent intent = new Intent("com.google.zxing.client.android.SCAN");
         intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
         startActivityForResult(intent, 0);
-	   }
+	}
         
         
         Button addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
         Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
         addCircle.setOnClickListener(addCircleListener);
         createCircle.setOnClickListener(createCircleListener);
-        if (shareManually) {
-          TextView addCircleManually = (TextView) findViewById(R.id.android_circlelistAddCircleManually);
-          addCircleManually.setOnClickListener(addCircleManuallyListener);
-          addCircleManually.setVisibility(View.VISIBLE);
-        }
         
         
         circleList = getArray();
@@ -171,6 +166,28 @@ public class CircleList extends ListActivity {
     
         alertDialogs = new AlertDialogs(this);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.clear();
+
+
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.circlelist, menu);
+
+
+        return true;
+    }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+
+                if (item.toString().equals("Share Muteswan")) {
+			addCircleManuallyDialog();
+		}
+
+	}
 	
 	private ComparatorCircles comparatorCircles = new ComparatorCircles();
 	class ComparatorCircles implements Comparator<Circle> {
@@ -433,9 +450,9 @@ public class CircleList extends ListActivity {
 	        }
          }
      };
-     
-     private Button.OnClickListener addCircleManuallyListener  = new Button.OnClickListener() {
-         public void onClick( View v ) {
+
+
+     private void addCircleManuallyDialog() {
         	 AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
         	 LayoutInflater layoutInflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         	 View view = layoutInflater.inflate(R.layout.addcirclemanually, null );
@@ -471,9 +488,8 @@ public class CircleList extends ListActivity {
                  }}
         	 );
         	 builder.show();
-         }
-      };
-	
+     }
+     
      
      private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
     	 public void onClick(View v) {
