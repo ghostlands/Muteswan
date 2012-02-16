@@ -12,7 +12,7 @@
      android:id="@+id/circlelistButtons"
      android:orientation="horizontal"
      android:layout_width="wrap_content"
-     android:background="@drawable/blackborder"
+     android:background="@drawable/greyborder"
      android:layout_height="wrap_content">
      
 	    <Button
@@ -21,9 +21,9 @@
 	     android:layout_height="wrap_content"
 	     android:paddingLeft="15sp"
 	     android:paddingTop="15sp"
-	     android:paddingRight="32sp"
+	     android:paddingRight="77sp"
 	     android:paddingBottom="15sp"
-     	 android:background="@drawable/blackborder"
+     	 android:background="@drawable/greyborder"
 	     android:textStyle="bold"
 	     android:text="New Circle" />
 	    
@@ -33,23 +33,14 @@
 	     android:layout_height="wrap_content"
 	     android:layout_alignParentRight="true"
 	     android:layout_alignParentLeft="false"
-	     android:paddingLeft="32sp"
+	     android:paddingLeft="77sp"
 	     android:paddingTop="15sp"
 	     android:paddingRight="15sp"
 	     android:paddingBottom="15sp"
-     	 android:background="@drawable/blackborder"
+     	 android:background="@drawable/greyborder"
 	     android:textStyle="bold"
 	     android:text="Join Circle" />
 	     
-	     <TextView
-	     android:id="@+id/android:circlelistAddCircleManually"
-	     android:layout_width="wrap_content"
-	     android:layout_height="wrap_content"
-	     android:visibility="gone"
-	     android:layout_centerInParent="true"
-	     android:padding="15sp"
-	     android:textStyle="bold"
-	     android:text="Manual Join" />
     
     </RelativeLayout>
     
