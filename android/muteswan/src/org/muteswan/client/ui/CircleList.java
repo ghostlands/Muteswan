@@ -120,6 +120,9 @@ public class CircleList extends ListActivity {
     		}
     };
 	private AlertDialogs alertDialogs;
+	private boolean shareManually;
+	private Button addCircle;
+	private Button createCircle;
 	
 	
 	@Override
@@ -140,7 +143,7 @@ public class CircleList extends ListActivity {
         setContentView(R.layout.circlelist);
         
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-	Boolean shareManually = defPrefs.getBoolean("allowManualJoining", false);
+        shareManually = defPrefs.getBoolean("allowManualJoining", false);
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         //RelativeLayout circleListButtons = (RelativeLayout) findViewById(R.id.circlelistButtons);
@@ -156,8 +159,8 @@ public class CircleList extends ListActivity {
 	}
         
         
-        Button addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
-        Button createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
+        addCircle = (Button) findViewById(R.id.android_circlelistAddCircle);
+        createCircle = (Button) findViewById(R.id.android_circlelistCreateCircle);
         addCircle.setOnClickListener(addCircleListener);
         createCircle.setOnClickListener(createCircleListener);
         
@@ -174,8 +177,10 @@ public class CircleList extends ListActivity {
 
 
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.circlelist, menu);
+        if (shareManually) {
+          MenuInflater inflater = getMenuInflater();
+          inflater.inflate(R.menu.circlelist, menu);
+        }
 
 
         return true;
@@ -444,6 +449,7 @@ public class CircleList extends ListActivity {
 
 	private Button.OnClickListener addCircleListener  = new Button.OnClickListener() {
         public void onClick( View v ) {
+        	
         	Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
 	        try {
@@ -451,6 +457,7 @@ public class CircleList extends ListActivity {
 	        } catch (ActivityNotFoundException e) {
 	        	alertDialogs.offerToInstallBarcodeScanner();
 	        }
+	        
          }
      };
 
@@ -497,6 +504,7 @@ public class CircleList extends ListActivity {
      private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
     	 public void onClick(View v) {
     		 
+    		
     	 	AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
     	 	LayoutInflater factory = LayoutInflater.from(CircleList.this);
     	 	final View textEntryView = factory.inflate(R.layout.alertedittext, null);
