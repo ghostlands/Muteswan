@@ -43,7 +43,10 @@
             android:layout_height="35sp"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/circleListDelete"
+            android:paddingRight="10sp"
+            android:paddingLeft="10sp"
             android:text="Share"
+            android:background="@drawable/circlelistbuttons"
             android:textSize="13sp" />
     </RelativeLayout>
 

@@ -36,13 +36,15 @@
     <Button
         android:id="@+id/latestmessagesPost"
         android:layout_width="80dp"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_alignParentTop="true"
         android:layout_marginTop="4sp"
         android:layout_toLeftOf="@+id/checkingMessagesIcon"
         android:paddingLeft="20sp"
         android:paddingRight="20sp"
-        android:text="Post" />
+        android:text="Post" 
+        android:background="@drawable/circlelistbuttons"
+        />
      <TextView
         android:id="@+id/android:checktimedelta"
         android:layout_width="wrap_content"

@@ -29,8 +29,10 @@
 	    android:text="Send"
 	    android:layout_alignParentRight="true"
 	    android:textSize="12sp"
-	    android:layout_width="110sp" 
-	    android:layout_height="35sp" />
+	    android:layout_width="110sp"
+	    android:layout_height="35sp"
+	    android:background="@drawable/circlelistbuttons"
+	     />
 	    		
 	    <EditText
 	     android:id="@+id/newMsgText"
