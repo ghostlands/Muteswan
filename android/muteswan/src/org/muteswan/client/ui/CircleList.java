@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import org.muteswan.client.AlertDialogs;
+import org.muteswan.client.GenerateCircle;
 import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
@@ -517,9 +518,16 @@ public class CircleList extends ListActivity {
 	    	       .setView(textEntryView)
 	    	       .setPositiveButton("Create", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	        	   Intent intent = new Intent(getApplicationContext(),CreateCircle.class);
-	    	        	   intent.putExtra("newCircleName", alertEditText.getText().toString());
-	    	        	   startActivityForResult(intent,0);
+	    	        	   GenerateCircle genCircle = new GenerateCircle(getApplicationContext(), alertEditText.getText().toString());
+	    	        	   genCircle.saveCircle();
+	    	        	   genCircle.broadcastCreate();
+	    	        	   onResume();
+	    	        	   
+	    	        	   //Intent intent = new Intent(getApplicationContext(),CircleList.class);
+	    	        	   //startActivity(intent);
+	    	        	   
+	    	        	   newCircle = alertEditText.getText().toString();
+	    	        	   onResume();
 	    	           }
 	    	       })
 	    	       .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
