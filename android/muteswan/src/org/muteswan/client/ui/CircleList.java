@@ -260,7 +260,9 @@ public class CircleList extends ListActivity {
 		    	public void onClick(View v) {
 		    		Integer position = (Integer) v.getTag(R.id.android_circleListName);
 		    		RelativeLayout innerLayout = (RelativeLayout) v.findViewById(R.id.circleListInnerEntryLayout);
-		    		innerLayout.setBackgroundColor(R.drawable.darkerborder);
+		    		// on orientation change this may be null in some cases
+		    		if (innerLayout != null)
+		    		  innerLayout.setBackgroundColor(R.drawable.darkerborder);
 		    		dispatchActivity(position);
 		    	}
 		    };
