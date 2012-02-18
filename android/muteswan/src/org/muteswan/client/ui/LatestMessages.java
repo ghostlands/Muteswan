@@ -458,6 +458,12 @@ public class LatestMessages extends ListActivity implements Runnable {
     		alertDialog.show();
     	}
     };
+	public TextView txtCircle;
+	public TextView txtDate;
+	public TextView txtMessage;
+	public TextView txtRepost;
+	public MuteswanMessage msg;
+	public RelativeLayout layout;
 
     private int getMsgDownloadAmount() {
     	if (circleExtra == null && store.size() > 2) {
@@ -591,7 +597,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		public View getView(final int position, final View convertView, final ViewGroup parent) {
 			
 			
-			  RelativeLayout layout = (RelativeLayout) convertView;
+			  layout = (RelativeLayout) convertView;
 			  if (layout == null)
       		     layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
       				  parent, false);
@@ -602,19 +608,19 @@ public class LatestMessages extends ListActivity implements Runnable {
 			  if (messageList == null || messageList.size() == 0 || (messageList.size() == 1 && position > 1))
 				  return(layout);
 			  
-      		  final MuteswanMessage msg = messageList.get(position);
+      		  msg = messageList.get(position);
       		  
       		  if (msg == null) {
       			  Log.e("LatestMessages", "Msg is null in getView!");
       			  return(layout);
       		  }
       		  
-      		  TextView txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
-      		  TextView txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
-      		  TextView txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
+      		  txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
+      		  txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
+      		  txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
       		  
       		  
-      		  TextView txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
+      		  txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
 
 
       		  txtRepost.setOnClickListener(repostClicked);
