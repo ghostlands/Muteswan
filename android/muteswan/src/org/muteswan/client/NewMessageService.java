@@ -161,24 +161,6 @@ public class NewMessageService extends Service {
 		
 		defPrefs.getBoolean("backgroundMessageCheck", false);				
 	
-		// tor service is now permissioned
-		//TorStatus torStatus = new TorStatus(muteswan.torService);
-		//if (torStatus.checkStatus() == false)
-		//	return;
-		
-		
-		 // get a list of running processes and iterate through them
-	  /*   ActivityManager am = (ActivityManager) this
-			                .getSystemService(ACTIVITY_SERVICE);
-			 
-		// get the info from the currently running task
-		List<RunningTaskInfo> taskInfo = am.getRunningTasks(1);	 
-		Log.d("current task :", "CURRENT Activity ::"
-			                + taskInfo.get(0).topActivity.getClassName());
-		if (taskInfo.get(0).topActivity.getClassName().contains("org.muteswan"))
-			return; */
-			
-			
 			
 		
 		
@@ -188,7 +170,6 @@ public class NewMessageService extends Service {
 		   Log.v("MuteswanService", "Start flag is false, exiting.");
 		  
 		  
-		  //runLongpoll();
 		  started = true;
 		  runPoll();
 		  

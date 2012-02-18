@@ -31,32 +31,15 @@ public class NewMessageReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context ctx, Intent intent) {
 		Intent svc = new Intent(ctx,NewMessageService.class);
-		
         IMessageService msgService = (IMessageService) peekService(ctx,svc);
-     
-
    	    SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-
-   	    
 		boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);				
 		if (backgroundMessageCheck == false)
 			return;
 		
 		
-	     //ActivityManager am = (ActivityManager)ctx
-	      //          .getSystemService(android.content.Context.ACTIVITY_SERVICE);
-	 
-	     // get the info from the currently running task
-	     /*List<RunningTaskInfo> taskInfo = am.getRunningTasks(1);	 
-	     Log.d("current task :", "CURRENT Activity ::"
-	                + taskInfo.get(0).topActivity.getClassName());
-	     if (taskInfo.get(0).topActivity.getClassName().contains("org.muteswan"))
-	    	 return; */
-   	
-   	
    	    Log.v("MuteswanReceiver", "Received alarm, trying to connect to service.");
    	    
-   	    //ctx.sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 
    	    int count = 0;
    	    while (msgService == null) {

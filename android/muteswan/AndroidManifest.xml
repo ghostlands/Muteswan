@@ -23,31 +23,26 @@
                         android:exported="true">
            </receiver>
            
+           <receiver android:name=".OnBootReceiver">
+                        <intent-filter>
+                                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                                <category android:name="android.intent.category.HOME" />
+                        </intent-filter>
+           </receiver>
+           
+           
+           
         
         
-        <activity android:name=".ui.MsgList"
-        		  android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
-        		  
-                  android:label="@string/app_name" />
-        <activity android:name=".ui.TorNotAvailable"
-                  android:label="@string/app_name" />
         <activity android:name=".ui.WriteMsg"
         		  android:windowSoftInputMode="stateUnchanged"
                   android:label="@string/app_name" />
-        <activity android:name=".ui.CreateCircle"
-                  android:label="@string/app_name" />
         <activity android:name=".ui.CircleList"
-        		  
                   android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
-                  
                   android:label="@string/app_name" />
         <activity android:name=".ui.LatestMessages"
                   android:screenOrientation="nosensor" android:configChanges="keyboardHidden|orientation"
                   
-                  android:label="@string/app_name" />
-        <activity android:name=".ui.GenerateIdentity"
-                  android:label="@string/app_name" />
-        <activity android:name=".ui.IdentityList"
                   android:label="@string/app_name" />
         <activity android:name=".ui.Preferences"
                   android:label="@string/app_name" />
