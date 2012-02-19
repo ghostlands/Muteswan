@@ -98,37 +98,22 @@ public class NewMessageService extends Service {
 		
 		defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		
-		
-		//int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
-		
-		//AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		//alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(this));
-		
-		
-		notificationIntent = new Intent(this, Main.class);
-	    contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		notifyIds = new HashMap<String,Integer>();
-		notifyId = 8392;
+
 
 		
-		defPrefs.getBoolean("backgroundMessageCheck", false);				
 	
 		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
 		registerReceiver(isUserCheckingMessagesReceiver, new IntentFilter(LatestMessages.CHECKING_MESSAGES));
 		registerReceiver(deletedCircleReceiver, new IntentFilter(CircleList.DELETED_CIRCLE_BROADCAST));
 		registerReceiver(joinedCircleReceiver, new IntentFilter(CircleList.JOINED_CIRCLE_BROADCAST));
 		registerReceiver(createdCircleReceiver, new IntentFilter(CreateCircle.CREATED_CIRCLE_BROADCAST));
-		
 		init();
+		
 	}
 	
 	@Override
 	public void onDestroy() {
 		stopservice();
-		//mNM.cancel(PERSISTANT_NOTIFICATION);
-		//AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		//alarm.cancel(NewMessageReceiver.getPendingIntent(this));
 		unregisterReceiver(isUserCheckingMessagesReceiver);
 		unregisterReceiver(deletedCircleReceiver);
 		unregisterReceiver(joinedCircleReceiver);
@@ -146,6 +131,12 @@ public class NewMessageService extends Service {
     
 	private void init() {
 		 pollList.clear();
+		 
+		notificationIntent = new Intent(this, Main.class);
+		contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		notifyIds = new HashMap<String,Integer>();
+		notifyId = 8392;
 		   
 		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
 		 muteswanHttp = new MuteswanHttp();
@@ -159,21 +150,18 @@ public class NewMessageService extends Service {
 	
 	private void start() {
 		
-		defPrefs.getBoolean("backgroundMessageCheck", false);				
 	
 			
 		
 		
 		// Startup
 		if (started  == false) {
-		
 		   Log.v("MuteswanService", "Start flag is false, exiting.");
 		  
 		  
 		  started = true;
 		  runPoll();
 		  
-		// Run again
 		} else {
 			runPoll();
 		}
@@ -221,7 +209,8 @@ public class NewMessageService extends Service {
 		
 		 isWorking = true;
 		 notifyIds = new HashMap<String,Integer>();
-		
+	
+			 Log.v("NewMessageService", "Circlestore: " + circleStore.hashCode());
 		 Log.v("MuteswanService","pollList size " + pollList.size());
 		 for (final Circle circle : pollList.keySet()) {
 			 
@@ -237,6 +226,7 @@ public class NewMessageService extends Service {
 			        }
 			    }
 
+			 Log.v("NewMessageService", "Circle: " + circle.hashCode());
 			
 		     Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
 			
