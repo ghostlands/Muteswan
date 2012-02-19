@@ -1,36 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:gravity="right"
+    android:orientation="horizontal">
 
-    <include layout="@layout/titlebar" />
-    
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-     android:orientation="horizontal"
-     android:layout_width="fill_parent"
-     android:layout_height="fill_parent"
-     android:paddingLeft="3dp"
-	 android:paddingRight="3dp">
+    <ImageView
+        android:id="@+id/latestmessagesTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="#24282b"
+        android:gravity="left"
+        android:clickable="true"
+        android:src="@drawable/titlebar" />
     
 	   <TextView
 	    android:id="@+id/android_writemsgPrompt"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_alignParentLeft="true"
+	    android:layout_below="@id/submitMsg"
 	    android:text="New Post"
 	    android:maxWidth="100sp"
-	    android:textSize="14sp" 
+	    android:paddingTop="6sp"
+	    android:paddingBottom="4sp"
+	    android:paddingLeft="3sp"
 	    android:textStyle="bold" />
 	    
 	   <Button 
 	    android:id="@+id/submitMsg"
 	    android:text="Send"
 	    android:layout_alignParentRight="true"
-	    android:textSize="12sp"
 	    android:layout_width="110sp"
 	    android:layout_height="35sp"
+	    android:layout_marginTop="4sp"
+	    android:layout_marginRight="8sp"
+	    android:textColor="#ffffff"
 	    android:background="@drawable/circlelistbuttons"
 	     />
 	    		
@@ -40,7 +48,11 @@
 	     android:layout_height="wrap_content"
 	     android:inputType="textCapSentences|textMultiLine"
 	     android:capitalize="sentences"
-	     android:layout_below="@id/submitMsg"
+	     android:layout_below="@+id/android_writemsgPrompt"
+	     android:layout_marginTop="4dp"
+	     android:layout_marginBottom="6dp"
+	     android:layout_marginLeft="3sp"
+	     android:layout_marginRight="3sp"
 	     android:maxHeight="250sp"
 	     android:minLines="3" 
 	     android:gravity="top" />
@@ -62,6 +74,6 @@
 	    <!-- <Button android:id="@+id/selectSigButton" android:text="Sign Message"
 	          android:layout_width="fill_parent"
 	    	  android:layout_height="wrap_content"/> -->
+ 
+ </RelativeLayout>
         
-	</RelativeLayout>
-</LinearLayout>
