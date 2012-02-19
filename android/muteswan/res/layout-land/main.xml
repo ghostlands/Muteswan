@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#24282b" android:gravity="top">
+ 
+    
+    
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="top"
+    android:padding="15sp"
+    
+    android:id="@+id/mainLayoutTable" >
+    
+    <ImageView
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:id="@+id/logoView"
+    android:paddingTop="40sp"
+    android:paddingBottom="40sp"
+    android:src="@drawable/wordmark"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentTop="true"
+    android:gravity="left"
+    android:layout_centerHorizontal="true"
+    />
+
+    
+  
+   
+       <ImageView android:id="@+id/mLatestMessages"
+    		android:text="All Posts"
+    		android:textSize="14sp"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content" 
+ 			android:background="@drawable/imageborder"
+ 			android:layout_toRightOf="@id/logoView"
+ 			android:paddingTop="60dp"
+ 			android:src="@drawable/posts"/>
+    		
+    		
+    	
+    	  <ImageView android:id="@+id/mManageCircles"
+ 			android:text="Circles"
+    		android:textSize="14sp"
+ 			android:layout_width="wrap_content"
+ 			android:layout_height="wrap_content"
+ 			android:background="@drawable/imageborder"
+ 			android:src="@drawable/circles"
+ 			android:layout_below="@id/mLatestMessages"
+    		android:gravity="bottom"
+    		
+           android:layout_alignRight="@+id/mLatestMessages"/>
+    		
+   
+    
+   </RelativeLayout>
+
+    <TextView
+     android:id="@+id/versionName"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text="VERSION"
+     android:textSize="12sp"
+   
+     android:layout_alignParentRight="true"
+     android:layout_alignParentBottom="true"
+     android:textColor="#cccccccc"
+     
+     />
+    
+ 
+</RelativeLayout> 
