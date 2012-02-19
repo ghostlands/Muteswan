@@ -27,6 +27,7 @@
 	     android:paddingBottom="15sp"
      	 android:background="@drawable/circlelistbuttons"
 	     android:textStyle="bold"
+	     android:textColor="#ffffff"
 	     android:text="New Circle" />
 	  </LinearLayout>
 	    
@@ -44,6 +45,7 @@
 	     android:paddingBottom="15sp"
      	 android:background="@drawable/circlelistbuttons"
 	     android:textStyle="bold"
+	     android:textColor="#ffffff"
 	     android:text="Join Circle" />
        </LinearLayout>
 	     

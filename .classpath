@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="android/muteswan/src"/>
+	<classpathentry kind="src" path="android/muteswantest/gen"/>
+	<classpathentry kind="src" path="android/muteswantest/src"/>
+	<classpathentry kind="lib" path="android/muteswan/lib/BarcodeReader.jar"/>
+	<classpathentry kind="lib" path="android/muteswan/lib/jyaml-1.3.jar"/>
+	<classpathentry kind="lib" path="android/muteswan/lib/TorProxyLib.jar"/>
+	<classpathentry kind="lib" path="android/muteswan/TorProxyLib.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

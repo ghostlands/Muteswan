@@ -5,65 +5,57 @@
     android:layout_height="fill_parent"
     android:background="#24282b" android:gravity="top">
     
-    
- 
-    
-    
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:gravity="top"
-    android:padding="15sp"
-    
-    android:id="@+id/mainLayoutTable" >
-    
-    <ImageView
-    android:layout_height="wrap_content"
-    android:layout_width="wrap_content"
-    android:id="@+id/logoView"
-    android:paddingTop="40sp"
-    android:paddingBottom="40sp"
-    android:src="@drawable/wordmark"
-    android:gravity="bottom|center"
-    android:layout_centerHorizontal="true"
-    android:layout_gravity="bottom"/>
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/mainLayoutTable"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="top"
+        android:padding="15sp" >
 
-    
-  
-   
-       <ImageView android:id="@+id/mLatestMessages"
-    		android:text="All Posts"
-    		android:textSize="14sp"
-    		android:layout_width="wrap_content"
-    		android:layout_height="wrap_content" 
-    		android:layout_centerInParent="true"
- 			android:gravity="center"
- 			android:background="@drawable/imageborder"
- 			android:layout_below="@id/logoView"
- 			android:src="@drawable/posts"
-    		/>
-    		
-    		
-    		 <TextView android:id="@+id/imageSeparator" android:text="" 
-    		 android:layout_below="@id/mLatestMessages"
-    		 android:layout_width="wrap_content"
-    		 android:layout_height="10sp"/>
-    	
-    	  <ImageView android:id="@+id/mManageCircles"
- 			android:text="Circles"
-    		android:textSize="14sp"
- 			android:layout_width="wrap_content"
- 			android:layout_height="wrap_content"
- 		    android:layout_centerInParent="true"
- 			android:gravity="center"
- 			android:layout_below="@id/imageSeparator"
- 			android:background="@drawable/imageborder"
- 			android:src="@drawable/circles"
-           />
-    		
-   
-    
-   </RelativeLayout>
+            <ImageView
+        android:id="@+id/logoView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/mLatestMessages"
+        android:layout_alignParentLeft="true"
+        android:gravity="top|center"
+        android:paddingBottom="0sp"
+        android:paddingTop="0sp"
+        android:src="@drawable/wordmark_hires" />
+        
+        <ImageView
+            android:id="@+id/mLatestMessages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@drawable/imageborder"
+            android:gravity="center"
+            android:src="@drawable/posts_hires"
+            android:paddingTop="60sp"
+            android:text="All Posts"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/imageSeparator"
+            android:layout_width="wrap_content"
+            android:layout_height="10sp"
+            android:layout_below="@id/mLatestMessages"
+            android:text="" />
+
+        <ImageView
+            android:id="@+id/mManageCircles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/mLatestMessages"
+            android:layout_below="@+id/mLatestMessages"
+            android:background="@drawable/imageborder"
+            android:gravity="center"
+            android:src="@drawable/circles_hires"
+            android:text="Circles"
+            android:textSize="14sp" />
+
+    </RelativeLayout>
 
     <TextView
      android:id="@+id/versionName"
@@ -77,6 +69,5 @@
      android:textColor="#cccccccc"
      
      />
-    
  
 </RelativeLayout> 

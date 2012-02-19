@@ -47,7 +47,8 @@
             android:paddingLeft="10sp"
             android:text="Share"
             android:background="@drawable/circlelistbuttons"
-            android:textSize="13sp" />
+            android:textSize="13sp" 
+            android:textColor="#ffffff" />
     </RelativeLayout>
 
 </RelativeLayout>
