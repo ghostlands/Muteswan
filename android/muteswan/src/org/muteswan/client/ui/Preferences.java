@@ -17,8 +17,18 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
+import org.muteswan.client.NewMessageReceiver;
+
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
+import android.app.AlarmManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 public class Preferences extends PreferenceActivity {
 
@@ -26,7 +36,45 @@ public class Preferences extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(org.muteswan.client.R.xml.preferences);
 			
+		 final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());	
+		
+		 Preference backgroundMsgCheckP = (Preference) this.findPreference("backgroundMessageCheck");
+         backgroundMsgCheckP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+                                 public boolean onPreferenceChange(Preference preference, Object pref) {
+                                	     boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+                                	     
+                                	     if (!backgroundMessageCheck) {
+                                	    	 scheduleServiceAlarm(defPrefs);
+                                	    	 Toast.makeText(getBaseContext(),
+                                                         "Background check is enabled.",
+                                                         Toast.LENGTH_LONG).show();
+                                	     } else {
+                                	    	 Toast.makeText(getBaseContext(),
+                                                     "Background disabled",
+                                                     Toast.LENGTH_LONG).show();
+                                	     }
+                              	    	 return true;
+                                 }
+
+
+                         });
+		
 		
 	}
 	
+	
+
+	 private void scheduleServiceAlarm(SharedPreferences defPrefs) { 
+		
+		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
+		  if (!backgroundMessageCheck) {
+		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
+		
+		   int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
+		
+		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(getApplicationContext()));
+		  }
+	
+	 }
 }

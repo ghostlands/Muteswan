@@ -87,7 +87,6 @@ public class Main extends Activity implements Runnable {
 	private ProgressDialog checkTorDialog;
 	
 	
-	@Override
 	public void run() {
 		
 		try {
@@ -127,20 +126,6 @@ public class Main extends Activity implements Runnable {
 			
 	 };
 	 
-	 private void scheduleServiceAlarm() { 
-		  SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
- 		
- 		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
- 		  if (backgroundMessageCheck == true) {
- 		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
- 		
- 		   int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
- 		
- 		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
- 		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(getApplicationContext()));
- 		  }
-			
-	}
 	 
 	 @SuppressWarnings("unused")
 	private Handler dialogTorAvailable = new Handler() {
@@ -181,7 +166,6 @@ public class Main extends Activity implements Runnable {
 	public void onResume() {
 		 super.onResume();
 
-		   scheduleServiceAlarm();		   
 			
 		 if (torNotAvailableReceiver == null)
 			 torNotAvailableReceiver = new TorNotAvailableReceiver();
@@ -470,12 +454,10 @@ public class Main extends Activity implements Runnable {
 	
 	 private final ITorVerifyResult.Stub torResultCallback = new ITorVerifyResult.Stub() {
 
-			@Override
 			public void torFailure() throws RemoteException {
 				alertDialogs.dialogTorNotAvailable.sendEmptyMessage(0);
 			}
 
-			@Override
 			public void torSuccess() throws RemoteException {
 			}
 			
