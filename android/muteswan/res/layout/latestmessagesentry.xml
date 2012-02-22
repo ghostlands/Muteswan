@@ -54,6 +54,7 @@
     android:paddingBottom="8sp"
     android:textColor="#232323"
     android:textSize="14sp"
+	android:autoLink="web|email"
     />
     
     <TextView  
