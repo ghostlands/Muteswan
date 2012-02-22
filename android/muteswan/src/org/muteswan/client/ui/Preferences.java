@@ -28,6 +28,7 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 public class Preferences extends PreferenceActivity {
@@ -36,21 +37,23 @@ public class Preferences extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(org.muteswan.client.R.xml.preferences);
 			
-		 final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());	
 		
 		 Preference backgroundMsgCheckP = (Preference) this.findPreference("backgroundMessageCheck");
          backgroundMsgCheckP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                                  public boolean onPreferenceChange(Preference preference, Object pref) {
+                                	 	 final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());	
                                 	     boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+                                	     Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
                                 	     
-                                	     if (!backgroundMessageCheck) {
-                                	    	 scheduleServiceAlarm(defPrefs);
+                                	     // old values, so inversion necessary
+                                	     if (backgroundMessageCheck == false) {
+                                	    	 scheduleServiceAlarm(defPrefs,checkMsgInterval);
                                 	    	 Toast.makeText(getBaseContext(),
-                                                         "Background check is enabled.",
+                                                         "Background message checking is enabled.",
                                                          Toast.LENGTH_LONG).show();
                                 	     } else {
                                 	    	 Toast.makeText(getBaseContext(),
-                                                     "Background disabled",
+                                                     "Background message checking is disabled",
                                                      Toast.LENGTH_LONG).show();
                                 	     }
                               	    	 return true;
@@ -58,22 +61,33 @@ public class Preferences extends PreferenceActivity {
 
 
                          });
-		
+         
+         Preference checkMsgIntervalP = (Preference) this.findPreference("checkMsgInterval");
+         checkMsgIntervalP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+                                 public boolean onPreferenceChange(Preference preference, Object pref) {
+                                	     Log.v("Preferences","pref is " + pref.toString());
+                                	 	 final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());	
+                                	     scheduleServiceAlarm(defPrefs,Integer.parseInt((String) pref));
+                              	    	 return true;
+                                 }
+
+
+                         });
 		
 	}
 	
 	
 
-	 private void scheduleServiceAlarm(SharedPreferences defPrefs) { 
+	 private void scheduleServiceAlarm(SharedPreferences defPrefs, Integer minutes) { 
 		
 		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
-		  if (!backgroundMessageCheck) {
-		   Integer checkMsgInterval = Integer.parseInt(defPrefs.getString("checkMsgInterval", "5"));
+		  if (backgroundMessageCheck == true) {
+		   Log.v("Preferences","Alarm set for " + minutes + " minutes.");
 		
-		   int checkMsgIntervalMs = checkMsgInterval * 60 * 1000;
+		   int checkMsgIntervalMs = minutes * 60 * 1000;
 		
 		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+checkMsgInterval*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(getApplicationContext()));
+		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+minutes*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(getApplicationContext()));
 		  }
 	
 	 }
