@@ -202,6 +202,8 @@ public class Circle {
 	    curLastMsgId = 0;
 	}
 	
+	
+	
 	public void setCurLastMsgId(int lastMsg) {
 		curLastMsgId = lastMsg;
 	}

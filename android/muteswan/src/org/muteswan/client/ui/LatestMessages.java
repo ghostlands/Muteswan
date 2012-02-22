@@ -932,33 +932,22 @@ final Handler stopSpinningHandler = new Handler() {
         	MuteswanMessage msg1 =  obj1;
         	MuteswanMessage msg2 =  obj2;
         	
-        	//Log.v("LatestMessages", "Comparing " + msg1.getId() + " with " + msg2.getId());
         	
-        	SimpleDateFormat df = new SimpleDateFormat(
-					"yyyy-MM-dd HH:mm:ss");
-        	Date mDate = null;
-        	Date oDate = null;
-			try {
-				mDate = df.parse(msg1.getDate());
-				oDate = df.parse(msg2.getDate());
-			} catch (ParseException e) {
-				e.printStackTrace();
-			} catch (NullPointerException e) {
-				Log.v("LatestMessages", "Invalid message date!");
-			}
+        	Date mDate = msg1.getDateObj();
+        	Date oDate = msg2.getDateObj();
 			
 			if (mDate == null || oDate == null) {
-				return 0;
+				return -1;
 			}
 			
 			
 			if (mDate.after(oDate)) {
 				return -1;
-			}
-			else {
+			} else if (mDate.before(oDate)) {
 				return 1;
-			
-			}        	
+			} else {
+				return 0;
+			}
 			
         }
     }

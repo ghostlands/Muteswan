@@ -23,6 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 
 import javax.crypto.BadPaddingException;
@@ -49,6 +52,7 @@ public class MuteswanMessage {
 	public String[] signatures = new String[50];
 	
 	private LinkedList<Identity> validSigs;
+	private Date dateObj;
 
 
 	public MuteswanMessage(Circle circle, Integer id, String date, String msg) {
@@ -139,6 +143,19 @@ public class MuteswanMessage {
 	
 	public String getDate() {
 		return date;
+	}
+	
+	public Date getDateObj() {
+		if (dateObj == null) {
+		  SimpleDateFormat df = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm:ss");
+		  try {
+			this.dateObj = df.parse(date);
+		  } catch (ParseException e) {
+			e.printStackTrace();
+		  }
+		}
+		return(dateObj);
 	}
 
 	public void addValidSig(Identity identity) {
