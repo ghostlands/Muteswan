@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.IMessageService;
@@ -58,6 +59,8 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -68,6 +71,7 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -136,7 +140,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	}
 
 	
-	final ArrayList<Thread> oldThreads = new ArrayList<Thread>();
+	final LinkedBlockingQueue<Thread> oldThreads = new LinkedBlockingQueue<Thread>();
 	private void cleanOldThreads(boolean join) {
 		for (Thread t : oldThreads) {
 			Log.v("LatestMessages", "Cleaning thread " + t.toString());
@@ -404,7 +408,6 @@ public class LatestMessages extends ListActivity implements Runnable {
     
     
     
-	public HashMap<View, Integer> replyButtons = new HashMap<View,Integer>();
 	public HashMap<View, Integer> repostButtons = new HashMap<View,Integer>();
     
     
@@ -464,6 +467,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public TextView txtRepost;
 	public MuteswanMessage msg;
 	public RelativeLayout layout;
+	private String longPressedCircle;
 
     private int getMsgDownloadAmount() {
     	if (circleExtra == null && store.size() > 2) {
@@ -551,19 +555,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 			
 		}
 
-		public View.OnClickListener replyClicked = new View.OnClickListener() {
-		    	public void onClick(View v) {
-		    		if (replyButtons.get(v) == null) {
-		    		  Log.v("LatestMessages", "map is null");
-		    		  return;
-		    		}
-		    		MuteswanMessage msg = messageList.get(replyButtons.get(v));
-		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		    		intent.putExtra("circle",msg.getCircle().getFullText());
-		    		intent.putExtra("initialText","@" + msg.getId() + "\n");
-		    		startActivity(intent);
-		    	}
-		 };
 		    
 		    public View.OnClickListener repostClicked = new View.OnClickListener() {
 		    	public void onClick(View v) {
@@ -602,8 +593,8 @@ public class LatestMessages extends ListActivity implements Runnable {
       		     layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.latestmessagesentry,
       				  parent, false);
 			  
-			  
-				  
+	
+	
 
 			  if (messageList == null || messageList.size() == 0 || (messageList.size() == 1 && position > 1))
 				  return(layout);
@@ -618,6 +609,9 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  txtCircle = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
       		  txtDate = (TextView) layout.findViewById(R.id.android_latestmessagesDate);
       		  txtMessage = (TextView) layout.findViewById(R.id.android_latestmessagesMessage);
+      		  
+      		  registerForContextMenu(txtMessage);
+      		  txtMessage.setTag(R.id.messageReply, msg.getCircle().getFullText());
       		  
       		  
       		  txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
@@ -665,8 +659,31 @@ public class LatestMessages extends ListActivity implements Runnable {
 	}
 	
 	
-	
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                 ContextMenuInfo menuInfo) {
+                        super.onCreateContextMenu(menu, v, menuInfo);
+                        MenuInflater inflater = getMenuInflater();
+                        //currentViewSelected = (TextView) v.getParent()
+                        //TextView newView = (TextView) v;
+                        
+                        //String txtCircle2 = (TextView) layout.findViewById(R.id.android_latestmessagesCircle);
+                        //longPressedCircle = v.getLayout().findViewById(R.id.android_latestmessagesCircle);
+                        //BOOK
+                        //TextView txtCircleView = v.requestLayout().findViewById(R.id.android_latestmessagesCircle);
+                        //longPressedCircle = v.getLayout().findViewById(R.id.android_latestmessagesCircle);
+                        longPressedCircle = (String) v.getTag(R.id.messageReply);
+                        inflater.inflate(R.menu.messagecontextmenu, menu);
+    }
 
+    public boolean onContextItemSelected(MenuItem item) {
+
+		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+		
+		intent.putExtra("circle",longPressedCircle);
+		startActivity(intent);
+		return true;
+		
+    }
 	
 	final Handler newMsgCheckEventHandler = new Handler() {
 		@Override
