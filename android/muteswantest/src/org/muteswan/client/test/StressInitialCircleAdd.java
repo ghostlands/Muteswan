@@ -79,7 +79,8 @@ public class StressInitialCircleAdd extends ActivityInstrumentationTestCase2<Mai
         	
        
         	   // join manually
-        	   solo.clickOnButton(2);
+        	   solo.pressMenuItem(0);
+        	   
         	   solo.enterText(0, testCircles[i]);
         	   solo.clickOnButton(0);
         	}
