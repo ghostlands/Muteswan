@@ -207,6 +207,7 @@ public class NewMessageService extends Service {
 		 for (final Circle circle : pollList.keySet()) {
 			 
 			 Thread oldThread = pollList.get(circle);
+			if (oldThread != null) {
  	         try {
 				  Log.v("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
 			      oldThread.interrupt();
@@ -215,6 +216,7 @@ public class NewMessageService extends Service {
 			      pollList.put(circle, null);
 			  } catch (InterruptedException e) {
 			  }
+			}
 
 			 Log.v("NewMessageService", "Circle: " + circle.hashCode());
 			
