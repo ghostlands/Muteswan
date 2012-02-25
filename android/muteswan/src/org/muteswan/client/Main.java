@@ -80,7 +80,6 @@ public class Main extends Activity implements Runnable {
 	private ProgressDialog dialog;
 	
 	
-	public static ITorService torService;
 
     IMessageService newMsgService;
 
@@ -386,21 +385,6 @@ public class Main extends Activity implements Runnable {
     
     
     
-    @SuppressWarnings("unused")
-	private ServiceConnection mTorConn = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className,
-                IBinder service) {
-        	torService = ITorService.Stub.asInterface(service);
-        	if (torService == null) {
-        		Log.e("Muteswan", "torService is null in mTorConn Service Connection callback.");
-        	}
-
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-           torService = null;
-        }
-    };
     
     private ServiceConnection mNewMsgConn = new ServiceConnection() {
 

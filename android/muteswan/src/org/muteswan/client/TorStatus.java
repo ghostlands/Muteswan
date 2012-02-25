@@ -31,9 +31,12 @@ import android.util.Log;
 public class TorStatus {
 
 	boolean on = false;
-	private MuteswanHttp muteswanHttp = new MuteswanHttp();
+	private MuteswanHttp muteswanHttp;
 	
-	
+
+	public TorStatus(MuteswanHttp muteswanHttp) {
+		this.muteswanHttp = new MuteswanHttp();
+	}
 	
 	public boolean checkStatus() {
 		//HttpGet httpGet = new HttpGet("http://torcheck.xenobite.eu/");
@@ -51,9 +54,11 @@ public class TorStatus {
 		
 			if (checkContent.contains("Welcome to .onion.")) {
 				Log.v("TorStatus","Looks like Tor is good.");
+				muteswanHttp.cleanup();
 				return(true);
 			} else {
 				Log.v("TorStatus", "Tor failed check.");
+				muteswanHttp.cleanup();
 				return(false);
 			}
 			
@@ -70,9 +75,10 @@ public class TorStatus {
 			return(false);
 		} catch (IOException e) {
 			Log.v("TorStatus", "Tor not running.");
+			muteswanHttp.cleanup();
 			return(false);
-			
 		}
+    	
 	 
 	}
 	

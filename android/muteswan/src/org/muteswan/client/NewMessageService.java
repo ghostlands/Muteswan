@@ -45,12 +45,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class NewMessageService extends Service {
@@ -61,7 +59,6 @@ public class NewMessageService extends Service {
 	HashMap<String,Integer> notifyIds;
 	int notifyId;
 	final int PERSISTANT_NOTIFICATION = 220;
-	private SharedPreferences defPrefs;
 	protected boolean isWorking;
 	private HashMap<Circle,Thread> pollList = new HashMap<Circle,Thread>();
 	private boolean started = false;
@@ -95,11 +92,6 @@ public class NewMessageService extends Service {
 	
 	public void onCreate() {
 		super.onCreate();
-		
-		defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		
-
-
 		
 	
 		if (isUserCheckingMessagesReceiver == null) isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
@@ -139,7 +131,8 @@ public class NewMessageService extends Service {
 		notifyId = 8392;
 		   
 		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
-		 muteswanHttp = new MuteswanHttp();
+		 if (muteswanHttp == null)
+		   muteswanHttp = new MuteswanHttp();
 		 circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 		 for (Circle r : circleStore) {
 				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
@@ -151,7 +144,6 @@ public class NewMessageService extends Service {
 	private void start() {
 		
 	
-			
 		
 		
 		// Startup
@@ -215,16 +207,14 @@ public class NewMessageService extends Service {
 		 for (final Circle circle : pollList.keySet()) {
 			 
 			 Thread oldThread = pollList.get(circle);
-			 while (oldThread != null) {
-			        try {
-				    	Log.v("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
-			        	oldThread.interrupt();
-			            oldThread.join(5);
-			            oldThread = null;
-			            pollList.put(circle, null);
-			        } catch (InterruptedException e) {
-			        }
-			    }
+ 	         try {
+				  Log.v("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
+			      oldThread.interrupt();
+			      oldThread.join(5);
+			      oldThread = null;
+			      pollList.put(circle, null);
+			  } catch (InterruptedException e) {
+			  }
 
 			 Log.v("NewMessageService", "Circle: " + circle.hashCode());
 			
@@ -330,7 +320,7 @@ public class NewMessageService extends Service {
 		}
 		
 		public void checkTorStatus(ITorVerifyResult verifyResult) {
-			TorStatus checkTorStatus = new TorStatus();
+			TorStatus checkTorStatus = new TorStatus(muteswanHttp);
 			if (checkTorStatus.checkStatus()) {
 				
 				sendBroadcast(new Intent(Main.TOR_AVAILABLE));
@@ -542,6 +532,7 @@ public class NewMessageService extends Service {
 		
 	
 	private void stopservice() {
+		muteswanHttp.cleanup();
 		for (Circle r : pollList.keySet()) {
 			stopList.add(r);
 			if (pollList.get(r) != null)

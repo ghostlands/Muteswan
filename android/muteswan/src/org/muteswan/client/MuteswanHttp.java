@@ -63,7 +63,6 @@ public class MuteswanHttp {
         HttpProtocolParams.setUseExpectContinue(params,false);
         params.setIntParameter("http.socket.timeout", 15000);
         params.setIntParameter("http.connection.timeout", 15000);
-        //params.setIntParameter("http.conn-manager.max-per-route", 15);
         params.setParameter("http.conn-manager.max-per-route", new MaxConnPerRoute());
         
         ClientConnectionManager	ccm = new MyThreadSafeClientConnManager(params,
@@ -71,6 +70,11 @@ public class MuteswanHttp {
         
 
         httpClient = new DefaultHttpClient(ccm, params);
+		
+	}
+
+	public void cleanup() {
+		httpClient = null;
 		
 	}
 	
