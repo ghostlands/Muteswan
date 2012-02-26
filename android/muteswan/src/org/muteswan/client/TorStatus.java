@@ -35,7 +35,7 @@ public class TorStatus {
 	
 
 	public TorStatus(MuteswanHttp muteswanHttp) {
-		this.muteswanHttp = new MuteswanHttp();
+		this.muteswanHttp = muteswanHttp;
 	}
 	
 	public boolean checkStatus() {
@@ -54,11 +54,9 @@ public class TorStatus {
 		
 			if (checkContent.contains("Welcome to .onion.")) {
 				Log.v("TorStatus","Looks like Tor is good.");
-				muteswanHttp.cleanup();
 				return(true);
 			} else {
 				Log.v("TorStatus", "Tor failed check.");
-				muteswanHttp.cleanup();
 				return(false);
 			}
 			
@@ -75,7 +73,6 @@ public class TorStatus {
 			return(false);
 		} catch (IOException e) {
 			Log.v("TorStatus", "Tor not running.");
-			muteswanHttp.cleanup();
 			return(false);
 		}
     	

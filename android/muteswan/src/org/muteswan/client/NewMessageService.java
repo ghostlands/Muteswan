@@ -120,6 +120,7 @@ public class NewMessageService extends Service {
     		stopSelf();
     	}
     };
+	private boolean torOK;
     
 	private void init() {
 		 pollList.clear();
@@ -200,11 +201,26 @@ public class NewMessageService extends Service {
 	private void runPoll() {
 		
 		 isWorking = true;
+		 torOK = false;
 		 notifyIds = new HashMap<String,Integer>();
 	
-			 Log.v("NewMessageService", "Circlestore: " + circleStore.hashCode());
+		 Log.v("NewMessageService", "Circlestore: " + circleStore.hashCode());
 		 Log.v("MuteswanService","pollList size " + pollList.size());
+		 
+		
+				 Thread torCheckThread = new Thread() {
+					 public void run() {
+						 TorStatus torCheck = new TorStatus(muteswanHttp);
+						 if (torCheck.checkStatus())
+							 torOK = true;
+					 }
+				 };
+				 torCheckThread.start();
+		 
 		 for (final Circle circle : pollList.keySet()) {
+			 
+		
+			
 			 
 			 Thread oldThread = pollList.get(circle);
 			if (oldThread != null) {
@@ -227,6 +243,24 @@ public class NewMessageService extends Service {
 				    	
 					   
 					 public void run() {
+						 // wait for 30 seconds until giving up
+						 int waitCount = 0;
+						 while (!torOK) {
+							 if (waitCount >= 29) {
+								 Log.v("LatestMessages", "Tor seems to down, bailing out.");
+								 return;
+							 }
+							 Thread.currentThread();
+							try {
+								Thread.sleep(1000);
+								waitCount++;
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						 } 
+						 
+						 
+						 
 					    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
 					    		final Integer startLastId = circle.getLastMsgId(false);
