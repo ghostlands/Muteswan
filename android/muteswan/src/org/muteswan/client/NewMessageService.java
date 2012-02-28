@@ -134,10 +134,13 @@ public class NewMessageService extends Service {
 		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
 		 if (muteswanHttp == null)
 		   muteswanHttp = new MuteswanHttp();
-		 circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
-		 for (Circle r : circleStore) {
+
+		 if (circleStore == null) {
+		 	circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
+		 	for (Circle r : circleStore) {
 				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);
+		 	}
 		 }
 		 
 	}
