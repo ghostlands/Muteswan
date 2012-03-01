@@ -43,7 +43,7 @@
         android:paddingLeft="20sp"
         android:paddingRight="20sp"
         android:text="Post" 
-        android:background="@drawable/circlelistbuttons"
+        android:background="@drawable/titlebarbuttons"
         android:textColor="#ffffff"
         />
      <TextView

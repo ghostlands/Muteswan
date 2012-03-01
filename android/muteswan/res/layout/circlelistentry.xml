@@ -16,18 +16,6 @@
         android:gravity="left"
         android:orientation="horizontal" >
 
-        <TextView
-            android:id="@+id/android_circleListName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:paddingTop="4sp"
-            android:paddingLeft="3sp"
-            android:text="CircleName"
-            android:textColor="#000000"
-            android:textSize="18sp"
-            android:typeface="sans" />
-
         <ImageView
             android:id="@+id/circleListDelete"
             android:layout_width="wrap_content"
@@ -40,15 +28,30 @@
         <Button
             android:id="@+id/circleListShare"
             android:layout_width="wrap_content"
-            android:layout_height="35sp"
+            android:layout_height="30sp"
             android:layout_alignParentLeft="true"
-            android:layout_below="@+id/circleListDelete"
-            android:paddingRight="10sp"
-            android:paddingLeft="10sp"
+            android:paddingRight="8sp"
+            android:paddingLeft="8sp"
             android:text="Share"
             android:background="@drawable/circlelistbuttons"
-            android:textSize="13sp" 
-            android:textColor="#ffffff" />
+            android:textSize="12sp" 
+            android:textColor="#333333" />
+
+        <TextView
+            android:id="@+id/android_circleListName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/circleListShare"
+            android:layout_marginLeft="4dp"
+            android:layout_toRightOf="@+id/circleListShare"
+            android:clickable="true"
+            android:paddingLeft="3sp"
+            android:paddingTop="4sp"
+            android:text="CircleName"
+            android:textColor="#000000"
+            android:textSize="13sp"
+            android:typeface="sans" />
+
     </RelativeLayout>
 
 </RelativeLayout>

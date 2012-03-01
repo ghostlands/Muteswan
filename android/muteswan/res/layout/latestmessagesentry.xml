@@ -94,7 +94,7 @@
      android:layout_below="@id/android:latestmessagesMessage"
     >
     
-     <TextView
+     <Button
      android:id="@+id/android:latestmessagesRepostButton"   
      android:layout_width="wrap_content"
      android:layout_height="wrap_content"
@@ -104,8 +104,7 @@
      android:layout_alignParentBottom="true"    
      android:gravity="center"
      android:text="Repost"
-     android:textColor="#568281"
-     android:clickable="true"     
+     android:textColor="#333333" 
      />  
     
      <!--   <TextView
