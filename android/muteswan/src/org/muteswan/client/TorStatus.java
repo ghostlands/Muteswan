@@ -26,30 +26,58 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 public class TorStatus {
 
 	boolean on = false;
 	private MuteswanHttp muteswanHttp;
+	private Context ctx;
 	
 
-	public TorStatus(MuteswanHttp muteswanHttp) {
+	public TorStatus(MuteswanHttp muteswanHttp, Context ctx) {
 		this.muteswanHttp = muteswanHttp;
+		this.ctx = ctx;
 	}
+	
+	
+	private boolean haveNetworkConnection() {
+	    boolean haveConnectedWifi = false;
+	    boolean haveConnectedMobile = false;
+
+	    ConnectivityManager cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo[] netInfo = cm.getAllNetworkInfo();
+	    for (NetworkInfo ni : netInfo) {
+	        if (ni.getTypeName().equalsIgnoreCase("WIFI"))
+	            if (ni.isConnected())
+	                haveConnectedWifi = true;
+	        if (ni.getTypeName().equalsIgnoreCase("MOBILE"))
+	            if (ni.isConnected())
+	                haveConnectedMobile = true;
+	    }
+	    return haveConnectedWifi || haveConnectedMobile;
+	}
+
 	
 	public boolean checkStatus() {
 		//HttpGet httpGet = new HttpGet("http://torcheck.xenobite.eu/");
 		HttpGet httpGet = new HttpGet("http://eqt5g4fuenphqinx.onion/");
 	
     	try {
+    		
+    		if (!haveNetworkConnection()) {
+    			Log.v("TorStatus", "Looks like network is down.");
+    			return false;
+    		}
+    		
 			HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
 			
 			
 		
-			// this tor check is weirdly reporting that we are not on tor even if we are right now.
-			// I'm simply using www.google.com. Becuase we always use our MuteswanHttp client, unless
-			// some non tor thing is running on port 9050
+			
 			String checkContent = EntityUtils.toString(resp.getEntity());
 		
 			if (checkContent.contains("Welcome to .onion.")) {

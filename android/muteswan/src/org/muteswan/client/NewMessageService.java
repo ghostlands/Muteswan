@@ -213,7 +213,7 @@ public class NewMessageService extends Service {
 		
 				 Thread torCheckThread = new Thread() {
 					 public void run() {
-						 TorStatus torCheck = new TorStatus(muteswanHttp);
+						 TorStatus torCheck = new TorStatus(muteswanHttp,getApplicationContext());
 						 if (torCheck.checkStatus())
 							 torOK = true;
 					 }
@@ -359,7 +359,7 @@ public class NewMessageService extends Service {
 		}
 		
 		public void checkTorStatus(ITorVerifyResult verifyResult) {
-			TorStatus checkTorStatus = new TorStatus(muteswanHttp);
+			TorStatus checkTorStatus = new TorStatus(muteswanHttp,getApplicationContext());
 			if (checkTorStatus.checkStatus()) {
 				
 				sendBroadcast(new Intent(Main.TOR_AVAILABLE));
