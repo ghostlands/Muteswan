@@ -52,8 +52,8 @@
     android:gravity="left"
     android:typeface="sans"
     android:paddingBottom="8sp"
-    android:textColor="#232323"
-    android:textSize="14sp"
+    android:textColor="#111111"
+    android:textSize="15sp"
 	android:autoLink="web|email"
     />
     
@@ -97,14 +97,17 @@
      <Button
      android:id="@+id/android:latestmessagesRepostButton"   
      android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
+     android:layout_height="35dp"
      android:layout_alignParentRight="true"
      android:layout_alignParentLeft="false"
      android:layout_alignParentTop="false"
      android:layout_alignParentBottom="true"    
+     android:paddingLeft="16dp"
+     android:paddingRight="16dp"
      android:gravity="center"
      android:text="Repost"
-     android:textColor="#333333" 
+     android:textColor="#111111" 
+     android:background="@drawable/circlelistbuttons"
      />  
     
      <!--   <TextView
