@@ -633,20 +633,12 @@ public class LatestMessages extends ListActivity implements Runnable {
 			  }
               
               //We assume local time zone since we wrote the timestamp converted from GMT
-              SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-              SimpleDateFormat df2 = new SimpleDateFormat( "MMM d hh:mm a" );
-              Date msgDate = null;
+              SimpleDateFormat df = new SimpleDateFormat( "MMM d hh:mm a" );
              
-			try {
-				msgDate = df.parse(msg.getDate());
-				String dateString = RelativeDateFormat.format(msgDate);
-				 if (dateString == null)
-					 dateString = df2.format(msgDate);
-				 txtDate.setText(dateString);
-			} catch (ParseException e) {
-				txtDate.setText("Error parsing date");
-				
-			}
+			 String dateString = RelativeDateFormat.format(msg.getDateObj());
+			 if (dateString == null)
+				 dateString = df.format(msg.getDateObj());
+			 txtDate.setText(dateString);
 			 
 			 
       		  txtMessage.setText(msg.getMsg());
