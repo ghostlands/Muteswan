@@ -1,0 +1,16 @@
+<settings>
+<profiles>
+    <profile>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <sign.keystore>/home/junger/muteswan.release.keystore</sign.keystore>
+            <sign.alias>muteswan</sign.alias>
+            <sign.keypass>xxxx</sign.keypass>
+            <sign.storepass>xxxx</sign.storepass>
+        </properties>
+    </profile>
+</profiles>
+</settings>
+
