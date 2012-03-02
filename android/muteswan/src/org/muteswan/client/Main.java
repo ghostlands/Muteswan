@@ -289,7 +289,7 @@ public class Main extends Activity implements Runnable {
 		//} else if (item.toString().equals("Create Identity")) {
 		//	startActivity(new Intent(this,GenerateIdentity.class));
 		//	return true;
-		} else if (item.toString().equals(R.string.share_muteswan_menu)) {
+		} else if (item.toString().equals("Share Muteswan")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan-latest.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
@@ -298,22 +298,22 @@ public class Main extends Activity implements Runnable {
 			} catch (ActivityNotFoundException e) {
 			  alertDialogs.offerToInstallBarcodeScanner();
 			}
-		} else if (item.toString().equals(R.string.share_orbot_menu)) {
+		} else if (item.toString().equals("Share Orbot")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA",R.string.orbot_market_uri);
+			intent.putExtra("ENCODE_DATA",getString(R.string.orbot_market_uri));
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			try {
 			  startActivity(intent);
 			} catch (ActivityNotFoundException e) {
 			  alertDialogs.offerToInstallBarcodeScanner();
 			}
-		} else if (item.toString().equals(R.string.reset_muteswan)) {
+		} else if (item.toString().equals("Reset Muteswan")) {
 			Intent intent = new Intent(Intent.ACTION_DELETE);
     		String packageName = "org.muteswan.client";
     		Uri data = Uri.fromParts("package", packageName, null);
     		intent.setData(data);
     		startActivity(intent);
-		} else if (item.toString().equals(R.string.settings_menu)) {
+		} else if (item.toString().equals("Settings")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}
