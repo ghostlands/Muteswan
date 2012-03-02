@@ -64,7 +64,7 @@ public class TorStatus {
 	
 	public boolean checkStatus() {
 		//HttpGet httpGet = new HttpGet("http://torcheck.xenobite.eu/");
-		HttpGet httpGet = new HttpGet("http://eqt5g4fuenphqinx.onion/");
+		HttpGet httpGet = new HttpGet(ctx.getString(R.string.tor_check_url));
 	
     	try {
     		
@@ -80,7 +80,7 @@ public class TorStatus {
 			
 			String checkContent = EntityUtils.toString(resp.getEntity());
 		
-			if (checkContent.contains("Welcome to .onion.")) {
+			if (checkContent.contains(ctx.getString(R.string.tor_check_verify_string))) {
 				Log.v("TorStatus","Looks like Tor is good.");
 				return(true);
 			} else {

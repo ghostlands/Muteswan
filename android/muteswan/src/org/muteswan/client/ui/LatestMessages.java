@@ -337,7 +337,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	
 		
 		if (store.isEmpty()) {
-			setFooterText("You don't have any circles yet, so you can't check for messages. Please join or create a new circle first.");
+			setFooterText(getString(R.string.n_no_circles_to_check));
 			return;
 		}
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
@@ -728,7 +728,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 				}
 				
 				if (gettingMsgsDialog != null) {
-					gettingMsgsDialog.setMessage(circleMap.get(b.getString("circle")).getShortname() + ": checking for new messages.");
+					gettingMsgsDialog.setMessage(circleMap.get(b.getString("circle")).getShortname() + getString(R.string.n_checking_for_new_messages));
 				}
 			}
 			
@@ -781,7 +781,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         		
         		  
         		  if (!getFooterText().equals("")) {
-           				setFooterText("No messages were found. You can post one, if you like.");
+           				setFooterText(getString(R.string.n_no_message_in_circle));
            	   	  }
         		  
         		  //refreshButton.setOnClickListener(refreshClicked);
@@ -805,7 +805,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     	AlertDialog.Builder someFailedAlert = new AlertDialog.Builder(LatestMessages.this);
     	
     	
-    	String alertMessage = "Although some circles were updated, the following circles could not be contacted: \n";
+    	String alertMessage = getString(R.string.n_some_message_checks_failed);
     	for (String status : newMsgCheckResults.keySet()) {
     		if (newMsgCheckResults.get(status).equals("failed")) {
     			// FIXME string painting
@@ -813,16 +813,16 @@ public class LatestMessages extends ListActivity implements Runnable {
     		}
     	}
     	
-	    someFailedAlert.setTitle("Some Errors Checking for Latest Messages");
+	    someFailedAlert.setTitle(R.string.t_some_messages_failed_check);
 	    someFailedAlert.setMessage(alertMessage);
-	    someFailedAlert.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
+	    someFailedAlert.setPositiveButton(R.string.refresh_messages_confirm_yes, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	    	messageViewCount = 0;
 	  		messageList.clear();
 	        refresh();
 	      }
 	    });
-	    someFailedAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    someFailedAlert.setNegativeButton(R.string.refresh_messages_confirm_no, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {}
 	    });
 	    
@@ -833,19 +833,19 @@ public class LatestMessages extends ListActivity implements Runnable {
     	AlertDialog.Builder allFailedAlert = new AlertDialog.Builder(LatestMessages.this);
     	
     	
-    	String alertMessage = "No new messages were found or could be downloaded. This is usually due to network connectivity or problems with Tor. If this persists, you can restart Tor.";
+    	String alertMessage = getString(R.string.n_no_messages_found_or_downloaded);
     	
     	
-	    allFailedAlert.setTitle("Error Checking for Latest Messages");
+	    allFailedAlert.setTitle(R.string.n_error_checking_for_latest_messages);
 	    allFailedAlert.setMessage(alertMessage);
-	    allFailedAlert.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
+	    allFailedAlert.setPositiveButton(R.string.refresh_messages_confirm_yes, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	    	messageViewCount = 0;
 	  		messageList.clear();
 	        refresh();
 	      }
 	    });
-	    allFailedAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    allFailedAlert.setNegativeButton(R.string.refresh_messages_confirm_no, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {}
 	    });
 	    

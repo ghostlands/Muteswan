@@ -126,30 +126,12 @@ public class Main extends Activity implements Runnable {
 	 };
 	 
 	 
-	 @SuppressWarnings("unused")
-	private Handler dialogTorAvailable = new Handler() {
-	        @Override
-	        public void handleMessage(Message msg) {
-	          	   AlertDialog.Builder dialog = new AlertDialog.Builder(Main.this);
-	       		    dialog.setTitle("Tor available");
-	       		    dialog.create();
-	       		    dialog.show();     		
-
-	        		
-	       }
-	 };
-	 
+		 
 
 	 
 	
 	 
-	 @SuppressWarnings("unused")
-	private Handler dialogWaitOnNewMsgService = new Handler() {
-	        @Override
-	        public void handleMessage(Message msg) {
-	              	dialog.setMessage("Connecting to new message service.");
-	        }
-	 };
+	
 	 
 	 
 	private AlertDialogs alertDialogs;
@@ -248,15 +230,7 @@ public class Main extends Activity implements Runnable {
 	    
     }
     
-    @SuppressWarnings("unused")
-	private void showCheckTorDialog() {
-    	
-    	if (checkTorDialog == null) {
-    	  checkTorDialog = ProgressDialog.show(this, "", "Verifying secure connection to Tor network..", true);
-    	  checkTorDialog.setCancelable(true);
-    	  
-    	}
-	}
+  
 
 
 
@@ -315,7 +289,7 @@ public class Main extends Activity implements Runnable {
 		//} else if (item.toString().equals("Create Identity")) {
 		//	startActivity(new Intent(this,GenerateIdentity.class));
 		//	return true;
-		} else if (item.toString().equals("Share Muteswan")) {
+		} else if (item.toString().equals(R.string.share_muteswan_menu)) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan-latest.apk");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
@@ -324,22 +298,22 @@ public class Main extends Activity implements Runnable {
 			} catch (ActivityNotFoundException e) {
 			  alertDialogs.offerToInstallBarcodeScanner();
 			}
-		} else if (item.toString().equals("Share Orbot")) {
+		} else if (item.toString().equals(R.string.share_orbot_menu)) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","market://search?q=pname:org.torproject.android");
+			intent.putExtra("ENCODE_DATA",R.string.orbot_market_uri);
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			try {
 			  startActivity(intent);
 			} catch (ActivityNotFoundException e) {
 			  alertDialogs.offerToInstallBarcodeScanner();
 			}
-		} else if (item.toString().equals("Reset Muteswan")) {
+		} else if (item.toString().equals(R.string.reset_muteswan)) {
 			Intent intent = new Intent(Intent.ACTION_DELETE);
     		String packageName = "org.muteswan.client";
     		Uri data = Uri.fromParts("package", packageName, null);
     		intent.setData(data);
     		startActivity(intent);
-		} else if (item.toString().equals("Settings")) {
+		} else if (item.toString().equals(R.string.settings_menu)) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
 		}

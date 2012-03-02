@@ -18,6 +18,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 package org.muteswan.client.ui;
 
 import org.muteswan.client.NewMessageReceiver;
+import org.muteswan.client.R;
 
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -49,11 +50,11 @@ public class Preferences extends PreferenceActivity {
                                 	     if (backgroundMessageCheck == false) {
                                 	    	 scheduleServiceAlarm(defPrefs,checkMsgInterval);
                                 	    	 Toast.makeText(getBaseContext(),
-                                                         "Background message checking is enabled.",
+                                                         R.string.n_check_service_enabled,
                                                          Toast.LENGTH_LONG).show();
                                 	     } else {
                                 	    	 Toast.makeText(getBaseContext(),
-                                                     "Background message checking is disabled",
+                                                     R.string.n_check_service_disabled,
                                                      Toast.LENGTH_LONG).show();
                                 	     }
                               	    	 return true;

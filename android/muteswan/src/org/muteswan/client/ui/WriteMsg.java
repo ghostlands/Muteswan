@@ -244,7 +244,7 @@ public class WriteMsg extends ListActivity {
              new AlertDialog.Builder( this )
              .setTitle( "Sign message with identity" )
              .setMultiChoiceItems(signIdentities, signSelections, new DialogSelectionClickHandler() )
-             .setPositiveButton( "OK", new DialogButtonClickHandler() )
+             .setPositiveButton( R.string.ok, new DialogButtonClickHandler() )
              .create();
      }
 
@@ -295,8 +295,8 @@ public class WriteMsg extends ListActivity {
 	              		  sendingMsgDialog.dismiss();
 						
 						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
-			    		builder.setMessage("A problem occurred: " + b.getString("error"))
-			    		       .setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			    		builder.setMessage(R.string.write_message_problem_prefix + b.getString("error"))
+			    		       .setCancelable(true).setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 			    		           public void onClick(DialogInterface dialog, int id) {
 			    		               
 			    		           }}
@@ -312,7 +312,7 @@ public class WriteMsg extends ListActivity {
 	        		//sendingMsgDialog.dismiss();
 					//sendingMsgDialog.setCancelable(true);
 	              	if (sendingMsgDialog != null)
-					  sendingMsgDialog.setMessage("Message posted: " + b.get("circles"));
+					  sendingMsgDialog.setMessage(getString(R.string.message_posted_prefix) + b.get("circles"));
 					
 					if (b.get("circle") != null) {
 						sendingDialogData.put((String) b.get("circle"), (String)b.get("status"));
@@ -341,8 +341,8 @@ public class WriteMsg extends ListActivity {
 						  sendingMsgDialog.dismiss();
 						
 						AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
-			    		builder.setMessage("All messages sent successfully.")
-			    		       .setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			    		builder.setMessage(R.string.n_all_messages_sent_successfully)
+			    		       .setCancelable(true).setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 			    		           public void onClick(DialogInterface dialog, int id) {
 			    		               finish();
 			    		           }}
@@ -359,7 +359,7 @@ public class WriteMsg extends ListActivity {
 	
 
 	 private String renderDialog(Boolean finished) {
-		 String dialogText = "Sending messages:";
+		 String dialogText = getString(R.string.sending_messages_prefix);
 		 
 		 for (String key : sendingDialogData.keySet()) {
 			 dialogText = dialogText + "\n" + key + ": " + sendingDialogData.get(key);
@@ -386,7 +386,7 @@ public class WriteMsg extends ListActivity {
 	    	final String txtData = txt.toString();
 	    	
 	    
-    	    sendingMsgDialog = ProgressDialog.show(v.getContext(), "", "Sending message...", true);
+    	    sendingMsgDialog = ProgressDialog.show(v.getContext(), "", getString(R.string.sending_message_status), true);
    		    sendingMsgDialog.setCancelable(true);
 
    		    disablePostButton();
@@ -412,14 +412,14 @@ public class WriteMsg extends ListActivity {
 				if (txtData == null || txtData.equals("")) {
 				 	Bundle b = new Bundle();
 					Message msg = Message.obtain();
-					b.putString("error", "Empty message.");
+					b.putString("error", getString(R.string.error_empty_message));
 					msg.setData(b);
 					updateSendDialog.sendMessage(msg);
 					return;
 				} else if (txtData.length() > WriteMsg.MAX_MSG_LENGTH) {
 				 	Bundle b = new Bundle();
 					Message msg = Message.obtain();
-					b.putString("error", "Message exceeds 2500 character maximum.");
+					b.putString("error", getString(R.string.error_message_too_long));
 					msg.setData(b);
 					updateSendDialog.sendMessage(msg);
 					return;
@@ -489,7 +489,7 @@ public class WriteMsg extends ListActivity {
 		private void showVerifySendDialog(final View v) {
 		
 			
-			String alertMsg = "Post messages to: \n";
+			String alertMsg = getString(R.string.post_message_prefix) +"\n";
 			boolean noCheckedCircles = true;
 			for (final Circle cir: circles) {
 		      if (checkedCircles[circles.indexOf(cir)] == true) {
@@ -502,21 +502,21 @@ public class WriteMsg extends ListActivity {
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(WriteMsg.this);
 			if (noCheckedCircles) {
-				builder.setMessage("No circles chosen, please select at least one circle.");
-				builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+				builder.setMessage(R.string.n_no_circle_selected);
+				builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialogInterface, int i) {}
 	   		     });
 			} else {
     		  builder.setMessage(alertMsg);
     		
     		
-    		 builder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
+    		 builder.setPositiveButton(R.string.post, new DialogInterface.OnClickListener() {
    		      public void onClick(DialogInterface dialogInterface, int i) {
    		    	  postMessage(v);
    		      }
    		     });
     		 
-   		     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+   		     builder.setNegativeButton(R.string.cancel_post, new DialogInterface.OnClickListener() {
    		      public void onClick(DialogInterface dialogInterface, int i) {}
    		     });
 			}

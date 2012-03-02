@@ -72,8 +72,8 @@ public class CircleList extends ListActivity {
 	public static int ANY = 3;
 	public static int SCAN = 4;
 	public static String[] actionPrompts = new String[] { "Select a circle to share.", 
-														  "Select a circle to read messages.", 
-														  "Select a circle to write a message.",
+														"Select a circle to read messages.",
+														"Select a circle to write a message.",
 														  "",
 														  "New circle added"};
 	public Integer action;
@@ -281,14 +281,14 @@ public class CircleList extends ListActivity {
 		    		
 		    		
 		    		AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
-		    		builder.setMessage("Are you sure you want to delete this circle?")
+		    		builder.setMessage(R.string.q_delete_circle)
 		    		       .setCancelable(false)
-		    		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    		       .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 		    		           public void onClick(DialogInterface dialog, int id) {
 		    		        	   deleteCircle(position);
 		    		           }
 		    		       })
-		    		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		    		       .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
 		    		           public void onClick(DialogInterface dialog, int id) {
 		    		                dialog.cancel();
 		    		           }
@@ -325,7 +325,7 @@ public class CircleList extends ListActivity {
 			 
 			 
 			 if (newCircle != null && circleList[position].getShortname().equals(newCircle)) {
-				 txtCircle.setText(circleList[position].getShortname() + " (new!)");
+				 txtCircle.setText(circleList[position].getShortname() + R.string.new_circle_indication);
 			 } else {
 				 txtCircle.setText(circleList[position].getShortname());
 			 }
@@ -472,10 +472,10 @@ public class CircleList extends ListActivity {
 
         	 builder.setView(view);
         	
-        	 builder.setMessage("Join Circle Manually");
+        	 builder.setMessage(R.string.t_join_circle_manually);
         	 final EditText editTxt = (EditText) view.findViewById(R.id.circleListManualJoinCircle);
         	
-        	 builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+        	 builder.setPositiveButton(R.string.add_circle_confirm_yes, new DialogInterface.OnClickListener() {
                  public void onClick(DialogInterface dialog, int id) {
                 	 
                 	 // FIXME refactor
@@ -496,7 +496,7 @@ public class CircleList extends ListActivity {
                	 
                  }}
         	 );
-        	 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        	 builder.setNegativeButton(R.string.add_circle_confirm_cancel, new DialogInterface.OnClickListener() {
                  public void onClick(DialogInterface dialog, int id) {
                  }}
         	 );
@@ -513,10 +513,10 @@ public class CircleList extends ListActivity {
     	 	final View textEntryView = factory.inflate(R.layout.alertedittext, null);
     	 	final EditText alertEditText = (EditText) textEntryView.findViewById(R.id.alertEditText);
 
-	    	builder.setMessage("New Circle Name")
+	    	builder.setMessage(R.string.t_new_circle_name)
 	    	       .setCancelable(false)
 	    	       .setView(textEntryView)
-	    	       .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+	    	       .setPositiveButton(R.string.create_circle_confirm_yes, new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
 	    	        	   GenerateCircle genCircle = new GenerateCircle(getApplicationContext(), alertEditText.getText().toString());
 	    	        	   genCircle.saveCircle();
@@ -530,7 +530,7 @@ public class CircleList extends ListActivity {
 	    	        	   onResume();
 	    	           }
 	    	       })
-	    	       .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    	       .setNegativeButton(R.string.add_circle_confirm_cancel, new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
 	    	                dialog.cancel();
 	    	           }
@@ -554,7 +554,7 @@ public class CircleList extends ListActivity {
 		sendBroadcast(deleteCircleIntent);
 		
 		Toast.makeText(this,
-				"Deleted circle " + circleList[position].getShortname() + " from saved keys.", 
+				R.string.deleted_circle_notif_prefix + circleList[position].getShortname() + R.string.delete_circle_notif_suffix, 
 					  Toast.LENGTH_LONG).show();
 		onResume();
 	}

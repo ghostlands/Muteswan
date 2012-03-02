@@ -19,16 +19,16 @@ public class AlertDialogs {
 	
 	public void offerToInstallBarcodeScanner() {
 		AlertDialog.Builder noTorDialog = new AlertDialog.Builder(context);
-	    noTorDialog.setTitle("Install BarcodeScanner?");
-	    noTorDialog.setMessage("BarcodeScanner is not currently installed. Do you want to install it from the market?");
-	    noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	    noTorDialog.setTitle(R.string.q_install_barcodescanner);
+	    noTorDialog.setMessage(R.string.q_intall_barcodescanner);
+	    noTorDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
-	    	Uri uri = Uri.parse("market://search?q=pname:com.google.zxing.client.android");
+	    	Uri uri = Uri.parse(context.getString(R.string.barcode_scanner_market_uri));
 	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 	        context.startActivity(intent);
 	      }
 	    });
-	    noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+	    noTorDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {}
 	    });
 	    noTorDialog.create();
@@ -47,9 +47,9 @@ public class AlertDialogs {
 	 
 	 private void offerToStartTor() {
 		  AlertDialog.Builder noTorDialog = new AlertDialog.Builder(context);
-	      noTorDialog.setTitle("Tor Unavailable");
-	      noTorDialog.setMessage("Tor is not available at this time. Please start or restart Tor or ensure it is running properly. Only cached data will be available otherwise.");
-	      noTorDialog.setPositiveButton("Start Tor?", new DialogInterface.OnClickListener() {
+	      noTorDialog.setTitle(R.string.t_tor_unavailable);
+	      noTorDialog.setMessage(R.string.n_tor_not_available);
+	      noTorDialog.setPositiveButton(R.string.q_start_tor, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	      
 	    	Intent intent = null;
@@ -62,7 +62,7 @@ public class AlertDialogs {
 	    	}
 	      }
 	    });
-	    noTorDialog.setNegativeButton("No, thanks", new DialogInterface.OnClickListener() {
+	    noTorDialog.setNegativeButton(R.string.q_start_tor_confirm_no, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {}
 	    });
 	    noTorDialog.create();
@@ -71,16 +71,16 @@ public class AlertDialogs {
 		
 		private void offerToInstallTor() {
 			AlertDialog.Builder noTorDialog = new AlertDialog.Builder(context);
-	        noTorDialog.setTitle("Install Tor?");
-	        noTorDialog.setMessage("Tor is not currently installed. Do you want to install it from the market?");
-	        noTorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	        noTorDialog.setTitle(R.string.t_install_tor);
+	        noTorDialog.setMessage(R.string.q_install_tor);
+	        noTorDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
-	        Uri uri = Uri.parse("market://search?q=pname:org.torproject.android");
+	        Uri uri = Uri.parse(context.getString(R.string.orbot_market_uri));
 	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 	        context.startActivity(intent);
 	       }
 	      });
-	      noTorDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+	      noTorDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialogInterface, int i) {}
 	      });
 	      noTorDialog.create();
