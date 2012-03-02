@@ -326,7 +326,7 @@ public class CircleList extends ListActivity {
 			 
 			 
 			 if (newCircle != null && circleList[position].getShortname().equals(newCircle)) {
-				 txtCircle.setText(circleList[position].getShortname() + R.string.new_circle_indication);
+				 txtCircle.setText(circleList[position].getShortname() + getString(R.string.new_circle_indication));
 			 } else {
 				 txtCircle.setText(circleList[position].getShortname());
 			 }
