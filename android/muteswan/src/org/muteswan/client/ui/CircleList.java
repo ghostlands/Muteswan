@@ -555,7 +555,7 @@ public class CircleList extends ListActivity {
 		sendBroadcast(deleteCircleIntent);
 		
 		Toast.makeText(this,
-				R.string.deleted_circle_notif_prefix + circleList[position].getShortname() + R.string.delete_circle_notif_suffix, 
+				getString(R.string.deleted_circle_notif_prefix) + circleList[position].getShortname() + getString(R.string.delete_circle_notif_suffix), 
 					  Toast.LENGTH_LONG).show();
 		onResume();
 	}
