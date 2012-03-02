@@ -50,6 +50,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.muteswan.client.Base64;
 import org.muteswan.client.Crypto;
+import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.Main;
 
@@ -426,7 +427,7 @@ public class Circle {
 		MuteswanMessage msg = null;
 		
 		if (msgCache.containsKey(Integer.parseInt(id))) {
-			Log.v("Circle", "Fetched from msgCache: " + id);
+			MuteLog.Log("Circle", "Fetched from msgCache: " + id);
 			return (MuteswanMessage) (msgCache.get(Integer.parseInt(id)));
 		}
 		
@@ -508,9 +509,9 @@ public class Circle {
 	
 	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException, InterruptedIOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
-		Log.v("Circle", "Fetching message " + id);
+		MuteLog.Log("Circle", "Fetching message " + id);
     	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
-    	Log.v("Circle", "Fetched message " + id);
+    	MuteLog.Log("Circle", "Fetched message " + id);
     	
     	return(parseMsgFromTor(id,resp));
     	
@@ -521,14 +522,14 @@ public class Circle {
 		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
 		
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + max + "-" + min);
-		Log.v("Circle", "Fetching messages " + max + " to " + min);
+		MuteLog.Log("Circle", "Fetching messages " + max + " to " + min);
     	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
-		Log.v("Circle", "Fetched messages " + max + " to " + min);
+		MuteLog.Log("Circle", "Fetched messages " + max + " to " + min);
 
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
 		if (jsonString == null) {
-			Log.v("Circle", "getMsgRangeFromTor(): jsonString is null");
+			MuteLog.Log("Circle", "getMsgRangeFromTor(): jsonString is null");
 			return null;
 		}
 		
@@ -544,7 +545,7 @@ public class Circle {
 				max--;
 			}
 		} catch (JSONException e) {
-			Log.v("Circle", "getMsgRangeFromTor(): jsonString is not parseable: " + jsonString);
+			MuteLog.Log("Circle", "getMsgRangeFromTor(): jsonString is not parseable: " + jsonString);
 			return null;
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
@@ -589,14 +590,14 @@ public class Circle {
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
 		if (jsonString == null) {
-			Log.v("Circle", "WTF, jsonString is null");
+			MuteLog.Log("Circle", "WTF, jsonString is null");
 			return null;
 		}
 		JSONObject jsonObj = null;
 		try {
 			jsonObj = new JSONObject(jsonString);
 		} catch (JSONException e1) {
-			Log.v("Circle", "WTF, jsonString is not parceable");
+			MuteLog.Log("Circle", "WTF, jsonString is not parceable");
 			return null;
 		}
 		
@@ -605,7 +606,7 @@ public class Circle {
     	String date = null;
     	
     	if (lastModified == null) {
-			Log.v("Circle", "WTF, lastModified is null");
+			MuteLog.Log("Circle", "WTF, lastModified is null");
 			return null;
     	}
     
@@ -660,11 +661,11 @@ public class Circle {
 
 	    
 	    if (lastMessage == null || lastMessage.equals("null")) {
-	    	Log.v("LatestMessages","lastMessage header is null, indicates no messages posted yet.");
+	    	MuteLog.Log("LatestMessages","lastMessage header is null, indicates no messages posted yet.");
 	    	return 0;
 	    }
 	    
-	    Log.v("LatestMessages","getLastTorMessage(): lastmessage is " + lastMessage);
+	    MuteLog.Log("LatestMessages","getLastTorMessage(): lastmessage is " + lastMessage);
 	    Integer result = Integer.parseInt(lastMessage);
 	    if (result == null)
 	    	return -1;
@@ -687,7 +688,7 @@ public class Circle {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/longpoll/" + id);
     	HttpResponse resp;
     	
-    	Log.v("Circle", "getMsgLongpoll called for " + getShortname());
+    	MuteLog.Log("Circle", "getMsgLongpoll called for " + getShortname());
     	
 		try {
 			resp = muteswanHttp.httpClient.execute(httpGet);
@@ -734,7 +735,7 @@ public class Circle {
 		
 		if (getPostPolicy() != null && !getPostPolicy().equals("ANY")) {
 			if (getPostPolicy().equals("AUTHKEY")) {
-				Log.v("Circle", "AUTHKEY Adding Signature header for " + getShortname());
+				MuteLog.Log("Circle", "AUTHKEY Adding Signature header for " + getShortname());
 				Signature sig = null;
 				try {
 					sig = Signature.getInstance("MD5WithRSA");
@@ -786,7 +787,7 @@ public class Circle {
 				
 				//circle.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
 			} else if (getPostPolicy().equals("KEYLIST")) {
-				Log.v("Circle", "KEYLIST Adding Signature header for " + getShortname());
+				MuteLog.Log("Circle", "KEYLIST Adding Signature header for " + getShortname());
 				Signature sig = null;
 				try {
 					sig = Signature.getInstance("MD5WithRSA");
@@ -801,7 +802,7 @@ public class Circle {
 				KEYS: for (String key : keylist) {
 					for (Identity id : idStore) {
 					  if (key.equals(id.publicKeyEnc) && id.privateKeyEnc != null) {
-						  Log.v("Circle", "Found identity " + id.getName());
+						  MuteLog.Log("Circle", "Found identity " + id.getName());
 						  try {
 
 							rsaPrivKey = id.getPrivateKey();
@@ -840,10 +841,10 @@ public class Circle {
 				} catch (InvalidKeyException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					Log.v("Circle", "Invalid key posting.");
+					MuteLog.Log("Circle", "Invalid key posting.");
 				} catch (SignatureException e) {
 					// TODO Auto-generated catch block
-					Log.v("Circle", "Signature exception posting.");
+					MuteLog.Log("Circle", "Signature exception posting.");
 				}
 				
 			
@@ -876,7 +877,7 @@ public class Circle {
 		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
 		byte[] encData = crypto.encrypt();
 		byte[] ivData = crypto.getIVData();
-		Log.v("Circle", "iv data: " + ivData.toString());
+		MuteLog.Log("Circle", "iv data: " + ivData.toString());
 		
 		String base64EncData = Base64.encodeBytes(encData);
 		String base64IVData = Base64.encodeBytes(ivData);
@@ -903,11 +904,11 @@ public class Circle {
 		    Signature sig = Signature.getInstance("MD5WithRSA");
 		    
 		    if (identities[i] == null) {
-		    	Log.v("Circle", "Wtf, identities is null\n");
+		    	MuteLog.Log("Circle", "Wtf, identities is null\n");
 		    	break;
 		    }
 		    
-		    Log.v("Circle", "Signing with " + identities[i].getName() + "\n");
+		    MuteLog.Log("Circle", "Signing with " + identities[i].getName() + "\n");
 		
 		    RSAPrivateKey rsaPrivKey = identities[i].getPrivateKey();
 		   
@@ -942,7 +943,7 @@ public class Circle {
 	
 	// FIXME: should refactor
 	public void saveMsgToDb(Integer id, String date, String msg) {
-		Log.v("Circle","Saving message " + id);
+		MuteLog.Log("Circle","Saving message " + id);
 		if (context == null) 
 			return;	
 		
@@ -964,7 +965,7 @@ public class Circle {
 		insrt.executeInsert();
 		insrt.close();
 		db.close();
-		Log.v("Circle","Saved message " + id);
+		MuteLog.Log("Circle","Saved message " + id);
 	}
 	
 	
@@ -1106,7 +1107,7 @@ public class Circle {
 
 	public void downloadManifest() {
 			HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/manifest");
-			Log.v("Circle", "Downloading manifest for " + getShortname());
+			MuteLog.Log("Circle", "Downloading manifest for " + getShortname());
 	    	try {
 				HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
 				JSONObject jsonObj = parseManifest(resp);
@@ -1136,7 +1137,7 @@ public class Circle {
 				
 				saveManifestToDb();
 
-		    	Log.v("Circle", "Downloaded manifest for " + getShortname());
+		    	MuteLog.Log("Circle", "Downloaded manifest for " + getShortname());
 			} catch (ClientProtocolException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

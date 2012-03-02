@@ -31,6 +31,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+import org.muteswan.client.MuteLog;
+
 
 public class Preferences extends PreferenceActivity {
 
@@ -66,7 +68,7 @@ public class Preferences extends PreferenceActivity {
          Preference checkMsgIntervalP = (Preference) this.findPreference("checkMsgInterval");
          checkMsgIntervalP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                                  public boolean onPreferenceChange(Preference preference, Object pref) {
-                                	     Log.v("Preferences","pref is " + pref.toString());
+                                	     MuteLog.Log("Preferences","pref is " + pref.toString());
                                 	 	 final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());	
                                 	     scheduleServiceAlarm(defPrefs,Integer.parseInt((String) pref));
                               	    	 return true;
@@ -83,7 +85,7 @@ public class Preferences extends PreferenceActivity {
 		
 		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			
 		  if (backgroundMessageCheck == true) {
-		   Log.v("Preferences","Alarm set for " + minutes + " minutes.");
+		   MuteLog.Log("Preferences","Alarm set for " + minutes + " minutes.");
 		
 		   int checkMsgIntervalMs = minutes * 60 * 1000;
 		

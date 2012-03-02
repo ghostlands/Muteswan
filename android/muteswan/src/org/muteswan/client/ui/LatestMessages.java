@@ -77,6 +77,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import org.muteswan.client.MuteLog;
+
 
 public class LatestMessages extends ListActivity implements Runnable {
 
@@ -119,10 +121,10 @@ public class LatestMessages extends ListActivity implements Runnable {
 		extra = getIntent().getExtras();
 		
         if (extra != null) {
-         Log.v("LatestMessages", "onResume extra is " + extra.getString("circle"));
+         MuteLog.Log("LatestMessages", "onResume extra is " + extra.getString("circle"));
          circleExtra = extra.getString("circle");
         } else {
-        	Log.v("LatestMessages", "onResume extra is null.");
+        	MuteLog.Log("LatestMessages", "onResume extra is null.");
         	circleExtra = null;
         }
 		
@@ -143,14 +145,14 @@ public class LatestMessages extends ListActivity implements Runnable {
 	final LinkedBlockingQueue<Thread> oldThreads = new LinkedBlockingQueue<Thread>();
 	private void cleanOldThreads(boolean join) {
 		for (Thread t : oldThreads) {
-			Log.v("LatestMessages", "Cleaning thread " + t.toString());
+			MuteLog.Log("LatestMessages", "Cleaning thread " + t.toString());
 			t.interrupt();
 			 while (join == true && t != null) {
 			        try {
 			            t.join();
 			            t = null;
 			        } catch (InterruptedException e) {
-			        	Log.v("LatestMessages", "interrupted while trying to join");
+			        	MuteLog.Log("LatestMessages", "interrupted while trying to join");
 			        }
 			    }
 		}
@@ -196,9 +198,9 @@ public class LatestMessages extends ListActivity implements Runnable {
 				return;
 			
 			
-			//Log.v("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
+			//MuteLog.Log("LatestMessages", "lastInScreen " + lastInScreen + " and firstVisibleItem" + firstVisibleItem );
 			if (lastInScreen == totalItemCount) {
-				Log.v("LatestMessages", "End of list: " + moreMessages);
+				MuteLog.Log("LatestMessages", "End of list: " + moreMessages);
 				if (moreMessages == false) {
 					moreMessages = true;
 					messageViewCount = messageViewCount + getMsgDownloadAmount();
@@ -246,7 +248,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 
         
         if (circleExtra != null) {
-         Log.v("LatestMessages", "circleExtra is " + circleMap.get(circleExtra).getShortname());
+         MuteLog.Log("LatestMessages", "circleExtra is " + circleMap.get(circleExtra).getShortname());
 		 TextView txtTitle = (TextView) findViewById(R.id.android_latestmessagesprompt);
 		 txtTitle.setText("Messages for " + circleMap.get(circleExtra).getShortname());
         }
@@ -311,13 +313,13 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		
 		if (previousLoadMoreTime != 0 && ((System.currentTimeMillis()/1000) - previousLoadMoreTime) < 1) {
-			Log.v("LatestMessages", "Loadmore called within 1 second, not running.");
+			MuteLog.Log("LatestMessages", "Loadmore called within 1 second, not running.");
 			moreMessages = false;
 			return;
 		}
 		
 		
-		Log.v("LatestMessages", "moreMessages at start of refresh(): " + moreMessages);
+		MuteLog.Log("LatestMessages", "moreMessages at start of refresh(): " + moreMessages);
 		previousLoadMoreTime = System.currentTimeMillis()/1000;
 		Thread thread = new Thread(this);
 		oldThreads.add(thread);
@@ -331,7 +333,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private void refresh() {
 		
 		if (previousRefreshTime != 0 && ((System.currentTimeMillis()/500) - previousRefreshTime) < 1) {
-			Log.v("LatestMessages", "Refresh called within 0.5 second, not running.");
+			MuteLog.Log("LatestMessages", "Refresh called within 0.5 second, not running.");
 			return;
 		}
 	
@@ -345,7 +347,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		newMsgCheckState.clear();
 		
-		Log.v("LatestMessages", "Refreshing at start of refresh(): " + refreshing);
+		MuteLog.Log("LatestMessages", "Refreshing at start of refresh(): " + refreshing);
 		refreshing = true;
 		previousRefreshTime = System.currentTimeMillis()/1000;
 		Thread thread = new Thread(this);
@@ -412,7 +414,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     
     
     private void listItemClicked(View v) {
-    	Log.v("LatestMessages","List item clicked.");
+    	MuteLog.Log("LatestMessages","List item clicked.");
     }
     
     private void showCircle(TextView v) {
@@ -692,7 +694,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 			
 			
 			
-			Log.v("LatestMessages", "Setting circle to " + b.getString("circle") + " and state to " + b.getString("state"));
+			MuteLog.Log("LatestMessages", "Setting circle to " + b.getString("circle") + " and state to " + b.getString("state"));
 			if (b.getString("circle") != null && b.getString("state") != null) {
 				Integer msgDelta = b.getInt("msgDelta");
 				//if (!b.getString("state").equals("done"))
@@ -749,9 +751,9 @@ public class LatestMessages extends ListActivity implements Runnable {
         		  
         		  boolean allFailed = true;
         		  boolean someFailed = false;
-        		  Log.v("LatestMessages", "New message check is empty? " + newMsgCheckResults.isEmpty());
+        		  MuteLog.Log("LatestMessages", "New message check is empty? " + newMsgCheckResults.isEmpty());
         		  for (String status : newMsgCheckResults.keySet()) {
-        			  Log.v("LatestMessages", "checking state in dismiss dialog (" + status + ": " + newMsgCheckResults.get(status));
+        			  MuteLog.Log("LatestMessages", "checking state in dismiss dialog (" + status + ": " + newMsgCheckResults.get(status));
         			  if (newMsgCheckResults.get(status).equals("done")) {
         				  allFailed = false;
         				  continue;
@@ -872,9 +874,9 @@ public class LatestMessages extends ListActivity implements Runnable {
         @Override
         public void handleMessage(Message msg) {
         		
-        	   Log.v("LatestMessages", "Sorting!");
+        	   MuteLog.Log("LatestMessages", "Sorting!");
         	   if (messageList == null || messageList.size() == 0) {
-        		Log.v("LatestMessages", "Refusing to sort empty or null list.");
+        		MuteLog.Log("LatestMessages", "Refusing to sort empty or null list.");
 				return;
         	   }
         	
@@ -897,7 +899,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         		    sorting = false;
         		    
         		} else {
-        			Log.v("LatestMessages", "Concurrent sort request!");
+        			MuteLog.Log("LatestMessages", "Concurrent sort request!");
         		}
         		
         }
@@ -974,10 +976,10 @@ final Handler stopSpinningHandler = new Handler() {
 			Integer start, Integer last) {
 		
 		
-		Log.v("LatestMessages","updateLatestMessages circle " + r.getShortname());
+		MuteLog.Log("LatestMessages","updateLatestMessages circle " + r.getShortname());
 		
 		if (Thread.currentThread().isInterrupted()) {
-			Log.v("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
+			MuteLog.Log("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
 			return;
 		}		
 		
@@ -1000,7 +1002,7 @@ final Handler stopSpinningHandler = new Handler() {
 		if (lastId <= 0)
 			return;
 
-		Log.v("LatestMessages", "Update messages, lastId is " + lastId
+		MuteLog.Log("LatestMessages", "Update messages, lastId is " + lastId
 				+ " and last is " + last + " (" + (lastId - last) + ")");
 		for (Integer i = lastId; i > lastId - last; i--) {
 			if (i <= 0)
@@ -1009,14 +1011,14 @@ final Handler stopSpinningHandler = new Handler() {
 
 			
 			
-			//Log.v("LatestMessages", "Reading message " + i + " moreMessages " + moreMessages + " refreshing " + refreshing);
+			//MuteLog.Log("LatestMessages", "Reading message " + i + " moreMessages " + moreMessages + " refreshing " + refreshing);
 			if (Thread.currentThread().isInterrupted()) {
-    			Log.v("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
+    			MuteLog.Log("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
     			return;
     		}
 			msg = r.getMsgFromDb(i.toString(),true);
 			if (Thread.currentThread().isInterrupted()) {
-    			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
+    			MuteLog.Log("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
     			return;
     		}
 			
@@ -1034,14 +1036,14 @@ final Handler stopSpinningHandler = new Handler() {
 					   startSpinningHandler.sendEmptyMessage(0);
 
 					try {
-						Log.v("LatestMessages", "I am " + Thread.currentThread());
+						MuteLog.Log("LatestMessages", "I am " + Thread.currentThread());
 						msgService.downloadMsgRangeFromTor(Main.genHexHash(r.getFullText()), i, lastId - last);
 					} catch (RemoteException e) {
 						Log.e("LatestMessages", "Error downloading message " + i + " from msgService!");
 					}
 					
 					if (Thread.currentThread().isInterrupted()) {
-		    			Log.v("LatestMessages", "Interrupted after downloading " + Thread.currentThread().toString());
+		    			MuteLog.Log("LatestMessages", "Interrupted after downloading " + Thread.currentThread().toString());
 		    			return;
 		    		}
 					
@@ -1096,10 +1098,10 @@ final Handler stopSpinningHandler = new Handler() {
 			ArrayList<MuteswanMessage> msgs, Integer first, Integer amount) {
 
 		
-		Log.v("LatestMessages", "Refreshing: " + refreshing);
+		MuteLog.Log("LatestMessages", "Refreshing: " + refreshing);
 		
 		// populate list from db initially
-		Log.v("LatestMessages", "circleExtra is " + circleExtra);
+		MuteLog.Log("LatestMessages", "circleExtra is " + circleExtra);
 		for (Circle r : store) {
 			if (circleExtra != null && !circleMap.get(circleExtra).getFullText().equals(r.getFullText()))
 				continue;
@@ -1110,7 +1112,7 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		// we are just loading more messages here, no need to check for new messages and potentially download. 
 		if (moreMessages == true) {
-			Log.v("LatestMessages", "messageViewCount is " + messageViewCount);
+			MuteLog.Log("LatestMessages", "messageViewCount is " + messageViewCount);
 			moreMessages = false;
 			return(msgs);
 		}
@@ -1130,11 +1132,11 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		while (newMsgCheckState.isEmpty()) {
 		  try {
-			    Log.v("LatestMessages", "Waiting for first population of check messages.");
+			    MuteLog.Log("LatestMessages", "Waiting for first population of check messages.");
 				Thread.currentThread();
 				Thread.sleep(250);
 			  } catch (InterruptedException e) {
-				  Log.v("LatestMessages", "Error: thread interrupted " + e.getMessage());
+				  MuteLog.Log("LatestMessages", "Error: thread interrupted " + e.getMessage());
 				  return(null);
 			  }
 		}
@@ -1144,7 +1146,7 @@ final Handler stopSpinningHandler = new Handler() {
 		
 			
 			if (Thread.currentThread().isInterrupted()) {
-    			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
+    			MuteLog.Log("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
     			return(null);
     		}
 			
@@ -1164,10 +1166,10 @@ final Handler stopSpinningHandler = new Handler() {
 				Integer msgDelta = Integer.parseInt(circleNewMsgs[1]);
 				if (msgDelta >= getMsgDownloadAmount())
 					msgDelta = getMsgDownloadAmount();
-				Log.v("LatestMessages", "CurCircle is " + circleNewMsgs[0] + " and delta is " + msgDelta);
+				MuteLog.Log("LatestMessages", "CurCircle is " + circleNewMsgs[0] + " and delta is " + msgDelta);
 				//dataSetChanged.sendEmptyMessage(0);
 				if (msgDelta != 0) {
-				  Log.v("LatestMessages", "Update latest messages because delta is " + msgDelta + " first is " + first);
+				  MuteLog.Log("LatestMessages", "Update latest messages because delta is " + msgDelta + " first is " + first);
 				  try {
 					msgService.downloadLatestMsgRangeFromTor(Main.genHexHash(store.asHashMap().get(circleNewMsgs[0]).getFullText()), msgDelta);
 				} catch (RemoteException e) {
@@ -1215,7 +1217,7 @@ final Handler stopSpinningHandler = new Handler() {
 		for (String key : newMsgCheckState.keySet()) {
 			String circle = key;
 			String delta = newMsgCheckState.get(key).toString();
-			//Log.v("LatestMessages", "popFirstDoneMsgCheck circle is " + key + " and delta is " + delta);
+			//MuteLog.Log("LatestMessages", "popFirstDoneMsgCheck circle is " + key + " and delta is " + delta);
 			if (delta != null &&  newMsgCheckState.get(key) != -1) {
 				newMsgCheckState.remove(key);
 				
@@ -1231,7 +1233,7 @@ final Handler stopSpinningHandler = new Handler() {
 
 	@Override
 	public void run() {
-		Log.v("LatestMessages","Running!");
+		MuteLog.Log("LatestMessages","Running!");
 		
 		Intent serviceIntent = new Intent(this,NewMessageService.class);
         bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
@@ -1257,7 +1259,7 @@ final Handler stopSpinningHandler = new Handler() {
 
 		
 		
-		//Log.v("LatestMessages","getLatestMessages got circle passed down " + circle.getShortname());
+		//MuteLog.Log("LatestMessages","getLatestMessages got circle passed down " + circle.getShortname());
 		
 
 		
@@ -1265,7 +1267,7 @@ final Handler stopSpinningHandler = new Handler() {
         	
 			public void run() {
         		if (Thread.currentThread().isInterrupted()) {
-        			Log.v("LatestMessages", "Thread interrupted!");
+        			MuteLog.Log("LatestMessages", "Thread interrupted!");
         			return;
         		}
 		
@@ -1275,17 +1277,17 @@ final Handler stopSpinningHandler = new Handler() {
         		b.putString("circle", Main.genHexHash(circle.getFullText()));
         		b.putString("state", "starting");
         		m.setData(b);
-        		Log.v("LatestMessages","Sending Message with value " + b.getString("circle") + " Current thread " + Thread.currentThread().toString());
+        		MuteLog.Log("LatestMessages","Sending Message with value " + b.getString("circle") + " Current thread " + Thread.currentThread().toString());
         		newMsgCheckEventHandler.sendMessage(m);
         	
         		if (Thread.currentThread().isInterrupted()) {
-        			Log.v("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
+        			MuteLog.Log("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
         			return;
         		}
 		
         		Integer prevLastMsgId = circle.getLastMsgId(true);
         		if (Thread.currentThread().isInterrupted()) {
-        			Log.v("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
+        			MuteLog.Log("LatestMessages", "Interrupted 1 " + Thread.currentThread().toString());
         			return;
         		}
         	
@@ -1309,19 +1311,19 @@ final Handler stopSpinningHandler = new Handler() {
 				}
         		
         		if (Thread.currentThread().isInterrupted()) {
-        			Log.v("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
+        			MuteLog.Log("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
         			return;
         		}
         			
         		
-        		Log.v("LatestMessages", "Current thread " + Thread.currentThread().toString());
+        		MuteLog.Log("LatestMessages", "Current thread " + Thread.currentThread().toString());
         		if (lastMsg != null && lastMsg >= 0) {
         			//circle.updateLastMessage(lastMsg,true);
         			try {
         				circle.setCurLastMsgId(lastMsg);
 						msgService.updateLastMessage(Main.genHexHash(circle.getFullText()),lastMsg);
 					} catch (RemoteException e) {
-						Log.v("LatestMessages", "Error updating latest message using msgService!");
+						MuteLog.Log("LatestMessages", "Error updating latest message using msgService!");
 						return;
 					}
         		
@@ -1332,7 +1334,7 @@ final Handler stopSpinningHandler = new Handler() {
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
-        			Log.v("LatestMessages","Circle " + Main.genHexHash(circle.getFullText()) + " has last message of: " + lastMsg + " and delta of " + delta);
+        			MuteLog.Log("LatestMessages","Circle " + Main.genHexHash(circle.getFullText()) + " has last message of: " + lastMsg + " and delta of " + delta);
         			b2.putString("circle", Main.genHexHash(circle.getFullText()));
         			b2.putString("state", "done");
         			b2.putInt("msgDelta", delta);
@@ -1341,7 +1343,7 @@ final Handler stopSpinningHandler = new Handler() {
         		} else {
         			Message m2 = Message.obtain();
         			Bundle b2 = new Bundle();
-        			Log.v("LatestMessages","Circle failed to get last message: " + circle.getShortname());
+        			MuteLog.Log("LatestMessages","Circle failed to get last message: " + circle.getShortname());
         			b2.putString("circle", Main.genHexHash(circle.getFullText()));
         			b2.putString("state", "failed");
         			m2.setData(b2);
@@ -1385,7 +1387,7 @@ final Handler stopSpinningHandler = new Handler() {
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-     	Log.v("LatestMessages", "onServiceConnected called.");
+     	MuteLog.Log("LatestMessages", "onServiceConnected called.");
      	if (msgService == null) {
      		Log.e("LatestMessages", "msgService is null ");
      	}

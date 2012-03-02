@@ -49,7 +49,7 @@ public class MuteswanHttp {
     
 	private void initHttp() {
 		
-		Log.v("MuteswanHttp", "Called initHttp!");
+		MuteLog.Log("MuteswanHttp", "Called initHttp!");
 
 		SocksSocketFactory socksFactory = new SocksSocketFactory("127.0.0.1",9050); 
 		

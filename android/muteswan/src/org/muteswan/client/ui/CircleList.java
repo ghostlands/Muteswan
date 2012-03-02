@@ -22,6 +22,7 @@ import java.util.Comparator;
 
 import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.GenerateCircle;
+import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
@@ -137,9 +138,9 @@ public class CircleList extends ListActivity {
         newCircle = extra.getString("newCircle");
         initialText = extra.getString("initialText");
      
-        Log.v("CircleList", "Before CircleStore constructor.");
+        MuteLog.Log("CircleList", "Before CircleStore constructor.");
     	store = new CircleStore(this,true,false);
-    	Log.v("CircleList", "After CircleStore constructor.");
+    	MuteLog.Log("CircleList", "After CircleStore constructor.");
 
         setContentView(R.layout.circlelist);
         
@@ -405,7 +406,7 @@ public class CircleList extends ListActivity {
 		
 		
 		intent.putExtra("initialText", initialText);
-		//Log.v("CircleList", "Would launch " + action.toString());
+		//MuteLog.Log("CircleList", "Would launch " + action.toString());
 		startActivity(intent);
 
 	}
@@ -484,7 +485,7 @@ public class CircleList extends ListActivity {
      	            CircleStore store = new CircleStore(getApplicationContext(),true,false);
                  	Circle circle = new Circle(getApplicationContext(),circleTxt);
                  	if (circle.getShortname() == null)
-                 		Log.v("CircleList","Circle is null after initializing manually.");
+                 		MuteLog.Log("CircleList","Circle is null after initializing manually.");
      	            store.updateStore(circleTxt);
      	            
          	        Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);

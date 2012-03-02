@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
@@ -72,7 +73,7 @@ public class CreateCircle extends Activity implements Runnable {
 	       }
 	       
 	       usePublicServer = defPrefs.getBoolean("usePublicServer", true);
-	       Log.v("CreateCircle","Use public server is: " + usePublicServer);
+	       MuteLog.Log("CreateCircle","Use public server is: " + usePublicServer);
 	    
 	       
 	       final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);

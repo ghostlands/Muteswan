@@ -38,7 +38,7 @@ public class NewMessageReceiver extends BroadcastReceiver {
 			return;
 		
 		
-   	    Log.v("MuteswanReceiver", "Received alarm, trying to connect to service.");
+   	    MuteLog.Log("MuteswanReceiver", "Received alarm, trying to connect to service.");
    	    
 
    	    int count = 0;
@@ -55,19 +55,19 @@ public class NewMessageReceiver extends BroadcastReceiver {
    	    }
 	
        if (msgService == null) {
-   	     Log.v("MuteswanReceiver", "Service not running, starting.");
+   	     MuteLog.Log("MuteswanReceiver", "Service not running, starting.");
 	     ctx.startService(svc);
    	   } else {
    		   
    		 try {
 			if (msgService.isUserCheckingMessages()) {
-				 Log.v("MuteswanReceiver", "Someone is checking messages, bailing out of check.");
+				 MuteLog.Log("MuteswanReceiver", "Someone is checking messages, bailing out of check.");
 				 return;
 			 }
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}
-   	     Log.v("MuteswanReceiver", "Service already running.");
+   	     MuteLog.Log("MuteswanReceiver", "Service already running.");
    	     try {
 		   msgService.refreshLatest();
 	    } catch (RemoteException e) {

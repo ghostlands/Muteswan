@@ -19,6 +19,8 @@ package org.muteswan.client.data;
 
 import java.util.LinkedList;
 
+import org.muteswan.client.MuteLog;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -111,7 +113,7 @@ public class IdentityStore extends LinkedList<Identity> {
 		Identity[] identityArr = new Identity[identityList.size()];
         int i = 0;
         for (Identity id : identityList) {
-        	Log.v("IdentityStore", "id is " + id.name);
+        	MuteLog.Log("IdentityStore", "id is " + id.name);
         	identityArr[i] = id;
         	i++;
         }

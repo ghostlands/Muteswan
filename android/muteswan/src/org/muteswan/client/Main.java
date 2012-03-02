@@ -370,7 +370,7 @@ public class Main extends Activity implements Runnable {
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-        	Log.v("Muteswan", "onServiceConnected called.");
+        	MuteLog.Log("Muteswan", "onServiceConnected called.");
         	if (newMsgService == null) {
         		Log.e("Muteswan", "newMsgService is null ");
         	}

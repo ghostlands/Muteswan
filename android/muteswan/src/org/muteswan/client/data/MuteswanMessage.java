@@ -37,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.muteswan.client.Base64;
 import org.muteswan.client.Crypto;
+import org.muteswan.client.MuteLog;
 
 import android.util.Log;
 
@@ -125,7 +126,7 @@ public class MuteswanMessage {
 			e.printStackTrace();
 		}
 
-		Log.v("MuteswanMessage","base64IVData: " + base64IVData);
+		MuteLog.Log("MuteswanMessage","base64IVData: " + base64IVData);
 		cryptoDec = new Crypto(circle.getKey().getBytes(),rawMsgBytes,ivData);
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
@@ -175,7 +176,7 @@ public class MuteswanMessage {
 	
 	
 	public LinkedList<Identity> verifySignatures(IdentityStore idStore) {
-		//Log.v("Message", "In verifySignatures");
+		//MuteLog.Log("Message", "In verifySignatures");
 		
 		Signature sig;
 		try {
@@ -192,12 +193,12 @@ public class MuteswanMessage {
 			String[] signComponents = signatures[i].split(":");
 			for (Identity identity : idStore) {
 				if (identity.pubKeyHash.equals(signComponents[0])) {
-					//Log.v("Message", "checking identity " + identity.getName() + " hash " + identity.pubKeyHash);
+					//MuteLog.Log("Message", "checking identity " + identity.getName() + " hash " + identity.pubKeyHash);
 					
 					
 					try {
-						//Log.v("Message", "signComponents[0]:" + signComponents[0]);
-						//Log.v("Message", "signComponents[1]:" + signComponents[1]);
+						//MuteLog.Log("Message", "signComponents[0]:" + signComponents[0]);
+						//MuteLog.Log("Message", "signComponents[1]:" + signComponents[1]);
 
 						
 						byte[] sigBytes = Base64.decode(signComponents[1]);
@@ -205,9 +206,9 @@ public class MuteswanMessage {
 					    sig.update(getMsg().getBytes("UTF8"));
 					    if (sig.verify(sigBytes)) {
 							addValidSig(identity);
-							Log.v("Message", "Verified identity " + identity.getName());
+							MuteLog.Log("Message", "Verified identity " + identity.getName());
 					      } else {
-					    	Log.v("Message", "Failed to verify signature.");
+					    	MuteLog.Log("Message", "Failed to verify signature.");
 					      }
 					} catch (IOException e) {
 						e.printStackTrace();

@@ -69,7 +69,7 @@ public class TorStatus {
     	try {
     		
     		if (!haveNetworkConnection()) {
-    			Log.v("TorStatus", "Looks like network is down.");
+    			MuteLog.Log("TorStatus", "Looks like network is down.");
     			return false;
     		}
     		
@@ -81,18 +81,18 @@ public class TorStatus {
 			String checkContent = EntityUtils.toString(resp.getEntity());
 		
 			if (checkContent.contains(ctx.getString(R.string.tor_check_verify_string))) {
-				Log.v("TorStatus","Looks like Tor is good.");
+				MuteLog.Log("TorStatus","Looks like Tor is good.");
 				return(true);
 			} else {
-				Log.v("TorStatus", "Tor failed check.");
+				MuteLog.Log("TorStatus", "Tor failed check.");
 				return(false);
 			}
 			
 			//if (checkContent.contains("So you are NOT using Tor to reach the web!")) {
-			//	Log.v("TorStatus", "Tor failed check.");
+			//	MuteLog.Log("TorStatus", "Tor failed check.");
 			//	return(false);
 			//} else if (checkContent.contains("So you are using Tor successfully to reach the web!")) {
-			//	Log.v("TorStatus","Looks like Tor is good.");
+			//	MuteLog.Log("TorStatus","Looks like Tor is good.");
 			//	return(true);
 			//}
 			
@@ -100,7 +100,7 @@ public class TorStatus {
 			e.printStackTrace();
 			return(false);
 		} catch (IOException e) {
-			Log.v("TorStatus", "Tor not running.");
+			MuteLog.Log("TorStatus", "Tor not running.");
 			return(false);
 		}
     	

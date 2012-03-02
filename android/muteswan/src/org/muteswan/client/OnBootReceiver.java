@@ -17,7 +17,7 @@ public class OnBootReceiver extends BroadcastReceiver {
                 if (intent.getAction() != null
                                 && intent.getAction().equals("android.intent.action.BOOT_COMPLETED"))
                 {
-                  Log.v("MuteswanOnBoot", "Registering service if configured.");
+                  MuteLog.Log("MuteswanOnBoot", "Registering service if configured.");
           		  SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
              		
            		  boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);			

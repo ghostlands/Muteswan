@@ -43,6 +43,8 @@ import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
+import org.muteswan.client.MuteLog;
+
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -167,7 +169,7 @@ public class EditCircle extends Activity {
              public void onClick( DialogInterface dialog, int clicked, boolean selected )
              {
             	 keylistIdentitiesSelected[clicked] = selected;
-            	 Log.v("WriteMsg", "Set " + clicked + " to " + selected);
+            	 MuteLog.Log("WriteMsg", "Set " + clicked + " to " + selected);
              }
      }
 	
@@ -231,7 +233,7 @@ public class EditCircle extends Activity {
 				while ((is.read(imageBytes,count,1)) != -1) {
 					count++;
 				}
-				Log.v("EditCircle", "Count is " + count + " and content length is " + imageBytes.length);
+				MuteLog.Log("EditCircle", "Count is " + count + " and content length is " + imageBytes.length);
 				//is.read(imageBytes, 0, imageBytes.length);
 				ByteArrayInputStream is2 = new ByteArrayInputStream(imageBytes);
 				

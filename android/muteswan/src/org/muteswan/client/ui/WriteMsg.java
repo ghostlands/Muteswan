@@ -55,6 +55,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import org.muteswan.client.MuteLog;
+
 
 public class WriteMsg extends ListActivity {
 
@@ -124,7 +126,7 @@ public class WriteMsg extends ListActivity {
 	       
 	       
 	       //initialize circles list
-	       Log.v("CircleSize", "Circle store size: " + cs.size());
+	       MuteLog.Log("CircleSize", "Circle store size: " + cs.size());
 	       
 	       checkedCircles = new Boolean[cs.size()];
 	       for (Circle c : cs) {
@@ -253,7 +255,7 @@ public class WriteMsg extends ListActivity {
              public void onClick( DialogInterface dialog, int clicked, boolean selected )
              {
             	 signSelections[clicked] = selected;
-            	 Log.v("WriteMsg", "Set " + clicked + " to " + selected);
+            	 MuteLog.Log("WriteMsg", "Set " + clicked + " to " + selected);
              }
      }
 	 
@@ -273,7 +275,7 @@ public class WriteMsg extends ListActivity {
    
 	 public Button.OnClickListener selectSigButtonHandler  = new View.OnClickListener() {
         public void onClick( View v ) {
-        		Log.v("WriteMsg", "select sig button clicked.\n");
+        		MuteLog.Log("WriteMsg", "select sig button clicked.\n");
                  showDialog( 0 );
          }
      };
@@ -536,7 +538,7 @@ public class WriteMsg extends ListActivity {
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-     	Log.v("LatestMessages", "onServiceConnected called.");
+     	MuteLog.Log("LatestMessages", "onServiceConnected called.");
      	if (msgService == null) {
      		Log.e("LatestMessages", "msgService is null ");
      	}

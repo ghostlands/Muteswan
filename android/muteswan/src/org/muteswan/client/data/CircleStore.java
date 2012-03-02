@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.muteswan.client.Main;
+import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
 
 import android.content.Context;
@@ -68,7 +69,7 @@ final public class CircleStore extends LinkedList<Circle> {
 
 	
 	public CircleStore(Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
-		Log.v("CircleStore", "Circle store called!");
+		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	    this.muteswanHttp = muteswanHttp;
@@ -82,7 +83,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	}
 	
 	public CircleStore(Context applicationContext, boolean readDb, boolean initCache) {
-		Log.v("CircleStore", "Circle store called!");
+		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	  

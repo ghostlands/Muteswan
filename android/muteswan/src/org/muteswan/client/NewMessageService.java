@@ -75,14 +75,14 @@ public class NewMessageService extends Service {
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
-		Log.v("MuteswanService", "onStart called.");
+		MuteLog.Log("MuteswanService", "onStart called.");
 		this.stopForeground(false);
 		start();
 	}
 	
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		
-		Log.v("MuteswanService", "onStartCommand called.");
+		MuteLog.Log("MuteswanService", "onStartCommand called.");
         //return START_STICKY;START_STICKY_COMPATIBILITY
 		start();
 		return 1;
@@ -131,14 +131,14 @@ public class NewMessageService extends Service {
 		notifyIds = new HashMap<String,Integer>();
 		notifyId = 8392;
 		   
-		 Log.v("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
+		 MuteLog.Log("MuteswanService", "Service initialized, we are: " + Thread.currentThread().getId());
 		 if (muteswanHttp == null)
 		   muteswanHttp = new MuteswanHttp();
 
 		 if (circleStore == null) {
 		 	circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 		 	for (Circle r : circleStore) {
-				  Log.v("MuteswanService", "Circle " + r.getShortname() + " registered.");
+				  MuteLog.Log("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);
 		 	}
 		 }
@@ -152,7 +152,7 @@ public class NewMessageService extends Service {
 		
 		// Startup
 		if (started  == false) {
-		   Log.v("MuteswanService", "Start flag is false, exiting.");
+		   MuteLog.Log("MuteswanService", "Start flag is false, exiting.");
 		  
 		  
 		  started = true;
@@ -187,8 +187,8 @@ public class NewMessageService extends Service {
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
 	
 	
-		Log.v("NewMessageService", "Set pending intent to launch " + c.getShortname() + "(" + Main.genHexHash(c.getFullText()) + ")");
-		Log.v("NewMessageService", "Setting notify id of " + notifyId);
+		MuteLog.Log("NewMessageService", "Set pending intent to launch " + c.getShortname() + "(" + Main.genHexHash(c.getFullText()) + ")");
+		MuteLog.Log("NewMessageService", "Setting notify id of " + notifyId);
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
 		mNM.notify((Integer) notifyIds.get(c.getFullText()), notify);
 	}
@@ -207,8 +207,8 @@ public class NewMessageService extends Service {
 		 torOK = false;
 		 notifyIds = new HashMap<String,Integer>();
 	
-		 Log.v("NewMessageService", "Circlestore: " + circleStore.hashCode());
-		 Log.v("MuteswanService","pollList size " + pollList.size());
+		 MuteLog.Log("NewMessageService", "Circlestore: " + circleStore.hashCode());
+		 MuteLog.Log("MuteswanService","pollList size " + pollList.size());
 		 
 		
 				 Thread torCheckThread = new Thread() {
@@ -228,7 +228,7 @@ public class NewMessageService extends Service {
 			 Thread oldThread = pollList.get(circle);
 			if (oldThread != null) {
  	         try {
-				  Log.v("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
+				  MuteLog.Log("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
 			      oldThread.interrupt();
 			      oldThread.join(5);
 			      oldThread = null;
@@ -237,9 +237,9 @@ public class NewMessageService extends Service {
 			  }
 			}
 
-			 Log.v("NewMessageService", "Circle: " + circle.hashCode());
+			 MuteLog.Log("NewMessageService", "Circle: " + circle.hashCode());
 			
-		     Log.v("MuteswanService", "Starting poll of " + circle.getShortname());
+		     MuteLog.Log("MuteswanService", "Starting poll of " + circle.getShortname());
 			
 			
 				 Thread nThread = new Thread() {
@@ -250,7 +250,7 @@ public class NewMessageService extends Service {
 						 int waitCount = 0;
 						 while (!torOK) {
 							 if (waitCount >= 29) {
-								 Log.v("LatestMessages", "Tor seems to down, bailing out.");
+								 MuteLog.Log("LatestMessages", "Tor seems to down, bailing out.");
 								 return;
 							 }
 							 Thread.currentThread();
@@ -264,13 +264,13 @@ public class NewMessageService extends Service {
 						 
 						 
 						 
-					    	Log.v("MuteswanService","THREAD RUNNING: " + circle.getShortname());
+					    	MuteLog.Log("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
 					    		final Integer startLastId = circle.getLastMsgId(false);
 								Integer lastId = circle.getLastTorMessageId();
-						 Log.v("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
+						 MuteLog.Log("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
 					    		if (lastId == null || lastId < 0) {
-					    			Log.v("MuteswanService", "Got null or negative from tor for " + circle.getShortname() + ", bailing out.");
+					    			MuteLog.Log("MuteswanService", "Got null or negative from tor for " + circle.getShortname() + ", bailing out.");
 					    			//pollList.remove(circle);
 					    			return;
 					    			//handleStopSelf.sendEmptyMessage(0);
@@ -282,22 +282,22 @@ public class NewMessageService extends Service {
 					    	
 				       
 						
-				        Log.v("MuteswanService", circle.getShortname() + " has lastId " + lastId);
+				        MuteLog.Log("MuteswanService", circle.getShortname() + " has lastId " + lastId);
 				        
 
 				        
 				        // FIXME: REFACTOR
 				    	  
-				    	 Log.v("NewMessageService", "Got last id of " + startLastId);
+				    	 MuteLog.Log("NewMessageService", "Got last id of " + startLastId);
 				    	 if (startLastId < lastId) {
 				      
-				    	   Log.v("NewMessageService", "Not using long poll, starting check for " + circle.getShortname());
+				    	   MuteLog.Log("NewMessageService", "Not using long poll, starting check for " + circle.getShortname());
 				    	   int downloadCount = 0;
 				    	   
 				    	   for (Integer i = lastId; i > startLastId; i--) {
 				    		 if (downloadCount >= numMsgDownload)
 				    		 	 break;
-				    		 Log.v("NewMessageService", "Downloading " + i +  " for " + circle.getShortname());
+				    		 MuteLog.Log("NewMessageService", "Downloading " + i +  " for " + circle.getShortname());
 				    		 try {
 								MuteswanMessage msg = circle.getMsgFromTor(i);
 								if (msg != null && msg.signatures[0] != null) {
@@ -336,9 +336,9 @@ public class NewMessageService extends Service {
 	/*
 	private MuteswanMessage longpollForNewMessage(final Circle circle, Integer id) throws IOException {
 		if (circle == null) {
-			Log.v("AtffService", "WTF, circle is null.");
+			MuteLog.Log("AtffService", "WTF, circle is null.");
 		}
-		Log.v("MuteswanService","Longpoll for " + circle.getShortname());
+		MuteLog.Log("MuteswanService","Longpoll for " + circle.getShortname());
 		MuteswanMessage msg = circle.getMsgLongpoll(id);
 		return(msg);
 	}*/
@@ -348,7 +348,7 @@ public class NewMessageService extends Service {
 	private final IMessageService.Stub binder = new IMessageService.Stub() {
 
 		public void refreshLatest() {
-			Log.v("MuteswanService", "runPoll() called.");
+			MuteLog.Log("MuteswanService", "runPoll() called.");
 			
 			runPoll();
 			
@@ -370,7 +370,7 @@ public class NewMessageService extends Service {
 
 		@Override
 		public boolean isUserCheckingMessages() throws RemoteException {
-			Log.v("NewMessageService", "isUserCheckingMessages " + isUserCheckingMessages);
+			MuteLog.Log("NewMessageService", "isUserCheckingMessages " + isUserCheckingMessages);
 	    	if (isUserCheckingMessages == true) {
 	    		isUserCheckingMessages = false;
 	    		return(true);
@@ -380,7 +380,7 @@ public class NewMessageService extends Service {
 		}
 		
 		public void setUserChecking(boolean checkValue) {
-			Log.v("NewMessageService", "setUserChecking " + checkValue);
+			MuteLog.Log("NewMessageService", "setUserChecking " + checkValue);
 			isUserCheckingMessages = checkValue;
 		}
 
@@ -416,7 +416,7 @@ public class NewMessageService extends Service {
 			if (!linkedQueue.contains(circle)) {
 				  linkedQueue.add(circle);
 				} else {
-					Log.v("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
+					MuteLog.Log("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
 					while (linkedQueue.contains(circle)) {
 						try {
 							Thread.currentThread();
@@ -434,15 +434,15 @@ public class NewMessageService extends Service {
 		
 				
 				if (Thread.currentThread().isInterrupted() || msgs == null) {
-					Log.v("NewMessageService","msgs is null or was interrupted");
+					MuteLog.Log("NewMessageService","msgs is null or was interrupted");
 					linkedQueue.remove(circle);
 					circle.closedb();
 					return(-4);
 				}
-				Log.v("NewMessageService", "We got " + msgs.size() + " downloaded.");
+				MuteLog.Log("NewMessageService", "We got " + msgs.size() + " downloaded.");
 				
 				for (MuteswanMessage msg : msgs) {
-					Log.v("NewMessageService", "I am " + Thread.currentThread() + " downloading " + msg.getId());
+					MuteLog.Log("NewMessageService", "I am " + Thread.currentThread() + " downloading " + msg.getId());
 					if (msg != null && msg.signatures[0] != null) {
 						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getMsg(),
 							msg.signatures);
@@ -475,7 +475,7 @@ public class NewMessageService extends Service {
 			if (!linkedQueue.contains(circle)) {
 			  linkedQueue.add(circle);
 			} else {
-				Log.v("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
+				MuteLog.Log("NewMessageSservice", "Two downloads at once to " + circle.getShortname());
 				while (linkedQueue.contains(circle)) {
 					try {
 						Thread.currentThread();
@@ -498,7 +498,7 @@ public class NewMessageService extends Service {
 					return(-4);
 				}
 				
-				Log.v("NewMessageService", "I am " + Thread.currentThread());
+				MuteLog.Log("NewMessageService", "I am " + Thread.currentThread());
 				if (msg != null && msg.signatures[0] != null) {
 					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg(),
 							msg.signatures);
@@ -564,7 +564,7 @@ public class NewMessageService extends Service {
 	private CreatedCircleReceiver createdCircleReceiver = new CreatedCircleReceiver();
 	
 	public IBinder onBind(Intent intent) {
-		Log.v("NewMessageService","onBind called.");
+		MuteLog.Log("NewMessageService","onBind called.");
 		return binder;
 	}
 
@@ -583,7 +583,7 @@ public class NewMessageService extends Service {
 	private class IsUserCheckingMessagesReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	Log.v("NewMessageService", "Got alarm to not check!");
+	    	MuteLog.Log("NewMessageService", "Got alarm to not check!");
 	    	isUserCheckingMessages = true;
 	    }
 	}
@@ -591,7 +591,7 @@ public class NewMessageService extends Service {
 	private class DeletedCircleReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	Log.v("NewMessageService", "Got deleted circle receiver!");
+	    	MuteLog.Log("NewMessageService", "Got deleted circle receiver!");
 	    	init();
 	    }
 	}
@@ -599,7 +599,7 @@ public class NewMessageService extends Service {
 	private class JoinedCircleReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	Log.v("NewMessageService", "Got joined circle receiver!");
+	    	MuteLog.Log("NewMessageService", "Got joined circle receiver!");
 	    	init();
 	    }
 	}
@@ -607,7 +607,7 @@ public class NewMessageService extends Service {
 	private class CreatedCircleReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	Log.v("NewMessageService", "Got created circle receiver!");
+	    	MuteLog.Log("NewMessageService", "Got created circle receiver!");
 	    	init();
 	    }
 	}
