@@ -121,6 +121,7 @@ public class NewMessageService extends Service {
     	}
     };
 	private boolean torOK;
+	private boolean reinit;
     
 	private void init() {
 		 pollList.clear();
@@ -135,12 +136,13 @@ public class NewMessageService extends Service {
 		 if (muteswanHttp == null)
 		   muteswanHttp = new MuteswanHttp();
 
-		 if (circleStore == null) {
+		 if (circleStore == null || reinit) {
 		 	circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
 		 	for (Circle r : circleStore) {
 				  MuteLog.Log("MuteswanService", "Circle " + r.getShortname() + " registered.");
 				  registerPoll(r);
 		 	}
+		 	reinit = false;
 		 }
 		 
 	}
@@ -387,8 +389,11 @@ public class NewMessageService extends Service {
 
 		@Override
 		public int getLastTorMsgId(String circleHash) throws RemoteException {
-			Integer lastId = circleStore.asHashMap().get(circleHash).getLastTorMessageId();
-			return(lastId);
+			//Integer lastId = null;
+			//if (circleStore.asHashMap().get(circleHash) != null)
+			//	lastId = circleStore.asHashMap().get(circleHash).getLastTorMessageId();
+			//return(lastId);
+			return(circleStore.asHashMap().get(circleHash).getLastTorMessageId());
 		}
 		
 		
@@ -592,6 +597,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got deleted circle receiver!");
+	    	reinit = true;
 	    	init();
 	    }
 	}
@@ -600,6 +606,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got joined circle receiver!");
+	    	reinit = true;
 	    	init();
 	    }
 	}
@@ -608,6 +615,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got created circle receiver!");
+	    	reinit = true;
 	    	init();
 	    }
 	}
