@@ -45,6 +45,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -99,7 +100,8 @@ public class NewMessageService extends Service {
 		registerReceiver(deletedCircleReceiver, new IntentFilter(CircleList.DELETED_CIRCLE_BROADCAST));
 		registerReceiver(joinedCircleReceiver, new IntentFilter(CircleList.JOINED_CIRCLE_BROADCAST));
 		registerReceiver(createdCircleReceiver, new IntentFilter(CreateCircle.CREATED_CIRCLE_BROADCAST));
-		init();
+		registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		init(false);
 		
 	}
 	
@@ -107,6 +109,7 @@ public class NewMessageService extends Service {
 	public void onDestroy() {
 		stopservice();
 		unregisterReceiver(isUserCheckingMessagesReceiver);
+		unregisterReceiver(networkChangeReceiver);
 		unregisterReceiver(deletedCircleReceiver);
 		unregisterReceiver(joinedCircleReceiver);
 		unregisterReceiver(createdCircleReceiver);
@@ -123,7 +126,7 @@ public class NewMessageService extends Service {
 	private boolean torOK;
 	private boolean reinit;
     
-	private void init() {
+	private void init(boolean reinit) {
 		 pollList.clear();
 		 
 		notificationIntent = new Intent(this, Main.class);
@@ -372,9 +375,9 @@ public class NewMessageService extends Service {
 
 		@Override
 		public boolean isUserCheckingMessages() throws RemoteException {
-			MuteLog.Log("NewMessageService", "isUserCheckingMessages " + isUserCheckingMessages);
-	    	if (isUserCheckingMessages == true) {
-	    		isUserCheckingMessages = false;
+			MuteLog.Log("NewMessageService", "skipNextCheck is " + skipNextCheck);
+	    	if (skipNextCheck == true) {
+	    		skipNextCheck = false;
 	    		return(true);
 	    	} else {
 	    		return(false);
@@ -383,16 +386,12 @@ public class NewMessageService extends Service {
 		
 		public void setUserChecking(boolean checkValue) {
 			MuteLog.Log("NewMessageService", "setUserChecking " + checkValue);
-			isUserCheckingMessages = checkValue;
+			skipNextCheck = checkValue;
 		}
 
 
 		@Override
 		public int getLastTorMsgId(String circleHash) throws RemoteException {
-			//Integer lastId = null;
-			//if (circleStore.asHashMap().get(circleHash) != null)
-			//	lastId = circleStore.asHashMap().get(circleHash).getLastTorMessageId();
-			//return(lastId);
 			return(circleStore.asHashMap().get(circleHash).getLastTorMessageId());
 		}
 		
@@ -559,11 +558,12 @@ public class NewMessageService extends Service {
 		
 	};
 	final private LinkedList<Circle> stopList = new LinkedList<Circle>();
-	private boolean isUserCheckingMessages = true;
+	private boolean skipNextCheck = true;
 	
 	
 
 	private IsUserCheckingMessagesReceiver isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
+	private NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
 	private DeletedCircleReceiver deletedCircleReceiver = new DeletedCircleReceiver();
 	private JoinedCircleReceiver joinedCircleReceiver = new JoinedCircleReceiver();
 	private CreatedCircleReceiver createdCircleReceiver = new CreatedCircleReceiver();
@@ -589,7 +589,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got alarm to not check!");
-	    	isUserCheckingMessages = true;
+	    	skipNextCheck = true;
 	    }
 	}
 	
@@ -597,8 +597,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got deleted circle receiver!");
-	    	reinit = true;
-	    	init();
+	    	init(true);
 	    }
 	}
 	
@@ -606,8 +605,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got joined circle receiver!");
-	    	reinit = true;
-	    	init();
+	    	init(true);
 	    }
 	}
 	
@@ -616,9 +614,18 @@ public class NewMessageService extends Service {
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got created circle receiver!");
 	    	reinit = true;
-	    	init();
+	    	init(true);
 	    }
 	}
+	
+	private class NetworkChangeReceiver extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	MuteLog.Log("NewMessageService", "Network change event!");
+	    	skipNextCheck = true;
+	    }
+	}
+	
 	
 
 	
