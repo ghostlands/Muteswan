@@ -54,12 +54,12 @@ import android.util.Log;
 
 public class NewMessageService extends Service {
 
-    Intent notificationIntent;
+    private static final int STATIC_NOTIFYID = 5;
+	Intent notificationIntent;
 	PendingIntent contentIntent;
 	NotificationManager mNM;
 	HashMap<String,Integer> notifyIds;
 	int notifyId;
-	final int PERSISTANT_NOTIFICATION = 220;
 	protected boolean isWorking;
 	private HashMap<Circle,Thread> pollList = new HashMap<Circle,Thread>();
 	private boolean started = false;
@@ -124,7 +124,6 @@ public class NewMessageService extends Service {
     	}
     };
 	private boolean torOK;
-	private boolean reinit;
     
 	private void init(boolean reinit) {
 		 pollList.clear();
@@ -169,7 +168,7 @@ public class NewMessageService extends Service {
 	}
 
 	
-	private void showNotification(Circle c, CharSequence title, CharSequence content) {
+	private void showCircleNotification(Circle c, CharSequence title, CharSequence content) {
 		long when = System.currentTimeMillis();
 		int icon = R.drawable.icon;
 		Notification notify = new Notification(icon,title,when);
@@ -188,7 +187,6 @@ public class NewMessageService extends Service {
 		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
 		msgIntent.putExtra("circle", Main.genHexHash(c.getFullText()));
-		//PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), 0, msgIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
 	
 	
@@ -196,6 +194,28 @@ public class NewMessageService extends Service {
 		MuteLog.Log("NewMessageService", "Setting notify id of " + notifyId);
 		notify.setLatestEventInfo(getApplicationContext(), title, content, pendingMsgIntent);
 		mNM.notify((Integer) notifyIds.get(c.getFullText()), notify);
+	}
+	
+	private void showNotification(CharSequence title, CharSequence content) {
+		long when = System.currentTimeMillis();
+		int icon = R.drawable.sync_error;
+		Notification notify = new Notification(icon,title,when);
+	
+		
+		notify.flags |= Notification.FLAG_AUTO_CANCEL;
+		notify.flags |= Notification.FLAG_SHOW_LIGHTS;
+		//notify.defaults |= Notification.DEFAULT_SOUND;
+	
+		if (content == null)
+			return;
+		
+		Intent msgIntent = new Intent(getApplicationContext(), Main.class);
+		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
+	
+	
+		MuteLog.Log("NewMessageService", "Setting notify id of " + STATIC_NOTIFYID);
+		notify.setLatestEventInfo(getApplicationContext(), title, content,pendingMsgIntent);
+		mNM.notify(STATIC_NOTIFYID, notify);
 	}
 	
 	
@@ -209,7 +229,6 @@ public class NewMessageService extends Service {
 	private void runPoll() {
 		
 		 isWorking = true;
-		 torOK = false;
 		 notifyIds = new HashMap<String,Integer>();
 	
 		 MuteLog.Log("NewMessageService", "Circlestore: " + circleStore.hashCode());
@@ -219,8 +238,13 @@ public class NewMessageService extends Service {
 				 Thread torCheckThread = new Thread() {
 					 public void run() {
 						 TorStatus torCheck = new TorStatus(muteswanHttp,getApplicationContext());
-						 if (torCheck.checkStatus())
+						 if (torCheck.checkStatus()) {
 							 torOK = true;
+						 } else if (torOK == false) {
+					       	CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
+					       	CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
+					       	showNotification(notifTitle,notifText);
+						 }
 					 }
 				 };
 				 torCheckThread.start();
@@ -315,7 +339,7 @@ public class NewMessageService extends Service {
 								
 					        	CharSequence notifTitle = circle.getShortname();
 					        	CharSequence notifText = msg.getMsg();
-					        	showNotification(circle,notifTitle,notifText);
+					        	showCircleNotification(circle,notifTitle,notifText);
 					        	downloadCount++;
 								
 							  } catch (ClientProtocolException e) {
@@ -613,7 +637,6 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got created circle receiver!");
-	    	reinit = true;
 	    	init(true);
 	    }
 	}

@@ -71,5 +71,7 @@
      <string name="n_no_circle_selected">No circles chosen, please select at least one circle.</string>
      <string name="post">Post</string>
      <string name="cancel_post">Cancel</string>
+     <string name="error_muteswan_check_failed">Error: muteswan failed to connect</string>
+     <string name="error_muteswan_failed_check_content">The latest messages could not be checked. Please ensure Orbot is working.</string>
     
 </resources>
