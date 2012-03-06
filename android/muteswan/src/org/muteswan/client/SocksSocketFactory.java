@@ -27,8 +27,9 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.scheme.SocketFactory;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.muteswan.client.SocksProxy;
 
-import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
+//import uk.ac.cam.cl.dtg.android.tor.TorProxyLib.SocksProxy;
 
 /**
  * Provides sockets for an HttpClient connection.
@@ -94,6 +95,10 @@ public class SocksSocketFactory implements SocketFactory {
 
         // Pipe this socket over the proxy
         sock = mSocksProxy.connectSocksProxy(sock, host, port, timeout);
+        sock.setSoTimeout(15000);
+        sock.setKeepAlive(true);
+        MuteLog.Log("SocksSocketFactory", "Sock timeout " + sock.getSoTimeout());
+        MuteLog.Log("SocksSocketFactory", "Sock keepalive " + sock.getKeepAlive());
         return sock;
 
         }

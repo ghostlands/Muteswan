@@ -156,7 +156,6 @@ public class NewMessageService extends Service {
 		
 		// Startup
 		if (started  == false) {
-		   MuteLog.Log("MuteswanService", "Start flag is false, exiting.");
 		  
 		  
 		  started = true;
@@ -234,13 +233,21 @@ public class NewMessageService extends Service {
 		 MuteLog.Log("NewMessageService", "Circlestore: " + circleStore.hashCode());
 		 MuteLog.Log("MuteswanService","pollList size " + pollList.size());
 		 
+		 if (skipNextCheck) {
+			 MuteLog.Log("NewMessageService", "skipNextCheck is set, bailing out.");
+			 skipNextCheck = false;
+			 return;
+		 }
+		 
 		
 				 Thread torCheckThread = new Thread() {
 					 public void run() {
+						 Boolean oldTorOK = torOK;
+						 torOK = false;
 						 TorStatus torCheck = new TorStatus(muteswanHttp,getApplicationContext());
 						 if (torCheck.checkStatus()) {
 							 torOK = true;
-						 } else if (torOK == false) {
+						 } else if (oldTorOK == false) {
 					       	CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
 					       	CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
 					       	showNotification(notifTitle,notifText);
@@ -398,10 +405,9 @@ public class NewMessageService extends Service {
 		}
 
 		@Override
-		public boolean isUserCheckingMessages() throws RemoteException {
+		public boolean isSkipNextCheck() throws RemoteException {
 			MuteLog.Log("NewMessageService", "skipNextCheck is " + skipNextCheck);
-	    	if (skipNextCheck == true) {
-	    		skipNextCheck = false;
+	    	if (skipNextCheck) {
 	    		return(true);
 	    	} else {
 	    		return(false);

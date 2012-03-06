@@ -9,7 +9,7 @@ interface IMessageService {
 
   void refreshLatest();
   void checkTorStatus(ITorVerifyResult resultStatus);
-  boolean isUserCheckingMessages();
+  boolean isSkipNextCheck();
   void setUserChecking(boolean checkValue);  
   
   
