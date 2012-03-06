@@ -1375,7 +1375,7 @@ final Handler stopSpinningHandler = new Handler() {
              IBinder service) {
      	msgService = IMessageService.Stub.asInterface(service);
      	try {
-				msgService.setUserChecking(true);
+				msgService.setSkipNextCheck(true);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}

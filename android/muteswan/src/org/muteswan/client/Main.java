@@ -366,7 +366,7 @@ public class Main extends Activity implements Runnable {
                 IBinder service) {
         	newMsgService = IMessageService.Stub.asInterface(service);
         	try {
-				newMsgService.setUserChecking(true);
+				newMsgService.setSkipNextCheck(true);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}

@@ -62,6 +62,7 @@ public class NewMessageReceiver extends BroadcastReceiver {
    		 try {
 			if (msgService.isSkipNextCheck()) {
 				 MuteLog.Log("MuteswanReceiver", "skipNextCheck is true, bailing out of check.");
+				 msgService.setSkipNextCheck(false);
 				 return;
 			 }
 		} catch (RemoteException e1) {

@@ -414,8 +414,8 @@ public class NewMessageService extends Service {
 	    	}
 		}
 		
-		public void setUserChecking(boolean checkValue) {
-			MuteLog.Log("NewMessageService", "setUserChecking " + checkValue);
+		public void setSkipNextCheck(boolean checkValue) {
+			MuteLog.Log("NewMessageService", "setSkipNextCheck " + checkValue);
 			skipNextCheck = checkValue;
 		}
 

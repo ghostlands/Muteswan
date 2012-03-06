@@ -10,7 +10,7 @@ interface IMessageService {
   void refreshLatest();
   void checkTorStatus(ITorVerifyResult resultStatus);
   boolean isSkipNextCheck();
-  void setUserChecking(boolean checkValue);  
+  void setSkipNextCheck(boolean checkValue);  
   
   
   int getLastTorMsgId(String circleHash);
