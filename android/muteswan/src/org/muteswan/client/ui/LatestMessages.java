@@ -410,7 +410,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     
     
     
-	public HashMap<View, Integer> repostButtons = new HashMap<View,Integer>();
+	//public HashMap<View, Integer> repostButtons = new HashMap<View,Integer>();
     
     
     private void listItemClicked(View v) {
@@ -470,6 +470,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	public MuteswanMessage msg;
 	public RelativeLayout layout;
 	private String longPressedCircle;
+	private String longPressedMsg;
 
     private int getMsgDownloadAmount() {
     	if (circleExtra == null && store.size() > 2) {
@@ -558,14 +559,14 @@ public class LatestMessages extends ListActivity implements Runnable {
 		}
 
 		    
-		    public View.OnClickListener repostClicked = new View.OnClickListener() {
-		    	public void onClick(View v) {
-		    		MuteswanMessage msg = messageList.get(repostButtons.get(v));
-		    		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		    		intent.putExtra("initialText",msg.getMsg());
-		    		startActivity(intent);
-		    	}
-		    };
+		    //public View.OnClickListener repostClicked = new View.OnClickListener() {
+		    //	public void onClick(View v) {
+		    //		//MuteswanMessage msg = messageList.get(repostButtons.get(v));
+		    //		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+		    //		intent.putExtra("initialText",msg.getMsg());
+		    //		startActivity(intent);
+		    //	}
+		    //};
 		
 		
 		@Override
@@ -614,13 +615,14 @@ public class LatestMessages extends ListActivity implements Runnable {
       		  
       		  registerForContextMenu(txtMessage);
       		  txtMessage.setTag(R.id.messageReply, msg.getCircle().getFullText());
+      		  txtMessage.setTag(R.id.messageRepost, msg.getMsg());
       		  
       		  
-      		  txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
+      		  //txtRepost = (TextView) layout.findViewById(R.id.android_latestmessagesRepostButton);
 
 
-      		  txtRepost.setOnClickListener(repostClicked);
-              repostButtons.put(txtRepost,position);
+      		  //txtRepost.setOnClickListener(repostClicked);
+              //repostButtons.put(txtRepost,position);
   
       		
       		  
@@ -666,16 +668,26 @@ public class LatestMessages extends ListActivity implements Runnable {
                         //TextView txtCircleView = v.requestLayout().findViewById(R.id.android_latestmessagesCircle);
                         //longPressedCircle = v.getLayout().findViewById(R.id.android_latestmessagesCircle);
                         longPressedCircle = (String) v.getTag(R.id.messageReply);
+                        longPressedMsg = (String) v.getTag(R.id.messageRepost);
                         inflater.inflate(R.menu.messagecontextmenu, menu);
     }
 
     public boolean onContextItemSelected(MenuItem item) {
 
-		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		
-		intent.putExtra("circle",longPressedCircle);
-		startActivity(intent);
-		return true;
+    	if (item.getTitle().equals(getString(R.string.menu_repost))) {
+		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+		  intent.putExtra("circle",longPressedCircle);
+		  intent.putExtra("initialText",longPressedMsg);
+		  startActivity(intent);
+		  return true;
+    	} else if (item.getTitle().equals(getString(R.string.menu_reply))) {
+		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
+		  intent.putExtra("circle",longPressedCircle);
+		  startActivity(intent);
+		  return true;
+    	}
+    	
+    	return false;
 		
     }
 	

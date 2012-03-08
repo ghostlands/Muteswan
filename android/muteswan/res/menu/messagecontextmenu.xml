@@ -1,5 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/messageReply"
-        android:title="Reply" />
-        
+        android:title="@string/menu_reply" />
+     <item android:id="@+id/messageRepost"
+        android:title="@string/menu_repost" />
 </menu>

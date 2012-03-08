@@ -73,5 +73,7 @@
      <string name="cancel_post">Cancel</string>
      <string name="error_muteswan_check_failed">Error: muteswan failed to connect</string>
      <string name="error_muteswan_failed_check_content">The latest messages could not be checked. Please ensure Orbot is working.</string>
+     <string name="menu_repost">Repost</string>
+     <string name="menu_reply">Reply</string>
     
 </resources>

@@ -94,7 +94,7 @@
      android:layout_below="@id/android:latestmessagesMessage"
     >
     
-     <Button
+     <!--   <Button
      android:id="@+id/android:latestmessagesRepostButton"   
      android:layout_width="wrap_content"
      android:layout_height="35dp"
@@ -108,7 +108,7 @@
      android:text="Repost"
      android:textColor="#111111" 
      android:background="@drawable/circlelistbuttons"
-     />  
+     />  -->
     
      <!--   <TextView
      android:id="@+id/android:latestmessagesReplyButton"   
