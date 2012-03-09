@@ -239,20 +239,20 @@ public class NewMessageService extends Service {
 			 return;
 		 }
 		 
-		
+		 		 // run a tor check
 				 Thread torCheckThread = new Thread() {
-					 public void run() {
-						 Boolean oldTorOK = torOK;
-						 torOK = false;
-						 TorStatus torCheck = new TorStatus(muteswanHttp,getApplicationContext());
-						 if (torCheck.checkStatus()) {
-							 torOK = true;
-						 } else if (oldTorOK == false) {
-					       	CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
-					       	CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
-					       	showNotification(notifTitle,notifText);
-						 }
-					 }
+				 	 public void run() {
+				 		 Boolean oldTorOK = torOK;
+				 		 torOK = false;
+				 		 TorStatus torCheck = new TorStatus(muteswanHttp,getApplicationContext());
+				 		 if (torCheck.checkStatus()) {
+				 			 torOK = true;
+				 		 } else if (oldTorOK == false) {
+				 	       	CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
+				 	       	CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
+				 	       	showNotification(notifTitle,notifText);
+				 		 }
+				 	 }
 				 };
 				 torCheckThread.start();
 		 
@@ -282,20 +282,20 @@ public class NewMessageService extends Service {
 				    	
 					   
 					 public void run() {
-						 // wait for 30 seconds until giving up
+						 // bail out if tor check fails
 						 int waitCount = 0;
 						 while (!torOK) {
-							 if (waitCount >= 29) {
-								 MuteLog.Log("LatestMessages", "Tor seems to down, bailing out.");
-								 return;
-							 }
-							 Thread.currentThread();
-							try {
-								Thread.sleep(1000);
-								waitCount++;
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
+						 	 if (waitCount >= 29) {
+						 		 MuteLog.Log("LatestMessages", "Tor seems to down, bailing out.");
+						 		 return;
+						 	 }
+						 	 Thread.currentThread();
+						 	try {
+						 		Thread.sleep(1000);
+						 		waitCount++;
+						 	} catch (InterruptedException e) {
+						 		e.printStackTrace();
+						 	}
 						 } 
 						 
 						 

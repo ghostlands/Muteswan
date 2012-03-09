@@ -33,8 +33,8 @@
      <string name="share_orbot_menu">Share Orbot</string>
      <string name="reset_muteswan">Reset Muteswan</string>
      <string name="settings_menu">Settings</string>
-     <string name="tor_check_url">http://eqt5g4fuenphqinx.onion/</string>
-     <string name="tor_check_verify_string">Welcome to .onion.</string>
+     <string name="tor_check_url">http://www.google.com/robots.txt</string>
+     <string name="tor_check_verify_string">Disallow:</string>
      <string name="select_a_circle_to_share">Select a circle to share.</string>
      <string name="select_a_circle_to_read_messages">Select a circle to read messages.</string>
      <string name="select_a_circle_to_write_a_message">Select a circle to write a message.</string>
