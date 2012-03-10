@@ -88,11 +88,11 @@
     >
     -->
     
-    <RelativeLayout
+   <!--  <RelativeLayout
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
      android:layout_below="@id/android:latestmessagesMessage"
-    >
+    > -->
     
      <!--   <Button
      android:id="@+id/android:latestmessagesRepostButton"   
@@ -123,7 +123,7 @@
      android:clickable="true"
      /> -->
  
-    </RelativeLayout> 
+    <!-- </RelativeLayout> -->
    <!-- </LinearLayout> -->
     
     <!-- <ImageButton

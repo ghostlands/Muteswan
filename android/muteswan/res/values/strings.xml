@@ -5,12 +5,12 @@
     <string name="showmsgprompt">Message</string>
     
     <string name="msglistprompt">Message List</string>
-    <string name="foundkeys">Found keys...</string>
+    <string name="foundkeys">Found keys&#8230;</string>
     
     <string name="app_name">Muteswan</string>
-    <string name="newMsgTextDefault">...</string>
+    <string name="newMsgTextDefault">&#8230;</string>
     <string name="newcircleprompt">Create Circle</string>
-    <string name="service_run_message">Service running...</string>
+    <string name="service_run_message">Service running&#8230;</string>
     
     <string name="keyselectspinnerprompt">Send without signing</string>
     
@@ -64,7 +64,7 @@
      <string name="message_posted_prefix">"Message posted: "</string>
      <string name="n_all_messages_sent_successfully">All messages sent successfully.</string>
      <string name="sending_messages_prefix">Sending messages:</string>
-     <string name="sending_message_status">Sending message...</string>
+     <string name="sending_message_status">Sending message&#8230;</string>
      <string name="error_empty_message">Empty message.</string>
      <string name="error_message_too_long">Message exceeds 2500 character maximum.</string>
      <string name="post_message_prefix">"Post messages to: "</string>
