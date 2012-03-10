@@ -1191,7 +1191,7 @@ final Handler stopSpinningHandler = new Handler() {
 				Thread.currentThread();
 				Thread.sleep(500);
 			  } catch (InterruptedException e) {
-				  Log.e("LatestMessages", "Error: thread interrupted " + e.getMessage());
+				  MuteLog.Log("LatestMessages", "Error: thread interrupted " + e.getMessage());
 				  return(null);
 			  }
 			}
