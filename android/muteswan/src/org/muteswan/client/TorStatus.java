@@ -73,7 +73,7 @@ public class TorStatus {
     			return false;
     		}
     		
-			HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+			HttpResponse resp = muteswanHttp.execute(httpGet);
 			
 			
 		

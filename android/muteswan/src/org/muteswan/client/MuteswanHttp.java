@@ -17,7 +17,12 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
+import java.io.IOException;
+
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnPerRoute;
 import org.apache.http.conn.routing.HttpRoute;
@@ -32,7 +37,7 @@ import android.util.Log;
 
 public class MuteswanHttp {
 
-	public DefaultHttpClient httpClient;
+	private DefaultHttpClient httpClient;
 	
 	public MuteswanHttp() {
 		initHttp();
@@ -76,6 +81,12 @@ public class MuteswanHttp {
 	public void cleanup() {
 		httpClient = null;
 		
+	}
+	
+	public HttpResponse execute(HttpUriRequest req) throws ClientProtocolException, IOException {
+		if (httpClient == null)
+			initHttp();
+		return(httpClient.execute(req));
 	}
 	
 }

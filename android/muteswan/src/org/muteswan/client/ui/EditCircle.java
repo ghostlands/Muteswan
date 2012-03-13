@@ -220,7 +220,7 @@ public class EditCircle extends Activity {
 		    MuteswanHttp muteswanHttp = new MuteswanHttp();
 			HttpGet httpGet = new HttpGet(url);
 		    try {
-				HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+				HttpResponse resp = muteswanHttp.execute(httpGet);
 				
 				// FIXME seems wrong, dunno what is right
 				//imageBytes  = EntityUtils.toString(resp.getEntity()).getBytes();

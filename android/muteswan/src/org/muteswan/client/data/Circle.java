@@ -510,7 +510,7 @@ public class Circle {
 	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException, InterruptedIOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
 		MuteLog.Log("Circle", "Fetching message " + id);
-    	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+    	HttpResponse resp = muteswanHttp.execute(httpGet);
     	MuteLog.Log("Circle", "Fetched message " + id);
     	
     	return(parseMsgFromTor(id,resp));
@@ -523,7 +523,7 @@ public class Circle {
 		
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + max + "-" + min);
 		MuteLog.Log("Circle", "Fetching messages " + max + " to " + min);
-    	HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+    	HttpResponse resp = muteswanHttp.execute(httpGet);
 		MuteLog.Log("Circle", "Fetched messages " + max + " to " + min);
 
 		
@@ -642,7 +642,7 @@ public class Circle {
 		
 	   HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash);
 	   try {
-	    HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+	    HttpResponse resp = muteswanHttp.execute(httpGet);
 	   
 	    String lastMessage = null;
 	    String jsonString = EntityUtils.toString(resp.getEntity());
@@ -857,7 +857,7 @@ public class Circle {
 
 		try {
 			// POST MESSAGE
-			HttpResponse response = muteswanHttp.httpClient.execute(httpPost);
+			HttpResponse response = muteswanHttp.execute(httpPost);
 			return(response.getStatusLine().getStatusCode());
 
 		} catch (ClientProtocolException e) {
@@ -1074,7 +1074,7 @@ public class Circle {
 		httpPut.setEntity(entity);
 		
 		try {
-			muteswanHttp.httpClient.execute(httpPut);
+			muteswanHttp.execute(httpPut);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -1093,7 +1093,7 @@ public class Circle {
 		httpPut.setEntity(entity);
 		
 		try {
-			muteswanHttp.httpClient.execute(httpPut);
+			muteswanHttp.execute(httpPut);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -1109,7 +1109,7 @@ public class Circle {
 			HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/manifest");
 			MuteLog.Log("Circle", "Downloading manifest for " + getShortname());
 	    	try {
-				HttpResponse resp = muteswanHttp.httpClient.execute(httpGet);
+				HttpResponse resp = muteswanHttp.execute(httpGet);
 				JSONObject jsonObj = parseManifest(resp);
 				if (jsonObj == null || !jsonObj.has("manifest"))
 					return;

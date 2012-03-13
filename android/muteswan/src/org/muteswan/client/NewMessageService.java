@@ -67,7 +67,7 @@ public class NewMessageService extends Service {
 	
 	protected LinkedBlockingQueue<Circle> linkedQueue = new LinkedBlockingQueue<Circle>();
 	
-	// long poll is experimental and currently destroys batteries. We should investigate this at another time
+	// long poll is experimental and currently destroys batteries. We should investigate this at another time (maybe)
 	protected boolean useLongPoll = false;
 	private CircleStore circleStore;
 	private int numMsgDownload = 5;
@@ -240,17 +240,12 @@ public class NewMessageService extends Service {
 		 }
 		 
 		 		 // run a tor check
-				 Thread torCheckThread = new Thread() {
+				 final Thread torCheckThread = new Thread() {
 				 	 public void run() {
-				 		 Boolean oldTorOK = torOK;
 				 		 torOK = false;
 				 		 TorStatus torCheck = new TorStatus(muteswanHttp,getApplicationContext());
 				 		 if (torCheck.checkStatus()) {
 				 			 torOK = true;
-				 		 } else if (oldTorOK == false) {
-				 	       	CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
-				 	       	CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
-				 	       	showNotification(notifTitle,notifText);
 				 		 }
 				 	 }
 				 };
@@ -259,9 +254,8 @@ public class NewMessageService extends Service {
 		 for (final Circle circle : pollList.keySet()) {
 			 
 		
-			
 			 
-			 Thread oldThread = pollList.get(circle);
+			Thread oldThread = pollList.get(circle);
 			if (oldThread != null) {
  	         try {
 				  MuteLog.Log("MuteswanService","Interrupting old thread " + oldThread.toString() + ": " + circle.getShortname());
@@ -298,13 +292,20 @@ public class NewMessageService extends Service {
 						 	}
 						 } 
 						 
+						
+						 		//if (skipNextCheck) {
+						 		//	MuteLog.Log("NewMessageService", "skipNextCheck is now true!");
+						 		//	return;
+						 		//}
 						 
-						 
-					    	MuteLog.Log("MuteswanService","THREAD RUNNING: " + circle.getShortname());
+					    	    MuteLog.Log("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
 					    		final Integer startLastId = circle.getLastMsgId(false);
 								Integer lastId = circle.getLastTorMessageId();
-						 MuteLog.Log("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
+								MuteLog.Log("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
+								if (Thread.interrupted())
+									return;
+								
 					    		if (lastId == null || lastId < 0) {
 					    			MuteLog.Log("MuteswanService", "Got null or negative from tor for " + circle.getShortname() + ", bailing out.");
 					    			//pollList.remove(circle);
@@ -318,12 +319,15 @@ public class NewMessageService extends Service {
 					    	
 				       
 						
-				        MuteLog.Log("MuteswanService", circle.getShortname() + " has lastId " + lastId);
+					    		MuteLog.Log("MuteswanService", circle.getShortname() + " has lastId " + lastId);
 				        
 
 				        
 				        // FIXME: REFACTOR
 				    	  
+						if (Thread.interrupted())
+								return;
+						
 				    	 MuteLog.Log("NewMessageService", "Got last id of " + startLastId);
 				    	 if (startLastId < lastId) {
 				      
@@ -362,7 +366,49 @@ public class NewMessageService extends Service {
 					};
 					pollList.put(circle, nThread);
 					nThread.start();
+					
 		  }
+		 
+		 Thread monThread = new Thread() {
+			 public void run() {
+				 boolean someRunning = true;
+				 int count = 0;
+				 while (someRunning) {
+					 someRunning = false;
+					 count++;
+					 
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					 
+					 
+					 
+					 for (final Circle c : pollList.keySet()) {
+						if (!pollList.get(c).getState().toString().equals("TERMINATED")) {
+							MuteLog.Log("LatestMessages","thread state for " + c.getShortname() + " is " + pollList.get(c).getState());
+							someRunning = true;
+							if (count >= 40)
+								pollList.get(c).interrupt();
+						}
+					 }
+					 
+				 }
+			
+			 	 if (!torOK) {
+				   CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
+				   CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
+				   showNotification(notifTitle,notifText);
+			 	 }
+				 torCheckThread.interrupt();
+				 handleStopSelf.sendEmptyMessage(0);
+				 
+				 MuteLog.Log("NewMessageService", "Done polling thread state.");
+			 }
+			 
+		 };
+		 monThread.start();
 		
 	
 	}
@@ -588,7 +634,7 @@ public class NewMessageService extends Service {
 		
 	};
 	final private LinkedList<Circle> stopList = new LinkedList<Circle>();
-	private boolean skipNextCheck = true;
+	private boolean skipNextCheck = false;
 	
 	
 
@@ -651,6 +697,8 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Network change event!");
+	    	MuteLog.Log("NewMessageServicE", "Intent: " + intent.toString());
+	    	MuteLog.Log("NewMessageService", "extras " + intent.getExtras().describeContents());
 	    	skipNextCheck = true;
 	    }
 	}
