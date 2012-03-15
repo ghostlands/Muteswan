@@ -25,6 +25,7 @@ use HTTP::Date qw(time2str);
 use MIME::Base64;
 use JSON;
 use Data::Dumper;
+use Privileges::Drop;
 
 
 use Crypt::OpenSSL::RSA;
@@ -36,8 +37,11 @@ use Crypt::OpenSSL::RSA;
 # directory: -d - directory to store data
 
 my %opts;
-getopt('d:', \%opts);
+getopt('d:u:a:p:', \%opts);
 our $directory = $opts{'d'};
+our $user = $opts{'u'};
+our $port = $opts{'p'};
+our $addr = $opts{'a'};
 
 my $seed = rand(2**32);
 
@@ -46,13 +50,12 @@ $SIG{CHLD} = "IGNORE";
 
 # main logic
 ############
-
 if (!$directory) {
-	print "usage: protodaemon -d directory\n";
+	print "usage: protodaemon -d directory -u user -a addr -p port\n";
 	exit;
 }
 
-my $daemon = new HTTP::Daemon LocalPort => 80, LocalAddr => '127.0.0.1';
+my $daemon = new HTTP::Daemon LocalPort => $port, LocalAddr => $addr;
 print "Please contact me at: <URL:", $daemon->url, ">\n";
 while (my $c = $daemon->accept) {
 
@@ -60,6 +63,7 @@ while (my $c = $daemon->accept) {
 
     if (!$pid) {
 
+      drop_privileges($user);
       while (my $r = $c->get_request) {
 	print localtime(time()) . ": " . $r->method . " " . $r->url->path . "\n";
         if ($r->method eq 'GET') {
