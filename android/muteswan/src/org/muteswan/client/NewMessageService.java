@@ -55,6 +55,7 @@ import android.util.Log;
 public class NewMessageService extends Service {
 
     private static final int STATIC_NOTIFYID = 5;
+    private static final int MAX_IO_FAIL = 5;
 	Intent notificationIntent;
 	PendingIntent contentIntent;
 	NotificationManager mNM;
@@ -217,6 +218,21 @@ public class NewMessageService extends Service {
 		mNM.notify(STATIC_NOTIFYID, notify);
 	}
 	
+	private Integer getLastTorMsgIdPatiently(Circle circle) {
+		int ioFailCount = 0;
+		Integer lastId = circle.getLastTorMessageId();
+		while (lastId != null && lastId == -2 && ioFailCount <= 5) {
+			MuteLog.Log("NewMessageService", "IKF Trying again..." + ioFailCount);
+			lastId = circle.getLastTorMessageId();
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			ioFailCount++;
+		}
+		return(lastId);
+	}
 	
 	private void registerPoll(Circle circle) {
 		if (pollList.containsKey(circle))
@@ -301,7 +317,10 @@ public class NewMessageService extends Service {
 					    	    MuteLog.Log("MuteswanService","THREAD RUNNING: " + circle.getShortname());
 
 					    		final Integer startLastId = circle.getLastMsgId(false);
-								Integer lastId = circle.getLastTorMessageId();
+					    		//Integer lastId = circle.getLastTorMessageId();
+					    		Integer lastId = getLastTorMsgIdPatiently(circle);
+					    		
+					    		
 								MuteLog.Log("MuteswanService", "Polling for " + circle.getShortname() + " at thread " + Thread.currentThread().getId());
 								if (Thread.interrupted())
 									return;
@@ -400,6 +419,8 @@ public class NewMessageService extends Service {
 				   CharSequence notifTitle = getString(R.string.error_muteswan_check_failed);
 				   CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
 				   showNotification(notifTitle,notifText);
+			 	 } else {
+			 		 removeNotify();
 			 	 }
 				 torCheckThread.interrupt();
 				 handleStopSelf.sendEmptyMessage(0);
@@ -414,6 +435,11 @@ public class NewMessageService extends Service {
 	}
 	
 	
+	protected void removeNotify() {
+		mNM.cancel(STATIC_NOTIFYID);
+	}
+
+
 	@SuppressWarnings("unused")
 	/*
 	private MuteswanMessage longpollForNewMessage(final Circle circle, Integer id) throws IOException {
@@ -468,7 +494,7 @@ public class NewMessageService extends Service {
 
 		@Override
 		public int getLastTorMsgId(String circleHash) throws RemoteException {
-			return(circleStore.asHashMap().get(circleHash).getLastTorMessageId());
+			return(getLastTorMsgIdPatiently(circleStore.asHashMap().get(circleHash)));
 		}
 		
 		

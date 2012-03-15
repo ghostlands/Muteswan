@@ -676,7 +676,8 @@ public class Circle {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (IOException e) {
-		// TODO Auto-generated catch block
+		MuteLog.Log("Circle", "IKF IO exception");
+		return (-2);
 	} 
 	
 	return(-1);

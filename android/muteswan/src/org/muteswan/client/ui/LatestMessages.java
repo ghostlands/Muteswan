@@ -1307,8 +1307,16 @@ final Handler stopSpinningHandler = new Handler() {
 								e.printStackTrace();
 							}
 					}
-        
+       
+					
+					long before = System.currentTimeMillis();
+					MuteLog.Log("NewMessageService", "IKF before getlasttormsgid");
 					lastMsg = msgService.getLastTorMsgId(Main.genHexHash(circle.getFullText()));
+					long after = System.currentTimeMillis();
+					if (lastMsg != null && lastMsg == -1) {
+					  MuteLog.Log("NewMessageService", "IKF " + circle.getShortname() + " "  + (after - before) + " after getlasttormsgid is -1");
+					  lastMsg = msgService.getLastTorMsgId(Main.genHexHash(circle.getFullText()));
+					}
 				} catch (RemoteException e) {
 					Log.e("LatestMessages", "Error getting latest message from service!");
 					e.printStackTrace();
