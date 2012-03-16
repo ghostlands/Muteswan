@@ -240,7 +240,7 @@ sub verify_signature {
 sub addMessage {
 	my $keyhash = shift;
 	my $req = shift;
-	
+
 
 	my $msg = $req->content();
 
@@ -294,7 +294,10 @@ sub addMessage {
 	}
 
 	my $msg_id = ++$last_message;
-	open(MSG,">$directory/" . $keyhash . "/" . $msg_id);
+	my $filepath = "$directory/" . $keyhash . "/" . $msg_id;
+	$filepath =~ /(\w+\/\w+\/\d+)/;
+	$filepath = $1;
+	open(MSG,">$filepath");
 	print MSG $msg;
 	close(MSG);
 

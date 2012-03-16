@@ -405,6 +405,8 @@ public class NewMessageService extends Service {
 					 
 					 
 					 for (final Circle c : pollList.keySet()) {
+						if (pollList.get(c) == null)
+							continue;
 						if (!pollList.get(c).getState().toString().equals("TERMINATED")) {
 							MuteLog.Log("LatestMessages","thread state for " + c.getShortname() + " is " + pollList.get(c).getState());
 							someRunning = true;
@@ -494,13 +496,22 @@ public class NewMessageService extends Service {
 
 		@Override
 		public int getLastTorMsgId(String circleHash) throws RemoteException {
-			return(getLastTorMsgIdPatiently(circleStore.asHashMap().get(circleHash)));
+			Circle circle = circleStore.asHashMap().get(circleHash);
+			if (circle == null) {
+				init(true);
+				circle = circleStore.asHashMap().get(circleHash);
+			}
+			return(getLastTorMsgIdPatiently(circle));
 		}
 		
 		
 		@Override
 		public int downloadLatestMsgRangeFromTor(String circleHash, int delta) throws RemoteException {
 			Circle circle = circleStore.asHashMap().get(circleHash);
+			if (circle == null) {
+				init(true);
+				circle = circleStore.asHashMap().get(circleHash);
+			}
 			Integer lastMessage = circle.getLastCurMsgId(false);
 			return(downloadMsgRangeFromTor(circle,lastMessage,lastMessage-delta));
 		}
@@ -508,6 +519,10 @@ public class NewMessageService extends Service {
 		@Override
 		public int downloadMsgRangeFromTor(String circleHash, int start, int last) throws RemoteException {
 			Circle circle = circleStore.asHashMap().get(circleHash);
+			if (circle == null) {
+				init(true);
+				circle = circleStore.asHashMap().get(circleHash);
+			}
 			return(downloadMsgRangeFromTor(circle,start,last));
 		}
 	
