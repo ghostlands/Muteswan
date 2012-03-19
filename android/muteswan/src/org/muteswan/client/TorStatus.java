@@ -43,8 +43,11 @@ public class TorStatus {
 		this.ctx = ctx;
 	}
 	
+	public boolean haveNetworkConnection() {
+		return(haveNetworkConnection(ctx));
+	}
 	
-	private boolean haveNetworkConnection() {
+	static public boolean haveNetworkConnection(Context ctx) {
 	    boolean haveConnectedWifi = false;
 	    boolean haveConnectedMobile = false;
 

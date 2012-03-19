@@ -35,6 +35,7 @@ import org.muteswan.client.MuteswanHttp;
 import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
+import org.muteswan.client.TorStatus;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.IdentityStore;
@@ -926,6 +927,15 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
     };
     
+    final Handler setSpinneyAllFailed = new Handler() {
+    	
+    	@Override
+    	public void handleMessage(Message msg) {
+    		spinneyIcon.setImageResource(R.drawable.refresh_red);
+    		spinneyIcon.setAnimation(null);
+    	}
+    };
+    
     final Handler startSpinningHandler = new Handler() {
     	
     	@Override
@@ -1121,7 +1131,10 @@ final Handler stopSpinningHandler = new Handler() {
 			return(msgs);
 		}
 		
-		
+		if (!TorStatus.haveNetworkConnection(this)) {
+			setSpinneyAllFailed.sendEmptyMessage(0);
+			return(null);
+		}
 		
 		// get the latest message counts
 		if (circleExtra == null) {
@@ -1255,6 +1268,8 @@ final Handler stopSpinningHandler = new Handler() {
 		} catch (InterruptedException e) {
 			return;
 		}
+		
+		
 		
 		getLatestMessages(messageList, start,getMsgDownloadAmount());
 	}

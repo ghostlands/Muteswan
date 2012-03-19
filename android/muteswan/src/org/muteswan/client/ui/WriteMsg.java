@@ -465,8 +465,10 @@ public class WriteMsg extends ListActivity {
 						
 							} else if (httpCode >= 500) {
 							 b2.putString("status", "server error");
+							 handleEnablePostButton.sendEmptyMessage(0);
 							} else if (httpCode < 0) {
 							 b2.putString("status", "timeout");
+							 handleEnablePostButton.sendEmptyMessage(0);
 							}
 							
 						
@@ -558,6 +560,14 @@ public class WriteMsg extends ListActivity {
 	protected void enablePostButton() {
 		postButton.setEnabled(true);
 	}
+	
+	final Handler handleEnablePostButton = new Handler() {
+    	
+    	@Override
+    	public void handleMessage(Message msg) {
+    		postButton.setEnabled(true);
+    	}
+    };
 	
 }
 
