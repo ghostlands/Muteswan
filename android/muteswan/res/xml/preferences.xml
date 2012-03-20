@@ -24,7 +24,11 @@
 
 <PreferenceCategory android:title="Interface Settings">
 <CheckBoxPreference android:title="Verbose" android:summary="Show extra information during operations." android:key="verbose"></CheckBoxPreference>
+
 </PreferenceCategory>
+<Preference android:selectable="false" android:shouldDisableView="true" android:enabled="false" android:key="firstrun"/>
+
+
 
 
 </PreferenceScreen>

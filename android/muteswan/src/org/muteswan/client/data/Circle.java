@@ -95,7 +95,7 @@ public class Circle {
 	public class OpenHelper extends SQLiteOpenHelper {
 
 		public static final int DATABASE_VERSION = 12;
-		public String databaseName = "muteswandb";
+		public String databaseName;
 		public static final String MESSAGESTABLE = "messages";
 		public static final String SIGTABLE = "signatures";
 		public static final String LASTMESSAGES = "lastmessages";

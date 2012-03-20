@@ -20,6 +20,7 @@ package org.muteswan.client;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
@@ -189,6 +190,15 @@ public class Main extends Activity implements Runnable {
         bindService(serviceIntent,mNewMsgConn,Context.BIND_AUTO_CREATE);
         //,Context.BIND_AUTO_CREATE);
         
+        
+        SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		boolean firstRun = defPrefs.getBoolean("firstrun", true);
+		if (firstRun) {
+			defPrefs.edit().putBoolean("firstrun", false).commit();
+			CircleStore cs = new CircleStore(this,true,false);
+			cs.updateStore("dd85381ac8acc1a7", "Feedback", "circles.muteswan.org");
+		}
+		
         
         
         // start work activities
