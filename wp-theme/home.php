@@ -16,7 +16,7 @@ get_header(); ?>
 				<p>Create secure social networks using shared QR codes. Share them with whomever you trust, face-to-face.</p>
 
 				<a href="http://muteswan.org/releases/0.3alpha-release-1.apk" title="Download App">Download App</a><br />
-				<img src="/public/wp-content/themes/muteswan/i/get_it_on_play_logo_large.png" alt="Available in Google Play" />
+				<img src="/public/wp-content/themes/muteswan/i/get_it_on_play_logo_large.png" id="gplaybutton" alt="Available in Google Play" />
 
 			</div><!-- #content -->
 			<div style="clear: both;">&nbsp;</div>

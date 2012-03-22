@@ -723,6 +723,21 @@ a:hover {
 	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
 	cursor: pointer;
 }
+
+#gplaybutton {
+        display: block;
+        float: right;
+        margin: 1em 15% 0 0;
+        padding: 6px 0;
+	padding-left: 80px;
+        text-align: center;
+        font-size: 1.2em;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+}
+
+
+
 #content.home a img {
 	margin-top: 12px;
 }
