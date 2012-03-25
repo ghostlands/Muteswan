@@ -89,6 +89,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private String circleExtra;
 	private CircleStore store;
 	final ArrayList<MuteswanMessage> messageList = new ArrayList<MuteswanMessage>();
+	private ArrayList<MuteswanMessage> msgBucket = new ArrayList<MuteswanMessage>();
 	HashMap<String,Circle> circleMap;
 	IdentityStore idStore;
 	private LatestMessagesListAdapter listAdapter;
@@ -870,6 +871,19 @@ public class LatestMessages extends ListActivity implements Runnable {
         	    listAdapter.notifyDataSetChanged();
         }
     };
+    
+ final Handler updateMessageList = new Handler() {
+		
+        @Override
+        public void handleMessage(Message msg) {
+        		for (MuteswanMessage msMsg : msgBucket) {
+        			messageList.add(msMsg);
+        		}
+        	    listAdapter.notifyDataSetChanged();
+        	    msgBucket.clear();
+        }
+        
+    };
 	
 	
     boolean sorting = false;
@@ -953,7 +967,7 @@ final Handler stopSpinningHandler = new Handler() {
     		spinneyIcon.setImageResource(R.drawable.refresh_done);
     	}
     };
-	
+
 	
 
     
@@ -1064,10 +1078,16 @@ final Handler stopSpinningHandler = new Handler() {
 					msg = r.getMsgFromDb(i.toString(),true);
 					
 					if (msg == null) {
+						stopSpinningHandler.sendEmptyMessage(0);
 						Log.e("LatestMessages", "Message " + i + " is still null after downloading it from service!");
-						continue;
+						return;
 					}
+			
 					
+					// if we are interrupted, don't update msgs because we don't know what is going on
+					if (Thread.currentThread().isInterrupted()) {
+		    			return;
+		    		}
 				
 				    //msg.verifySignatures(idStore);
 				    msgs.add(msg);
@@ -1077,6 +1097,10 @@ final Handler stopSpinningHandler = new Handler() {
 					   stopSpinningHandler.sendEmptyMessage(0);
 				
 			} else {
+				// if we are interrupted, don't update msgs because we don't know what is going on
+				if (Thread.currentThread().isInterrupted()) {
+	    			return;
+	    		}
 				msgs.add(msg);
 			}
 
@@ -1120,6 +1144,7 @@ final Handler stopSpinningHandler = new Handler() {
 			if (circleExtra != null && !circleMap.get(circleExtra).getFullText().equals(r.getFullText()))
 				continue;
 			updateLatestMessages(msgs, r, first, amount);
+			updateMessageList.sendEmptyMessage(0);
 		}
 		
 	    sortMessageList.sendEmptyMessage(0);
@@ -1194,7 +1219,8 @@ final Handler stopSpinningHandler = new Handler() {
 					e.printStackTrace();
 				}
 				  updateLatestMessages(msgs, store.asHashMap().get(circleNewMsgs[0]), 0, msgDelta);
-				  dataSetChanged.sendEmptyMessage(0);
+				  updateMessageList.sendEmptyMessage(0);
+				  //dataSetChanged.sendEmptyMessage(0);
 				}
 				
 				
@@ -1271,7 +1297,8 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		
 		
-		getLatestMessages(messageList, start,getMsgDownloadAmount());
+		getLatestMessages(msgBucket, start,getMsgDownloadAmount());
+		//updateMessageList.sendEmptyMessage(0);
 	}
 
 	private Thread getLastestMessageCountFromTor(final Circle circle) {
