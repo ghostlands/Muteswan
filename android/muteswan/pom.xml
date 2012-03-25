@@ -7,6 +7,9 @@
     <packaging>apk</packaging>
     <name>Muteswan</name>
 
+
+
+
     <dependencies>
         <dependency>
             <groupId>com.google.android</groupId>
@@ -76,6 +79,7 @@
         </plugins>
 
    <resources>
+
      <resource>
   	<targetPath>${project.basedir}/target/filtered-manifest</targetPath>
   	<filtering>true</filtering>
@@ -158,6 +162,20 @@
 	</plugins>
     </build>
   </profile>
+
+
+
+    <profile>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+		<build.label>dev</build.label>
+        </properties>
+    </profile>
+
+
+
  </profiles>
 
 
