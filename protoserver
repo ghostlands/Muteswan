@@ -318,6 +318,9 @@ sub get_multiple_circles {
 	my @msgs;
 	for (my $i = $max; $i>=$min; $i--) {
 		print STDERR "Getting $i\n";
+		if ( ! -f "$directory/$keyHash/$i" ) {
+			return undef;
+		}
 		my ($jsonString,$timestamp) = get_message("$directory/$keyHash/$i");	
 		my $json_data = $json->decode($jsonString);
 		
