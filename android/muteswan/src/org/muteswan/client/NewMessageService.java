@@ -78,7 +78,7 @@ public class NewMessageService extends Service {
 	@Override
 	public void onStart(Intent intent, int startId) {
 		MuteLog.Log("MuteswanService", "onStart called.");
-		this.stopForeground(false);
+		//this.stopForeground(false);
 		start();
 	}
 	
