@@ -53,6 +53,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -301,7 +302,7 @@ public class Main extends Activity implements Runnable {
 		//	return true;
 		} else if (item.toString().equals("Share Muteswan")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA","http://muteswan.org/android/muteswan-latest.apk");
+			intent.putExtra("ENCODE_DATA","market://search?q=pname:org.muteswan.client");
 			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 			try {
 			  startActivity(intent);
@@ -323,6 +324,8 @@ public class Main extends Activity implements Runnable {
     		Uri data = Uri.fromParts("package", packageName, null);
     		intent.setData(data);
     		startActivity(intent);
+		} else if (item.toString().equals("About")) {
+			showAbout();
 		} else if (item.toString().equals("Settings")) {
 			startActivity(new Intent(this,Preferences.class));
 			return true;
@@ -391,6 +394,29 @@ public class Main extends Activity implements Runnable {
            newMsgService = null;
         }
     };
+    
+    private void showAbout() {
+
+            LayoutInflater li = LayoutInflater.from(this);
+            View view = li.inflate(R.layout.about, null);
+
+            String version = "";
+
+            try {
+                    version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            } catch (NameNotFoundException e) {
+                    version = "Version Not Found";
+            }
+
+            TextView versionName = (TextView)view.findViewById(R.id.versionName);
+            versionName.setText(version);
+
+                    new AlertDialog.Builder(this)
+            .setTitle("About Muteswan")
+            .setView(view)
+            .show();
+    }
+
     
     
 	public static String genHexHash(String data) {

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+        <ScrollView android:id="@+id/aboutscrollview" 
+                android:orientation="vertical"
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent">
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                    <TextView android:text="Overview"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"            
+                                android:paddingTop="15px"
+                                android:paddingLeft="15px"
+                                android:textStyle="bold"
+                                android:textColor="#b15a2a" />
+                         <TextView android:text="Muteswan is anonymous friends, trusted face to face. Create secure social networks with QR codes. Share them with whomever you trust, face to face.\n\nYou can quickly create and share new circles or get circles from other Muteswan users. Messages are encrypted and transported using the Tor network so they are only visible to people who have joined the circle."
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"
+                                android:autoLink="web"
+                                android:textColorLink="#ffffff"
+                                android:paddingLeft="15px"              
+                                android:textColor="#ffffff" />
+                         <TextView android:text="Version"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"            
+                                android:paddingTop="15px"
+                                android:paddingLeft="15px"
+                                android:textStyle="bold"
+                                android:textColor="#b15a2a" />
+                         <TextView android:text="- Unknown -"
+                                android:id="@+id/versionName"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"
+                                android:paddingLeft="15px"              
+                                android:layout_gravity="center_vertical"
+                                android:textColor="#ffffff" />
+                        
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>
