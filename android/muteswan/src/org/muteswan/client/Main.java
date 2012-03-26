@@ -309,16 +309,16 @@ public class Main extends Activity implements Runnable {
 			} catch (ActivityNotFoundException e) {
 			  alertDialogs.offerToInstallBarcodeScanner();
 			}
-		} else if (item.toString().equals("Share Orbot")) {
-			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-			intent.putExtra("ENCODE_DATA",getString(R.string.orbot_market_uri));
-			intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-			try {
-			  startActivity(intent);
-			} catch (ActivityNotFoundException e) {
-			  alertDialogs.offerToInstallBarcodeScanner();
-			}
-		} else if (item.toString().equals("Reset Muteswan")) {
+		//} else if (item.toString().equals("Share Orbot")) {
+		//	Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+		//	intent.putExtra("ENCODE_DATA",getString(R.string.orbot_market_uri));
+		//	intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+		//	try {
+		//	  startActivity(intent);
+		//	} catch (ActivityNotFoundException e) {
+		//	  alertDialogs.offerToInstallBarcodeScanner();
+		//	}
+		} else if (item.toString().equals("Uninstall Muteswan")) {
 			Intent intent = new Intent(Intent.ACTION_DELETE);
     		String packageName = "org.muteswan.client";
     		Uri data = Uri.fromParts("package", packageName, null);
