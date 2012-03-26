@@ -304,7 +304,7 @@ public class NewMessageService extends Service {
 						 		Thread.sleep(1000);
 						 		waitCount++;
 						 	} catch (InterruptedException e) {
-						 		e.printStackTrace();
+						 		return;
 						 	}
 						 } 
 						 
