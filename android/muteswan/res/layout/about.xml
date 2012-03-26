@@ -25,6 +25,44 @@
                                 android:textColorLink="#ffffff"
                                 android:paddingLeft="15px"              
                                 android:textColor="#ffffff" />
+                         
+                         <TextView android:text="Home Page"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"            
+                                android:paddingTop="15px"
+                                android:paddingLeft="15px"
+                                android:textStyle="bold"
+                                android:textColor="#b15a2a" />
+                         <TextView android:text="http://muteswan.org"
+                  				android:autoLink="web"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"
+                                android:paddingLeft="15px"              
+                                android:layout_gravity="center_vertical"
+                                android:textColor="#ffffff" />
+                         
+                         <TextView android:text="License"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"            
+                                android:paddingTop="15px"
+                                android:paddingLeft="15px"
+                                android:textStyle="bold"
+                                android:textColor="#b15a2a" />
+                         <TextView android:text="GNU Affero General Public License"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"
+                                android:paddingLeft="15px"              
+                                android:layout_gravity="center_vertical"
+                                android:textColor="#ffffff" />
+                         
+                         <TextView android:text="http://www.gnu.org/licenses/agpl-3.0.html"
+                  				android:autoLink="web"
+                                android:layout_width="fill_parent" 
+                                android:layout_height="wrap_content"
+                                android:paddingLeft="15px"              
+                                android:layout_gravity="center_vertical"
+                                android:textColor="#ffffff" />
+                         
                          <TextView android:text="Version"
                                 android:layout_width="fill_parent" 
                                 android:layout_height="wrap_content"            
