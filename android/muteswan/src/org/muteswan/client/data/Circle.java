@@ -885,7 +885,12 @@ public class Circle {
 	
 	public Integer postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, IOException {
 		MuteLog.Log("Circle", "Key length on post: " + getKey().getBytes().length);
-		Crypto crypto = new Crypto(Base64.decode(getKey()), msg.getBytes());
+		Crypto crypto;
+		if (getKey().endsWith("=")) {
+			crypto = new Crypto(Base64.decode(getKey()), msg.getBytes());
+		} else {
+			crypto = new Crypto(getKey().getBytes(), msg.getBytes());
+		}
 		byte[] encData = crypto.encrypt();
 		byte[] ivData = crypto.getIVData();
 		MuteLog.Log("Circle", "iv data: " + ivData.toString());

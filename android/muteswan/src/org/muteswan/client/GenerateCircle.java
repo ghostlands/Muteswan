@@ -78,6 +78,7 @@ public class GenerateCircle {
 		sr.generateSeed(256);
 		
 		//genKeyStr = sr.toString();
+		//genKeyStr = new BigInteger(130,sr).toString(32);
 		genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
 		MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
 		MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);

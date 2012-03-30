@@ -128,7 +128,12 @@ public class MuteswanMessage {
 
 		MuteLog.Log("MuteswanMessage","base64IVData: " + base64IVData);
 		MuteLog.Log("MuteswanMessage", "Key length when decoding: " + Base64.decode(circle.getKey()).length);
-		cryptoDec = new Crypto(Base64.decode(circle.getKey()),rawMsgBytes,ivData);
+		if (circle.getKey().endsWith("=")) {
+			cryptoDec = new Crypto(Base64.decode(circle.getKey()),rawMsgBytes,ivData);
+		} else {
+			//cryptoDec = new Crypto(Base64.decode(circle.getKey()),rawMsgBytes,ivData);
+			cryptoDec = new Crypto(circle.getKey().getBytes(),rawMsgBytes,ivData);
+		}
 		byte[] msg = cryptoDec.decrypt();
 		this.msgData = new String(msg);
 				
