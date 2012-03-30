@@ -26,9 +26,15 @@ import org.muteswan.client.MuteswanHttp;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
+
+//import android.database.sqlite.SQLiteDatabase;
+//import android.database.sqlite.SQLiteOpenHelper;
+//import android.database.sqlite.SQLiteStatement;
+
+import info.guardianproject.database.sqlcipher.SQLiteOpenHelper;
+import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+import info.guardianproject.database.sqlcipher.SQLiteStatement;
+
 import android.util.Log;
 
 @SuppressWarnings("serial")
@@ -44,6 +50,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		     
 		      public OpenHelper(Context context) {
 		    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		    	  SQLiteDatabase.loadLibs(context);
 			}
 
 			@Override
@@ -58,6 +65,11 @@ final public class CircleStore extends LinkedList<Circle> {
 		      }
 		      
 		   }
+
+
+
+
+	private static final String DATABASE_PASSWORD = "foo";
 	
 
 
@@ -106,7 +118,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	}
 	
 	  final public void deleteCircle(Circle circle) {
-		  SQLiteDatabase db = openHelper.getWritableDatabase();
+		  SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
 		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
 		  delete.bindString(1, circle.getKey());
 		  delete.bindString(2, circle.getShortname());
@@ -115,7 +127,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  db.close();
 		  
 		  
-		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase();
+		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
 		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
 		  delete.bindString(1, Main.genHexHash(circle.getFullText()));
 		  delete.execute();
@@ -137,7 +149,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  
 	  
 	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
-		  SQLiteDatabase db = openHelper.getReadableDatabase();
+		  SQLiteDatabase db = openHelper.getReadableDatabase(DATABASE_PASSWORD);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {
@@ -156,7 +168,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void initStore(boolean initCache) {
-		  SQLiteDatabase db = openHelper.getReadableDatabase();
+		  SQLiteDatabase db = openHelper.getReadableDatabase(DATABASE_PASSWORD);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {
@@ -198,7 +210,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void addCircleToDb(Circle circle) {
-		  SQLiteDatabase db = openHelper.getWritableDatabase();
+		  SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
 		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
 		  insrt.bindString(1, circle.getKey());
 		  insrt.bindString(2, circle.getShortname());
@@ -206,7 +218,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  insrt.execute();
 		  db.close();
 		  
-		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase();
+		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
 		  //muteswan.genHexHash(circle.getFullText()));
  		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 		  insert.bindString(1,Main.genHexHash(circle.getFullText()));

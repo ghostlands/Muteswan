@@ -665,6 +665,9 @@ public class NewMessageService extends Service {
 				e.printStackTrace();
 			} catch (JSONException e) {
 				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			return(-1);
 		}

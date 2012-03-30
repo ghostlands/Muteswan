@@ -57,14 +57,19 @@ import org.muteswan.client.Main;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+//import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
+//import android.database.sqlite.SQLiteStatement;
+
+import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+import info.guardianproject.database.sqlcipher.SQLiteStatement;
 import android.util.Log;
 import android.preference.PreferenceManager;
 
 public class Circle {
      
+	private static final String DATABASE_PASSWORD = "foo";
+
 	Circle.OpenHelper openHelper;
 	
 	final private String key;
@@ -92,7 +97,7 @@ public class Circle {
 	
 	private HashMap<Integer,MuteswanMessage> msgCache = new HashMap<Integer,MuteswanMessage>();
 
-	public class OpenHelper extends SQLiteOpenHelper {
+	public class OpenHelper extends info.guardianproject.database.sqlcipher.SQLiteOpenHelper {
 
 		public static final int DATABASE_VERSION = 12;
 		public String databaseName;
@@ -106,11 +111,12 @@ public class Circle {
 	      public OpenHelper(Context context, String circleHash) {
 	    	  super(context, circleHash, null, DATABASE_VERSION);
 	    	  databaseName = circleHash;
+	    	  SQLiteDatabase.loadLibs(context);
 		}
 
 		@Override
-	      public void onCreate(SQLiteDatabase db) {
-	         db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
+	    public void onCreate(SQLiteDatabase db) {
+	       db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
 	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
 	         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
 	         //db.execSQL("CREATE TABLE " + MANIFESTS + " (ringHash TEXT PRIMARY KEY, description TEXT, longdescription TEXT, image BLOB, authkey TEXT, postpolicy TEXT)");
@@ -127,13 +133,15 @@ public class Circle {
 	         onCreate(db);
 	      }
 	      
-	      public void deleteData(SQLiteDatabase db) {
+	     public void deleteData(SQLiteDatabase db) {
 	    	  db.execSQL("DELETE FROM " + MESSAGESTABLE);
 		      db.execSQL("DELETE FROM " + SIGTABLE);
 		      db.execSQL("DELETE FROM " + LASTMESSAGES);
 		      db.execSQL("DELETE FROM " + MANIFEST);
 	      }
-	      
+
+
+	
 	   }
 
 
@@ -222,7 +230,8 @@ public class Circle {
 	@SuppressWarnings("unused")
 	private void initManifest() {
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase();
+
+		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
 		
 	
 		
@@ -349,7 +358,7 @@ public class Circle {
 	
 	public void initCache() {
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
+		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase(DATABASE_PASSWORD);
 		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId","date", "message" }, "ringHash = ?", new String[] { circleHash }, null, null, "id desc limit 100" );
 		while (cursor.moveToNext()) {
 			String msgId = cursor.getString(0);
@@ -371,7 +380,7 @@ public class Circle {
 	public Integer getLastMsgId(boolean closedb) {
 		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
+		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase(DATABASE_PASSWORD);
 
 		Integer lastMessageId = null;
 		
@@ -437,7 +446,7 @@ public class Circle {
 		
 		String circleHash = Main.genHexHash(this.getFullText());
 		
-		SQLiteDatabase db = getOpenHelper().getReadableDatabase();
+		SQLiteDatabase db = getOpenHelper().getReadableDatabase(DATABASE_PASSWORD);
 		
 		msg = getMsgFromDb(db,circleHash,id);
 		
@@ -874,8 +883,9 @@ public class Circle {
 	}
 	
 	
-	public Integer postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException {
-		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
+	public Integer postMsg(String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, IOException {
+		MuteLog.Log("Circle", "Key length on post: " + getKey().getBytes().length);
+		Crypto crypto = new Crypto(Base64.decode(getKey()), msg.getBytes());
 		byte[] encData = crypto.encrypt();
 		byte[] ivData = crypto.getIVData();
 		MuteLog.Log("Circle", "iv data: " + ivData.toString());
@@ -952,13 +962,13 @@ public class Circle {
 			return;
 		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
+		SQLiteDatabase db = getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
 		if (msgExists(db,id)) {
 			db.close();
 			return;
 		}
 
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
+		info.guardianproject.database.sqlcipher.SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
 		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, id);
 		insrt.bindString(3, date);
@@ -976,7 +986,7 @@ public class Circle {
 			return;	
 		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
 		if (msgExists(db,id)) {
 			db.close();
 			return;
@@ -1017,7 +1027,7 @@ public class Circle {
 	public void createLastMessage(Integer curIndex, boolean closedb) {
 		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
 		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, curIndex);
@@ -1032,7 +1042,7 @@ public class Circle {
 		else {
 			curLastMsgId = curIndex;
 		}
-		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
+		SQLiteDatabase db = getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
 		saveLastMessage(db);
 		
 		if (closedb)
@@ -1154,7 +1164,7 @@ public class Circle {
    
 	
    private void saveManifestToDb() {
-	    SQLiteDatabase db = openHelper.getWritableDatabase();
+	    SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
 	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFEST);
 	    del.execute();
 	    

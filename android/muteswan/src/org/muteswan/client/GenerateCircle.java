@@ -75,8 +75,12 @@ public class GenerateCircle {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		sr.generateSeed(24);
-		genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
+		sr.generateSeed(256);
+		
+		//genKeyStr = sr.toString();
+		genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
+		MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
+		MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
 		return genKeyStr;
 	}
 
