@@ -181,12 +181,14 @@ public class Main extends Activity implements Runnable {
 		intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
 		intent.putExtra("org.openintents.extra.PASSWORD", secret);
 
-		try {
-			newMsgService.setSQLCipherSecret(secret);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
 		startActivityForResult(intent,0);
+		
+		//try {
+		//	newMsgService.setSQLCipherSecret(secret);
+		//} catch (RemoteException e) {
+		//	e.printStackTrace();
+		//}
+		
 	}
 	
 	@Override
@@ -196,6 +198,7 @@ public class Main extends Activity implements Runnable {
 			 String secret = intent.getStringExtra("org.openintents.extra.PASSWORD");
 			 try {
 				newMsgService.setSQLCipherSecret(secret);
+				cipherSecret = secret;
 				MuteLog.Log("Main", "Set SQL cipher!!");
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -317,6 +320,7 @@ public class Main extends Activity implements Runnable {
     		startActivity(intent);
     	}
     };
+	private String cipherSecret;
     
     
     @Override
@@ -394,6 +398,7 @@ public class Main extends Activity implements Runnable {
     private void showCircles(Integer action) {
     	Intent intent = new Intent(this,CircleList.class);
     	intent.putExtra("action", action);
+    	intent.putExtra("secret", cipherSecret);
     	
     	
     	startActivity(intent);
@@ -401,7 +406,9 @@ public class Main extends Activity implements Runnable {
     }
     
     private void showLatestMessages() {
-    	startActivity(new Intent(this,LatestMessages.class));
+    	Intent intent = new Intent(this,LatestMessages.class);
+    	intent.putExtra("secret", cipherSecret);
+    	startActivity(intent);
     	return;
     }
     

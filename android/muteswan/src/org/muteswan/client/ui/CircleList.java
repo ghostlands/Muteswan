@@ -118,8 +118,8 @@ public class CircleList extends ListActivity {
     	public void onClick(View v) {
     		Intent intent = new Intent(getApplicationContext(),CircleList.class);
     		intent.putExtra("action",CircleList.WRITE);
+    		intent.putExtra("secret",cipherSecret);
     		startActivity(intent);
-    		
     	}
     };
     
@@ -403,6 +403,8 @@ public class CircleList extends ListActivity {
 		} else if (action == READ || action == ANY) {
 			intent = new Intent(getApplicationContext(),LatestMessages.class);
 			intent.putExtra("circle", Main.genHexHash(circleList[position].getFullText()));
+			intent.putExtra("secret", cipherSecret);
+			
 	    } else if (action == SHARE) {
 			intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",circleList[position].getFullText());;
@@ -566,11 +568,12 @@ public class CircleList extends ListActivity {
      
 	
 	private void deleteCircle(int position) {
-		CircleStore store = new CircleStore(getApplicationContext());
+		CircleStore store = new CircleStore(cipherSecret,getApplicationContext());
 		store.deleteCircle(circleList[position]);
 		
 		Intent deleteCircleIntent = new Intent(CircleList.DELETED_CIRCLE_BROADCAST);
 		deleteCircleIntent.putExtra("circle", Main.genHexHash(circleList[position].getFullText()));
+		deleteCircleIntent.putExtra("secret", cipherSecret);
 		sendBroadcast(deleteCircleIntent);
 		
 		Toast.makeText(this,
@@ -615,6 +618,8 @@ public class CircleList extends ListActivity {
 	private void showMsgList(Integer position) {
 		Intent intent = new Intent(getApplicationContext(),LatestMessages.class);
 		intent.putExtra("circle", Main.genHexHash(circleList[position].getFullText()));
+		intent.putExtra("secret", cipherSecret);
+		MuteLog.Log("CircleList", "Set secret .. " + cipherSecret);
 		startActivity(intent);
 	}
 

@@ -449,10 +449,12 @@ public class LatestMessages extends ListActivity implements Runnable {
     		if (circleExtra != null) {
     		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
     		  intent.putExtra("circle",circleMap.get(circleExtra).getFullText());
+    		  intent.putExtra("secret",cipherSecret);
     		  startActivity(intent);
     		} else {
     		   Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-      		  startActivity(intent);
+    		   intent.putExtra("secret",cipherSecret);
+      		   startActivity(intent);
     		}
     	}
     };

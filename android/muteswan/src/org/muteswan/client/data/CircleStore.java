@@ -89,6 +89,8 @@ final public class CircleStore extends LinkedList<Circle> {
 	    this.muteswanHttp = muteswanHttp;
 	    this.cipherSecret = secret;
 
+	    MuteLog.Log("CircleStore", "Circle store is " + cipherSecret);
+	    
 		if (readDb && initCache) {
           initStore(muteswanHttp,true);
 		} else if (readDb) {
@@ -100,7 +102,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
-	  
+	    this.cipherSecret = secret;
 
 		if (readDb && initCache) {
           initStore(true);
@@ -109,9 +111,10 @@ final public class CircleStore extends LinkedList<Circle> {
 		}
 	}
 	
-	public CircleStore(Context applicationContext) {
+	public CircleStore(String cipherSecret,Context applicationContext) {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
+	    this.cipherSecret = cipherSecret;
 	}
 
 	

@@ -779,6 +779,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got deleted circle receiver!");
+	    	cipherSecret = intent.getExtras().getString("secret");
 	    	init(true);
 	    }
 	}
@@ -787,6 +788,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got joined circle receiver!");
+	    	cipherSecret = intent.getExtras().getString("secret");
 	    	init(true);
 	    }
 	}
@@ -795,6 +797,7 @@ public class NewMessageService extends Service {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Got created circle receiver!");
+	    	cipherSecret = intent.getExtras().getString("secret");
 	    	init(true);
 	    }
 	}
