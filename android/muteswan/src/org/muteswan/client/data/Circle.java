@@ -70,6 +70,8 @@ public class Circle {
      
 	
 
+	public static boolean libsLoaded = false;
+
 	Circle.OpenHelper openHelper;
 	
 	final private String key;
@@ -113,7 +115,10 @@ public class Circle {
 	      public OpenHelper(Context context, String circleHash) {
 	    	  super(context, circleHash, null, DATABASE_VERSION);
 	    	  databaseName = circleHash;
-	    	  SQLiteDatabase.loadLibs(context);
+	    	  if (Circle.libsLoaded  == false) {
+	    	   SQLiteDatabase.loadLibs(context);
+	    	   Circle.libsLoaded = true;
+	    	  }
 		}
 
 		@Override

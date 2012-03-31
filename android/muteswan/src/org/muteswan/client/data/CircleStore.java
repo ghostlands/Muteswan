@@ -39,18 +39,25 @@ import android.util.Log;
 
 @SuppressWarnings("serial")
 final public class CircleStore extends LinkedList<Circle> {
+	public static boolean libsLoaded = false;
 	
 	public class OpenHelper extends SQLiteOpenHelper {
 
 			public static final int DATABASE_VERSION = 10;
 			public static final String DATABASE_NAME = "muteswandb";
 			public static final String RINGTABLE = "rings";
+			
 
 			
 		     
 		      public OpenHelper(Context context) {
 		    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		    	  SQLiteDatabase.loadLibs(context);
+		    	  if (CircleStore.libsLoaded  == false) {
+			    	   SQLiteDatabase.loadLibs(context);
+			    	   
+			    	   CircleStore.libsLoaded = true;
+			      }
+		    	  
 			}
 
 			@Override

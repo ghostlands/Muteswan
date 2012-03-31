@@ -79,7 +79,6 @@ public class Main extends Activity implements Runnable {
 
 	
 	public final static String PREFS = "MuteswanPrefs";
-	private ProgressDialog dialog;
 	
 	
 
@@ -169,18 +168,20 @@ public class Main extends Activity implements Runnable {
 		}
 	}
 	
-	private void callSafeGetSecret() {
-		Intent intent = new Intent("org.openintents.action.GET_PASSWORD");
-		intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
-		startActivityForResult(intent,0);
+	private void getSafeSecret() {
+		if (cipherSecret == null) {
+		  Intent intent = new Intent("org.openintents.action.GET_PASSWORD");
+		  intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
+		  startActivityForResult(intent,0);
+		}
 	}
 	
-	private void setSafePassword() {
-		String secret = Crypto.generateSQLSecret();
+	private void setSafeSecret() {
+		cipherSecret = Crypto.generateSQLSecret();
 		Intent intent = new Intent("org.openintents.action.SET_PASSWORD");
 		intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
-		intent.putExtra("org.openintents.extra.PASSWORD", secret);
-
+		intent.putExtra("org.openintents.extra.PASSWORD", cipherSecret);
+		
 		startActivityForResult(intent,0);
 		
 		//try {
@@ -206,7 +207,8 @@ public class Main extends Activity implements Runnable {
 		} else {
 		 //	setSafePassword();
 		 //	callSafeGetSecret();
-		//	MuteLog.Log("WTF","WTF");
+			MuteLog.Log("Main","We did not get a secret back for some reason.");
+			finish();
 		}
 	}
 	
@@ -239,7 +241,7 @@ public class Main extends Activity implements Runnable {
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
 		if (firstRun) {
 			defPrefs.edit().putBoolean("firstrun", false).commit();
-			setSafePassword();
+			setSafeSecret();
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
@@ -292,7 +294,7 @@ public class Main extends Activity implements Runnable {
         if (versionNameString != null)
           versionName.setText(versionNameString);
         
-        callSafeGetSecret();
+        getSafeSecret();
 	    
     }
     

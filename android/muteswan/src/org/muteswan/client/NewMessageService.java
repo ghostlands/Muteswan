@@ -196,15 +196,23 @@ public class NewMessageService extends Service {
 		protected Void doInBackground(Void... params) {
 			
 			MuteLog.Log("NewMessageService", "Running in doInBackground...");
-			while (cipherSecret == null) {
+			
+			// wait for the user to enter their password
+			int count = 0;
+			while (cipherSecret == null && count <= 450) {
 				try {
-					Thread.sleep(1000);
-					MuteLog.Log("NewMessageService", "cipherSecret is still null.");
+					Thread.sleep(100);
+					//MuteLog.Log("NewMessageService", "cipherSecret is still null.");
+					count++;
 				} catch (InterruptedException e) {
 					return null;
 				}
 			}
 			
+			if (cipherSecret == null)
+				return null;
+			
+			MuteLog.Log("NewMessageService", "cipherSecret is NOT null.");
 			initCircleStore();
 			
 			//runPoll();
@@ -548,9 +556,12 @@ public class NewMessageService extends Service {
 
 		@Override
 		public int getLastTorMsgId(String circleHash) throws RemoteException {
+			if (circleStore == null)
+				initCircleStore();
+			
 			Circle circle = circleStore.asHashMap().get(circleHash);
 			if (circle == null) {
-				init(true);
+				initCircleStore();
 				circle = circleStore.asHashMap().get(circleHash);
 			}
 			return(getLastTorMsgIdPatiently(circle));
@@ -559,9 +570,13 @@ public class NewMessageService extends Service {
 		
 		@Override
 		public int downloadLatestMsgRangeFromTor(String circleHash, int delta) throws RemoteException {
+			if (circleStore == null)
+				initCircleStore();
+				
+			
 			Circle circle = circleStore.asHashMap().get(circleHash);
 			if (circle == null) {
-				init(true);
+				initCircleStore();
 				circle = circleStore.asHashMap().get(circleHash);
 			}
 			Integer lastMessage = circle.getLastCurMsgId(false);
@@ -570,9 +585,12 @@ public class NewMessageService extends Service {
 		
 		@Override
 		public int downloadMsgRangeFromTor(String circleHash, int start, int last) throws RemoteException {
+			if (circleStore == null)
+				initCircleStore();
+			
 			Circle circle = circleStore.asHashMap().get(circleHash);
 			if (circle == null) {
-				init(true);
+				initCircleStore();
 				circle = circleStore.asHashMap().get(circleHash);
 			}
 			return(downloadMsgRangeFromTor(circle,start,last));
