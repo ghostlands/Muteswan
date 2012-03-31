@@ -69,23 +69,25 @@ final public class CircleStore extends LinkedList<Circle> {
 
 
 
-	private static final String DATABASE_PASSWORD = "foo";
 	
-
-
 
     public Context context;
 	private OpenHelper openHelper;
 	private MuteswanHttp muteswanHttp;
 
 
+
+
+	private String cipherSecret;
+
+
 	
-	public CircleStore(Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
+	public CircleStore(String secret, Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
 		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	    this.muteswanHttp = muteswanHttp;
-	  
+	    this.cipherSecret = secret;
 
 		if (readDb && initCache) {
           initStore(muteswanHttp,true);
@@ -94,7 +96,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		}
 	}
 	
-	public CircleStore(Context applicationContext, boolean readDb, boolean initCache) {
+	public CircleStore(String secret, Context applicationContext, boolean readDb, boolean initCache) {
 		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
@@ -118,7 +120,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	}
 	
 	  final public void deleteCircle(Circle circle) {
-		  SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
+		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
 		  delete.bindString(1, circle.getKey());
 		  delete.bindString(2, circle.getShortname());
@@ -127,7 +129,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  db.close();
 		  
 		  
-		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
+		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
 		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
 		  delete.bindString(1, Main.genHexHash(circle.getFullText()));
 		  delete.execute();
@@ -149,14 +151,14 @@ final public class CircleStore extends LinkedList<Circle> {
 	  
 	  
 	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
-		  SQLiteDatabase db = openHelper.getReadableDatabase(DATABASE_PASSWORD);
+		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
-				Circle r = new Circle(context,key,shortname,server,muteswanHttp);
+				Circle r = new Circle(cipherSecret,context,key,shortname,server,muteswanHttp);
 				if (r != null) { 
 				   add(r);
 				   if (initCache)
@@ -168,14 +170,14 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void initStore(boolean initCache) {
-		  SQLiteDatabase db = openHelper.getReadableDatabase(DATABASE_PASSWORD);
+		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {
 				String shortname = cursor.getString(0);
 				String key = cursor.getString(1);
 				String server = cursor.getString(2);
-				Circle r = new Circle(context,key,shortname,server);
+				Circle r = new Circle(cipherSecret,context,key,shortname,server);
 				if (r != null) { 
 				   add(r);
 				   if (initCache)
@@ -190,7 +192,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	 
 	  
 	  public void updateStore(String contents) {
-		  Circle circle = new Circle(context,contents);
+		  Circle circle = new Circle(cipherSecret,context,contents);
 		  for (Circle r : this) {
 			  if (r.getFullText().equals(contents)) {
 				  return;
@@ -200,7 +202,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  public void updateStore(String key, String shortname, String server) {
-		  Circle circle = new Circle(context,key,shortname,server);
+		  Circle circle = new Circle(cipherSecret,context,key,shortname,server);
 		  for (Circle r : this) {
 			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
 				  return;
@@ -210,7 +212,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void addCircleToDb(Circle circle) {
-		  SQLiteDatabase db = openHelper.getWritableDatabase(DATABASE_PASSWORD);
+		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
 		  insrt.bindString(1, circle.getKey());
 		  insrt.bindString(2, circle.getShortname());
@@ -218,7 +220,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  insrt.execute();
 		  db.close();
 		  
-		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(DATABASE_PASSWORD);
+		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
 		  //muteswan.genHexHash(circle.getFullText()));
  		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 		  insert.bindString(1,Main.genHexHash(circle.getFullText()));

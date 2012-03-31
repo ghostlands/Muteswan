@@ -19,6 +19,9 @@ interface IMessageService {
   int downloadMsgRangeFromTor(String circleHash, int start, int last);
   void updateLastMessage(String circleHash, int lastMsg);
   
+  void setSQLCipherSecret(String secret);
+  String getSQLCipherSecret();
+  
   boolean isPolling();
   
   int postMsg(String circleHash, String msgContent); 

@@ -46,6 +46,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -73,6 +74,8 @@ public class NewMessageService extends Service {
 	private CircleStore circleStore;
 	private int numMsgDownload = 5;
 	private MuteswanHttp muteswanHttp;
+	
+	protected String cipherSecret;
     
 	
 	@Override
@@ -125,6 +128,9 @@ public class NewMessageService extends Service {
     	}
     };
 	private boolean torOK;
+	
+	
+	
     
 	private void init(boolean reinit) {
 		 pollList.clear();
@@ -139,20 +145,34 @@ public class NewMessageService extends Service {
 		 if (muteswanHttp == null)
 		   muteswanHttp = new MuteswanHttp();
 
-		 if (circleStore == null || reinit) {
-		 	circleStore = new CircleStore(getApplicationContext(),true,false,muteswanHttp);
-		 	for (Circle r : circleStore) {
-				  MuteLog.Log("MuteswanService", "Circle " + r.getShortname() + " registered.");
-				  registerPoll(r);
-		 	}
+		 
+		 
+		 
+		 
+		 if (cipherSecret != null && (circleStore == null || reinit)) {
+			initCircleStore(); 	
 		 	reinit = false;
+		 	return;
 		 }
+		 
+		new InitAsync().execute((Void[]) null);
+		//asyncInit.execute();
 		 
 	}
 	
+	private void initCircleStore() {
+		
+		circleStore = new CircleStore(cipherSecret,getApplicationContext(),true,false,muteswanHttp);
+	 	for (Circle r : circleStore) {
+			  MuteLog.Log("MuteswanService", "Circle " + r.getShortname() + " registered.");
+			  registerPoll(r);
+	 	}
+	}
+
 	private void start() {
 		
 	
+		
 		
 		
 		// Startup
@@ -161,10 +181,36 @@ public class NewMessageService extends Service {
 		  
 		  started = true;
 		  runPoll();
+		  //runPoll.execute();
 		  
 		} else {
 			runPoll();
+			//runPoll.execute();
 		}
+	}
+	
+	private class InitAsync extends AsyncTask<Void, Void, Void> {
+		
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			
+			MuteLog.Log("NewMessageService", "Running in doInBackground...");
+			while (cipherSecret == null) {
+				try {
+					Thread.sleep(1000);
+					MuteLog.Log("NewMessageService", "cipherSecret is still null.");
+				} catch (InterruptedException e) {
+					return null;
+				}
+			}
+			
+			initCircleStore();
+			
+			//runPoll();
+			return null;
+		}
+
 	}
 
 	
@@ -241,8 +287,11 @@ public class NewMessageService extends Service {
 	}
 
 	
+	
 	private void runPoll() {
 		
+		
+		 
 		 isWorking = true;
 		 notifyIds = new HashMap<String,Integer>();
 	
@@ -457,9 +506,12 @@ public class NewMessageService extends Service {
 		
 	private final IMessageService.Stub binder = new IMessageService.Stub() {
 
+		
+
 		public void refreshLatest() {
 			MuteLog.Log("MuteswanService", "runPoll() called.");
-			
+			//AsyncTask runPoll = new RunPoll();
+			//runPoll.execute();
 			runPoll();
 			
 		}
@@ -670,6 +722,16 @@ public class NewMessageService extends Service {
 				e.printStackTrace();
 			}
 			return(-1);
+		}
+
+		@Override
+		public void setSQLCipherSecret(String secret) throws RemoteException {
+			cipherSecret = secret;
+		}
+
+		@Override
+		public String getSQLCipherSecret() throws RemoteException {
+			return cipherSecret;
 		}
 		
 		

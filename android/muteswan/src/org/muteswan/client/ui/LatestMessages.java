@@ -222,18 +222,33 @@ public class LatestMessages extends ListActivity implements Runnable {
 	private long previousLoadMoreTime;
 	private View footerView;
 	private AlertDialogs alertDialogs;
+	private String cipherSecret;
 	
 	
 	private void init() {
         
+		
+	
+        
+        
+		
         extra = getIntent().getExtras();
-        if (extra != null) {
-		 store = new CircleStore(this,true,false);
+        cipherSecret = extra.getString("secret");
+
+        if (cipherSecret == null) {
+        	MuteLog.Log("LatestMessages","Can't do nothing without a secret...");
+        	return;
+        }
+        
+        if (extra.containsKey("circle")) { 
+		 store = new CircleStore(cipherSecret,this,true,false);
+		
 		 circleMap = store.asHashMap();
          circleExtra = extra.getString("circle");
          circleMap.get(circleExtra).initCache();
         } else {
-		 store = new CircleStore(this,true,true);
+		 
+		 store = new CircleStore(cipherSecret,this,true,true);
 		 circleMap = store.asHashMap();
         }
         
@@ -1278,10 +1293,12 @@ final Handler stopSpinningHandler = new Handler() {
 	public void run() {
 		MuteLog.Log("LatestMessages","Running!");
 		
-		Intent serviceIntent = new Intent(this,NewMessageService.class);
-        bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
-	
 		
+        
+	
+		Intent serviceIntent = new Intent(this,NewMessageService.class);
+		bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
+
 		
 
 		final int start = messageViewCount;

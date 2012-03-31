@@ -18,6 +18,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 
 package org.muteswan.client;
 
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -107,4 +108,24 @@ public class Crypto {
 		}
 		return(sr.generateSeed(16));
 	}
+	
+	public static String generateSQLSecret() {
+		String secret;
+	       
+		SecureRandom sr = null;
+		try {
+			sr = SecureRandom.getInstance("SHA1PRNG");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		sr.generateSeed(24);
+		
+		//genKeyStr = sr.toString();
+		//genKeyStr = new BigInteger(130,sr).toString(32);
+		secret = new BigInteger(130,sr).toString(32).substring(0,16);
+		//MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
+		//MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
+		return secret;
+	}
+	
 }

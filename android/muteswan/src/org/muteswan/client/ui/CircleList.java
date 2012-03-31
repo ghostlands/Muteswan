@@ -22,8 +22,10 @@ import java.util.Comparator;
 
 import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.GenerateCircle;
+import org.muteswan.client.IMessageService;
 import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
+import org.muteswan.client.NewMessageService;
 import org.muteswan.client.R;
 import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
@@ -34,11 +36,15 @@ import org.muteswan.client.data.IdentityStore;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.util.Log;
@@ -89,13 +95,15 @@ public class CircleList extends ListActivity {
 	
 	
 	
+	
+	
 	@Override
 	public void onResume() {
 		super.onResume();
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
-    	store = new CircleStore(this,true,false);
+    	store = new CircleStore(cipherSecret,this,true,false);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
         //        android.R.layout.simple_list_item_1, circleList);
@@ -125,6 +133,10 @@ public class CircleList extends ListActivity {
 	private boolean shareManually;
 	private Button addCircle;
 	private Button createCircle;
+	private String cipherSecret;
+	
+	
+	
 	
 	
 	@Override
@@ -137,9 +149,13 @@ public class CircleList extends ListActivity {
         action = extra.getInt("action");
         newCircle = extra.getString("newCircle");
         initialText = extra.getString("initialText");
+        cipherSecret = extra.getString("secret");
+        
+       
+       
      
         MuteLog.Log("CircleList", "Before CircleStore constructor.");
-    	store = new CircleStore(this,true,false);
+    	store = new CircleStore(cipherSecret,this,true,false);
     	MuteLog.Log("CircleList", "After CircleStore constructor.");
 
         setContentView(R.layout.circlelist);
@@ -482,8 +498,8 @@ public class CircleList extends ListActivity {
                 	 // FIXME refactor
                 	String circleTxt = editTxt.getText().toString();
 
-     	            CircleStore store = new CircleStore(getApplicationContext(),true,false);
-                 	Circle circle = new Circle(getApplicationContext(),circleTxt);
+     	            CircleStore store = new CircleStore(cipherSecret,getApplicationContext(),true,false);
+                 	Circle circle = new Circle(cipherSecret,getApplicationContext(),circleTxt);
                  	if (circle.getShortname() == null)
                  		MuteLog.Log("CircleList","Circle is null after initializing manually.");
      	            store.updateStore(circleTxt);
@@ -519,7 +535,10 @@ public class CircleList extends ListActivity {
 	    	       .setView(textEntryView)
 	    	       .setPositiveButton(R.string.create_circle_confirm_yes, new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	        	   GenerateCircle genCircle = new GenerateCircle(getApplicationContext(), alertEditText.getText().toString());
+	    	        	
+						   GenerateCircle genCircle = new GenerateCircle(cipherSecret,getApplicationContext(), alertEditText.getText().toString());
+						
+						
 	    	        	   genCircle.saveCircle();
 	    	        	   genCircle.broadcastCreate();
 	    	        	   onResume();
@@ -611,8 +630,8 @@ public class CircleList extends ListActivity {
     	            // RING
     	            if (atIndex != -1) {
     	            
-      	              CircleStore store = new CircleStore(getApplicationContext(),true,false);
-    	              Circle circle = new Circle(getApplicationContext(),contents);
+      	              CircleStore store = new CircleStore(cipherSecret,getApplicationContext(),true,false);
+    	              Circle circle = new Circle(cipherSecret,getApplicationContext(),contents);
     	              store.updateStore(contents);
     	              
     	              
@@ -651,6 +670,6 @@ public class CircleList extends ListActivity {
 
 	}
 	
-
+	
 	
 }

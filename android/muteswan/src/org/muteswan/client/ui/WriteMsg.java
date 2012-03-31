@@ -88,6 +88,7 @@ public class WriteMsg extends ListActivity {
         }
 	 };
 	private MuteswanHttp muteswanHttp;
+	private String cipherSecret;
 	
 	
 	public void onResume() {
@@ -112,11 +113,16 @@ public class WriteMsg extends ListActivity {
 
 	       Bundle extras = getIntent().getExtras();
 	       muteswanHttp = new MuteswanHttp();
-	       CircleStore cs = new CircleStore(getApplicationContext(),true,false);
+	       CircleStore cs = null;
+		
+	       
+	       cipherSecret = extras.getString("secret");
+		   cs = new CircleStore(cipherSecret,getApplicationContext(),true,false);
+		
 	
 	       
 	       if (extras != null && extras.containsKey("circle")) {
-	        circle = new Circle(this,extras.getString("circle"));
+			 circle = new Circle(cipherSecret,this,extras.getString("circle"));
 	       }
 	       
 	       if (extras != null && extras.containsKey("initialText")) {

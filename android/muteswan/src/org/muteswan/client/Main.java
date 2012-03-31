@@ -155,7 +155,7 @@ public class Main extends Activity implements Runnable {
 		 IntentFilter intentFilter = new IntentFilter(Main.TOR_NOT_AVAILABLE);
 		 registerReceiver(torNotAvailableReceiver, intentFilter);
   
-		   
+		 //callSafeGetSecret();
 		 
 	 }
 	
@@ -168,6 +168,45 @@ public class Main extends Activity implements Runnable {
 			unbindService(mNewMsgConn);
 		}
 	}
+	
+	private void callSafeGetSecret() {
+		Intent intent = new Intent("org.openintents.action.GET_PASSWORD");
+		intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
+		startActivityForResult(intent,0);
+	}
+	
+	private void setSafePassword() {
+		String secret = Crypto.generateSQLSecret();
+		Intent intent = new Intent("org.openintents.action.SET_PASSWORD");
+		intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
+		intent.putExtra("org.openintents.extra.PASSWORD", secret);
+
+		try {
+			newMsgService.setSQLCipherSecret(secret);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		startActivityForResult(intent,0);
+	}
+	
+	@Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		
+		if (resultCode == RESULT_OK) {
+			 String secret = intent.getStringExtra("org.openintents.extra.PASSWORD");
+			 try {
+				newMsgService.setSQLCipherSecret(secret);
+				MuteLog.Log("Main", "Set SQL cipher!!");
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		} else {
+		 //	setSafePassword();
+		 //	callSafeGetSecret();
+		//	MuteLog.Log("WTF","WTF");
+		}
+	}
+	
 	
     /** Called when the activity is first created. */
     @Override
@@ -192,27 +231,38 @@ public class Main extends Activity implements Runnable {
         //,Context.BIND_AUTO_CREATE);
         
         
+        
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
 		if (firstRun) {
 			defPrefs.edit().putBoolean("firstrun", false).commit();
-			CircleStore cs = new CircleStore(this,true,false);
-			cs.updateStore("dd85381ac8acc1a7", "Feedback", "circles.muteswan.org");
+			setSafePassword();
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//CircleStore cs = new CircleStore(cipherSecret,this,true,false);
+			
+			//cs.updateStore("dd85381ac8acc1a7", "Feedback", "circles.muteswan.org");
 		}
 		
         
-        
+		
         // start work activities
         Thread thread = new Thread(this); 
 	    thread.start();
     
+	    //setSafePassword();
+	    
+	   
 	    
 	    // initialize alert dialogs
 	    alertDialogs = new AlertDialogs(this);
 
         setContentView(R.layout.main);
         
-
         
         final ImageView mLatestMessagesButton = (ImageView) findViewById(R.id.mLatestMessages);
         mLatestMessagesButton.setOnClickListener(mLatestMessages);
@@ -238,6 +288,8 @@ public class Main extends Activity implements Runnable {
         final TextView versionName = (TextView) findViewById(R.id.versionName);
         if (versionNameString != null)
           versionName.setText(versionNameString);
+        
+        callSafeGetSecret();
 	    
     }
     

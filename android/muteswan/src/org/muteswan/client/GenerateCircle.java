@@ -23,13 +23,15 @@ public class GenerateCircle {
 	private String circleFullText;
 	private Context ctx;
 	private String name;
+	private String cipherSecret;
 
-	public GenerateCircle(Context ctx, String name) {
+	public GenerateCircle(String secret, Context ctx, String name) {
  
 		String server;
 		
 		this.ctx = ctx;
 		this.name = name;
+		this.cipherSecret = secret;
 		
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 	    customServer = defPrefs.getString("customCircleServer", "");
@@ -50,7 +52,7 @@ public class GenerateCircle {
 	}
 	
 	public void saveCircle() {
-		CircleStore newStore = new CircleStore(ctx,true,false);
+		CircleStore newStore = new CircleStore(cipherSecret,ctx,true,false);
     	newStore.updateStore(circleFullText);
     	
 	}
