@@ -539,10 +539,8 @@ private boolean migrateDatabase() {
 				    		 MuteLog.Log("NewMessageService", "Downloading " + i +  " for " + circle.getShortname());
 				    		 try {
 								MuteswanMessage msg = circle.getMsgFromTor(i);
-								if (msg != null && msg.signatures[0] != null) {
-									circle.saveMsgToDb(i, msg.getDate(), msg.getRawJSON(),
-											msg.signatures);
-								} else if (msg != null) {
+								
+								if (msg != null) {
 									circle.saveMsgToDb(i, msg.getDate(), msg.getRawJSON());
 								}
 								
@@ -758,10 +756,8 @@ private boolean migrateDatabase() {
 				
 				for (MuteswanMessage msg : msgs) {
 					MuteLog.Log("NewMessageService", "I am " + Thread.currentThread() + " downloading " + msg.getId());
-					if (msg != null && msg.signatures[0] != null) {
-						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getRawJSON(),
-							msg.signatures);
-					} else if (msg != null) {
+				
+					if (msg != null) {
 						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getRawJSON());
 					}
 				}
@@ -814,12 +810,8 @@ private boolean migrateDatabase() {
 				}
 				
 				MuteLog.Log("NewMessageService", "I am " + Thread.currentThread());
-				if (msg != null && msg.signatures[0] != null) {
-					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg(),
-							msg.signatures);
-					linkedQueue.remove(circle);
-					return(0);
-				} else if (msg != null) {
+				
+				if (msg != null) {
 					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg());
 					linkedQueue.remove(circle);
 					return(0);

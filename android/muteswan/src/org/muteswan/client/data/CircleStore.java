@@ -185,8 +185,8 @@ final public class CircleStore extends LinkedList<Circle> {
 				Circle r = new Circle(cipherSecret,context,key,shortname,server,muteswanHttp);
 				if (r != null) { 
 				   add(r);
-				   if (initCache)
-				     r.initCache();
+				   //if (initCache)
+				   //  r.initCache();
 				}
 		  }
 		  cursor.close();
@@ -204,8 +204,8 @@ final public class CircleStore extends LinkedList<Circle> {
 				Circle r = new Circle(cipherSecret,context,key,shortname,server);
 				if (r != null) { 
 				   add(r);
-				   if (initCache)
-				     r.initCache();
+				   //if (initCache)
+				   //  r.initCache();
 				}
 		  }
 		  cursor.close();

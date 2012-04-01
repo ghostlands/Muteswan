@@ -19,9 +19,11 @@ package org.muteswan.client.data;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.security.InvalidKeyException;
@@ -140,7 +142,10 @@ public class Circle {
 		
 		initializeDirStore(context.getFilesDir());
 		
-	    curLastMsgId = 0;
+		
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
+	    
 		
 	}
 	
@@ -175,6 +180,8 @@ public class Circle {
 		//} else {
 	    //	  this.muteswanHttp = muteswanHttp;
 		//}
+	  	SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
 	  	initializeDirStore(context.getFilesDir());
 	}
 	
@@ -187,7 +194,9 @@ public class Circle {
 
 		
 		
-	    curLastMsgId = 0;
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
+	    
 	    initializeDirStore(context.getFilesDir());
 	}
 	
@@ -261,48 +270,7 @@ public class Circle {
 
 	
 	
-	public void initCache() {
-		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "msgId","date", "message" }, "ringHash = ?", new String[] { circleHash }, null, null, "id desc limit 100" );
-		while (cursor.moveToNext()) {
-			String msgId = cursor.getString(0);
-			String date = cursor.getString(1);
-			String msgData = cursor.getString(2);
-			
-			JSONObject jsonObj = null;
-			try {
-				jsonObj = new JSONObject(msgData);
-				msgCache.put(Integer.parseInt(msgId),new MuteswanMessage(Integer.parseInt(msgId),this,jsonObj,date));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			
-		}
-		
-		cursor.close();
-		db.close();
-	}
+	
 	
 	
 	/**
@@ -317,7 +285,9 @@ public class Circle {
 		
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         lastMessageId = defPrefs.getInt(circleHash, 0);
-
+        
+        //if (lastMessageId == 0)
+        //	return null;
 				
 
 		curLastMsgId = lastMessageId;
@@ -383,20 +353,43 @@ public class Circle {
 	private String getFileContents(File file) {
 		StringBuilder text = new StringBuilder();
 
+		if (!file.exists())
+			return null;
+		
 		try {
 		    BufferedReader br = new BufferedReader(new FileReader(file));
 		    String line;
 
 		    while ((line = br.readLine()) != null) {
 		        text.append(line);
-		        text.append('\n');
 		    }
 		}
 		catch (IOException e) {
 		    MuteLog.Log("Circle", "Failed to read file data in " + file.getAbsolutePath());
+		    
 		}
 		
 		return(text.toString());
+	}
+	
+	private boolean writeFileContent(File file, String data) {
+		StringBuilder text = new StringBuilder();
+
+		try {
+		    BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		    String line;
+
+		    bw.append(data);
+		    bw.close();
+		    return true;
+		   
+		}
+		catch (IOException e) {
+		    MuteLog.Log("Circle", "Failed to write file data in " + file.getAbsolutePath());
+		}
+		
+		return false;
+		
 	}
 		
 	public MuteswanMessage getMsgFromDb(String circleHash, String id) {
@@ -407,6 +400,11 @@ public class Circle {
 
 		File msgPath = new File(getStorePath() + "/" + id);
 		String jsonData = getFileContents(msgPath);
+		
+		if (jsonData == null)
+			return null;
+		
+		MuteLog.Log("Circle", "Got json data: " + jsonData);
 		
 		//long lastMod = msgPath.lastModified();
 		//SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
@@ -446,7 +444,9 @@ public class Circle {
 			e.printStackTrace();
 		}
 
-		return(null);
+		
+		
+		return(msg);
 		
 	}
 	
@@ -880,80 +880,43 @@ public class Circle {
 	}
 	
 	public boolean msgExists(SQLiteDatabase db, Integer id) {
-		String circleHash = Main.genHexHash(getFullText());
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id.toString(), circleHash }, null, null, "id desc" );
-		if (cursor.getCount() != 0) {
-			cursor.close();
-			return(true);
+		
+		File msgPath = new File(getStorePath() + "/" + id);
+		if (msgPath.exists()) {
+			return true;
 		} else {
-			cursor.close();
-			return(false);
+			return false;
 		}
+		
 	}
 	
-	// FIXME: should refactor
-	public void saveMsgToDb(String date, String msg) {
+	
+	public void saveMsgToDb(Integer id, String date, String msgContent) {
 		MuteLog.Log("Circle","Saving message " + id);
 		if (context == null) 
 			return;	
 		
-		if (id == null || date == null || msg == null)
+		if (id == null || date == null || msgContent == null)
 			return;
 		
-		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
-		if (msgExists(db,id)) {
-			db.close();
-			return;
+		JSONObject jsonObj = null;
+		try {
+			jsonObj = new JSONObject(msgContent);
+			jsonObj.put("msgdate", date);
+			File msgPath = new File(getStorePath() + "/" + id);
+			
+			writeFileContent(msgPath,jsonObj.toString());
+			MuteLog.Log("Circle", "Wrote message to file " + msgPath);
+		} catch (JSONException e) {
+			
 		}
-
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
-		insrt.bindString(1, circleHash);
-		insrt.bindLong(2, id);
-		insrt.bindString(3, date);
-		insrt.bindString(4, msg);
-		insrt.executeInsert();
-		insrt.close();
-		db.close();
+		
+		
 		MuteLog.Log("Circle","Saved message " + id);
 	}
 	
 	
-	//FIXME: should refactor
-	public void saveMsgToDb(Integer id, String date, String msg, String[] signatures) {
-		if (context == null) 
-			return;	
-		
-		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getWritableDatabase();
-		if (msgExists(db,id)) {
-			db.close();
-			return;
-		}
-		
-
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MESSAGESTABLE + " (ringHash,msgId,date,message) VALUES (?,?,?,?)");
-		insrt.bindString(1, circleHash);
-		insrt.bindLong(2, id);
-		insrt.bindString(3, date);
-		insrt.bindString(4, msg);
-		insrt.executeInsert();
-		insrt.close();
 	
-		for (int i=0; i<signatures.length; i++) {	
-		  //FIXME: length for signatures
-		  if (signatures[i] == null)
-			  break;
-		
-		  insrt = db.compileStatement("INSERT INTO " + OpenHelper.SIGTABLE + " (msgId,ringHash,signature) VALUES (?,?,?)");
-		  insrt.bindLong(1, id);
-		  insrt.bindString(2, circleHash);
-		  insrt.bindString(3,signatures[i]);
-		  insrt.executeInsert();
-		  insrt.close();
-		}
-		db.close();
-	}
 	
 	
 	
@@ -965,75 +928,40 @@ public class Circle {
 
 public void deleteAllMessages(boolean closedb) {
 		
-		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getWritableDatabase();
-		SQLiteStatement delete = db.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
-		delete.bindString(1, circleHash);
-		delete.execute();
-		//circle.getOpenHelper().deleteData(rdb);
-		//rdb.close();
+		File msgPath = getStorePath();
 		
+		File[] fileList = msgPath.listFiles();
+		for (int i=0; i<fileList.length;i++) {
+			fileList[i].delete();
+		}
+		msgPath.delete();
 		
-		if (closedb)
-		  db.close();
 	}
 	
 	public void createLastMessage(Integer curIndex, boolean closedb) {
 		
+		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = getOpenHelper().getWritableDatabase(cipherSecret);
-		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
-		insrt.bindString(1, circleHash);
-		insrt.bindLong(2, curIndex);
-		insrt.executeInsert();
-		if (closedb)
-		  db.close();
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        defPrefs.edit().putInt(circleHash, curIndex).commit();
+        
+        curLastMsgId = curIndex;
+        
 	}
 	
 	public void updateLastMessage(Integer curIndex, boolean closedb) {
-		if (curIndex == null || curIndex < 0)
-			return;
-		else {
-			curLastMsgId = curIndex;
-		}
-		SQLiteDatabase db = getOpenHelper().getWritableDatabase();
-		saveLastMessage(db);
-		
-		if (closedb)
-			db.close();
+		createLastMessage(curIndex, true);
 			
 	}
 	
 	public void closedb() {
-		if (openHelper != null) {
-		 try {
-		  openHelper.close();
-		 } catch (android.database.sqlite.SQLiteException e) {
-			 e.getCause();
-		 }
-		}
-		//db.close();
+		// FIXME noop
 		
 	}
 	
 	public void saveLastMessage(SQLiteDatabase db) {
 		String circleHash = Main.genHexHash(getFullText());
-		
-		
-		SQLiteStatement update = db.compileStatement("UPDATE " + OpenHelper.LASTMESSAGES + " SET lastMessage = ?, lastCheck = datetime('now') WHERE ringHash = ?");
-		update.bindLong(1, curLastMsgId);
-		update.bindString(2, circleHash);
-		update.execute();
-		db.close();
-		
-		
-		//if ((update.execute() == -1) {
-		//	SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-		//	insert.bindString(1,circleHash);
-		//	insert.bindLong(2, curLastMsgId);
-		//	insert.executeInsert();
-		//}
-		//db.close();
+		createLastMessage(curLastMsgId, true);
 	}
 
 	public void updateManifest(JSONObject jsonObj) {
@@ -1103,7 +1031,7 @@ public void deleteAllMessages(boolean closedb) {
 				}
 				
 				
-				saveManifestToDb();
+				//saveManifestToDb();
 
 		    	MuteLog.Log("Circle", "Downloaded manifest for " + getShortname());
 			} catch (ClientProtocolException e) {

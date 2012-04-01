@@ -230,8 +230,6 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 	
         
-        
-		
         extra = getIntent().getExtras();
         cipherSecret = extra.getString("secret");
 
@@ -245,7 +243,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
 		 circleMap = store.asHashMap();
          circleExtra = extra.getString("circle");
-         circleMap.get(circleExtra).initCache();
+         //circleMap.get(circleExtra).initCache();
         } else {
 		 
 		 store = new CircleStore(cipherSecret,this,true,true);
@@ -1402,7 +1400,8 @@ final Handler stopSpinningHandler = new Handler() {
         		
         			
         			if (prevLastMsgId == null)
-        				prevLastMsgId = lastMsg;
+        				prevLastMsgId = 0;
+        			//BOOK
         			
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
