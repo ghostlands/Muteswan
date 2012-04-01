@@ -55,7 +55,8 @@ import android.util.Log;
 
 public class NewMessageService extends Service {
 
-    private static final int STATIC_NOTIFYID = 5;
+    private static final int CHECK_FAILED_NOTIFYID = 5;
+    private static final int PERSISTENT_NOTIFYID = 5;
     private static final int MAX_IO_FAIL = 5;
 	Intent notificationIntent;
 	PendingIntent contentIntent;
@@ -82,6 +83,7 @@ public class NewMessageService extends Service {
 	public void onStart(Intent intent, int startId) {
 		MuteLog.Log("MuteswanService", "onStart called.");
 		//this.stopForeground(false);
+		
 		start();
 	}
 	
@@ -173,6 +175,16 @@ public class NewMessageService extends Service {
 		
 	
 		
+		// Persistent notification
+		if (cipherSecret != null) {
+		  showPersistentNotification("Muteswan Service", "Muteswan service is polling in the background.",false);
+		  MuteLog.Log("NewMessageService", "Have key.");
+		} else {
+		  showPersistentNotification("Muteswan Service", "Muteswan needs the secret password.",true);
+		  stopservice();
+  		  stopSelf();
+  		  return;
+		}
 		
 		
 		// Startup
@@ -221,6 +233,28 @@ public class NewMessageService extends Service {
 
 	}
 
+	private void showNotification(CharSequence title, CharSequence content) {
+		long when = System.currentTimeMillis();
+		int icon = R.drawable.sync_error;
+		Notification notify = new Notification(icon,title,when);
+	
+		
+		notify.flags |= Notification.FLAG_AUTO_CANCEL;
+		notify.flags |= Notification.FLAG_SHOW_LIGHTS;
+		//notify.defaults |= Notification.DEFAULT_SOUND;
+	
+		if (content == null)
+			return;
+		
+		Intent msgIntent = new Intent(getApplicationContext(), Main.class);
+		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
+	
+	
+		MuteLog.Log("NewMessageService", "Setting notify id of " + CHECK_FAILED_NOTIFYID);
+		notify.setLatestEventInfo(getApplicationContext(), title, content,pendingMsgIntent);
+		mNM.notify(CHECK_FAILED_NOTIFYID, notify);
+	}
+	
 	
 	private void showCircleNotification(Circle c, CharSequence title, CharSequence content) {
 		long when = System.currentTimeMillis();
@@ -250,9 +284,14 @@ public class NewMessageService extends Service {
 		mNM.notify((Integer) notifyIds.get(c.getFullText()), notify);
 	}
 	
-	private void showNotification(CharSequence title, CharSequence content) {
+	private void showPersistentNotification(CharSequence title, CharSequence content, Boolean error) {
 		long when = System.currentTimeMillis();
-		int icon = R.drawable.sync_error;
+		int icon;
+		if (error) {
+		  icon = android.R.drawable.stat_notify_error;
+		} else {
+		  icon = R.drawable.icon;
+		}
 		Notification notify = new Notification(icon,title,when);
 	
 		
@@ -267,9 +306,9 @@ public class NewMessageService extends Service {
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
 	
 	
-		MuteLog.Log("NewMessageService", "Setting notify id of " + STATIC_NOTIFYID);
+		MuteLog.Log("NewMessageService", "Setting notify id of " + PERSISTENT_NOTIFYID);
 		notify.setLatestEventInfo(getApplicationContext(), title, content,pendingMsgIntent);
-		mNM.notify(STATIC_NOTIFYID, notify);
+		mNM.notify(PERSISTENT_NOTIFYID, notify);
 	}
 	
 	private Integer getLastTorMsgIdPatiently(Circle circle) {
@@ -479,8 +518,9 @@ public class NewMessageService extends Service {
 				   CharSequence notifText = getString(R.string.error_muteswan_failed_check_content);
 				   showNotification(notifTitle,notifText);
 			 	 } else {
-			 		 removeNotify();
+			 		 removeCheckFailedNotify();
 			 	 }
+			 	 
 				 torCheckThread.interrupt();
 				 handleStopSelf.sendEmptyMessage(0);
 				 
@@ -494,8 +534,8 @@ public class NewMessageService extends Service {
 	}
 	
 	
-	protected void removeNotify() {
-		mNM.cancel(STATIC_NOTIFYID);
+	protected void removeCheckFailedNotify() {
+		mNM.cancel(CHECK_FAILED_NOTIFYID);
 	}
 
 

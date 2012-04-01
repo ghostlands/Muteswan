@@ -883,7 +883,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 		
         @Override
         public void handleMessage(Message msg) {
-        		//listAdapter.sort(new CompareDates());
+        		//listAdapter.sortli(new CompareDates());
         		
         	    listAdapter.notifyDataSetChanged();
         }

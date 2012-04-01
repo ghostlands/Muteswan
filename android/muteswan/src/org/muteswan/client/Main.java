@@ -305,6 +305,8 @@ public class Main extends Activity implements Runnable {
 
 
 
+	
+
 	public View.OnClickListener postClicked = new View.OnClickListener() {
     	public void onClick(View v) {
     		Intent intent = new Intent(getApplicationContext(),WriteMsg.class);

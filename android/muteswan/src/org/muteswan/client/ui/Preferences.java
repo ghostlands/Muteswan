@@ -26,7 +26,9 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -88,9 +90,14 @@ public class Preferences extends PreferenceActivity {
 		   MuteLog.Log("Preferences","Alarm set for " + minutes + " minutes.");
 		
 		   int checkMsgIntervalMs = minutes * 60 * 1000;
-		
+		   
+		   
+		   Intent intent = new Intent(getApplicationContext(),NewMessageReceiver.class);
+		   PendingIntent receiverIntent = NewMessageReceiver.getPendingIntent(getApplicationContext());
+		   
+		   
 		   AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+minutes*60,checkMsgIntervalMs,NewMessageReceiver.getPendingIntent(getApplicationContext()));
+		   alarm.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime()+minutes*60,checkMsgIntervalMs,receiverIntent);
 		  }
 	
 	 }

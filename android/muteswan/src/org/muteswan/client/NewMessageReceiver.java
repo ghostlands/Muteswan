@@ -75,8 +75,6 @@ public class NewMessageReceiver extends BroadcastReceiver {
 		  e.printStackTrace();
 	   }
    	  }
-   	
-   	
 
         
 	}
