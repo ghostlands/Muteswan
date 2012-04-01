@@ -17,6 +17,11 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.data;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -88,32 +93,11 @@ final public class CircleStore extends LinkedList<Circle> {
 	private String cipherSecret;
 
 
-	private boolean migrateDatabase() {
-		
-		MigrateToSqlCipher migrate = new MigrateToSqlCipher();
-		
-		LinkedList<String> circles = migrate.getOldCircleData();
-		for (String s : circles) {
-			MuteLog.Log("CircleStore", "On Migration got: " + s);
-		}
-		return true;
-		
-		//SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandbEnc", cipherSecret, null);
-		
-		//db.execSQL("PRAGMA KEY = '" + cipherSecret + "';");
-		//db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
-		//c.close();
-		//db.execSQL("ATTACH DATABASE '/data/data/org.muteswan.client/databases/muteswandb' AS plaintext KEY '';");
-		//c.close();
-		//db.execSQL("SELECT sqlcipher_export('plaintext');");
-		//db.execSQL("INSERT INTO rings SELECT * FROM plaintext.rings;");
-		//c.close();
-		//MuteLog.Log("CircleStore","We got a cursor count of: " + c.getCount());
-		//db.execSQL("DETACH DATABASE plaintext;");
-		//c.close();
-		//db.close();
-		//return false;
-	}
+	
+	
+	
+
+	
 	
 	public CircleStore(String secret, Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
 		MuteLog.Log("CircleStore", "Circle store called!");
@@ -121,7 +105,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	    openHelper = new OpenHelper(context);
 	    this.muteswanHttp = muteswanHttp;
 	    this.cipherSecret = secret;
-	    migrateDatabase();
+	    
 
 	    MuteLog.Log("CircleStore", "Circle store is " + cipherSecret);
 	    
@@ -137,7 +121,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	    this.cipherSecret = secret;
-	    migrateDatabase();
+	    
 
 		if (readDb && initCache) {
           initStore(true);
@@ -150,7 +134,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	    this.cipherSecret = cipherSecret;
-	    migrateDatabase();
+	    
 	}
 
 	

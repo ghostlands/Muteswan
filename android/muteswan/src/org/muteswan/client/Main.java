@@ -17,10 +17,15 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
+import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+
+import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.LinkedList;
 
 import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.data.MigrateToSqlCipher;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
@@ -61,6 +66,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import info.guardianproject.database.sqlcipher.SQLiteOpenHelper;
+import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+import info.guardianproject.database.sqlcipher.SQLiteStatement;
 
 
 
@@ -295,6 +304,9 @@ public class Main extends Activity implements Runnable {
           versionName.setText(versionNameString);
         
         getSafeSecret();
+        
+        
+        
 	    
     }
     
@@ -532,6 +544,8 @@ public class Main extends Activity implements Runnable {
 	private TorNotAvailableReceiver torNotAvailableReceiver;
 	
 	
+	
+
 	
 	
     

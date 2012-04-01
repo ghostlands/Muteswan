@@ -17,6 +17,9 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
+import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+
+import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
+import org.muteswan.client.data.MigrateToSqlCipher;
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.CreateCircle;
@@ -221,8 +225,12 @@ public class NewMessageService extends Service {
 				}
 			}
 			
+			
 			if (cipherSecret == null)
 				return null;
+			
+			if (migrateDatabase()) return null;
+			
 			
 			MuteLog.Log("NewMessageService", "cipherSecret is NOT null.");
 			initCircleStore();
@@ -233,6 +241,63 @@ public class NewMessageService extends Service {
 
 	}
 
+private boolean migrateDatabase() {
+		
+		
+		
+		File oldDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
+		oldDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandbOld"));
+		
+		
+		File dbDir = new File("/data/data/org.muteswan.client/databases/");
+		File[] files = dbDir.listFiles();
+		for (int i = 0; i<files.length;i++) {
+			MuteLog.Log("NewMessageService", "File is " + files[i].getName());
+			if (files[i].getName().equals("muteswandbOld"))
+				continue;
+			files[i].delete();
+		}
+		
+		//if (true) return true;
+		//File newDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
+		//oldDb.delete();
+		//newDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandb"));
+		
+		MigrateToSqlCipher migrate = new MigrateToSqlCipher();
+		LinkedList<String[]> circles = migrate.getOldCircleData();
+		SQLiteDatabase.loadLibs(this);
+		
+		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb", cipherSecret, null);
+		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
+		
+		
+		for (String[] s : circles) {
+			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
+			db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
+		}
+		db.close();
+		//return true;
+		
+		
+		/*
+		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandbEnc", "", null);
+		
+		db.execSQL("PRAGMA KEY = '" + cipherSecret + "';");
+		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
+		db.execSQL("ATTACH DATABASE '/data/data/org.muteswan.client/databases/muteswandb' AS plaintext KEY '';");
+		db.execSQL("INSERT INTO rings SELECT * FROM plaintext.rings;");
+		db.execSQL("DETACH DATABASE plaintext;");
+		*/
+		MuteLog.Log("CircleStore", "Done loading migration data.");
+		
+				
+		
+		
+		MuteLog.Log("CircleStore", "Done migrating.");
+		
+		return true;
+	}
+	
 	private void showNotification(CharSequence title, CharSequence content) {
 		long when = System.currentTimeMillis();
 		int icon = R.drawable.sync_error;

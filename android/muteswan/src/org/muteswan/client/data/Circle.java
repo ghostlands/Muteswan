@@ -128,6 +128,12 @@ public class Circle {
 	         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
 	         //db.execSQL("CREATE TABLE " + MANIFESTS + " (ringHash TEXT PRIMARY KEY, description TEXT, longdescription TEXT, image BLOB, authkey TEXT, postpolicy TEXT)");
 	         db.execSQL("CREATE TABLE " + MANIFEST + " (key TEXT, value TEXT)");
+	         
+	         SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+			 insert.bindString(1,Main.genHexHash(getFullText()));
+			 insert.bindLong(2, 0);
+			 insert.executeInsert();
+			  
 
 		}
 
