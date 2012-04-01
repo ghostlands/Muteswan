@@ -693,13 +693,15 @@ public class LatestMessages extends ListActivity implements Runnable {
 
     	if (item.getTitle().equals(getString(R.string.menu_repost))) {
 		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
-		  intent.putExtra("circle",longPressedCircle);
+		  //intent.putExtra("circle",longPressedCircle);
 		  intent.putExtra("initialText",longPressedMsg);
+		  intent.putExtra("secret",cipherSecret);
 		  startActivity(intent);
 		  return true;
     	} else if (item.getTitle().equals(getString(R.string.menu_reply))) {
 		  Intent intent = new Intent(getApplicationContext(),WriteMsg.class);
 		  intent.putExtra("circle",longPressedCircle);
+		  intent.putExtra("secret",cipherSecret);
 		  startActivity(intent);
 		  return true;
     	}
