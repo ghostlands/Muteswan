@@ -46,6 +46,7 @@ public class MuteswanMessage {
 	private String msgData;
 	private String date;
 	private Circle circle;
+	private String rawMsg;
 	private Integer id;
 	Crypto cryptoDec;
 	
@@ -59,19 +60,21 @@ public class MuteswanMessage {
 	private String base64IVData;
 
 
-	public MuteswanMessage(Circle circle, Integer id, String date, String msg) {
+	public MuteswanMessage(Circle circle, Integer id, String date, String msg, String rawMsg) {
 		this.date = date;
 		this.circle = circle;
 		this.msgData = msg;
 		this.id = id;
+		this.rawMsg = rawMsg;
 	}
 	
-	public MuteswanMessage(Circle circle, Integer id, String date, String msg, String[] signatures) {
+	public MuteswanMessage(Circle circle, Integer id, String date, String msg, String[] signatures, String rawMsg) {
 		this.date = date;
 		this.circle = circle;
 		this.msgData = msg;
 		this.id = id;
 		this.signatures = signatures;
+		this.rawMsg = rawMsg;
 	}
 	
 	public MuteswanMessage(Integer id, Circle circle, JSONObject jsonObj, String date) throws JSONException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
@@ -90,29 +93,6 @@ public class MuteswanMessage {
 			base64IVData = Base64.encodeBytes(ivData);
 		}
 		
-		// signatures disabled
-		//JSONArray sigs = null;
-		/*try {
-		  sigs = jsonObj.getJSONArray("signatures");
-		  for (int i=0; i<sigs.length(); i++) {
-			    String sig = sigs.getString(i);
-
-			    // FIXME: better way to check for non encrypted signatures
-			    // not encrypted signature
-			    if (sig.indexOf(":") != -1) {
-				  this.signatures[i] = sig;
-				// encrypted signature
-			    } else {
-				  byte[] sigKeyBytes = Base64.decode(sig);
-			      Crypto cryptoSig = new Crypto(circle.getKey().getBytes(),sigKeyBytes);
-			      byte[] realSignature = cryptoSig.decrypt();
-				  this.signatures[i] = new String(realSignature);
-			    }
-		  }
-		} catch (JSONException e) {
-			
-		}
-		*/
 		
 	
 		

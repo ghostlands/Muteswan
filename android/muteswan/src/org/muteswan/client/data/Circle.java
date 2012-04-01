@@ -17,6 +17,11 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.data;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.security.InvalidKeyException;
@@ -72,8 +77,6 @@ public class Circle {
 
 	public static boolean libsLoaded = false;
 
-	Circle.OpenHelper openHelper;
-	
 	final private String key;
 	
 	
@@ -98,64 +101,6 @@ public class Circle {
 	private String[] keylist;
 	
 	private HashMap<Integer,MuteswanMessage> msgCache = new HashMap<Integer,MuteswanMessage>();
-
-	private String cipherSecret;
-
-	public class OpenHelper extends SQLiteOpenHelper {
-
-		public static final int DATABASE_VERSION = 12;
-		public String databaseName;
-		public static final String MESSAGESTABLE = "messages";
-		public static final String SIGTABLE = "signatures";
-		public static final String LASTMESSAGES = "lastmessages";
-		public static final String MANIFEST = "manifest";
-
-		
-	     
-	      public OpenHelper(Context context, String circleHash) {
-	    	  super(context, circleHash, null, DATABASE_VERSION);
-	    	  databaseName = circleHash;
-	    	  if (Circle.libsLoaded  == false) {
-	    	   //SQLiteDatabase.loadLibs(context);
-	    	   Circle.libsLoaded = true;
-	    	  }
-		}
-
-		@Override
-	    public void onCreate(SQLiteDatabase db) {
-	       db.execSQL("CREATE TABLE " + MESSAGESTABLE + " (id INTEGER PRIMARY KEY, ringHash TEXT, msgId INTEGER, date DATE, message TEXT)");
-	         db.execSQL("CREATE TABLE " + SIGTABLE + " (id INTEGER PRIMARY KEY, msgId INTEGER, ringHash TEXT, signature TEXT)");
-	         db.execSQL("CREATE TABLE " + LASTMESSAGES + " (ringHash TEXT PRIMARY KEY, lastMessage INTEGER, lastCheck DATE)");
-	         //db.execSQL("CREATE TABLE " + MANIFESTS + " (ringHash TEXT PRIMARY KEY, description TEXT, longdescription TEXT, image BLOB, authkey TEXT, postpolicy TEXT)");
-	         db.execSQL("CREATE TABLE " + MANIFEST + " (key TEXT, value TEXT)");
-	         
-	         SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-			 insert.bindString(1,Main.genHexHash(getFullText()));
-			 insert.bindLong(2, 0);
-			 insert.executeInsert();
-			  
-
-		}
-
-	      @Override
-	      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-	         db.execSQL("DROP TABLE IF EXISTS " + MESSAGESTABLE);
-	         db.execSQL("DROP TABLE IF EXISTS " + SIGTABLE);
-	         db.execSQL("DROP TABLE IF EXISTS " + LASTMESSAGES);
-	         db.execSQL("DROP TABLE IF EXISTS " + MANIFEST);
-	         onCreate(db);
-	      }
-	      
-	     public void deleteData(SQLiteDatabase db) {
-	    	  db.execSQL("DELETE FROM " + MESSAGESTABLE);
-		      db.execSQL("DELETE FROM " + SIGTABLE);
-		      db.execSQL("DELETE FROM " + LASTMESSAGES);
-		      db.execSQL("DELETE FROM " + MANIFEST);
-	      }
-
-
-	
-	   }
 
 
   
@@ -191,18 +136,35 @@ public class Circle {
 		this.server = srv;
 		this.keyHash = Main.genHexHash(key);
 		this.context = context;
-		this.cipherSecret = secret;
+		
+		
+		initializeDirStore(context.getFilesDir());
 		
 	    curLastMsgId = 0;
 		
 	}
 	
+	private void initializeDirStore(File filesDir) {
+		if (!filesDir.exists())
+			filesDir.mkdir();
+		
+		
+		File storePath = new File(filesDir.getAbsolutePath() + "/" + Main.genHexHash(getFullText()));
+		if (!storePath.exists())
+		    storePath.mkdir();
+		
+	}
+	
+	private File getStorePath() {
+		return(new File(context.getFilesDir() + "/" + Main.genHexHash(getFullText())));
+	}
+
 	public Circle(String secret, Context context, String key, String shortname, String server, MuteswanHttp muteswanHttp) {
 		this.key = key;
 		this.shortname = shortname;
 		this.server = server;
 		this.context = context;
-		this.cipherSecret = secret;
+		
 
 		this.keyHash = Main.genHexHash(key);
 		//SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
@@ -213,6 +175,7 @@ public class Circle {
 		//} else {
 	    //	  this.muteswanHttp = muteswanHttp;
 		//}
+	  	initializeDirStore(context.getFilesDir());
 	}
 	
 	public Circle(String secret, Context context, String key, String shortname, String server) {
@@ -222,9 +185,10 @@ public class Circle {
 		this.context = context;
 		this.keyHash = Main.genHexHash(key);
 
-		this.cipherSecret = secret;
+		
 		
 	    curLastMsgId = 0;
+	    initializeDirStore(context.getFilesDir());
 	}
 	
 	
@@ -234,81 +198,6 @@ public class Circle {
 	}
 	
 	
-	
-	public Circle.OpenHelper getOpenHelper() {
-		if (this.openHelper == null)
-			this.openHelper = new Circle.OpenHelper(context, Main.genHexHash(getFullText()));
-		return(this.openHelper);
-	}
-	
-	
-	
-	@SuppressWarnings("unused")
-	private void initManifest() {
-		String circleHash = Main.genHexHash(getFullText());
-
-		SQLiteDatabase db = this.getOpenHelper().getWritableDatabase();
-		
-	
-		
-		Cursor cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "description" }, null, null, null );
-		if (cursor.moveToFirst() && cursor.getString(0) != null) {
-			setDescription(cursor.getString(0));
-		}
-		cursor.close();
-		
-		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "longdescription" }, null, null, null );
-		if (cursor.moveToFirst() && cursor.getString(0) != null) {
-			setLongDescription(cursor.getString(0));
-		}
-		cursor.close();
-		
-		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "image" }, null, null, null );
-		if (cursor.moveToFirst() && cursor.getBlob(0) != null) {
-			setImage(cursor.getBlob(0));
-		}
-		cursor.close();
-		
-		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "postpolicy" }, null, null, null );
-		if (cursor.moveToFirst() && cursor.getString(0) != null) {
-			setPostPolicy(cursor.getString(0));
-		}
-		cursor.close();
-		
-		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "authkey" }, null, null, null );
-		if (cursor.moveToFirst() && cursor.getString(0) != null) {
-			setAuthKey(cursor.getString(0));
-		}
-		cursor.close();
-		
-		cursor = db.query(Circle.OpenHelper.MANIFEST, new String[] { "value" }, "key = ?", new String[] { "keylist" }, null, null, null );
-		
-		if (cursor.getCount() != 0) {
-		  String[] keylist = new String[cursor.getCount()];
-		  int count = 0;
-		  while (cursor.moveToNext()) {
-			keylist[count] = cursor.getString(0);
-			count++;
-		  }
-		
-		  if (count != 0)
-			setKeylist(keylist);
-		
-		  if (cursor.moveToFirst() && cursor.getString(0) != null) {
-			setAuthKey(cursor.getString(0));
-		  }
-		  cursor.close();
-		
-		
-		  db.close();
-		} else {
-			cursor.close();
-		}
-		
-		db.close();
-
-		
-	}
 	
 	public String getPostPolicy() {
 		return(postPolicy);
@@ -423,20 +312,12 @@ public class Circle {
 	public Integer getLastMsgId(boolean closedb) {
 		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = this.getOpenHelper().getReadableDatabase();
-
-		Integer lastMessageId = null;
 		
+		int lastMessageId = 0;
 		
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        lastMessageId = defPrefs.getInt(circleHash, 0);
 
-		Cursor cursor = db.query(Circle.OpenHelper.LASTMESSAGES, new String[] { "lastMessage" }, "ringHash = ?", new String[] { circleHash }, null, null, "lastMessage desc" );
-		if (cursor.moveToFirst()) {
-			lastMessageId = cursor.getInt(0);
-		}
-		cursor.close();
-	
-		if (closedb)
-		  db.close();
 				
 
 		curLastMsgId = lastMessageId;
@@ -489,103 +370,82 @@ public class Circle {
 		
 		String circleHash = Main.genHexHash(this.getFullText());
 		
-		SQLiteDatabase db = getOpenHelper().getReadableDatabase();
 		
-		msg = getMsgFromDb(db,circleHash,id);
 		
-		if (closedb)
-		 db.close();
+		msg = getMsgFromDb(circleHash,id);
+		
 		
 		return(msg);
 		
 	}
 	
-	public MuteswanMessage getMsgFromDbWithIdentities(SQLiteDatabase db, String circleHash, String id) {
-		MuteswanMessage msg = null;
+	
+	private String getFileContents(File file) {
+		StringBuilder text = new StringBuilder();
 
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
-		if (cursor.moveToFirst()) {
-			String date = cursor.getString(0);
-			String msgData = cursor.getString(1);
-			
-			Cursor cursorSig = db.query(OpenHelper.SIGTABLE, new String[] { "signature" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "signature desc" );
-			
-			//FIXME: max signatures?
-			String[] signatures = new String[50];
-			int i=0;
-			SIG: while (cursorSig != null && cursorSig.moveToNext()) {
-				String sigTxt = cursorSig.getString(0);
-				signatures[i] = sigTxt;
-				i++;
-				if (cursor.isLast()) 
-					break SIG;
-			}
-			cursorSig.close();
-			
-			if (signatures[0] != null) {
-			   msg = new MuteswanMessage(this,Integer.parseInt(id),date,msgData,signatures);
-			} else {
-			   msg = new MuteswanMessage(this,Integer.parseInt(id),date,msgData);
-			}
-			cursor.close();
-			//db.close();
-			return(msg);
+		try {
+		    BufferedReader br = new BufferedReader(new FileReader(file));
+		    String line;
+
+		    while ((line = br.readLine()) != null) {
+		        text.append(line);
+		        text.append('\n');
+		    }
+		}
+		catch (IOException e) {
+		    MuteLog.Log("Circle", "Failed to read file data in " + file.getAbsolutePath());
 		}
 		
-		return(null);
-		
+		return(text.toString());
 	}
 		
-	public MuteswanMessage getMsgFromDb(SQLiteDatabase db, String circleHash, String id) {
+	public MuteswanMessage getMsgFromDb(String circleHash, String id) {
 		MuteswanMessage msg = null;
 		
 		if (Thread.currentThread().isInterrupted())
 			return(null);
 
-		Cursor cursor = db.query(OpenHelper.MESSAGESTABLE, new String[] { "date", "message" }, "msgId = ? and ringHash = ?", new String[] { id, circleHash }, null, null, "id desc" );
-		if (cursor.moveToFirst()) {
-			String date = cursor.getString(0);
-			String msgData = cursor.getString(1);
-			
-			JSONObject jsonObj = null;
-			try {
-				jsonObj = new JSONObject(msgData);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			try {
-				msg = new MuteswanMessage(Integer.parseInt(id),this,jsonObj,date);
-			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			cursor.close();
-			//db.close();
-			return(msg);
+		File msgPath = new File(getStorePath() + "/" + id);
+		String jsonData = getFileContents(msgPath);
+		
+		//long lastMod = msgPath.lastModified();
+		//SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+		
+		
+		JSONObject jsonObj = null;
+		try {
+			jsonObj = new JSONObject(jsonData);
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
-		cursor.close();
+			
+		try {
+			msg = new MuteswanMessage(Integer.parseInt(id), this, jsonObj, jsonObj.get("msgdate").toString());
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		return(null);
 		
 	}
@@ -680,7 +540,7 @@ public class Circle {
 		try {
 			jsonObj = new JSONObject(jsonString);
 		} catch (JSONException e1) {
-			MuteLog.Log("Circle", "WTF, jsonString is not parceable");
+			MuteLog.Log("Circle", "WTF, jsonString is not parseable");
 			return null;
 		}
 		
@@ -1032,7 +892,7 @@ public class Circle {
 	}
 	
 	// FIXME: should refactor
-	public void saveMsgToDb(Integer id, String date, String msg) {
+	public void saveMsgToDb(String date, String msg) {
 		MuteLog.Log("Circle","Saving message " + id);
 		if (context == null) 
 			return;	
@@ -1121,7 +981,7 @@ public void deleteAllMessages(boolean closedb) {
 	public void createLastMessage(Integer curIndex, boolean closedb) {
 		
 		String circleHash = Main.genHexHash(getFullText());
-		SQLiteDatabase db = openHelper.getWritableDatabase();
+		SQLiteDatabase db = getOpenHelper().getWritableDatabase(cipherSecret);
 		SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES (?,?,datetime('now'))");
 		insrt.bindString(1, circleHash);
 		insrt.bindLong(2, curIndex);
@@ -1153,6 +1013,7 @@ public void deleteAllMessages(boolean closedb) {
 		 }
 		}
 		//db.close();
+		
 	}
 	
 	public void saveLastMessage(SQLiteDatabase db) {
@@ -1163,8 +1024,10 @@ public void deleteAllMessages(boolean closedb) {
 		update.bindLong(1, curLastMsgId);
 		update.bindString(2, circleHash);
 		update.execute();
-		update.close();
-		//if (update.execute() == -1) {
+		db.close();
+		
+		
+		//if ((update.execute() == -1) {
 		//	SQLiteStatement insert = db.compileStatement("INSERT INTO " + OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 		//	insert.bindString(1,circleHash);
 		//	insert.bindLong(2, curLastMsgId);
@@ -1257,58 +1120,6 @@ public void deleteAllMessages(boolean closedb) {
 	
    
 	
-   private void saveManifestToDb() {
-	    SQLiteDatabase db = openHelper.getWritableDatabase();
-	    SQLiteStatement del = db.compileStatement("DELETE FROM " + OpenHelper.MANIFEST);
-	    del.execute();
-	    
-		//SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (ringHash) VALUES (?)");
-		//insrt.bindString(1, circleHash);
-		//insrt.execute();
-		
-	    SQLiteStatement insrt;
-		if (getDescription() != null) {
-		  insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('description',?)");
-		  insrt.bindString(1, getDescription());
-		  insrt.execute();
-		}
-		
-		if (getLongDescription() != null) {
-		  insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('longdescription',?)");
-	      insrt.bindString(1, getLongDescription());
-		  insrt.execute();
-		}
-		
-		if (getAuthKey() != null) {
-	      insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('authkey',?)");
-		  insrt.bindString(1, getAuthKey());
-		  insrt.execute();
-		}
-		
-		if (getPostPolicy() != null) {
-			insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('postpolicy',?)");
-			insrt.bindString(1, getPostPolicy());
-			insrt.execute();
-		}
-		
-		if (getImage() != null) {
-			insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('image',?)");
-			insrt.bindBlob(1, getImage());
-			insrt.execute();
-		}
-		
-		if (getKeylist() != null) {
-			for (String s : getKeylist()) {
-				insrt = db.compileStatement("INSERT INTO " + OpenHelper.MANIFEST + " (key,value) VALUES('keylist',?)");
-				insrt.bindString(1, s);
-				insrt.execute();
-			}
-		}
-		
-		db.close();
-	   
-	}
-
 private JSONObject parseManifest(HttpResponse resp) {
 	   JSONObject jsonObj = null;
 	   try {

@@ -274,9 +274,17 @@ private boolean migrateDatabase() {
 		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
 		
 		
+		
 		for (String[] s : circles) {
 			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
 			db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
+			Circle newCircle = new Circle(cipherSecret,this,s[0],s[1],s[2]);
+			newCircle.createLastMessage(0, true);
+			//SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+			 //insert.bindString(1,Main.genHexHash(getFullText()));
+			 //insert.bindLong(2, 0);
+			 //insert.executeInsert();
+			
 		}
 		db.close();
 		//return true;
