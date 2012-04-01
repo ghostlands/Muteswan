@@ -229,8 +229,8 @@ public class NewMessageService extends Service {
 			if (cipherSecret == null)
 				return null;
 			
-			if (migrateDatabase()) return null;
-			
+			//if (migrateDatabase()) return null;
+			migrateDatabase();
 			
 			MuteLog.Log("NewMessageService", "cipherSecret is NOT null.");
 			initCircleStore();
@@ -243,7 +243,10 @@ public class NewMessageService extends Service {
 
 private boolean migrateDatabase() {
 		
-		
+		MigrateToSqlCipher migrate = new MigrateToSqlCipher();
+		if (!migrate.needsMigration(this))
+			return(false);
+	
 		
 		File oldDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
 		oldDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandbOld"));
@@ -263,7 +266,7 @@ private boolean migrateDatabase() {
 		//oldDb.delete();
 		//newDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandb"));
 		
-		MigrateToSqlCipher migrate = new MigrateToSqlCipher();
+		
 		LinkedList<String[]> circles = migrate.getOldCircleData();
 		SQLiteDatabase.loadLibs(this);
 		
@@ -290,6 +293,14 @@ private boolean migrateDatabase() {
 		*/
 		MuteLog.Log("CircleStore", "Done loading migration data.");
 		
+		
+		File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
+		try {
+			isUpgraded.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 				
 		
 		
@@ -521,10 +532,10 @@ private boolean migrateDatabase() {
 				    		 try {
 								MuteswanMessage msg = circle.getMsgFromTor(i);
 								if (msg != null && msg.signatures[0] != null) {
-									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg(),
+									circle.saveMsgToDb(i, msg.getDate(), msg.getRawJSON(),
 											msg.signatures);
 								} else if (msg != null) {
-									circle.saveMsgToDb(i, msg.getDate(), msg.getMsg());
+									circle.saveMsgToDb(i, msg.getDate(), msg.getRawJSON());
 								}
 								
 								
@@ -740,10 +751,10 @@ private boolean migrateDatabase() {
 				for (MuteswanMessage msg : msgs) {
 					MuteLog.Log("NewMessageService", "I am " + Thread.currentThread() + " downloading " + msg.getId());
 					if (msg != null && msg.signatures[0] != null) {
-						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getMsg(),
+						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getRawJSON(),
 							msg.signatures);
 					} else if (msg != null) {
-						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getMsg());
+						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getRawJSON());
 					}
 				}
 				linkedQueue.remove(circle);

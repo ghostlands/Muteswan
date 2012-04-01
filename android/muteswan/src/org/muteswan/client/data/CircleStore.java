@@ -152,12 +152,13 @@ final public class CircleStore extends LinkedList<Circle> {
 		  db.close();
 		  
 		  
-		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
-		  delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
-		  delete.bindString(1, Main.genHexHash(circle.getFullText()));
-		  delete.execute();
-		  circle.getOpenHelper().deleteData(rdb);
-		  rdb.close();
+		  //SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
+		  //delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
+		  //delete.bindString(1, Main.genHexHash(circle.getFullText()));
+		  //delete.execute();
+		  //circle.getOpenHelper().deleteData(rdb);
+		  //rdb.close();
+		  circle.deleteAllMessages(true);
 	  }
 	
 
@@ -243,13 +244,14 @@ final public class CircleStore extends LinkedList<Circle> {
 		  insrt.execute();
 		  db.close();
 		  
-		  SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
+		  //SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
 		  //muteswan.genHexHash(circle.getFullText()));
- 		  SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-		  insert.bindString(1,Main.genHexHash(circle.getFullText()));
-		  insert.bindLong(2, 0);
-		  insert.executeInsert();
-		  rdb.close();
+ 		  //SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+		  //insert.bindString(1,Main.genHexHash(circle.getFullText()));
+		  //insert.bindLong(2, 0);
+		  //insert.executeInsert();
+		  //rdb.close();
+		  circle.createLastMessage(0, true);
 	  
 		  add(circle);
 	  }

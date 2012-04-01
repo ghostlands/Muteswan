@@ -54,6 +54,9 @@ public class MuteswanMessage {
 	
 	private LinkedList<Identity> validSigs;
 	private Date dateObj;
+	private String base64Msg;
+	private String rawJSON;
+	private String base64IVData;
 
 
 	public MuteswanMessage(Circle circle, Integer id, String date, String msg) {
@@ -75,7 +78,9 @@ public class MuteswanMessage {
 		this.date = date;
 		this.circle = circle;
 		
-		String base64Msg = jsonObj.getString("message");
+		base64Msg = jsonObj.getString("message");
+		rawJSON = jsonObj.toString();
+	
 		
 		String base64IVData = null;
 		try  {
@@ -151,6 +156,25 @@ public class MuteswanMessage {
 	public String getDate() {
 		return date;
 	}
+	
+	public void setBase64Msg(String base64Msg) {
+		this.base64Msg = base64Msg;
+		
+	}
+	
+	public String getBase64Msg() {
+		return(base64Msg);
+	}
+	
+	public void setRawJSON(String rawJSON) {
+		this.rawJSON = rawJSON;
+		
+	}
+	
+	public String getRawJSON() {
+		return(rawJSON);
+	}
+	
 	
 	public Date getDateObj() {
 		if (dateObj == null) {
