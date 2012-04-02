@@ -34,8 +34,10 @@ public class MigrateToSqlCipher {
 	public boolean needsMigration(Context ctx) {
 		
 		File isUpgraded = new File(ctx.getFilesDir() + "/" + "is_upgraded");
-		if (isUpgraded.exists())
+		if (isUpgraded.exists()) {
+			MuteLog.Log("MigrateToSqlCipher", "is upgraded file is in place.");
 			return false;
+		}
 		
 		//SQLiteDatabase db = null;
 		//try {

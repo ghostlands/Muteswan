@@ -258,6 +258,7 @@ public class Main extends Activity implements Runnable {
 		if (firstRun) {
 			// FIXME better flag and duped in NewMessageService.java
 			File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
+			
 			try {
 				isUpgraded.createNewFile();
 			} catch (IOException e) {

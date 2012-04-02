@@ -218,7 +218,10 @@ public class NewMessageService extends Service {
 			
 			
 			SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		    cipherSecret = defPrefs.getString("cipherSecret", null);
+			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+			if (cipherSecret == null) { 
+		      cipherSecret = defPrefs.getString("cipherSecret", null);
+			}
 				
 			
 			// wait for the user to enter their password
@@ -226,7 +229,7 @@ public class NewMessageService extends Service {
 			while (cipherSecret == null && count <= 450) {
 				try {
 					Thread.sleep(100);
-					//MuteLog.Log("NewMessageService", "cipherSecret is still null.");
+					MuteLog.Log("NewMessageService", "cipherSecret is still null.");
 					count++;
 				} catch (InterruptedException e) {
 					return null;
@@ -245,7 +248,7 @@ public class NewMessageService extends Service {
 			
 			
 			
-			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+			
 			if (backgroundMessageCheck) 
 			   runPoll();
 			return null;
