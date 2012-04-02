@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 
+import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.MigrateToSqlCipher;
 import org.muteswan.client.ui.CircleList;
@@ -106,7 +107,10 @@ public class Main extends Activity implements Runnable {
 				Thread.currentThread();
 				Thread.sleep(15);
 			}
+			migrateDatabase();
+			newMsgService.setSQLCipherSecret(cipherSecret);
 			newMsgService.checkTorStatus(torResultCallback);
+			
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -211,11 +215,6 @@ public class Main extends Activity implements Runnable {
 		
 		startActivityForResult(intent,0);
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			
-		}
 		
 		//try {
 		//	newMsgService.setSQLCipherSecret(secret);
@@ -227,20 +226,32 @@ public class Main extends Activity implements Runnable {
 	
 	@Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		
-		if (resultCode == RESULT_OK) {
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		if (resultCode == RESULT_OK && intent.getAction().equals("org.openintents.action.GET_PASSWORD")) {
+			MuteLog.Log("Main", "Got intent back " + intent.getAction());
 			 String secret = intent.getStringExtra("org.openintents.extra.PASSWORD");
-			 try {
-				newMsgService.setSQLCipherSecret(secret);
+			 //try {
+				//newMsgService.setSQLCipherSecret(secret);
+				 //BOOK
 				cipherSecret = secret;
 				MuteLog.Log("Main", "Set SQL cipher!!");
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		} else {
+			//} catch (RemoteException e) {
+			//	e.printStackTrace();
+			//}
+		} else if (resultCode == RESULT_OK && intent.getAction().equals("org.openintents.action.SET_PASSWORD")) {
+			defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
+		} else if (intent.getAction().equals("org.openintents.action.SET_PASSWORD")){
 		 //	setSafePassword();
 		 //	callSafeGetSecret();
-			MuteLog.Log("Main","We did not get a secret back for some reason.");
+			String secret = intent.getStringExtra("org.openintents.extra.PASSWORD");
+			if (secret == null) {
+			  defPrefs.edit().putBoolean("hasGeneratedSecret", false).commit();
+			  MuteLog.Log("Main","We did not get a secret back for some reason when setting password, so setting hasGeneratedSecret to false");
+			  finish();
+			} else {
+				defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
+			}
+		} else if (intent.getAction().equals("org.openintents.action.GET_PASSWORD")) {
 			finish();
 		}
 	}
@@ -275,15 +286,19 @@ public class Main extends Activity implements Runnable {
 		if (firstRun) {
 			// FIXME better flag and duped in NewMessageService.java
 			File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
+			File db = new File("/data/data/org.muteswan.client/databases/muteswandb");
 			
-			try {
-				isUpgraded.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			
+				if (!db.exists()) {
+					try {
+					  isUpgraded.createNewFile();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			
 			defPrefs.edit().putBoolean("firstrun", false).commit();
-			setSafeSecret();
+			
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
@@ -291,10 +306,16 @@ public class Main extends Activity implements Runnable {
 				e.printStackTrace();
 			}
 			//CircleStore cs = new CircleStore(cipherSecret,this,true,false);
-			
 			//cs.updateStore("dd85381ac8acc1a7", "Feedback", "circles.muteswan.org");
 		}
 		
+		Boolean hasGeneratedSecret = defPrefs.getBoolean("hasGeneratedSecret", false);
+		cipherSecret = defPrefs.getString("cipherSecret",null);
+		if (!hasGeneratedSecret) {
+			setSafeSecret();
+		} else if (cipherSecret == null) {
+			getSafeSecret();
+		}
         
 		
         // start work activities
@@ -336,7 +357,7 @@ public class Main extends Activity implements Runnable {
         if (versionNameString != null)
           versionName.setText(versionNameString);
         
-        cipherSecret = defPrefs.getString("cipherSecret",null);
+        
         
         /*if (cipherSecret != null) {
         	try {
@@ -355,8 +376,8 @@ public class Main extends Activity implements Runnable {
         } else {
             getSafeSecret();
         }*/
-        if (cipherSecret == null)
-        	getSafeSecret();
+       
+        
         
         
 	    
@@ -613,6 +634,86 @@ public class Main extends Activity implements Runnable {
 	
 
 	
+	
+	
+private boolean migrateDatabase() {
+		
+		MigrateToSqlCipher migrate = new MigrateToSqlCipher();
+		if (!migrate.needsMigration(this))
+			return(false);
+	
+		//sendBroadcast(new Intent(Main.UPGRADING_DATABASE));
+		alertDialogs.upgradingDatabase.sendEmptyMessage(0);
+		
+		File oldDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
+		oldDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandbOld"));
+		
+		
+		File dbDir = new File("/data/data/org.muteswan.client/databases/");
+		File[] files = dbDir.listFiles();
+		for (int i = 0; i<files.length;i++) {
+			MuteLog.Log("NewMessageService", "File is " + files[i].getName());
+			if (files[i].getName().equals("muteswandbOld"))
+				continue;
+			files[i].delete();
+		}
+		
+		//if (true) return true;
+		//File newDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
+		//oldDb.delete();
+		//newDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandb"));
+		
+		
+		LinkedList<String[]> circles = migrate.getOldCircleData();
+		SQLiteDatabase.loadLibs(this);
+		
+		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb", cipherSecret, null);
+		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
+		
+		
+		
+		for (String[] s : circles) {
+			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
+			db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
+			Circle newCircle = new Circle(cipherSecret,this,s[0],s[1],s[2]);
+			newCircle.createLastMessage(0, true);
+			//SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
+			 //insert.bindString(1,Main.genHexHash(getFullText()));
+			 //insert.bindLong(2, 0);
+			 //insert.executeInsert();
+			
+		}
+		db.close();
+		//return true;
+		
+		
+		/*
+		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandbEnc", "", null);
+		
+		db.execSQL("PRAGMA KEY = '" + cipherSecret + "';");
+		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
+		db.execSQL("ATTACH DATABASE '/data/data/org.muteswan.client/databases/muteswandb' AS plaintext KEY '';");
+		db.execSQL("INSERT INTO rings SELECT * FROM plaintext.rings;");
+		db.execSQL("DETACH DATABASE plaintext;");
+		*/
+		MuteLog.Log("CircleStore", "Done loading migration data.");
+		
+		
+		// FIXME better flag and duped in Main.java
+		File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
+		try {
+			isUpgraded.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+				
+		
+		
+		MuteLog.Log("CircleStore", "Done migrating.");
+		//sendBroadcast(new Intent(Main.FINISHED_UPGRADING_DATABASE));
+		alertDialogs.finishedUpgradingDatabase.sendEmptyMessage(0);
+		return true;
+	}
 	
     
 }

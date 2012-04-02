@@ -242,7 +242,7 @@ public class NewMessageService extends Service {
 				return null;
 			
 			//if (migrateDatabase()) return null;
-			migrateDatabase();
+			//migrateDatabase();
 			
 			MuteLog.Log("NewMessageService", "cipherSecret is NOT null.");
 			initCircleStore();
@@ -257,83 +257,7 @@ public class NewMessageService extends Service {
 
 	}
 
-private boolean migrateDatabase() {
-		
-		MigrateToSqlCipher migrate = new MigrateToSqlCipher();
-		if (!migrate.needsMigration(this))
-			return(false);
-	
-		sendBroadcast(new Intent(Main.UPGRADING_DATABASE));
-		
-		
-		File oldDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
-		oldDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandbOld"));
-		
-		
-		File dbDir = new File("/data/data/org.muteswan.client/databases/");
-		File[] files = dbDir.listFiles();
-		for (int i = 0; i<files.length;i++) {
-			MuteLog.Log("NewMessageService", "File is " + files[i].getName());
-			if (files[i].getName().equals("muteswandbOld"))
-				continue;
-			files[i].delete();
-		}
-		
-		//if (true) return true;
-		//File newDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
-		//oldDb.delete();
-		//newDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandb"));
-		
-		
-		LinkedList<String[]> circles = migrate.getOldCircleData();
-		SQLiteDatabase.loadLibs(this);
-		
-		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb", cipherSecret, null);
-		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
-		
-		
-		
-		for (String[] s : circles) {
-			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
-			db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
-			Circle newCircle = new Circle(cipherSecret,this,s[0],s[1],s[2]);
-			newCircle.createLastMessage(0, true);
-			//SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-			 //insert.bindString(1,Main.genHexHash(getFullText()));
-			 //insert.bindLong(2, 0);
-			 //insert.executeInsert();
-			
-		}
-		db.close();
-		//return true;
-		
-		
-		/*
-		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandbEnc", "", null);
-		
-		db.execSQL("PRAGMA KEY = '" + cipherSecret + "';");
-		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
-		db.execSQL("ATTACH DATABASE '/data/data/org.muteswan.client/databases/muteswandb' AS plaintext KEY '';");
-		db.execSQL("INSERT INTO rings SELECT * FROM plaintext.rings;");
-		db.execSQL("DETACH DATABASE plaintext;");
-		*/
-		MuteLog.Log("CircleStore", "Done loading migration data.");
-		
-		
-		// FIXME better flag and duped in Main.java
-		File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
-		try {
-			isUpgraded.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-				
-		
-		
-		MuteLog.Log("CircleStore", "Done migrating.");
-		sendBroadcast(new Intent(Main.FINISHED_UPGRADING_DATABASE));
-		return true;
-	}
+
 	
 	private void showNotification(CharSequence title, CharSequence content) {
 		long when = System.currentTimeMillis();
