@@ -107,9 +107,11 @@ public class Main extends Activity implements Runnable {
 				Thread.currentThread();
 				Thread.sleep(15);
 			}
-			migrateDatabase();
-			newMsgService.setSQLCipherSecret(cipherSecret);
-			newMsgService.checkTorStatus(torResultCallback);
+			if (cipherSecret != null) {
+			  migrateDatabase();
+			  newMsgService.setSQLCipherSecret(cipherSecret);
+			  newMsgService.checkTorStatus(torResultCallback);
+			}
 			
 		} catch (RemoteException e) {
 			e.printStackTrace();
