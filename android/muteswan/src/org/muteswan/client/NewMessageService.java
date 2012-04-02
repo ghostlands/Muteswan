@@ -170,6 +170,7 @@ public class NewMessageService extends Service {
 	
 	private void initCircleStore() {
 		
+		
 		circleStore = new CircleStore(cipherSecret,getApplicationContext(),true,false,muteswanHttp);
 	 	for (Circle r : circleStore) {
 			  MuteLog.Log("MuteswanService", "Circle " + r.getShortname() + " registered.");
@@ -242,7 +243,11 @@ public class NewMessageService extends Service {
 			MuteLog.Log("NewMessageService", "cipherSecret is NOT null.");
 			initCircleStore();
 			
-			runPoll();
+			
+			
+			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+			if (backgroundMessageCheck) 
+			   runPoll();
 			return null;
 		}
 
@@ -309,11 +314,11 @@ private boolean migrateDatabase() {
 		MuteLog.Log("CircleStore", "Done loading migration data.");
 		
 		
+		// FIXME better flag and duped in Main.java
 		File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
 		try {
 			isUpgraded.createNewFile();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 				

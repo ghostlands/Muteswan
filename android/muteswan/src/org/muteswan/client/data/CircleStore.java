@@ -194,6 +194,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void initStore(boolean initCache) {
+		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
 		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );

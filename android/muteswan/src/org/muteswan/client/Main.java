@@ -20,6 +20,7 @@ package org.muteswan.client;
 import info.guardianproject.database.sqlcipher.SQLiteDatabase;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
@@ -193,6 +194,12 @@ public class Main extends Activity implements Runnable {
 		
 		startActivityForResult(intent,0);
 		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			
+		}
+		
 		//try {
 		//	newMsgService.setSQLCipherSecret(secret);
 		//} catch (RemoteException e) {
@@ -249,6 +256,14 @@ public class Main extends Activity implements Runnable {
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
 		if (firstRun) {
+			// FIXME better flag and duped in NewMessageService.java
+			File isUpgraded = new File(getFilesDir() + "/" + "is_upgraded");
+			try {
+				isUpgraded.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			defPrefs.edit().putBoolean("firstrun", false).commit();
 			setSafeSecret();
 			try {
