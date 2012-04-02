@@ -89,6 +89,8 @@ public class Main extends Activity implements Runnable {
 
 	
 	public final static String PREFS = "MuteswanPrefs";
+	public static final String UPGRADING_DATABASE = "upgrading_database";
+	public static final String FINISHED_UPGRADING_DATABASE = "finished_upgrading_database";
 	
 	
 
@@ -153,6 +155,10 @@ public class Main extends Activity implements Runnable {
 		super.onPause();
 		if (torNotAvailableReceiver != null)
 			unregisterReceiver(torNotAvailableReceiver);
+		if (upgradingDatabaseReceiver != null)
+			unregisterReceiver(upgradingDatabaseReceiver);
+		if (finishedUpgradingDatabaseReceiver != null)
+			unregisterReceiver(finishedUpgradingDatabaseReceiver);
 
 	}
 	public void onResume() {
@@ -164,6 +170,17 @@ public class Main extends Activity implements Runnable {
 		 IntentFilter intentFilter = new IntentFilter(Main.TOR_NOT_AVAILABLE);
 		 registerReceiver(torNotAvailableReceiver, intentFilter);
   
+		 if (upgradingDatabaseReceiver == null)
+			 upgradingDatabaseReceiver = new UpgradingDatabase();
+		 IntentFilter intentFilterUpgradingDatabase = new IntentFilter(Main.UPGRADING_DATABASE);
+		 registerReceiver(upgradingDatabaseReceiver, intentFilterUpgradingDatabase);
+		 
+		 
+		 if (finishedUpgradingDatabaseReceiver == null)
+			 finishedUpgradingDatabaseReceiver = new FinishedUpgradingDatabase(); 
+		 IntentFilter intentFilterFinishedUpgradingDatabase = new IntentFilter(Main.FINISHED_UPGRADING_DATABASE);
+		 registerReceiver(finishedUpgradingDatabaseReceiver, intentFilterFinishedUpgradingDatabase);
+		 
 		 //callSafeGetSecret();
 		 
 	 }
@@ -575,10 +592,24 @@ public class Main extends Activity implements Runnable {
 			alertDialogs.dialogTorNotAvailable.sendEmptyMessage(0);
 	    }
 	}
+	
+	private class FinishedUpgradingDatabase extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+			alertDialogs.finishedUpgradingDatabase.sendEmptyMessage(0);
+	    }
+	}
+	
+	private class UpgradingDatabase extends BroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+			alertDialogs.upgradingDatabase.sendEmptyMessage(0);
+	    }
+	}
 
 	private TorNotAvailableReceiver torNotAvailableReceiver;
-	
-	
+	private FinishedUpgradingDatabase finishedUpgradingDatabaseReceiver;
+	private UpgradingDatabase upgradingDatabaseReceiver;
 	
 
 	

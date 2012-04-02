@@ -1,6 +1,7 @@
 package org.muteswan.client;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,11 +40,34 @@ public class AlertDialogs {
 	        @Override
 	        public void handleMessage(Message msg) {
 	        		  offerToStartTor();
-	        }
-
-			
-			
+	        }		
 	 };
+	 
+	 public Handler upgradingDatabase = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	        		  upgradingDatabase();
+	        }	
+	 };
+	 
+	 public Handler finishedUpgradingDatabase = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	        		  finishedUpgradingDatabase();
+	        }	
+	 };
+	 
+	 private ProgressDialog progressDialog;
+	 private void upgradingDatabase() {
+		MuteLog.Log("AlertDialogs", "Upgrading!");
+	    progressDialog = ProgressDialog.show(context, "", "Upgrading database...", true);
+	 }
+	 
+	 private void finishedUpgradingDatabase() {
+		MuteLog.Log("AlertDialogs", "Done Upgrading!");
+		progressDialog.cancel();
+		progressDialog = null;
+     }
 	 
 	 private void offerToStartTor() {
 		  AlertDialog.Builder noTorDialog = new AlertDialog.Builder(context);

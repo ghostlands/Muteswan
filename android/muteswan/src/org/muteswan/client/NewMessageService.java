@@ -125,6 +125,7 @@ public class NewMessageService extends Service {
 		unregisterReceiver(deletedCircleReceiver);
 		unregisterReceiver(joinedCircleReceiver);
 		unregisterReceiver(createdCircleReceiver);
+		
 	}
 	
 	
@@ -262,6 +263,8 @@ private boolean migrateDatabase() {
 		if (!migrate.needsMigration(this))
 			return(false);
 	
+		sendBroadcast(new Intent(Main.UPGRADING_DATABASE));
+		
 		
 		File oldDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
 		oldDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandbOld"));
@@ -328,7 +331,7 @@ private boolean migrateDatabase() {
 		
 		
 		MuteLog.Log("CircleStore", "Done migrating.");
-		
+		sendBroadcast(new Intent(Main.FINISHED_UPGRADING_DATABASE));
 		return true;
 	}
 	
