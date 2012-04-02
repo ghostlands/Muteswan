@@ -242,7 +242,7 @@ public class NewMessageService extends Service {
 			MuteLog.Log("NewMessageService", "cipherSecret is NOT null.");
 			initCircleStore();
 			
-			//runPoll();
+			runPoll();
 			return null;
 		}
 
@@ -366,6 +366,7 @@ private boolean migrateDatabase() {
 		
 		Intent msgIntent = new Intent(getApplicationContext(), LatestMessages.class);
 		msgIntent.putExtra("circle", Main.genHexHash(c.getFullText()));
+		msgIntent.putExtra("secret", cipherSecret);
 		PendingIntent pendingMsgIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), msgIntent,0);
 	
 	
@@ -960,7 +961,7 @@ private boolean migrateDatabase() {
 	    	MuteLog.Log("NewMessageService", "Network change event!");
 	    	MuteLog.Log("NewMessageServicE", "Intent: " + intent.toString());
 	    	MuteLog.Log("NewMessageService", "extras " + intent.getExtras().describeContents());
-	    	skipNextCheck = true;
+	    	//skipNextCheck = true;
 	    }
 	}
 	
