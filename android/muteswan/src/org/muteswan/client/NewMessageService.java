@@ -49,12 +49,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class NewMessageService extends Service {
@@ -212,6 +214,11 @@ public class NewMessageService extends Service {
 		protected Void doInBackground(Void... params) {
 			
 			MuteLog.Log("NewMessageService", "Running in doInBackground...");
+			
+			
+			SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		    cipherSecret = defPrefs.getString("cipherSecret", null);
+				
 			
 			// wait for the user to enter their password
 			int count = 0;
@@ -425,6 +432,9 @@ private boolean migrateDatabase() {
 		 
 		 isWorking = true;
 		 notifyIds = new HashMap<String,Integer>();
+		 
+		 
+		 
 	
 		 MuteLog.Log("NewMessageService", "Circlestore: " + circleStore.hashCode());
 		 MuteLog.Log("MuteswanService","pollList size " + pollList.size());
@@ -678,6 +688,7 @@ private boolean migrateDatabase() {
 
 		@Override
 		public int getLastTorMsgId(String circleHash) throws RemoteException {
+			
 			if (circleStore == null)
 				initCircleStore();
 			
@@ -860,6 +871,13 @@ private boolean migrateDatabase() {
 
 		@Override
 		public void setSQLCipherSecret(String secret) throws RemoteException {
+			SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+			
+			if (backgroundMessageCheck) {
+				defPrefs.edit().putString("cipherSecret", secret).commit();
+			}
+			
 			cipherSecret = secret;
 		}
 

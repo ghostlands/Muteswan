@@ -303,8 +303,27 @@ public class Main extends Activity implements Runnable {
         if (versionNameString != null)
           versionName.setText(versionNameString);
         
-        getSafeSecret();
+        cipherSecret = defPrefs.getString("cipherSecret",null);
         
+        /*if (cipherSecret != null) {
+        	try {
+        		int count = 0;
+        		while (newMsgService == null && count <= 10) {
+        			try {
+						Thread.sleep(200);
+						count++;
+					} catch (InterruptedException e) {
+					}
+        		}
+				newMsgService.setSQLCipherSecret(cipherSecret);
+			} catch (RemoteException e) {
+				
+			}
+        } else {
+            getSafeSecret();
+        }*/
+        if (cipherSecret == null)
+        	getSafeSecret();
         
         
 	    
