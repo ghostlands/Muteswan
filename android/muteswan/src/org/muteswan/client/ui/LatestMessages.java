@@ -1107,7 +1107,9 @@ final Handler stopSpinningHandler = new Handler() {
 		    		}
 				
 				    //msg.verifySignatures(idStore);
-				    msgs.add(msg);
+					
+					 msgs.add(msg);	
+					
 				
 				    // stop spinning if we are not refreshing to show we are done
 				    if (!refreshing)
@@ -1118,7 +1120,10 @@ final Handler stopSpinningHandler = new Handler() {
 				if (Thread.currentThread().isInterrupted()) {
 	    			return;
 	    		}
-				msgs.add(msg);
+				
+			    msgs.add(msg);	
+				
+				
 			}
 
 
@@ -1157,14 +1162,18 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		// populate list from db initially
 		MuteLog.Log("LatestMessages", "circleExtra is " + circleExtra);
+		long curtime = System.currentTimeMillis();
+		
 		for (Circle r : store) {
 			if (circleExtra != null && !circleMap.get(circleExtra).getFullText().equals(r.getFullText()))
 				continue;
 			updateLatestMessages(msgs, r, first, amount);
-			updateMessageList.sendEmptyMessage(0);
+			
 		}
-		
+		updateMessageList.sendEmptyMessage(0);
 	    sortMessageList.sendEmptyMessage(0);
+	    long nowtime = System.currentTimeMillis();
+	    MuteLog.Log("LatestMessages", "Loaded in " + (nowtime - curtime));
 		
 		// we are just loading more messages here, no need to check for new messages and potentially download. 
 		if (moreMessages == true) {

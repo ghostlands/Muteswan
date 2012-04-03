@@ -102,7 +102,6 @@ public class Circle {
 	private String description;
 	private String[] keylist;
 	
-	private HashMap<Integer,MuteswanMessage> msgCache = new HashMap<Integer,MuteswanMessage>();
 
 
   
@@ -140,6 +139,7 @@ public class Circle {
 		this.context = context;
 		
 		
+		
 		initializeDirStore(context.getFilesDir());
 		
 		
@@ -170,8 +170,11 @@ public class Circle {
 		this.server = server;
 		this.context = context;
 		
+		
 
 		this.keyHash = Main.genHexHash(key);
+		
+		
 		//SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
        	//Boolean aggroHttp = defPrefs.getBoolean("aggressivehttp", false);
 
@@ -191,6 +194,8 @@ public class Circle {
 		this.server = server;
 		this.context = context;
 		this.keyHash = Main.genHexHash(key);
+		
+
 
 		
 		
@@ -326,28 +331,7 @@ public class Circle {
 	
 	
 	
-	public MuteswanMessage getMsgFromDb(String id, Boolean closedb) {
-		MuteswanMessage msg = null;
-		
-		if (msgCache.containsKey(Integer.parseInt(id))) {
-			MuteLog.Log("Circle", "Fetched from msgCache: " + id);
-			return (MuteswanMessage) (msgCache.get(Integer.parseInt(id)));
-		}
-		
-		if (context == null)
-			return(null);
-		
-		
-		String circleHash = Main.genHexHash(this.getFullText());
-		
-		
-		
-		msg = getMsgFromDb(circleHash,id);
-		
-		
-		return(msg);
-		
-	}
+	
 	
 	
 	private String getFileContents(File file) {
@@ -366,19 +350,16 @@ public class Circle {
 		}
 		catch (IOException e) {
 		    MuteLog.Log("Circle", "Failed to read file data in " + file.getAbsolutePath());
-		    
 		}
 		
 		return(text.toString());
 	}
 	
 	private boolean writeFileContent(File file, String data) {
-		StringBuilder text = new StringBuilder();
+		
 
 		try {
 		    BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-		    String line;
-
 		    bw.append(data);
 		    bw.close();
 		    return true;
@@ -392,63 +373,7 @@ public class Circle {
 		
 	}
 		
-	public MuteswanMessage getMsgFromDb(String circleHash, String id) {
-		MuteswanMessage msg = null;
-		
-		if (Thread.currentThread().isInterrupted())
-			return(null);
 
-		File msgPath = new File(getStorePath() + "/" + id);
-		String jsonData = getFileContents(msgPath);
-		
-		if (jsonData == null)
-			return null;
-		
-		MuteLog.Log("Circle", "Got json data: " + jsonData);
-		
-		//long lastMod = msgPath.lastModified();
-		//SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-		
-		
-		JSONObject jsonObj = null;
-		try {
-			jsonObj = new JSONObject(jsonData);
-		} catch (JSONException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-			
-		try {
-			msg = new MuteswanMessage(Integer.parseInt(id), this, jsonObj, jsonObj.get("msgdate").toString());
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		
-		
-		return(msg);
-		
-	}
 	
 	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException, InterruptedIOException {
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + id);
@@ -890,6 +815,90 @@ public class Circle {
 		
 	}
 	
+	public MuteswanMessage getMsgFromDb(String id, Boolean closedb) {
+		MuteswanMessage msg = null;
+		
+		
+		if (context == null)
+			return(null);
+		
+		
+		String circleHash = Main.genHexHash(this.getFullText());
+		
+		
+		
+		msg = getMsgFromDb(circleHash,id);
+		
+		
+		return(msg);
+		
+	}
+	
+	public MuteswanMessage getMsgFromDb(String circleHash, String id) {
+		MuteswanMessage msg = null;
+		
+		if (Thread.currentThread().isInterrupted())
+			return(null);
+
+		
+		
+		File msgPath = new File(getStorePath() + "/" + id);
+		String jsonData = getFileContents(msgPath);
+		
+		//String msgPath = keyHash + "-" + id;
+		//String jsonData = circleMsgCache.getString(msgPath, null);
+		
+		
+		
+		
+		if (jsonData == null)
+			return null;
+		
+		MuteLog.Log("Circle", "Got json data: " + jsonData);
+		
+		
+		
+		
+		JSONObject jsonObj = null;
+		try {
+			jsonObj = new JSONObject(jsonData);
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+			
+		try {
+			msg = new MuteswanMessage(Integer.parseInt(id), this, jsonObj, jsonObj.get("msgdate").toString());
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		
+		
+		return(msg);
+		
+	}
+	
 	
 	public void saveMsgToDb(Integer id, String date, String msgContent) {
 		MuteLog.Log("Circle","Saving message " + id);
@@ -903,10 +912,16 @@ public class Circle {
 		try {
 			jsonObj = new JSONObject(msgContent);
 			jsonObj.put("msgdate", date);
-			File msgPath = new File(getStorePath() + "/" + id);
 			
+			
+			File msgPath = new File(getStorePath() + "/" + id);
 			writeFileContent(msgPath,jsonObj.toString());
-			MuteLog.Log("Circle", "Wrote message to file " + msgPath);
+			
+			//String msgPath = keyHash + "-" + id;
+			//circleMsgCache.edit().putString(msgPath, jsonObj.toString()).commit();
+			
+			
+			//MuteLog.Log("Circle", "Wrote message to file " + msgPath);
 		} catch (JSONException e) {
 			
 		}
