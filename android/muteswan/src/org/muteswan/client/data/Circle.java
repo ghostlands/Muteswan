@@ -102,6 +102,8 @@ public class Circle {
 	private String description;
 	private String[] keylist;
 	
+	
+	private HashMap<Integer,MuteswanMessage> msgCache = new HashMap<Integer,MuteswanMessage>();
 
 
   
@@ -818,17 +820,19 @@ public class Circle {
 	public MuteswanMessage getMsgFromDb(String id, Boolean closedb) {
 		MuteswanMessage msg = null;
 		
+        if (msgCache.containsKey(Integer.parseInt(id))) {
+                MuteLog.Log("Circle", "Fetched from msgCache: " + id);
+                return (MuteswanMessage) (msgCache.get(Integer.parseInt(id)));
+        }
+
 		
 		if (context == null)
 			return(null);
 		
-		
 		String circleHash = Main.genHexHash(this.getFullText());
 		
 		
-		
 		msg = getMsgFromDb(circleHash,id);
-		
 		
 		return(msg);
 		
@@ -870,6 +874,7 @@ public class Circle {
 			
 		try {
 			msg = new MuteswanMessage(Integer.parseInt(id), this, jsonObj, jsonObj.get("msgdate").toString());
+			msgCache.put(Integer.parseInt(id), msg);
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
