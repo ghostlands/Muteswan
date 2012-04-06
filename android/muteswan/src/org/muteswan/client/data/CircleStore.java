@@ -36,9 +36,9 @@ import android.database.Cursor;
 //import android.database.sqlite.SQLiteOpenHelper;
 //import android.database.sqlite.SQLiteStatement;
 
-import info.guardianproject.database.sqlcipher.SQLiteOpenHelper;
-import info.guardianproject.database.sqlcipher.SQLiteDatabase;
-import info.guardianproject.database.sqlcipher.SQLiteStatement;
+import net.sqlcipher.database.SQLiteOpenHelper;
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteStatement;
 
 import android.util.Log;
 
@@ -179,7 +179,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
-		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
+		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
 		  while (cursor.moveToNext()) {

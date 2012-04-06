@@ -17,7 +17,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
-import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.File;
 import java.io.IOException;

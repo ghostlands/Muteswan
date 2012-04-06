@@ -17,7 +17,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client;
 
-import info.guardianproject.database.sqlcipher.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,9 +69,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import info.guardianproject.database.sqlcipher.SQLiteOpenHelper;
-import info.guardianproject.database.sqlcipher.SQLiteDatabase;
-import info.guardianproject.database.sqlcipher.SQLiteStatement;
+import net.sqlcipher.database.SQLiteOpenHelper;
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteStatement;
 
 
 
