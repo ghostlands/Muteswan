@@ -242,6 +242,8 @@ public class Main extends Activity implements Runnable {
 				defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
 			}
 		} else if (intent.getAction().equals("org.openintents.action.GET_PASSWORD")) {
+			MuteLog.Log("Main", "Get password failed with " + resultCode);
+			setSafeSecret();
 			finish();
 		}
 	}
@@ -299,11 +301,11 @@ public class Main extends Activity implements Runnable {
 			//cs.updateStore("dd85381ac8acc1a7", "Feedback", "circles.muteswan.org");
 		}
 		
-		Boolean hasGeneratedSecret = defPrefs.getBoolean("hasGeneratedSecret", false);
+		//Boolean hasGeneratedSecret = defPrefs.getBoolean("hasGeneratedSecret", false);
 		cipherSecret = defPrefs.getString("cipherSecret",null);
-		if (!hasGeneratedSecret) {
-			setSafeSecret();
-		} else if (cipherSecret == null) {
+		//if (!hasGeneratedSecret) {
+		//	setSafeSecret();
+		if (cipherSecret == null) {
 			getSafeSecret();
 		}
         

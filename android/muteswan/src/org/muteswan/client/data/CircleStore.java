@@ -143,6 +143,8 @@ final public class CircleStore extends LinkedList<Circle> {
 	}
 	
 	  final public void deleteCircle(Circle circle) {
+		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
+
 		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
 		  delete.bindString(1, circle.getKey());
@@ -175,6 +177,8 @@ final public class CircleStore extends LinkedList<Circle> {
 	  
 	  
 	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
+		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
+		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
 		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
 			
 		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
@@ -194,6 +198,8 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void initStore(boolean initCache) {
+		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
+
 		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
 		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
 			
@@ -237,6 +243,8 @@ final public class CircleStore extends LinkedList<Circle> {
 	  }
 	  
 	  private void addCircleToDb(Circle circle) {
+		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
+
 		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
 		  insrt.bindString(1, circle.getKey());
