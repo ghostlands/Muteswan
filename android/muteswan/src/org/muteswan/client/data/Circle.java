@@ -105,24 +105,34 @@ public class Circle {
 	
 	private HashMap<Integer,MuteswanMessage> msgCache = new HashMap<Integer,MuteswanMessage>();
 
+	
+	private String[] parseCircle(String fullText) {
+		Integer plusIndx = fullText.indexOf("+");
+		Integer atIndx = fullText.indexOf("@");
+		
+		String[] parsedCircle = new String[3];
+		
+		if (plusIndx == -1 || atIndx == -1) {
+			
+			return(null);
+		}
+		
+		parsedCircle[0] = fullText.substring(0,plusIndx);
+		parsedCircle[1] = fullText.substring(plusIndx+1,atIndx);
+		parsedCircle[2] = fullText.substring(atIndx+1,fullText.length());
+		
+		return(parsedCircle);
+	}
 
   
 
 	public Circle(String secret, Context context, String contents) {
-		Integer plusIndx = contents.indexOf("+");
-		Integer atIndx = contents.indexOf("@");
 		
-		if (plusIndx == -1 || atIndx == -1) {
-			this.key = null;
-		    this.shortname = null;
-		    this.server = null;
-		    this.keyHash = null;
-			return;
-		}
 		
-		String name = contents.substring(0,plusIndx);
-		String key = contents.substring(plusIndx+1,atIndx);
-		String srv = contents.substring(atIndx+1,contents.length());
+		String[] parsedCircle = parseCircle(contents);
+		String name = parsedCircle[0];
+		String key = parsedCircle[1];
+		String srv = parsedCircle[2];
 		
 		if (name == null || key == null || srv == null) {
 			this.key = null;
@@ -144,6 +154,40 @@ public class Circle {
 		
 		initializeDirStore(context.getFilesDir());
 		
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
+	    
+		
+	}
+	
+	public Circle(String secret, Context context, String contents, MuteswanHttp muteswanHttp) {
+		
+		
+		String[] parsedCircle = parseCircle(contents);
+		String name = parsedCircle[0];
+		String key = parsedCircle[1];
+		String srv = parsedCircle[2];
+		
+		if (name == null || key == null || srv == null) {
+			this.key = null;
+	        this.shortname = null;
+	        this.server = null;
+	        this.keyHash = null;
+			return;
+		}
+		
+		
+		
+		this.key = key;
+		this.shortname = name;
+		this.server = srv;
+		this.keyHash = Main.genHexHash(key);
+		this.context = context;
+		this.muteswanHttp = muteswanHttp;
+		
+		
+		
+		initializeDirStore(context.getFilesDir());
 		
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);

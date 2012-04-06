@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.muteswan.client.Main;
 import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 
 //import android.database.sqlite.SQLiteDatabase;
@@ -40,6 +42,7 @@ import net.sqlcipher.database.SQLiteOpenHelper;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteStatement;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 @SuppressWarnings("serial")
@@ -91,6 +94,7 @@ final public class CircleStore extends LinkedList<Circle> {
 
 
 	private String cipherSecret;
+	private SharedPreferences prefs;
 
 
 	
@@ -105,6 +109,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	    openHelper = new OpenHelper(context);
 	    this.muteswanHttp = muteswanHttp;
 	    this.cipherSecret = secret;
+	    prefs = context.getSharedPreferences("circles",0);
 	    
 
 	    MuteLog.Log("CircleStore", "Circle store is " + cipherSecret);
@@ -121,6 +126,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	    this.cipherSecret = secret;
+	    prefs = context.getSharedPreferences("circles",0);
 	    
 
 		if (readDb && initCache) {
@@ -134,6 +140,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		context = applicationContext;
 	    openHelper = new OpenHelper(context);
 	    this.cipherSecret = cipherSecret;
+	    prefs = context.getSharedPreferences("circles",0);
 	    
 	}
 
@@ -145,13 +152,16 @@ final public class CircleStore extends LinkedList<Circle> {
 	  final public void deleteCircle(Circle circle) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 
-		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
-		  SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
-		  delete.bindString(1, circle.getKey());
-		  delete.bindString(2, circle.getShortname());
-		  delete.bindString(3, circle.getServer());
-		  delete.execute();
-		  db.close();
+		  
+		  prefs.edit().remove(Main.genHexHash(circle.getFullText())).commit();
+		  
+		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
+		  //SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
+		  //delete.bindString(1, circle.getKey());
+		  //delete.bindString(2, circle.getShortname());
+		  //delete.bindString(3, circle.getServer());
+		  //delete.execute();
+		  //db.close();
 		  
 		  
 		  //SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
@@ -179,44 +189,49 @@ final public class CircleStore extends LinkedList<Circle> {
 	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
-		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
+		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 			
-		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
-		  while (cursor.moveToNext()) {
-				String shortname = cursor.getString(0);
-				String key = cursor.getString(1);
-				String server = cursor.getString(2);
-				Circle r = new Circle(cipherSecret,context,key,shortname,server,muteswanHttp);
-				if (r != null) { 
-				   add(r);
-				   //if (initCache)
-				   //  r.initCache();
-				}
+		  Map<String, ?> allCircles = prefs.getAll();
+		  for (String cir : allCircles.keySet()) {
+			  
+			  //Circle r = new Circle(cipherSecret,context,cir);
+			  //add(r);
+			  String circleText = (String) allCircles.get(cir);
+			  //FIXME encrypt
+			  Circle r = new Circle(cipherSecret,context,circleText,muteswanHttp);
+			  add(r);
 		  }
-		  cursor.close();
-		  db.close();
+		  
+		  
+		  //Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
+		  //while (cursor.moveToNext()) {
+		  //		String shortname = cursor.getString(0);
+		  //		String key = cursor.getString(1);
+		  //		String server = cursor.getString(2);
+		  //		Circle r = new Circle(cipherSecret,context,key,shortname,server,muteswanHttp);
+		  //		if (r != null) { 
+		  //		   add(r);
+		 //		   //if (initCache)
+		 //		   //  r.initCache();
+		  //		}
+		  //}
+		  //cursor.close();
+		  //db.close();
 	  }
 	  
 	  private void initStore(boolean initCache) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 
 		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
-		  SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
+		  //SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
 			
-		  Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
-		  while (cursor.moveToNext()) {
-				String shortname = cursor.getString(0);
-				String key = cursor.getString(1);
-				String server = cursor.getString(2);
-				Circle r = new Circle(cipherSecret,context,key,shortname,server);
-				if (r != null) { 
-				   add(r);
-				   //if (initCache)
-				   //  r.initCache();
-				}
+		  Map<String, ?> allCircles = prefs.getAll();
+		  for (String cir : allCircles.keySet()) {
+			  String circleText = (String) allCircles.get(cir);
+			  //FIXME encrypt
+			  Circle r = new Circle(cipherSecret,context,circleText);
+			  add(r);
 		  }
-		  cursor.close();
-		  db.close();
 	  }
 	  
 	  
@@ -245,13 +260,15 @@ final public class CircleStore extends LinkedList<Circle> {
 	  private void addCircleToDb(Circle circle) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 
-		  SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
-		  SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
-		  insrt.bindString(1, circle.getKey());
-		  insrt.bindString(2, circle.getShortname());
-		  insrt.bindString(3, circle.getServer());
-		  insrt.execute();
-		  db.close();
+		  prefs.edit().putString(Main.genHexHash(circle.getFullText()), circle.getFullText());
+		  
+		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
+		  //SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
+		  //insrt.bindString(1, circle.getKey());
+		  //insrt.bindString(2, circle.getShortname());
+		  //insrt.bindString(3, circle.getServer());
+		  //insrt.execute();
+		  //db.close();
 		  
 		  //SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
 		  //muteswan.genHexHash(circle.getFullText()));

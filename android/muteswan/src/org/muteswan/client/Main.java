@@ -622,9 +622,10 @@ private boolean migrateDatabase() {
 		//sendBroadcast(new Intent(Main.UPGRADING_DATABASE));
 		alertDialogs.upgradingDatabase.sendEmptyMessage(0);
 		
+		SharedPreferences prefs = getSharedPreferences("circles",0);
+		
 		File oldDb = new File("/data/data/org.muteswan.client/databases/muteswandb");
 		oldDb.renameTo(new File("/data/data/org.muteswan.client/databases/muteswandbOld"));
-		
 		
 		File dbDir = new File("/data/data/org.muteswan.client/databases/");
 		File[] files = dbDir.listFiles();
@@ -642,25 +643,28 @@ private boolean migrateDatabase() {
 		
 		
 		LinkedList<String[]> circles = migrate.getOldCircleData();
-		SQLiteDatabase.loadLibs(this);
+		//SQLiteDatabase.loadLibs(this);
 		
-		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb", cipherSecret, null);
-		db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
+		//SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb", cipherSecret, null);
+		//db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
 		
 		
 		
 		for (String[] s : circles) {
 			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
-			db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
-			Circle newCircle = new Circle(cipherSecret,this,s[0],s[1],s[2]);
+			//db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
+			Circle newCircle = new Circle(cipherSecret,this,s[1],s[0],s[2]);
 			newCircle.createLastMessage(0, true);
+			MuteLog.Log("NewMessageService", "full text: " + newCircle.getFullText());
+			prefs.edit().putString(genHexHash(newCircle.getFullText()), newCircle.getFullText()).commit();
+			
 			//SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 			 //insert.bindString(1,Main.genHexHash(getFullText()));
 			 //insert.bindLong(2, 0);
 			 //insert.executeInsert();
 			
 		}
-		db.close();
+		//db.close();
 		//return true;
 		
 		
