@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.muteswan.client.Main;
 import org.muteswan.client.MuteLog;
 import org.muteswan.client.MuteswanHttp;
@@ -197,9 +199,17 @@ final public class CircleStore extends LinkedList<Circle> {
 			  //Circle r = new Circle(cipherSecret,context,cir);
 			  //add(r);
 			  String circleText = (String) allCircles.get(cir);
-			  //FIXME encrypt
-			  Circle r = new Circle(cipherSecret,context,circleText,muteswanHttp);
-			  add(r);
+			  try {
+				JSONObject jsonObject = new JSONObject(circleText);
+				Circle r = new Circle(cipherSecret,context,jsonObject,muteswanHttp);
+				add(r);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			  //FIXME decrypt
+			  
+			  
 		  }
 		  
 		  
@@ -227,10 +237,18 @@ final public class CircleStore extends LinkedList<Circle> {
 			
 		  Map<String, ?> allCircles = prefs.getAll();
 		  for (String cir : allCircles.keySet()) {
+			  
 			  String circleText = (String) allCircles.get(cir);
-			  //FIXME encrypt
-			  Circle r = new Circle(cipherSecret,context,circleText);
-			  add(r);
+			  try {
+				JSONObject jsonObject = new JSONObject(circleText);
+				Circle r = new Circle(cipherSecret,context,jsonObject);
+				add(r);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			  
+			
 		  }
 	  }
 	  

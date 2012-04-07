@@ -663,32 +663,7 @@ private boolean migrateDatabase() {
 			newCircle.createLastMessage(0, true);
 			MuteLog.Log("NewMessageService", "full text: " + newCircle.getFullText());
 			
-			Crypto crypto = null;
-			JSONObject jsonObject = null;
-			try {
-				crypto = new Crypto(cipherSecret.getBytes(),newCircle.getFullText().getBytes());
-				String encData = Base64.encodeBytes(crypto.encrypt());
-				jsonObject = new JSONObject(encData);
-				
-				
-				
-			} catch (NoSuchAlgorithmException e) {
-				
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			JSONObject jsonObject = newCircle.getCryptJSON(cipherSecret);
 			prefs.edit().putString(genHexHash(newCircle.getFullText()), jsonObject.toString()).commit();
 			
 			//SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");

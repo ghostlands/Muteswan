@@ -160,6 +160,138 @@ public class Circle {
 		
 	}
 	
+	
+public Circle(String secret, Context context, JSONObject jsonObject, MuteswanHttp muteswanHttp) {
+		
+		
+		byte[] ivData;
+		String[] parsedCircle = null;
+		try {
+			ivData = Base64.decode(jsonObject.getString("iv"));
+			byte[] cirData = Base64.decode(jsonObject.getString("circle"));
+			
+			Crypto crypto = new Crypto(secret.getBytes(),cirData,ivData);
+			String circleText = new String(crypto.decrypt());
+			parsedCircle = parseCircle(circleText);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+			
+	
+		String name = parsedCircle[0];
+		String key = parsedCircle[1];
+		String srv = parsedCircle[2];
+		
+		if (name == null || key == null || srv == null) {
+			this.key = null;
+	        this.shortname = null;
+	        this.server = null;
+	        this.keyHash = null;
+			return;
+		}
+		
+		
+		
+		this.key = key;
+		this.shortname = name;
+		this.server = srv;
+		this.keyHash = Main.genHexHash(key);
+		this.context = context;
+		this.muteswanHttp = muteswanHttp;
+		
+		
+		
+		initializeDirStore(context.getFilesDir());
+		
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
+	    
+		
+	}
+
+public Circle(String secret, Context context, JSONObject jsonObject) {
+	
+	
+	byte[] ivData;
+	String[] parsedCircle = null;
+	try {
+		ivData = Base64.decode(jsonObject.getString("iv"));
+		byte[] cirData = Base64.decode(jsonObject.getString("circle"));
+		
+		Crypto crypto = new Crypto(secret.getBytes(),cirData,ivData);
+		String circleText = new String(crypto.decrypt());
+		parsedCircle = parseCircle(circleText);
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (NoSuchAlgorithmException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (NoSuchPaddingException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (IllegalBlockSizeException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (BadPaddingException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+		
+
+	String name = parsedCircle[0];
+	String key = parsedCircle[1];
+	String srv = parsedCircle[2];
+	
+	if (name == null || key == null || srv == null) {
+		this.key = null;
+        this.shortname = null;
+        this.server = null;
+        this.keyHash = null;
+		return;
+	}
+	
+	
+	
+	this.key = key;
+	this.shortname = name;
+	this.server = srv;
+	this.keyHash = Main.genHexHash(key);
+	this.context = context;
+	this.muteswanHttp = muteswanHttp;
+	
+	
+	
+	initializeDirStore(context.getFilesDir());
+	
+	SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+    curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
+    
+	
+}
+
+	
 	public Circle(String secret, Context context, String contents, MuteswanHttp muteswanHttp) {
 		
 		
@@ -498,6 +630,41 @@ public class Circle {
 		}
 		return(date);
 	}
+	
+	public JSONObject getCryptJSON(String cipherSecret) {
+		Crypto crypto = null;
+		
+		try {
+			crypto = new Crypto(cipherSecret.getBytes(),getFullText().getBytes());
+			String encData = Base64.encodeBytes(crypto.encrypt());
+			String ivData = Base64.encodeBytes(crypto.getIVData());
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("circle", encData);
+			jsonObject.put("iv", ivData);
+			return(jsonObject);
+			
+			
+		} catch (NoSuchAlgorithmException e) {
+			
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return(null);
+	}
+	
+	
 	
 	private MuteswanMessage parseMsgFromTor(Integer id, HttpResponse resp) throws org.apache.http.ParseException, IOException {
 
