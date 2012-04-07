@@ -25,6 +25,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.MigrateToSqlCipher;
@@ -656,7 +662,34 @@ private boolean migrateDatabase() {
 			Circle newCircle = new Circle(cipherSecret,this,s[1],s[0],s[2]);
 			newCircle.createLastMessage(0, true);
 			MuteLog.Log("NewMessageService", "full text: " + newCircle.getFullText());
-			prefs.edit().putString(genHexHash(newCircle.getFullText()), newCircle.getFullText()).commit();
+			
+			Crypto crypto = null;
+			JSONObject jsonObject = null;
+			try {
+				crypto = new Crypto(cipherSecret.getBytes(),newCircle.getFullText().getBytes());
+				String encData = Base64.encodeBytes(crypto.encrypt());
+				jsonObject = new JSONObject(encData);
+				
+				
+				
+			} catch (NoSuchAlgorithmException e) {
+				
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			prefs.edit().putString(genHexHash(newCircle.getFullText()), jsonObject.toString()).commit();
 			
 			//SQLiteStatement insert = db.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
 			 //insert.bindString(1,Main.genHexHash(getFullText()));
