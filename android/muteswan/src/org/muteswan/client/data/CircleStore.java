@@ -34,15 +34,8 @@ import org.muteswan.client.MuteswanHttp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 
-//import android.database.sqlite.SQLiteDatabase;
-//import android.database.sqlite.SQLiteOpenHelper;
-//import android.database.sqlite.SQLiteStatement;
 
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -51,45 +44,14 @@ import android.util.Log;
 final public class CircleStore extends LinkedList<Circle> {
 	public static boolean libsLoaded = false;
 	
-	public class OpenHelper extends SQLiteOpenHelper {
-
-			public static final int DATABASE_VERSION = 10;
-			public static final String DATABASE_NAME = "muteswandb";
-			public static final String RINGTABLE = "rings";
-			
-
-			
-		     
-		      public OpenHelper(Context context) {
-		    	  super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		    	  if (CircleStore.libsLoaded  == false) {
-			    	   //SQLiteDatabase.loadLibs(context);
-			    	   CircleStore.libsLoaded = true;
-			      }
-		    	  
-		    	  
-			}
-
-			@Override
-		      public void onCreate(SQLiteDatabase db) {
-		         db.execSQL("CREATE TABLE IF NOT EXISTS " + RINGTABLE + " (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT)");
-		      }
-
-		      @Override
-		      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		         db.execSQL("DROP TABLE IF EXISTS " + RINGTABLE);
-		         onCreate(db);
-		      }
-		      
-		   }
-
+	
 
 
 
 	
 
     public Context context;
-	private OpenHelper openHelper;
+	
 	private MuteswanHttp muteswanHttp;
 
 
@@ -108,7 +70,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	public CircleStore(String secret, Context applicationContext, boolean readDb, boolean initCache, MuteswanHttp muteswanHttp) {
 		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
-	    openHelper = new OpenHelper(context);
+	    
 	    this.muteswanHttp = muteswanHttp;
 	    this.cipherSecret = secret;
 	    prefs = context.getSharedPreferences("circles",0);
@@ -126,7 +88,7 @@ final public class CircleStore extends LinkedList<Circle> {
 	public CircleStore(String secret, Context applicationContext, boolean readDb, boolean initCache) {
 		MuteLog.Log("CircleStore", "Circle store called!");
 		context = applicationContext;
-	    openHelper = new OpenHelper(context);
+	    
 	    this.cipherSecret = secret;
 	    prefs = context.getSharedPreferences("circles",0);
 	    
@@ -140,16 +102,14 @@ final public class CircleStore extends LinkedList<Circle> {
 	
 	public CircleStore(String cipherSecret,Context applicationContext) {
 		context = applicationContext;
-	    openHelper = new OpenHelper(context);
+	    
 	    this.cipherSecret = cipherSecret;
 	    prefs = context.getSharedPreferences("circles",0);
 	    
 	}
 
 	
-	public CircleStore.OpenHelper getOpenHelper() {
-		return openHelper;
-	}
+	
 	
 	  final public void deleteCircle(Circle circle) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
@@ -278,7 +238,10 @@ final public class CircleStore extends LinkedList<Circle> {
 	  private void addCircleToDb(Circle circle) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 
-		  prefs.edit().putString(Main.genHexHash(circle.getFullText()), circle.getFullText());
+		  
+		  JSONObject jsonObject = circle.getCryptJSON(cipherSecret);
+		  prefs.edit().putString(Main.genHexHash(circle.getFullText()), jsonObject.toString()).commit();
+		
 		  
 		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 		  //SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
@@ -295,7 +258,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  //insert.bindLong(2, 0);
 		  //insert.executeInsert();
 		  //rdb.close();
-		  circle.createLastMessage(0, true);
+		  circle.createLastMessage(0);
 	  
 		  add(circle);
 	  }

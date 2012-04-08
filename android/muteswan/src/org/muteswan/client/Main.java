@@ -660,7 +660,7 @@ private boolean migrateDatabase() {
 			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
 			//db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
 			Circle newCircle = new Circle(cipherSecret,this,s[1],s[0],s[2]);
-			newCircle.createLastMessage(0, true);
+			newCircle.createLastMessage(0);
 			MuteLog.Log("NewMessageService", "full text: " + newCircle.getFullText());
 			
 			JSONObject jsonObject = newCircle.getCryptJSON(cipherSecret);

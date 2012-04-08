@@ -459,7 +459,7 @@ public class NewMessageService extends Service {
 					    		}
 					    		
 					    		if (lastId > startLastId)
-								  circle.updateLastMessage(lastId,false);
+								  circle.updateLastMessage(lastId);
 							  
 					    	
 				       
@@ -780,7 +780,7 @@ public class NewMessageService extends Service {
 
 		@Override
 		public void updateLastMessage(String circleHash, int lastMsg) throws RemoteException {
-			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg, true);
+			circleStore.asHashMap().get(circleHash).updateLastMessage(lastMsg);
 		}
 
 

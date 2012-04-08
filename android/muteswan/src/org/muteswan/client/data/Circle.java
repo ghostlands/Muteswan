@@ -21,7 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -63,10 +63,7 @@ import org.muteswan.client.Main;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
+
 
 //import info.guardianproject.database.sqlcipher.SQLiteDatabase;
 //import info.guardianproject.database.sqlcipher.SQLiteStatement;
@@ -1017,7 +1014,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 	}
 	
-	public boolean msgExists(SQLiteDatabase db, Integer id) {
+	public boolean msgExists(Integer id) {
 		
 		File msgPath = new File(getStorePath() + "/" + id);
 		if (msgPath.exists()) {
@@ -1169,7 +1166,7 @@ public void deleteAllMessages(boolean closedb) {
 		
 	}
 	
-	public void createLastMessage(Integer curIndex, boolean closedb) {
+	public void createLastMessage(Integer curIndex) {
 		
 		
 		String circleHash = Main.genHexHash(getFullText());
@@ -1180,8 +1177,8 @@ public void deleteAllMessages(boolean closedb) {
         
 	}
 	
-	public void updateLastMessage(Integer curIndex, boolean closedb) {
-		createLastMessage(curIndex, true);
+	public void updateLastMessage(Integer curIndex) {
+		createLastMessage(curIndex);
 			
 	}
 	
@@ -1190,9 +1187,9 @@ public void deleteAllMessages(boolean closedb) {
 		
 	}
 	
-	public void saveLastMessage(SQLiteDatabase db) {
-		String circleHash = Main.genHexHash(getFullText());
-		createLastMessage(curLastMsgId, true);
+	public void saveLastMessage() {
+		
+		createLastMessage(curLastMsgId);
 	}
 
 	public void updateManifest(JSONObject jsonObj) {
