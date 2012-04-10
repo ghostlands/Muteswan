@@ -26,23 +26,6 @@
     	    <!-- <systemPath>${project.basedir}/lib/TorProxyLib.jar</systemPath> -->
 	</dependency>
 
-	<dependency>
-		<groupId>info.guardianproject.database</groupId>
-		<artifactId>SqlCipher</artifactId>
-		<version>1.1.0</version>
-	</dependency>
-
-	<dependency>
-		<groupId>com.google.common</groupId>
-		<artifactId>Guava</artifactId>
-		<version>0.90</version>
-	</dependency>
-
-	<dependency>
-		<groupId>org.apache.commons.codec</groupId>
-		<artifactId>CommonsCodec</artifactId>
-		<version>1.0.0</version>
-	</dependency>
 
 
     </dependencies>
