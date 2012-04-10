@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 
-public class MigrateToSqlCipher {
+public class MigrateToEncPrefs {
 
 	
 	public LinkedList<String[]> getOldCircleData() {
@@ -33,10 +33,9 @@ public class MigrateToSqlCipher {
 
 	public boolean needsMigration(Context ctx) {
 		
-		File isUpgraded = new File(ctx.getFilesDir() + "/" + "is_upgraded");
-		if (isUpgraded.exists()) {
-			MuteLog.Log("MigrateToSqlCipher", "is upgraded file is in place.");
-			return false;
+		File database = new File("/data/data/org.muteswan.client/databases/muteswandb");
+		if (database.exists()) {
+			return true;
 		}
 		
 		//SQLiteDatabase db = null;
@@ -49,6 +48,6 @@ public class MigrateToSqlCipher {
 		//}
 		//MuteLog.Log("MigrateToSqlCipher", "Needs migration.");
 		//db.close();
-		return(true);
+		return(false);
 	}
 }

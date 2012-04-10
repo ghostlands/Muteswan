@@ -57,7 +57,9 @@ public class Preferences extends PreferenceActivity {
                                                          R.string.n_check_service_enabled,
                                                          Toast.LENGTH_LONG).show();
                                 	     } else {
-                                	    	 defPrefs.edit().remove("cipherSecret").commit();
+                                	    	 Boolean keepSecret = defPrefs.getBoolean("keepsecret", false);
+                                	    	 if (!keepSecret)
+                                	    			 defPrefs.edit().remove("cipherSecret").commit();
                                 	    	 Toast.makeText(getBaseContext(),
                                                      R.string.n_check_service_disabled,
                                                      Toast.LENGTH_LONG).show();

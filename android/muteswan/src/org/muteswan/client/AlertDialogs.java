@@ -6,17 +6,34 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 
 public class AlertDialogs {
 
 	Context context;
+	private boolean useOISafe = true;
 	
 	public AlertDialogs(Context context) {
 		this.context = context;
 	}
+	
+	private Handler useOISafeHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			useOISafe = false;
+		}
+
+	};
+	
+	public boolean getUseOISafe() {
+		return useOISafe;
+	}
+	
 	
 	public void offerToInstallBarcodeScanner() {
 		AlertDialog.Builder noTorDialog = new AlertDialog.Builder(context);
@@ -34,6 +51,43 @@ public class AlertDialogs {
 	    });
 	    noTorDialog.create();
 	    noTorDialog.show();
+	}
+	
+	
+	public void offerToInstallOISafe() {
+		final SharedPreferences defPrefs = PreferenceManager
+  				.getDefaultSharedPreferences(context);
+		boolean keepSecret = defPrefs.getBoolean("keepsecret", false);
+		
+		if (keepSecret)
+			return;
+		
+		AlertDialog.Builder oiSafe = new AlertDialog.Builder(context);
+	    oiSafe.setTitle("Install OI Safe?");
+	    oiSafe.setMessage("Muteswan uses OI Safe to store encryption passwords. OI Safe provides a secure way to store and provide passwords to other applications, like Muteswan. If you don't want to use OI Safe, your circle information will be easily recoverable by someone who has access to your device.");
+	    oiSafe.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	    	Uri uri = Uri.parse(context.getString(R.string.oisafe_market_uri));
+	    	Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+	        context.startActivity(intent);
+	      }
+	    });
+	    oiSafe.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	    	  useOISafeHandler.sendEmptyMessage(0);
+	    	 
+			  MuteLog.Log("Main","Not using oi safe.");
+			  //String cipherSecret = Crypto.generateSQLSecret();
+			  
+			  Editor editor = defPrefs.edit();
+			  editor.putBoolean("keepsecret", true).commit();
+			  //editor.putString("cipherSecret",cipherSecret).commit();
+			  
+			 
+	      }
+	    });
+	    oiSafe.create();
+	    oiSafe.show();
 	}
 	
 	 public Handler dialogTorNotAvailable = new Handler() {

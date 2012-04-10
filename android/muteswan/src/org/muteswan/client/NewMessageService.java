@@ -35,7 +35,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.data.MigrateToSqlCipher;
+import org.muteswan.client.data.MigrateToEncPrefs;
 import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.CreateCircle;

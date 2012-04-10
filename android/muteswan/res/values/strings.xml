@@ -21,6 +21,7 @@
      <string name="q_intall_barcodescanner">BarcodeScanner is not currently installed. Do you want to install it from the market?</string>
      <string name="yes">Yes</string>
      <string name="barcode_scanner_market_uri">market://search?q=pname:com.google.zxing.client.android</string>
+     <string name="oisafe_market_uri">market://search?q=pname:org.openintents.safe</string>
      <string name="no">No</string>
      <string name="t_tor_unavailable">Tor Unavailable</string>
      <string name="n_tor_not_available">Tor is not available at this time. Please start or restart Tor or ensure it is running properly. Only cached data will be available otherwise.</string>
