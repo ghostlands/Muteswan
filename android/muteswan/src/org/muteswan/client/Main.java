@@ -235,6 +235,8 @@ public class Main extends Activity implements Runnable {
 			   defPrefs.edit().remove("cipherSecret").commit();
 			   MuteLog.Log("Main", "Cipher secret is synced with oi safe and removed from muteswan.");
 			   
+			} else if (keepSecret && secret != null) {
+			   defPrefs.edit().putString("cipherSecret",secret).commit();
 			}
 			
 			if (cipherSecret == null) {
@@ -300,8 +302,12 @@ public class Main extends Activity implements Runnable {
 		
 		
 	    cipherSecret = defPrefs.getString("cipherSecret", null);
+		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 		
-	    getSafeSecret();
+		if (useoisafe || cipherSecret == null)
+	      getSafeSecret();
+		else
+		  defPrefs.edit().putBoolean("keepsecret", true);
 	    
 		
 		//if (cipherSecret != null) {
@@ -313,11 +319,15 @@ public class Main extends Activity implements Runnable {
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
 		if (firstRun) {
 
-			defPrefs.edit().putBoolean("firstrun", false).commit();
+			
+			Editor editor = defPrefs.edit();
+			editor.putBoolean("firstrun", false);
+			editor.putBoolean("keepsecret", true);
+			editor.putBoolean("useoisafe", false);
 
 			if (cipherSecret == null)
 			  cipherSecret = Crypto.generateSQLSecret();
-			defPrefs.edit().putString("cipherSecret", cipherSecret).commit();
+			editor.putString("cipherSecret", cipherSecret).commit();
 			
 			// why?
 			try {

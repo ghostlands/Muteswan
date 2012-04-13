@@ -57,9 +57,9 @@ public class AlertDialogs {
 	public void offerToInstallOISafe() {
 		final SharedPreferences defPrefs = PreferenceManager
   				.getDefaultSharedPreferences(context);
-		boolean keepSecret = defPrefs.getBoolean("keepsecret", false);
+		boolean useoisafe = defPrefs.getBoolean("useoisafe", true);
 		
-		if (keepSecret)
+		if (!useoisafe)
 			return;
 		
 		AlertDialog.Builder oiSafe = new AlertDialog.Builder(context);
@@ -80,7 +80,7 @@ public class AlertDialogs {
 			  //String cipherSecret = Crypto.generateSQLSecret();
 			  
 			  Editor editor = defPrefs.edit();
-			  editor.putBoolean("keepsecret", true).commit();
+			  editor.putBoolean("useoisafe", true).commit();
 			  //editor.putString("cipherSecret",cipherSecret).commit();
 			  
 			 

@@ -57,7 +57,7 @@ public class Preferences extends PreferenceActivity {
                                                          R.string.n_check_service_enabled,
                                                          Toast.LENGTH_LONG).show();
                                 	     } else {
-                                	    	 Boolean keepSecret = defPrefs.getBoolean("keepsecret", false);
+                                	    	 Boolean keepSecret = defPrefs.getBoolean("keepsecret", true);
                                 	    	 if (!keepSecret)
                                 	    			 defPrefs.edit().remove("cipherSecret").commit();
                                 	    	 Toast.makeText(getBaseContext(),
@@ -69,6 +69,24 @@ public class Preferences extends PreferenceActivity {
 
 
                          });
+         
+         
+         Preference useOISafe = (Preference) this.findPreference("useoisafe");
+         useOISafe.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+             public boolean onPreferenceChange(Preference preference, Object pref) {
+            	boolean useoisafe = (Boolean) pref;
+        	 	final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        	 	
+        	 	if (useoisafe == true) {
+        	 		defPrefs.edit().putBoolean("keepsecret", false).commit();
+        	 	} else {
+        	 		defPrefs.edit().putBoolean("keepsecret", true).commit();
+        	 	}
+
+				return true;
+            	 
+             }
+         });
          
          Preference checkMsgIntervalP = (Preference) this.findPreference("checkMsgInterval");
          checkMsgIntervalP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
