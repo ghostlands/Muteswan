@@ -304,11 +304,14 @@ public class Main extends Activity implements Runnable {
 	    cipherSecret = defPrefs.getString("cipherSecret", null);
 		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 		
-		if (useoisafe || cipherSecret == null)
+		if (useoisafe) {
 	      getSafeSecret();
-		else
-		  defPrefs.edit().putBoolean("keepsecret", true);
-	    
+		} else if (cipherSecret == null) {
+		  getSafeSecret();
+		  defPrefs.edit().putBoolean("keepsecret", true).commit();
+		} else {
+		  defPrefs.edit().putBoolean("keepsecret", true).commit();
+		}
 		
 		//if (cipherSecret != null) {
 		//	setSafeSecret();
