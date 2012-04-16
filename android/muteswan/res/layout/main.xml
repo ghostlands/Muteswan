@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:background="@drawable/imageborder"
+           
             android:gravity="center"
             android:src="@drawable/posts_hires"
             android:paddingTop="60sp"
@@ -49,7 +49,6 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/mLatestMessages"
             android:layout_below="@+id/mLatestMessages"
-            android:background="@drawable/imageborder"
             android:gravity="center"
             android:src="@drawable/circles_hires"
             android:text="Circles"

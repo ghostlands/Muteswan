@@ -36,7 +36,7 @@
     		android:textSize="14sp"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content" 
- 			android:background="@drawable/imageborder"
+ 			
  			android:layout_toRightOf="@id/logoView"
  			android:paddingTop="60dp"
  			android:src="@drawable/posts_hires"/>
@@ -48,7 +48,7 @@
     		android:textSize="14sp"
  			android:layout_width="wrap_content"
  			android:layout_height="wrap_content"
- 			android:background="@drawable/imageborder"
+ 			
  			android:src="@drawable/circles_hires"
  			android:layout_below="@id/mLatestMessages"
     		
