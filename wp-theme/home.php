@@ -15,7 +15,7 @@ get_header(); ?>
 				<h2>Anonymous friends<br />trusted face-to-face.</h2>
 				<p>Create secure social networks using shared QR codes. Share them with whomever you trust, face-to-face.</p>
 
-				<a href="http://muteswan.org/releases/0.3alpha-release-3.apk" title="Download App">Download App</a><br />
+				<a id="downloadbutton" href="http://muteswan.org/releases/0.3alpha-release-3.apk" title="Download App">Download App</a><br />
 				<a href="https://play.google.com/store/apps/details?id=org.muteswan.client&hl=e"><img src="/public/wp-content/themes/muteswan/i/get_it_on_play_logo_large.png" id="gplaybutton" alt="Available in Google Play" /></a>
 
 			</div><!-- #content -->

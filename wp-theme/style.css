@@ -705,7 +705,7 @@ a:hover {
 	padding-top: 60px;
 }
 /* Download App button */
-#content.home a {
+#downloadbutton {
 	font-family: Helvetica, sans-serif;
 	text-shadow: 2px 2px 2px #000;
 	display: block;
