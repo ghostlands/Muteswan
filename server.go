@@ -68,10 +68,9 @@ func PostMsg(c *goweb.Context) {
 	filepath := fmt.Sprintf("/home/junger/gowebtest/muteswansrv-hidden/data/%s/%d",c.PathParams["hash"],msgId)
 	file,_ := os.Create(filepath)
 	wr := bufio.NewWriter(file)
-	written,_ := io.Copy(wr,c.Request.Body)
+	io.Copy(wr,c.Request.Body)
 	wr.Flush()
 	//fmt.Fprintf(c.ResponseWriter, "Wrote %d bytes.", written)
-
 }
 
 func GetMsg(c *goweb.Context) {
@@ -81,7 +80,7 @@ func GetMsg(c *goweb.Context) {
 		ids := strings.Split(c.PathParams["id"],"-")
 		top,_ := strconv.Atoi(ids[0])
 		bottom,_ := strconv.Atoi(ids[1])
-		if bottom >= top || bottom == top {
+		if bottom > top {
 			fmt.Fprintf(c.ResponseWriter, "wtf %d to %d make no sense", top, bottom)
 			return;
 		}
@@ -143,15 +142,19 @@ func GetLastMsg(c *goweb.Context) {
 
 func main() {
 
+
 	goweb.MapFunc("/{hash}/{id}", func(c *goweb.Context) {
+		fmt.Printf("URL: %s\n",c.Request.URL.String())
 		GetMsg(c)
 	})
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
+		fmt.Printf("URL: %s\n",c.Request.URL.String())
 		GetLastMsg(c)
 	}, goweb.GetMethod)
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
+		fmt.Printf("URL: %s\n",c.Request.URL.String())
 		PostMsg(c)
 	}, goweb.PostMethod)
 
