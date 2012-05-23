@@ -34,7 +34,7 @@ func updateCounter(id string, s *mgo.Session) int {
 	var counter Counter
 	col := s.DB("muteswan").C("counters")
 	change := mgo.Change{Update: bson.M{"$inc": bson.M{"n": 1}}, New: true, Upsert: true}
-	err := col.Find(bson.M{"_id": id}).Modify(change, &counter)
+	err := col.Find(bson.M{"_id": "C" + id}).Modify(change, &counter)
 	if err != nil {
 		panic("Failed to update counter")
 	}
@@ -45,7 +45,7 @@ func updateCounter(id string, s *mgo.Session) int {
 func getCounter(id string, s *mgo.Session) int {
 	var counter Counter
 	col := s.DB("muteswan").C("counters")
-	err := col.Find(bson.M{"_id": id}).One(&counter)
+	err := col.Find(bson.M{"_id": "C" + id}).One(&counter)
 	if err != nil {
 		panic("Failed to get counter")
 	}
@@ -57,7 +57,7 @@ func PostMsg(c *goweb.Context, s *mgo.Session) {
 	var m Msg
 	var mw MsgWrap
 
-	col := s.DB("muteswan").C(c.PathParams["hash"])
+	col := s.DB("muteswan").C("C" + c.PathParams["hash"])
 	body, _ := ioutil.ReadAll(c.Request.Body)
 	json.Unmarshal(body, &m)
 	mw.Content = m
@@ -79,7 +79,7 @@ func GetMsg(c *goweb.Context, s *mgo.Session) {
 		}
 
 		var msgs []MsgWrap
-		col := s.DB("muteswan").C(c.PathParams["hash"])
+		col := s.DB("muteswan").C("C" + c.PathParams["hash"])
 		msgQuery := col.Find(bson.M{"_id": bson.M{"$lte": top, "$gte": bottom}})
 		msgQuery.All(&msgs)
 
@@ -89,7 +89,7 @@ func GetMsg(c *goweb.Context, s *mgo.Session) {
 
 	} else {
 		var mw MsgWrap
-		col := s.DB("muteswan").C(c.PathParams["hash"])
+		col := s.DB("muteswan").C("C" + c.PathParams["hash"])
 		id, _ := strconv.Atoi(c.PathParams["id"])
 		err := col.Find(bson.M{"_id": id}).One(&mw)
 		if err != nil {
