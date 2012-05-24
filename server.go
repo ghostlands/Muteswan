@@ -63,6 +63,7 @@ func PostMsg(c *goweb.Context, s *mgo.Session) {
 	mw.Content = m
 	mw.Id = updateCounter(c.PathParams["hash"], s)
 	mw.Timestamp = time.Now().Format(time.RFC1123)
+	mw.Timestamp = strings.Replace(mw.Timestamp,"UTC","GMT",-1)
 	col.Insert(mw)
 }
 
@@ -80,7 +81,8 @@ func GetMsg(c *goweb.Context, s *mgo.Session) {
 
 		var msgs []MsgWrap
 		col := s.DB("muteswan").C("C" + c.PathParams["hash"])
-		msgQuery := col.Find(bson.M{"_id": bson.M{"$lte": top, "$gte": bottom}})
+		//msgQuery := col.Find(bson.M{"_id": bson.M{"$lte": top, "$gte": bottom}})
+		msgQuery := col.Find(bson.M{"_id": bson.M{"$gte": bottom, "$lte": top}}).Sort("-_id")
 		msgQuery.All(&msgs)
 
 		msgBytes, _ := json.Marshal(msgs)
