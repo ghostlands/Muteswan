@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"runtime"
 )
 
 type Msg struct {
@@ -47,7 +48,7 @@ func getCounter(id string, s *mgo.Session) int {
 	col := s.DB("muteswan").C("counters")
 	err := col.Find(bson.M{"_id": "C" + id}).One(&counter)
 	if err != nil {
-		panic("Failed to get counter")
+		return(0)
 	}
 	fmt.Println(counter.N)
 	return counter.N
@@ -115,6 +116,9 @@ func GetLastMsg(c *goweb.Context, s *mgo.Session) {
 
 func main() {
 
+	fmt.Printf("Max procs: %d\n", runtime.GOMAXPROCS(8))
+	fmt.Printf("Max procs: %d\n", runtime.GOMAXPROCS(8))
+
 	session, err := mgo.Dial("localhost")
 	if err != nil {
 		panic(err)
@@ -124,18 +128,24 @@ func main() {
 	session.SetMode(mgo.Monotonic, true)
 
 	goweb.MapFunc("/{hash}/{id}", func(c *goweb.Context) {
-		fmt.Printf("GET %s\n", c.Request.URL.String())
-		GetMsg(c, session)
+		//fmt.Printf("GET %s\n", c.Request.URL.String())
+		s := session.Copy()
+		GetMsg(c, s)
+		s.Close()
 	})
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		fmt.Printf("GET %s\n", c.Request.URL.String())
-		GetLastMsg(c, session)
+		//fmt.Printf("GET %s\n", c.Request.URL.String())
+		s := session.Copy()
+		GetLastMsg(c, s)
+		s.Close()
 	}, goweb.GetMethod)
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		fmt.Printf("POST %s\n", c.Request.URL.String())
-		PostMsg(c, session)
+		//fmt.Printf("POST %s\n", c.Request.URL.String())
+		s := session.Copy()
+		PostMsg(c, s)
+		s.Close()
 	}, goweb.PostMethod)
 
 	goweb.ListenAndServe(":8081")
