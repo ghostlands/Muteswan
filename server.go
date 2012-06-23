@@ -32,6 +32,10 @@ type Counter struct {
 	N  int
 }
 
+type LastMessage struct {
+	LastMessage int `json:"lastMessage"`
+}
+
 // utility functions
 func updateCounter(id string, d *mgo.Database) int {
 	var counter Counter
@@ -113,7 +117,13 @@ func GetLastMsg(c *goweb.Context, d *mgo.Database) {
 
 	mostRecent := getCounter(c.PathParams["hash"], d)
 
-	fmt.Fprintf(c.ResponseWriter, `{"lastMessage":"%d"}`, mostRecent)
+	lastMsg := &LastMessage{LastMessage : mostRecent}
+
+
+	b,_ := json.Marshal(lastMsg)
+	buf := bytes.NewBuffer(b)
+	fmt.Fprintf(c.ResponseWriter,"%s",buf.String())
+	//fmt.Fprintf(c.ResponseWriter, `{"lastMessage":"%d"}`, mostRecent)
 }
 
 func dropPrivs() {
