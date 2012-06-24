@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"syscall"
 	"flag"
+	"regexp"
 )
 
 type Msg struct {
@@ -74,41 +75,62 @@ func PostMsg(c *goweb.Context, d *mgo.Database) {
 	col.Insert(mw)
 }
 
-func GetMsg(c *goweb.Context, d *mgo.Database) {
-
-	if strings.Contains(c.PathParams["id"], "-") {
-
+func GetMsgRange(c *goweb.Context, d *mgo.Database) {
 		ids := strings.Split(c.PathParams["id"], "-")
 		top, _ := strconv.Atoi(ids[0])
 		bottom, _ := strconv.Atoi(ids[1])
+
 		if bottom > top {
-			fmt.Fprintf(c.ResponseWriter, "wtf %d to %d make no sense", top, bottom)
+			goweb.AddFormatter(&goweb.JsonFormatter{})
+			c.RespondWithStatus(403)
 			return
 		}
 
+		delta := top - bottom
+		if delta > 30 {
+			goweb.AddFormatter(&goweb.JsonFormatter{})
+			c.RespondWithStatus(403)
+			return
+		}
+	
+
 		var msgs []MsgWrap
 		col := d.C("C" + c.PathParams["hash"])
-		//msgQuery := col.Find(bson.M{"_id": bson.M{"$lte": top, "$gte": bottom}})
 		msgQuery := col.Find(bson.M{"_id": bson.M{"$gte": bottom, "$lte": top}}).Sort("-_id")
 		msgQuery.All(&msgs)
 
 		msgBytes, _ := json.Marshal(msgs)
 		buf := bytes.NewBuffer(msgBytes)
 		fmt.Fprintf(c.ResponseWriter, "%s", buf.String())
+}
 
-	} else {
+func GetOneMsg(c *goweb.Context, d *mgo.Database) {
 		var mw MsgWrap
 		col := d.C("C" + c.PathParams["hash"])
 		id, _ := strconv.Atoi(c.PathParams["id"])
 		err := col.Find(bson.M{"_id": id}).One(&mw)
 		if err != nil {
 			fmt.Printf("Error fetching %s: %s", c.PathParams["hash"], err)
+			goweb.AddFormatter(&goweb.JsonFormatter{})
+			c.RespondWithNotFound()
+			return
 		}
 
 		c.ResponseWriter.Header().Set("Last-Modified", mw.Timestamp)
 		msgBytes, _ := json.Marshal(mw.Content)
 		buf := bytes.NewBuffer(msgBytes)
 		fmt.Fprintf(c.ResponseWriter, "%s", buf.String())
+}
+
+
+func GetMsg(c *goweb.Context, d *mgo.Database) {
+
+
+
+	if strings.Contains(c.PathParams["id"], "-") {
+		GetMsgRange(c,d)
+	} else {
+		GetOneMsg(c,d)
 	}
 
 }
@@ -121,18 +143,29 @@ func GetLastMsg(c *goweb.Context, d *mgo.Database) {
 
 
 	b,_ := json.Marshal(lastMsg)
-	buf := bytes.NewBuffer(b)
-	fmt.Fprintf(c.ResponseWriter,"%s",buf.String())
-	//fmt.Fprintf(c.ResponseWriter, `{"lastMessage":"%d"}`, mostRecent)
+	fmt.Fprintf(c.ResponseWriter,"%s",bytes.NewBuffer(b).String())
 }
 
-func dropPrivs() {
-	uid := 1001
-
-	//fmt.Printf("Current uid: %d\n", syscall.Getuid())
+func dropPrivs(uid int) {
 	syscall.Setuid(uid)
-	//fmt.Printf("New uid: %d\n", syscall.Getuid())
+}
 
+func validateHash(hash string) bool {
+	match,_ := regexp.MatchString("^\\w{40}$",hash)
+	if !match {
+		panic("Invalid hash circle key.")
+	}
+	return true
+}
+
+func catchPanic(c *goweb.Context) {
+
+	if r := recover(); r != nil {
+		fmt.Printf("%s\n",r)
+		goweb.AddFormatter(&goweb.JsonFormatter{})
+		c.RespondWithError(400)
+		recover()
+        }
 }
 
 func main() {
@@ -140,17 +173,23 @@ func main() {
 	fmt.Printf("Max procs: %d\n", runtime.GOMAXPROCS(8))
 	fmt.Printf("Max procs: %d\n", runtime.GOMAXPROCS(8))
 
-	var port int
-	var ip string
-	var db string
+
+	var (
+	   port int
+	   ip string
+	   db string
+	   uid int
+	)
 	flag.IntVar(&port, "port", 80, "Port to bind on.")
 	flag.StringVar(&ip, "ip", "127.0.0.1", "IP to bind to")
 	flag.StringVar(&db, "db", "muteswan", "MongoDB database to use")
+	flag.IntVar(&uid, "uid", 1001, "User to drop privileges")
 	flag.Parse()
 
 	fmt.Printf("Port is %d\n", port)
 	fmt.Printf("IP is %s\n", ip)
 	fmt.Printf("DB is %s\n", db)
+	fmt.Printf("UID is %d\n", uid)
 
 
 	session, err := mgo.Dial("localhost")
@@ -162,7 +201,9 @@ func main() {
 	session.SetMode(mgo.Monotonic, true)
 
 	goweb.MapFunc("/{hash}/{id}", func(c *goweb.Context) {
-		dropPrivs()
+		defer catchPanic(c)
+		dropPrivs(uid)
+		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		s := session.Copy()
 		GetMsg(c, s.DB(db))
@@ -170,7 +211,9 @@ func main() {
 	})
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		dropPrivs()
+		defer catchPanic(c)
+		dropPrivs(uid)
+		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		s := session.Copy()
 		GetLastMsg(c, s.DB(db))
@@ -178,7 +221,9 @@ func main() {
 	}, goweb.GetMethod)
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		dropPrivs()
+		defer catchPanic(c)
+		dropPrivs(uid)
+		validateHash(c.PathParams["hash"])
 		fmt.Printf("POST %s\n", c.Request.URL.String())
 		s := session.Copy()
 		PostMsg(c, s.DB(db))
