@@ -582,6 +582,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 				JSONObject jsonObj = jsonArray.getJSONObject(i);
 				JSONObject contentObj = jsonObj.getJSONObject("content");
 				String date = parseHttpDate(jsonObj.getString("timestamp"));
+				MuteLog.Log("Circle", "Raw json: " + jsonString);
+				MuteLog.Log("Circle", "Got date: " + jsonObj.getString("timestamp"));
 				
 				MuteswanMessage msg = new MuteswanMessage(max,this,contentObj,date);
 				msgs.add(msg);
@@ -621,6 +623,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	        df.setTimeZone( tz );
 	        date = df.format(d);
 		} catch (ParseException e) {
+			MuteLog.Log("Circle", "Parse error parsing " + dateIn + " with " + e.toString());
 			return(null);
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -1114,12 +1117,22 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	
 	
 	public void saveMsgToDb(Integer id, String date, String msgContent) {
-		MuteLog.Log("Circle","Saving message " + id);
+		
 		if (context == null) 
 			return;	
 		
-		if (id == null || date == null || msgContent == null)
+		if (id == null) {
+			MuteLog.Log("Circle","id is null!");
+		}
+		if (date == null) {
+			MuteLog.Log("Circle","date is null!");
 			return;
+		}
+		
+		if (msgContent == null) {
+			MuteLog.Log("Circle","msgcontent is nulL!");
+			return;
+		}
 		
 		JSONObject jsonObj = null;
 		try {
@@ -1128,6 +1141,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 			
 			
 			File msgPath = new File(getStorePath() + "/" + id);
+			MuteLog.Log("Circle","Saving message " + id + " with content " + msgContent + " and path " + msgPath);
 			writeFileContent(msgPath,jsonObj.toString());
 			
 			//String msgPath = keyHash + "-" + id;

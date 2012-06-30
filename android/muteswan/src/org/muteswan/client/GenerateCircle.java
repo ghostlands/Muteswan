@@ -38,11 +38,18 @@ public class GenerateCircle {
 	    usePublicServer = defPrefs.getBoolean("usePublicServer", false);
 	    
 	  
+	    // figure out which server to use
 	    if (usePublicServer) {
 	    	server = ctx.getString(R.string.defaultcircleserver);
 		} else {
 			server = ctx.getString(R.string.defaulthiddencircleserver);
 		}
+	    
+	    
+	    // if they have custom, stomp on it
+	    if (customServer.length() != 0) {
+	    	server = customServer;
+	    }
 	    
     	if (name.length() == 0 || server.length() == 0 || name.length() >= MAX_CIRCNAME_LENGTH)
     		return;
@@ -78,24 +85,32 @@ public class GenerateCircle {
 			e.printStackTrace();
 		}
 		
-		/*** 128 (48 bit really) keys ***/
-        sr.generateSeed(24);
-        genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
-
 		
-        /**** 256 bit keys, disabled for now...
-		sr.generateSeed(256);		
-		genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
-		MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
-		MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
+		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+		Boolean use256bit = defPrefs.getBoolean("use256bit", false);
 		
-		while (!genKeyStr.substring(genKeyStr.length()-1, genKeyStr.length()).equals("=")) {
-			MuteLog.Log("GenerateCircle", "Key length: wtf did not have = " + genKeyStr);
-			sr.generateSeed(256);
+		if (!use256bit) {
+			/*** 128 (48 bit really) keys ***/
+			sr.generateSeed(24);
+			genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
+			return genKeyStr;
+			
+		} else {
+		
+			/**** 256 bit keys ***/
+			sr.generateSeed(256);		
 			genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
-		} ***/
-		
-		return genKeyStr;
+			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
+			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
+			// it seems like this isn't always encoding right??
+			while (!genKeyStr.substring(genKeyStr.length()-1, genKeyStr.length()).equals("=")) {
+				 MuteLog.Log("GenerateCircle", "Key length: wtf did not have = " + genKeyStr);
+				 sr.generateSeed(256);
+				 genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
+			}
+
+			return genKeyStr;
+		}
 	}
 
 
