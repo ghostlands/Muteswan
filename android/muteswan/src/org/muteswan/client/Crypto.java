@@ -109,7 +109,7 @@ public class Crypto {
 		return(sr.generateSeed(16));
 	}
 	
-	public static String generateSQLSecret() {
+	public static String generateCipherSecret() {
 		String secret;
 	       
 		SecureRandom sr = null;

@@ -116,7 +116,7 @@ public class MuteswanMessage {
 		if (circle.getKey().length() > 16) {
 			cryptoDec = new Crypto(Base64.decode(circle.getKey()),rawMsgBytes,ivData);
 		} else {
-			//cryptoDec = new Crypto(Base64.decode(circle.getKey()),rawMsgBytes,ivData);
+			
 			cryptoDec = new Crypto(circle.getKey().getBytes(),rawMsgBytes,ivData);
 		}
 		byte[] msg = cryptoDec.decrypt();

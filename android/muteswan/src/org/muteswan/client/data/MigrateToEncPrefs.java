@@ -38,16 +38,7 @@ public class MigrateToEncPrefs {
 			return true;
 		}
 		
-		//SQLiteDatabase db = null;
-		//try {
-		//   db = SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb",null);
-		//   db.execSQL("CREATE TABLE needs_upgrade (needsUpgrade TEXT);");
-		//} catch (android.database.sqlite.SQLiteDatabaseCorruptException e) {
-		//	MuteLog.Log("MigrateToSqlCipher", "Does not need migration.");
-		//	return(false);
-		//}
-		//MuteLog.Log("MigrateToSqlCipher", "Needs migration.");
-		//db.close();
+	
 		return(false);
 	}
 }

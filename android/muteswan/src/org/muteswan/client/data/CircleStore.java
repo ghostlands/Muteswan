@@ -43,26 +43,10 @@ import android.util.Log;
 @SuppressWarnings("serial")
 final public class CircleStore extends LinkedList<Circle> {
 	public static boolean libsLoaded = false;
-	
-	
-
-
-
-	
-
     public Context context;
-	
 	private MuteswanHttp muteswanHttp;
-
-
-
-
 	private String cipherSecret;
 	private SharedPreferences prefs;
-
-
-	
-	
 	
 
 	
@@ -117,21 +101,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  
 		  prefs.edit().remove(Main.genHexHash(circle.getFullText())).commit();
 		  
-		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
-		  //SQLiteStatement delete = db.compileStatement("DELETE FROM " + OpenHelper.RINGTABLE + " WHERE key = ? AND shortname = ? AND server = ?");
-		  //delete.bindString(1, circle.getKey());
-		  //delete.bindString(2, circle.getShortname());
-		  //delete.bindString(3, circle.getServer());
-		  //delete.execute();
-		  //db.close();
-		  
-		  
-		  //SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
-		  //delete = rdb.compileStatement("DELETE FROM " + Circle.OpenHelper.MESSAGESTABLE + " WHERE ringHash = ?");
-		  //delete.bindString(1, Main.genHexHash(circle.getFullText()));
-		  //delete.execute();
-		  //circle.getOpenHelper().deleteData(rdb);
-		  //rdb.close();
+		 
 		  circle.deleteAllMessages(true);
 	  }
 	
@@ -151,7 +121,6 @@ final public class CircleStore extends LinkedList<Circle> {
 	  private void initStore(MuteswanHttp muteswanHttp, boolean initCache) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
-		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
 			
 		  Map<String, ?> allCircles = prefs.getAll();
 		  for (String cir : allCircles.keySet()) {
@@ -173,27 +142,14 @@ final public class CircleStore extends LinkedList<Circle> {
 		  }
 		  
 		  
-		  //Cursor cursor = db.query(OpenHelper.RINGTABLE, new String[] { "shortname", "key", "server"}, null, null, null, null, "shortname desc" );
-		  //while (cursor.moveToNext()) {
-		  //		String shortname = cursor.getString(0);
-		  //		String key = cursor.getString(1);
-		  //		String server = cursor.getString(2);
-		  //		Circle r = new Circle(cipherSecret,context,key,shortname,server,muteswanHttp);
-		  //		if (r != null) { 
-		  //		   add(r);
-		 //		   //if (initCache)
-		 //		   //  r.initCache();
-		  //		}
-		  //}
-		  //cursor.close();
-		  //db.close();
+		
 	  }
 	  
 	  private void initStore(boolean initCache) {
 		  if (cipherSecret == null) { MuteLog.Log("Circle", "Error: refusing use database with null cipherSecret"); return; }
 
 		  MuteLog.Log("CIPHER", "Initialize circle store with " + cipherSecret);
-		  //SQLiteDatabase db = openHelper.getReadableDatabase(cipherSecret);
+		  
 			
 		  Map<String, ?> allCircles = prefs.getAll();
 		  for (String cir : allCircles.keySet()) {
@@ -243,21 +199,7 @@ final public class CircleStore extends LinkedList<Circle> {
 		  prefs.edit().putString(Main.genHexHash(circle.getFullText()), jsonObject.toString()).commit();
 		
 		  
-		  //SQLiteDatabase db = openHelper.getWritableDatabase(cipherSecret);
-		  //SQLiteStatement insrt = db.compileStatement("INSERT INTO " + OpenHelper.RINGTABLE + " (key,shortname,server) VALUES (?,?,?)");
-		  //insrt.bindString(1, circle.getKey());
-		  //insrt.bindString(2, circle.getShortname());
-		  //insrt.bindString(3, circle.getServer());
-		  //insrt.execute();
-		  //db.close();
-		  
-		  //SQLiteDatabase rdb = circle.getOpenHelper().getWritableDatabase(cipherSecret);
-		  //muteswan.genHexHash(circle.getFullText()));
- 		  //SQLiteStatement insert = rdb.compileStatement("INSERT INTO " + Circle.OpenHelper.LASTMESSAGES + " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-		  //insert.bindString(1,Main.genHexHash(circle.getFullText()));
-		  //insert.bindLong(2, 0);
-		  //insert.executeInsert();
-		  //rdb.close();
+	
 		  circle.createLastMessage(0);
 	  
 		  add(circle);

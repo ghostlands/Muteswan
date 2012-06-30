@@ -114,7 +114,7 @@ public class Main extends Activity implements Runnable {
 			}
 			if (cipherSecret != null) {
 				migrateDatabase();
-				newMsgService.setSQLCipherSecret(cipherSecret);
+				newMsgService.setCipherSecret(cipherSecret);
 				newMsgService.checkTorStatus(torResultCallback);
 			}
 
@@ -142,6 +142,15 @@ public class Main extends Activity implements Runnable {
 		}
 
 	};
+	
+	private Handler finishButtonHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			finish();
+		}
+
+	};
+	
 
 	private AlertDialogs alertDialogs;
 
@@ -203,11 +212,7 @@ public class Main extends Activity implements Runnable {
 			  
 		}
 		
-		// try {
-		// newMsgService.setSQLCipherSecret(secret);
-		// } catch (RemoteException e) {
-		// e.printStackTrace();
-		// }
+	
 
 	}
 
@@ -215,26 +220,34 @@ public class Main extends Activity implements Runnable {
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		SharedPreferences defPrefs = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
+		
+		// this is sort of necessarily complicated. we want to make sure
+		// that unless oisafe certainly has our key we do not delete our
+		// stored key. this should allow people who want security to
+		// use oisafe, but protect against any number of problems otherwise
+		// like oisafe not working, not installed, key changed, etc.
+		
 		if (resultCode == RESULT_OK
 				&& intent.getAction().equals(
 						"org.openintents.action.GET_PASSWORD")) {
 			MuteLog.Log("Main", "Got intent back " + intent.getAction());
 			String secret = intent
 					.getStringExtra("org.openintents.extra.PASSWORD");
-			// try {
-			// newMsgService.setSQLCipherSecret(secret);
-			// BOOK
-			//if (cipherSecret != null && cipherSecret.equals(secret))
+			
 			
 			
 			
 			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
 			boolean keepSecret = defPrefs.getBoolean("keepsecret", false);
+			
+			// this means we got the secret from oisafe and it is the same as
+			// currently stored one. this means we are good, and we can remove the
+			// cipherSecret from the preferences. now we are safe.
 			if (!backgroundMessageCheck && !keepSecret
 					&& cipherSecret != null && cipherSecret.equals(secret)) {
 			   defPrefs.edit().remove("cipherSecret").commit();
 			   MuteLog.Log("Main", "Cipher secret is synced with oi safe and removed from muteswan.");
-			   
+			// store the secret if we are supposed to
 			} else if (keepSecret && secret != null) {
 			   defPrefs.edit().putString("cipherSecret",secret).commit();
 			}
@@ -244,17 +257,14 @@ public class Main extends Activity implements Runnable {
 				  MuteLog.Log("Main", "Set SQL cipher!!");
 			}
 			
-			// } catch (RemoteException e) {
-			// e.printStackTrace();
-			// }
+		
 		} else if (resultCode == RESULT_OK
 				&& intent.getAction().equals(
 						"org.openintents.action.SET_PASSWORD")) {
 			defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
 		} else if (intent != null && intent.getAction().equals(
 				"org.openintents.action.SET_PASSWORD")) {
-			// setSafePassword();
-			// callSafeGetSecret();
+		
 			String secret = intent
 					.getStringExtra("org.openintents.extra.PASSWORD");
 			if (secret == null) {
@@ -271,28 +281,56 @@ public class Main extends Activity implements Runnable {
 				"org.openintents.action.GET_PASSWORD")) {
 			MuteLog.Log("Main", "Get password failed with " + resultCode);
 			setSafeSecret();
-			finish();
+			alertDialogs.noCipherSecretAvailable(finishButtonHandler);
+			//finish();
 		}
+		
+		
+		// if we do not have a cipherSecret after all this we are stewed and need to notify the user of that reality.
+		if (cipherSecret == null) {
+			alertDialogs.noCipherSecretAvailable(finishButtonHandler);
+			//finish();
+		}
+		
 	}
 
+	
+	private void firstRunInit(SharedPreferences defPrefs) {
+		Editor editor = defPrefs.edit();
+		editor.putBoolean("firstrun", false);
+		editor.putBoolean("keepsecret", true);
+		editor.putBoolean("useoisafe", false);
+
+		if (cipherSecret == null)
+		  cipherSecret = Crypto.generateCipherSecret();
+		editor.putString("cipherSecret", cipherSecret).commit();
+		
+		// why?
+		try {
+			Thread.sleep(50);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// fdo we want this?
+		// CircleStore cs = new CircleStore(cipherSecret,this,true,false);
+		// cs.updateStore("dd85381ac8acc1a7", "Feedback",
+		// "circles.muteswan.org");
+	}
+	
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// Check tor status
-		// Intent torServiceIntent = new Intent();
-
-		// torServiceIntent.setAction("org.torproject.android.service.ITorService");
-		// boolean isBoundTor =
-		// bindService(torServiceIntent,mTorConn,Context.BIND_AUTO_CREATE);
-
-		// TorStatus torStatus = new TorStatus(torService);
+	
 
 		// SERVICE BIND
 		Intent serviceIntent = new Intent(this, NewMessageService.class);
 		bindService(serviceIntent, mNewMsgConn, Context.BIND_AUTO_CREATE);
-		// ,Context.BIND_AUTO_CREATE);
+		
 
 		SharedPreferences defPrefs = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
@@ -304,6 +342,12 @@ public class Main extends Activity implements Runnable {
 	    cipherSecret = defPrefs.getString("cipherSecret", null);
 		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 		
+		
+		// if we are supposed to use oi safe, get the secret
+		// even if we aren't supposed to use oisafe, if we don't
+		// have a secret in prefs we have no other choice, so try
+		// to get it. otherwise we just save the secret if we
+		// should
 		if (useoisafe) {
 	      getSafeSecret();
 		} else if (cipherSecret == null) {
@@ -313,54 +357,21 @@ public class Main extends Activity implements Runnable {
 		  defPrefs.edit().putBoolean("keepsecret", true).commit();
 		}
 		
-		//if (cipherSecret != null) {
-		//	setSafeSecret();
-		//}
 		
 		
 		
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
 		if (firstRun) {
-
-			
-			Editor editor = defPrefs.edit();
-			editor.putBoolean("firstrun", false);
-			editor.putBoolean("keepsecret", true);
-			editor.putBoolean("useoisafe", false);
-
-			if (cipherSecret == null)
-			  cipherSecret = Crypto.generateSQLSecret();
-			editor.putString("cipherSecret", cipherSecret).commit();
-			
-			// why?
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// for this?
-			// CircleStore cs = new CircleStore(cipherSecret,this,true,false);
-			// cs.updateStore("dd85381ac8acc1a7", "Feedback",
-			// "circles.muteswan.org");
+				firstRunInit(defPrefs);
 		}
 
-		
-		
-		
-		// Boolean hasGeneratedSecret =
-		// defPrefs.getBoolean("hasGeneratedSecret", false);
-		
-		// if (!hasGeneratedSecret) {
-		// setSafeSecret();
 		
 
 		// start work activities
 		Thread thread = new Thread(this);
 		thread.start();
 
-		// setSafePassword();
+		
 
 		
 
@@ -385,15 +396,6 @@ public class Main extends Activity implements Runnable {
 		if (versionNameString != null)
 			versionName.setText(versionNameString);
 
-		/*
-		 * if (cipherSecret != null) { try { int count = 0; while (newMsgService
-		 * == null && count <= 10) { try { Thread.sleep(200); count++; } catch
-		 * (InterruptedException e) { } }
-		 * newMsgService.setSQLCipherSecret(cipherSecret); } catch
-		 * (RemoteException e) {
-		 * 
-		 * } } else { getSafeSecret(); }
-		 */
 
 	}
 
@@ -423,12 +425,7 @@ public class Main extends Activity implements Runnable {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.mainmenu, menu);
 
-		// menu.add("Create Identity");
-		// menu.add("List Identities");
-		// menu.add("Create Circle");
-
-		// menu.add("Options");
-
+		
 		return true;
 	}
 
@@ -601,7 +598,7 @@ public class Main extends Activity implements Runnable {
 
 		// sendBroadcast(new Intent(Main.UPGRADING_DATABASE));
 		alertDialogs.upgradingDatabase.sendEmptyMessage(0);
-		cipherSecret = Crypto.generateSQLSecret();
+		cipherSecret = Crypto.generateCipherSecret();
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		defPrefs.edit().putString("cipherSecret", cipherSecret).commit();
 		
@@ -621,24 +618,13 @@ public class Main extends Activity implements Runnable {
 			files[i].delete();
 		}
 
-		// if (true) return true;
-		// File newDb = new
-		// File("/data/data/org.muteswan.client/databases/muteswandb");
-		// oldDb.delete();
-		// newDb.renameTo(new
-		// File("/data/data/org.muteswan.client/databases/muteswandb"));
-
+	
 		LinkedList<String[]> circles = migrate.getOldCircleData();
-		// SQLiteDatabase.loadLibs(this);
-
-		// SQLiteDatabase db =
-		// SQLiteDatabase.openOrCreateDatabase("/data/data/org.muteswan.client/databases/muteswandb",
-		// cipherSecret, null);
-		// db.execSQL("CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);");
+		
 
 		for (String[] s : circles) {
 			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
-			// db.execSQL("INSERT INTO rings (shortname,key,server) VALUES('"+s[0]+"','"+s[1]+"','"+s[2]+"');");
+			
 			Circle newCircle = new Circle(cipherSecret, this, s[1], s[0], s[2]);
 			newCircle.createLastMessage(0);
 			MuteLog.Log("NewMessageService",
@@ -649,28 +635,10 @@ public class Main extends Activity implements Runnable {
 					.putString(genHexHash(newCircle.getFullText()),
 							jsonObject.toString()).commit();
 
-			// SQLiteStatement insert = db.compileStatement("INSERT INTO " +
-			// Circle.OpenHelper.LASTMESSAGES +
-			// " (ringHash,lastMessage,lastCheck) VALUES(?,?,datetime('now'))");
-			// insert.bindString(1,Main.genHexHash(getFullText()));
-			// insert.bindLong(2, 0);
-			// insert.executeInsert();
+		
 
 		}
-		// db.close();
-		// return true;
 
-		/*
-		 * SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(
-		 * "/data/data/org.muteswan.client/databases/muteswandbEnc", "", null);
-		 * 
-		 * db.execSQL("PRAGMA KEY = '" + cipherSecret + "';"); db.execSQL(
-		 * "CREATE TABLE rings (id INTEGER PRIMARY KEY, shortname TEXT, key TEXT, server TEXT);"
-		 * ); db.execSQL(
-		 * "ATTACH DATABASE '/data/data/org.muteswan.client/databases/muteswandb' AS plaintext KEY '';"
-		 * ); db.execSQL("INSERT INTO rings SELECT * FROM plaintext.rings;");
-		 * db.execSQL("DETACH DATABASE plaintext;");
-		 */
 		MuteLog.Log("CircleStore", "Done loading migration data.");
 
 		MuteLog.Log("CircleStore", "Done migrating.");

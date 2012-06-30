@@ -655,23 +655,7 @@ public class CircleList extends ListActivity {
     	            	idStore.addToDb(identity);
     	            }
     	            
-            } /*else if (resultCode == RESULT_CANCELED) {
-            	
-            	final String testSite = "testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion";
-
-	            CircleStore store = new CircleStore(getApplicationContext(),true,false);
-            	Circle circle = new Circle(getApplicationContext(),testSite);
-	            store.updateStore(testSite);
-	            
-    	        Intent joinCircleIntent = new Intent(CircleList.JOINED_CIRCLE_BROADCAST);
-    	      	joinCircleIntent.putExtra("circle", Main.genHexHash(circle.getFullText()));
-    	      	sendBroadcast(joinCircleIntent);
-    	      	
-    	        newCircle = circle.getShortname();
-	            
-            
-            }*/
-    	  //}
+            }
 
 	}
 	

@@ -350,14 +350,11 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		this.keyHash = Main.genHexHash(key);
 		
 		
-		//SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-       	//Boolean aggroHttp = defPrefs.getBoolean("aggressivehttp", false);
+		
 
-		//if (aggroHttp) {
+		
 	  	this.muteswanHttp = muteswanHttp;
-		//} else {
-	    //	  this.muteswanHttp = muteswanHttp;
-		//}
+		
 	  	SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         curLastMsgId = defPrefs.getInt(Main.genHexHash(getFullText()), 0);
 	  	initializeDirStore(context.getFilesDir());
@@ -481,28 +478,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	}
 	
 	
-	/*public MuteswanMessage getMsg(String id) throws ClientProtocolException, IOException {
-		MuteswanMessage msg = null;
-		msg = getMsgFromDb(id,true);
-		if (msg == null) {
-			
-			msg = getMsgFromTor(Integer.parseInt(id));
-			
-			if (msg == null)
-				return null;
-			
-			if (context != null) {
-				if (msg.signatures[0] != null) {
-				   saveMsgToDb(Integer.parseInt(id),msg.getDate(),msg.getMsg(),msg.signatures);
-				} else {
-				   saveMsgToDb(Integer.parseInt(id),msg.getDate(),msg.getMsg());
-				}
-			}
-		}
-		
-		return(msg);
-		
-	}*/
+	
 	
 	
 	
@@ -1123,6 +1099,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 		if (id == null) {
 			MuteLog.Log("Circle","id is null!");
+			return;
 		}
 		if (date == null) {
 			MuteLog.Log("Circle","date is null!");
@@ -1130,7 +1107,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		}
 		
 		if (msgContent == null) {
-			MuteLog.Log("Circle","msgcontent is nulL!");
+			MuteLog.Log("Circle","msgcontent is null!");
 			return;
 		}
 		

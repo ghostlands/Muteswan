@@ -806,7 +806,7 @@ public class NewMessageService extends Service {
 		}
 
 		@Override
-		public void setSQLCipherSecret(String secret) throws RemoteException {
+		public void setCipherSecret(String secret) throws RemoteException {
 			SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
 			
@@ -818,7 +818,7 @@ public class NewMessageService extends Service {
 		}
 
 		@Override
-		public String getSQLCipherSecret() throws RemoteException {
+		public String getCipherSecret() throws RemoteException {
 			return cipherSecret;
 		}
 		

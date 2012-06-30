@@ -1381,7 +1381,7 @@ final Handler stopSpinningHandler = new Handler() {
 					
 					long before = System.currentTimeMillis();
 					MuteLog.Log("NewMessageService", "IKF before getlasttormsgid");
-					msgService.setSQLCipherSecret(cipherSecret);
+					msgService.setCipherSecret(cipherSecret);
 					lastMsg = msgService.getLastTorMsgId(Main.genHexHash(circle.getFullText()));
 					long after = System.currentTimeMillis();
 					if (lastMsg != null && lastMsg == -1) {

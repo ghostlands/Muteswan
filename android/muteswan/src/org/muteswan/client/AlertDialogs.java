@@ -54,6 +54,20 @@ public class AlertDialogs {
 	}
 	
 	
+	public void noCipherSecretAvailable(final Handler finishHandler) {
+		AlertDialog.Builder noCipherAvailable = new AlertDialog.Builder(context);
+	    noCipherAvailable.setTitle("Unable to decrypt circles");
+	    noCipherAvailable.setMessage("Sorry, I am unable to decrypt circle information. This may happen if OI Safe was provided the wrong master password. If this persists, wiping Muteswan's data is necessary.");
+	    noCipherAvailable.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	        finishHandler.sendEmptyMessage(0);
+	      }
+	    });
+	  
+	    noCipherAvailable.create();
+	    noCipherAvailable.show();
+	}
+	
 	public void offerToInstallOISafe() {
 		final SharedPreferences defPrefs = PreferenceManager
   				.getDefaultSharedPreferences(context);
@@ -80,7 +94,7 @@ public class AlertDialogs {
 			  //String cipherSecret = Crypto.generateSQLSecret();
 			  
 			  Editor editor = defPrefs.edit();
-			  editor.putBoolean("useoisafe", true).commit();
+			  editor.putBoolean("useoisafe", false).commit();
 			  //editor.putString("cipherSecret",cipherSecret).commit();
 			  
 			 
