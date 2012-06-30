@@ -65,7 +65,7 @@ while (my $c = $daemon->accept) {
 
       drop_privileges($user);
       while (my $r = $c->get_request) {
-	print localtime(time()) . ": " . $r->method . " " . $r->url->path . "\n";
+	#print localtime(time()) . ": " . $r->method . " " . $r->url->path . "\n";
         if ($r->method eq 'GET') {
 	    handleGet($r->url->path,$c);
         } elsif ($r->method eq 'POST' || $r->method eq 'PUT') {
@@ -313,11 +313,11 @@ sub get_multiple_circles {
 
 	my $json = new JSON();
 
-	print "max $max\n";
-	print "min $min\n";
+	#print "max $max\n";
+	#print "min $min\n";
 	my @msgs;
 	for (my $i = $max; $i>=$min; $i--) {
-		print STDERR "Getting $i\n";
+		#print STDERR "Getting $i\n";
 		if ( ! -f "$directory/$keyHash/$i" ) {
 			return undef;
 		}
@@ -384,7 +384,7 @@ sub invalid_multi_request {
 	my $min = shift;
 
 	my $lastMessage = getIndex($keyHash);
-	print STDERR "last message $lastMessage\n";
+	#print STDERR "last message $lastMessage\n";
 
 	if ($max > $lastMessage || $min > $lastMessage) {
 		return("Requested max or min value is greater than latest message.");

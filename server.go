@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"code.google.com/p/goweb/goweb"
 	"encoding/json"
 	"fmt"
@@ -100,8 +99,9 @@ func GetMsgRange(c *goweb.Context, d *mgo.Database) {
 		msgQuery.All(&msgs)
 
 		msgBytes, _ := json.Marshal(msgs)
-		buf := bytes.NewBuffer(msgBytes)
-		fmt.Fprintf(c.ResponseWriter, "%s", buf.String())
+		c.ResponseWriter.Write(msgBytes)
+		//buf := bytes.NewBuffer(msgBytes)
+		//fmt.Fprintf(c.ResponseWriter, "%s", buf.String())
 }
 
 func GetOneMsg(c *goweb.Context, d *mgo.Database) {
@@ -118,8 +118,9 @@ func GetOneMsg(c *goweb.Context, d *mgo.Database) {
 
 		c.ResponseWriter.Header().Set("Last-Modified", mw.Timestamp)
 		msgBytes, _ := json.Marshal(mw.Content)
-		buf := bytes.NewBuffer(msgBytes)
-		fmt.Fprintf(c.ResponseWriter, "%s", buf.String())
+		c.ResponseWriter.Write(msgBytes)
+		//buf := bytes.NewBuffer(msgBytes)
+		//fmt.Fprintf(c.ResponseWriter, "%s", buf.String())
 }
 
 
@@ -143,19 +144,22 @@ func GetLastMsg(c *goweb.Context, d *mgo.Database) {
 
 
 	b,_ := json.Marshal(lastMsg)
-	fmt.Fprintf(c.ResponseWriter,"%s",bytes.NewBuffer(b).String())
+	c.ResponseWriter.Write(b)
+	//fmt.Fprintf(c.ResponseWriter,"%s",bytes.NewBuffer(b).String())
 }
 
 func dropPrivs(uid int) {
-	syscall.Setuid(uid)
+	if syscall.Getuid() == 0 {
+		fmt.Printf("Dropping privileges.")
+		syscall.Setuid(uid)
+	}
 }
 
-func validateHash(hash string) bool {
+func validateHash(hash string) {
 	match,_ := regexp.MatchString("^\\w{40}$",hash)
 	if !match {
 		panic("Invalid hash circle key.")
 	}
-	return true
 }
 
 func catchPanic(c *goweb.Context) {
@@ -203,30 +207,36 @@ func main() {
 	goweb.MapFunc("/{hash}/{id}", func(c *goweb.Context) {
 		defer catchPanic(c)
 		dropPrivs(uid)
+
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		s := session.Copy()
 		GetMsg(c, s.DB(db))
+		//fmt.Printf("uid: %d\n",syscall.Getuid())
 		s.Close()
 	})
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
 		defer catchPanic(c)
 		dropPrivs(uid)
+
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		s := session.Copy()
 		GetLastMsg(c, s.DB(db))
+		//fmt.Printf("uid: %d\n",syscall.Getuid())
 		s.Close()
 	}, goweb.GetMethod)
 
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
 		defer catchPanic(c)
 		dropPrivs(uid)
+
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("POST %s\n", c.Request.URL.String())
 		s := session.Copy()
 		PostMsg(c, s.DB(db))
+		//fmt.Printf("uid: %d\n",syscall.Getuid())
 		s.Close()
 	}, goweb.PostMethod)
 
