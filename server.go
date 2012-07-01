@@ -125,6 +125,7 @@ func GetMsgRange(c *goweb.Context, d *mgo.Database) {
 	msgQuery.All(&msgs)
 
 	msgBytes, _ := json.Marshal(msgs)
+	c.ResponseWriter.Header().Set("Content-Type", "application/json")
 	c.ResponseWriter.Write(msgBytes)
 }
 
@@ -142,6 +143,7 @@ func GetOneMsg(c *goweb.Context, d *mgo.Database) {
 
 	c.ResponseWriter.Header().Set("Last-Modified", mw.Timestamp)
 	msgBytes, _ := json.Marshal(mw.Content)
+	c.ResponseWriter.Header().Set("Content-Type", "application/json")
 	c.ResponseWriter.Write(msgBytes)
 }
 
@@ -162,6 +164,7 @@ func GetLastMsg(c *goweb.Context, d *mgo.Database) {
 	lastMsg := &LastMessage{LastMessage: mostRecent}
 
 	b, _ := json.Marshal(lastMsg)
+	c.ResponseWriter.Header().Set("Content-Type", "application/json")
 	c.ResponseWriter.Write(b)
 }
 
