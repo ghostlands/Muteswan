@@ -273,7 +273,8 @@ public class Main extends Activity implements Runnable {
 				MuteLog.Log(
 						"Main",
 						"We did not get a secret back for some reason when setting password, so setting hasGeneratedSecret to false");
-				finish();
+				//finish();
+				alertDialogs.noCipherSecretAvailable(finishButtonHandler);
 			} else {
 				defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
 			}
@@ -281,7 +282,7 @@ public class Main extends Activity implements Runnable {
 				"org.openintents.action.GET_PASSWORD")) {
 			MuteLog.Log("Main", "Get password failed with " + resultCode);
 			setSafeSecret();
-			alertDialogs.noCipherSecretAvailable(finishButtonHandler);
+			//alertDialogs.noCipherSecretAvailable(finishButtonHandler);
 			//finish();
 		}
 		

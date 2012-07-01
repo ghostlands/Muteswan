@@ -558,10 +558,11 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 				JSONObject jsonObj = jsonArray.getJSONObject(i);
 				JSONObject contentObj = jsonObj.getJSONObject("content");
 				String date = parseHttpDate(jsonObj.getString("timestamp"));
+				Integer id = jsonObj.getInt("Id");
 				MuteLog.Log("Circle", "Raw json: " + jsonString);
 				MuteLog.Log("Circle", "Got date: " + jsonObj.getString("timestamp"));
 				
-				MuteswanMessage msg = new MuteswanMessage(max,this,contentObj,date);
+				MuteswanMessage msg = new MuteswanMessage(id,this,contentObj,date);
 				msgs.add(msg);
 				max--;
 			}

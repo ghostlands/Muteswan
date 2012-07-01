@@ -690,6 +690,7 @@ public class NewMessageService extends Service {
 				}	
 			
 			try {
+				// note that if messages were expired you may not get all that you expect
 				msgs = circle.getMsgRangeFromTor(start,last);
 		
 				
@@ -762,6 +763,8 @@ public class NewMessageService extends Service {
 					circle.saveMsgToDb(id, msg.getDate(), msg.getMsg());
 					linkedQueue.remove(circle);
 					return(0);
+				} else {
+					MuteLog.Log("NewMessageService", "Message " + id + " not found.");
 				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();

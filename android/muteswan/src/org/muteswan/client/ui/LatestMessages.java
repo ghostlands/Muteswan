@@ -657,7 +657,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 			 String dateString = RelativeDateFormat.format(msg.getDateObj());
 			 if (dateString == null)
 				 dateString = df.format(msg.getDateObj());
-			 txtDate.setText(dateString);
+			 if (verbose) {
+			   txtDate.setText(dateString + "(" + msg.getId() + ")");
+			 } else {
+				 txtDate.setText(dateString);
+			 }
 			 
 			 
       		  txtMessage.setText(msg.getMsg());
@@ -1094,11 +1098,7 @@ final Handler stopSpinningHandler = new Handler() {
 					
 					msg = r.getMsgFromDb(i.toString(),true);
 					
-					if (msg == null) {
-						stopSpinningHandler.sendEmptyMessage(0);
-						Log.e("LatestMessages", "Message " + i + " is still null after downloading it from service!");
-						return;
-					}
+					
 			
 					
 					// if we are interrupted, don't update msgs because we don't know what is going on
@@ -1107,8 +1107,13 @@ final Handler stopSpinningHandler = new Handler() {
 		    		}
 				
 				    //msg.verifySignatures(idStore);
-					
-					 msgs.add(msg);	
+					if (msg == null) {
+						//stopSpinningHandler.sendEmptyMessage(0);
+						Log.e("LatestMessages", "Message " + i + " is still null after downloading it from service!");
+						//return;
+					} else {
+					 msgs.add(msg);
+					}
 					
 				
 				    // stop spinning if we are not refreshing to show we are done
