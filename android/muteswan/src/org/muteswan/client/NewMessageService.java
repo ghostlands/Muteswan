@@ -687,7 +687,7 @@ public class NewMessageService extends Service {
 						}
 					}
 					linkedQueue.add(circle);
-				}	
+				}
 			
 			try {
 				// note that if messages were expired you may not get all that you expect
@@ -702,13 +702,29 @@ public class NewMessageService extends Service {
 				}
 				MuteLog.Log("NewMessageService", "We got " + msgs.size() + " downloaded.");
 				
+				
+				
 				for (MuteswanMessage msg : msgs) {
-					MuteLog.Log("NewMessageService", "I am " + Thread.currentThread() + " downloading " + msg.getId());
 				
 					if (msg != null) {
 						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getRawJSON());
 					}
+				
 				}
+				
+				// 970-960
+				// start - last = 10
+				// msgs.size() = 4
+				// msgSizeDelta = 6
+				int msgSizeDelta = (start+1 - last) - msgs.size();
+				if (msgSizeDelta > 0) {
+					for (int i=last-1; ((start+1 - i) - msgs.size()) > 0; i++) {
+						MuteLog.Log("NewMessageService", "Saving empty message for id " + i);
+						circle.saveEmptyMsg(i);
+					}
+					
+				}
+				
 				linkedQueue.remove(circle);
 				return 0;	
 				

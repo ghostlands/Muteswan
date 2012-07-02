@@ -532,6 +532,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
     	HttpResponse resp = muteswanHttp.execute(httpGet);
     	MuteLog.Log("Circle", "Fetched message " + id);
     	
+    	//BOOK
+    	
     	return(parseMsgFromTor(id,resp));
     	
 	}
@@ -552,6 +554,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 			return null;
 		}
 		
+		
+		
 		try {
 			JSONArray jsonArray = new JSONArray(jsonString);
 			for (int i = 0; i<jsonArray.length();i++) {
@@ -568,6 +572,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 			}
 		} catch (JSONException e) {
 			MuteLog.Log("Circle", "getMsgRangeFromTor(): jsonString is not parseable: " + jsonString);
+			if (jsonString.equals("null"))
+				return msgs;
 			return null;
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
@@ -1026,7 +1032,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 	}
 	
-	public MuteswanMessage getMsgFromDb(String circleHash, String id) {
+	private MuteswanMessage getMsgFromDb(String circleHash, String id) {
 		MuteswanMessage msg = null;
 		
 		if (Thread.currentThread().isInterrupted())
@@ -1048,7 +1054,9 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 		MuteLog.Log("Circle", "Got json data: " + jsonData);
 		
-		
+		if (jsonData.length() == 0) {
+			return new MuteswanMessage();
+		}
 		
 		
 		JSONObject jsonObj = null;
@@ -1092,6 +1100,11 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 	}
 	
+	public void saveEmptyMsg(Integer id) {
+		File msgPath = new File(getStorePath() + "/" + id);
+		MuteLog.Log("Circle","Saving empty message.");
+		writeFileContent(msgPath,"");
+	}
 	
 	public void saveMsgToDb(Integer id, String date, String msgContent) {
 		

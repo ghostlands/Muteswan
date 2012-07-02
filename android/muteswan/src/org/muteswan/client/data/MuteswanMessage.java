@@ -60,6 +60,9 @@ public class MuteswanMessage {
 	private String base64IVData;
 
 
+	public MuteswanMessage() {
+		
+	}
 	public MuteswanMessage(Circle circle, Integer id, String date, String msg, String rawMsg) {
 		this.date = date;
 		this.circle = circle;
@@ -253,7 +256,11 @@ public class MuteswanMessage {
 	}
 
 	public String getId() {
-		return id.toString();
+		if (id != null) {
+		  return id.toString();
+		} else {
+			return null;
+		}
 	}
 	
 }

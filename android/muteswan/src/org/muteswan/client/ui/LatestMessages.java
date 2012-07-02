@@ -1111,7 +1111,7 @@ final Handler stopSpinningHandler = new Handler() {
 						//stopSpinningHandler.sendEmptyMessage(0);
 						Log.e("LatestMessages", "Message " + i + " is still null after downloading it from service!");
 						//return;
-					} else {
+					} else if (msg.getId() != null) {
 					 msgs.add(msg);
 					}
 					
@@ -1120,15 +1120,16 @@ final Handler stopSpinningHandler = new Handler() {
 				    if (!refreshing)
 					   stopSpinningHandler.sendEmptyMessage(0);
 				
-			} else {
+			
+			} else if (msg.getId() != null){
 				// if we are interrupted, don't update msgs because we don't know what is going on
 				if (Thread.currentThread().isInterrupted()) {
 	    			return;
 	    		}
 				
+				MuteLog.Log("LatestMessages", "Added message " + msg.getId());
 			    msgs.add(msg);	
-				
-				
+					
 			}
 
 
