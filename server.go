@@ -16,7 +16,6 @@ import (
 	"time"
 )
 
-
 // types
 type Msg struct {
 	Iv      string `json:"iv,omitempty"`
@@ -24,9 +23,10 @@ type Msg struct {
 }
 
 type MsgWrap struct {
-	Content   Msg    `json:"content"`
-	Timestamp string `json:"timestamp"`
-	Id        int    `bson:"_id"`
+	Content   Msg       `json:"content"`
+	Timestamp string    `json:"timestamp"`
+	Time      time.Time `json:"-"`
+	Id        int       `bson:"_id"`
 }
 
 type Counter struct {
@@ -76,14 +76,16 @@ func validateHash(hash string) {
 	}
 }
 
-func catchPanic(c *goweb.Context) {
+func catchPanic(c *goweb.Context, s *mgo.Session) {
 
 	if r := recover(); r != nil {
 		fmt.Printf("%s\n", r)
+		s.Close()
 		goweb.AddFormatter(&goweb.JsonFormatter{})
 		c.RespondWithError(400)
 		recover()
 	}
+	s.Close()
 }
 
 // handler functions
@@ -96,7 +98,8 @@ func PostMsg(c *goweb.Context, d *mgo.Database) {
 	json.Unmarshal(body, &m)
 	mw.Content = m
 	mw.Id = updateCounter(c.PathParams["hash"], d)
-	mw.Timestamp = time.Now().Format(time.RFC1123)
+	mw.Time = time.Now()
+	mw.Timestamp = mw.Time.Format(time.RFC1123)
 	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 	col.Insert(mw)
 }
@@ -168,10 +171,41 @@ func GetLastMsg(c *goweb.Context, d *mgo.Database) {
 	c.ResponseWriter.Write(b)
 }
 
+// expire goroutine
+func ExpireMessageLoop(d *mgo.Database) {
+	for true {
+		fmt.Printf("Searching for expired messages...\n")
+		collections, _ := d.CollectionNames()
+		for _, collection := range collections {
+			if !strings.HasPrefix(collection, "C") {
+				continue
+			}
+
+			var msgs []MsgWrap
+			fmt.Printf("Expiring %s\n", collection)
+			col := d.C(collection)
+
+			// 3  months old and they are gone
+			delBoundary := time.Now().Add(-time.Hour * 2160)
+			msgQuery := col.Find(bson.M{"time": bson.M{"$lte": delBoundary}})
+			msgQuery.All(&msgs)
+
+			for _, msgW := range msgs {
+				fmt.Printf("Deleted id %d timestamp %s\n", msgW.Id, msgW.Timestamp)
+				err := col.Remove(bson.M{"_id": msgW.Id})
+				if err != nil {
+					fmt.Printf("Error expiring %d in %s.", msgW.Id, collection)
+					continue
+				}
+			}
+
+		}
+		time.Sleep(time.Hour)
+	}
+}
 
 func main() {
 
-	//fmt.Printf("Max procs: %d\n", runtime.GOMAXPROCS(8))
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	var (
@@ -199,44 +233,43 @@ func main() {
 
 	session.SetMode(mgo.Monotonic, true)
 
+	go ExpireMessageLoop(session.DB(db))
+
 	// fetch a message, or a message range
 	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200
 	// or   GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200-190
 	goweb.MapFunc("/{hash}/{id}", func(c *goweb.Context) {
-		defer catchPanic(c)
+		s := session.Copy()
+		defer catchPanic(c, s)
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
-		s := session.Copy()
 		GetMsg(c, s.DB(db))
-		s.Close()
 	})
 
 	// Get the last message in the circle
 	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		defer catchPanic(c)
+		s := session.Copy()
+		defer catchPanic(c, s)
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
-		s := session.Copy()
 		GetLastMsg(c, s.DB(db))
-		s.Close()
 	}, goweb.GetMethod)
 
 	// POST a new message to a circle
 	// e.g. POST /1e7db1c00e4036d9ea426e5875c355184578ab2d
 	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		defer catchPanic(c)
+		s := session.Copy()
+		defer catchPanic(c, s)
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("POST %s\n", c.Request.URL.String())
-		s := session.Copy()
 		PostMsg(c, s.DB(db))
-		s.Close()
 	}, goweb.PostMethod)
 
 	goweb.ListenAndServe(fmt.Sprintf("%s:%d", ip, port))
