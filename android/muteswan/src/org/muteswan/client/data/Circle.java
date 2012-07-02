@@ -538,15 +538,19 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
     	
 	}
 	
-	public ArrayList<MuteswanMessage> getMsgRangeFromTor(int max, int min) throws ClientProtocolException, IOException, InterruptedIOException {
+	public HashMap<Integer,MuteswanMessage> getMsgRangeFromTor(int max, int min) throws ClientProtocolException, IOException, InterruptedIOException {
 
-		ArrayList<MuteswanMessage> msgs = new ArrayList<MuteswanMessage>();
+		HashMap<Integer,MuteswanMessage> msgs = new HashMap<Integer,MuteswanMessage>();
 		
 		HttpGet httpGet = new HttpGet("http://" + server + "/" + keyHash + "/" + max + "-" + min);
 		MuteLog.Log("Circle", "Fetching messages " + max + " to " + min);
     	HttpResponse resp = muteswanHttp.execute(httpGet);
 		MuteLog.Log("Circle", "Fetched messages " + max + " to " + min);
 
+		for (int i=min; i<=max; i++) {
+			MuteLog.Log("Circle", "Initialized hashmap " + i);
+			msgs.put(i, null);
+		}
 		
 		String jsonString = EntityUtils.toString(resp.getEntity());
 		if (jsonString == null) {
@@ -567,7 +571,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 				MuteLog.Log("Circle", "Got date: " + jsonObj.getString("timestamp"));
 				
 				MuteswanMessage msg = new MuteswanMessage(id,this,contentObj,date);
-				msgs.add(msg);
+				msgs.put(id,msg);
 				max--;
 			}
 		} catch (JSONException e) {
@@ -1102,7 +1106,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	
 	public void saveEmptyMsg(Integer id) {
 		File msgPath = new File(getStorePath() + "/" + id);
-		MuteLog.Log("Circle","Saving empty message.");
+		MuteLog.Log("Circle","Saving empty message " + id);
 		writeFileContent(msgPath,"");
 	}
 	

@@ -667,7 +667,7 @@ public class NewMessageService extends Service {
 	
 		private int downloadMsgRangeFromTor(Circle circle, int start, int last) throws RemoteException {
 			
-			ArrayList<MuteswanMessage> msgs;
+			HashMap<Integer,MuteswanMessage> msgs;
 			
 			if (last <= 0)
 				last = 1;
@@ -704,10 +704,13 @@ public class NewMessageService extends Service {
 				
 				
 				
-				for (MuteswanMessage msg : msgs) {
+				for (Integer id : msgs.keySet()) {
 				
+					MuteswanMessage msg = msgs.get(id);
 					if (msg != null) {
 						circle.saveMsgToDb(Integer.parseInt(msg.getId()), msg.getDate(), msg.getRawJSON());
+					} else {
+						circle.saveEmptyMsg(id);
 					}
 				
 				}
@@ -716,14 +719,14 @@ public class NewMessageService extends Service {
 				// start - last = 10
 				// msgs.size() = 4
 				// msgSizeDelta = 6
-				int msgSizeDelta = (start+1 - last) - msgs.size();
-				if (msgSizeDelta > 0) {
-					for (int i=last-1; ((start+1 - i) - msgs.size()) > 0; i++) {
-						MuteLog.Log("NewMessageService", "Saving empty message for id " + i);
-						circle.saveEmptyMsg(i);
-					}
+				//int msgSizeDelta = (start+1 - last) - msgs.size();
+				//if (msgSizeDelta > 0) {
+				//	for (int i=last-1; ((start+1 - i) - msgs.size()) > 0; i++) {
+				//		MuteLog.Log("NewMessageService", "Saving empty message for id " + i);
+				//		circle.saveEmptyMsg(i);
+				//	}
 					
-				}
+				//}
 				
 				linkedQueue.remove(circle);
 				return 0;	
