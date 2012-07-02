@@ -471,7 +471,9 @@ public class Main extends Activity implements Runnable {
 		} else if (item.toString().equals("About")) {
 			showAbout();
 		} else if (item.toString().equals("Settings")) {
-			startActivity(new Intent(this, Preferences.class));
+			Intent intent = new Intent(this, Preferences.class);
+			intent.putExtra("secret", cipherSecret);
+			startActivity(intent);
 			return true;
 		}
 

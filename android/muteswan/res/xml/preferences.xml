@@ -17,9 +17,11 @@
 	            />
 <CheckBoxPreference android:title="Use public server" android:summary="Use the public default server, circles.muteswan.org. Faster, less secure." android:key="usePublicServer"></CheckBoxPreference>
 <CheckBoxPreference android:title="Allow Manual Joining" android:summary="Joins circles by entering circle text directly. Note: potential security risk." android:key="allowManualJoining"></CheckBoxPreference>
+<Preference android:title="Wipe Message Data"
+                android:summary="Clean message data."
+                android:key="cleanData" />
 </PreferenceCategory>
 	 
-
 
 
 <PreferenceCategory android:title="Interface Settings">

@@ -20,28 +20,41 @@ package org.muteswan.client.ui;
 import org.muteswan.client.NewMessageReceiver;
 import org.muteswan.client.R;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 import org.muteswan.client.MuteLog;
+import org.muteswan.client.data.Circle;
+import org.muteswan.client.data.CircleStore;
 
 
 public class Preferences extends PreferenceActivity {
+
+	private Bundle extra;
+	private String cipherSecret;
+
+
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(org.muteswan.client.R.xml.preferences);
 			
+		extra = getIntent().getExtras();
+        cipherSecret = extra.getString("secret");
 		
 		 Preference backgroundMsgCheckP = (Preference) this.findPreference("backgroundMessageCheck");
          backgroundMsgCheckP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -87,6 +100,37 @@ public class Preferences extends PreferenceActivity {
             	 
              }
          });
+         
+         Preference cleanData = (Preference) this.findPreference("cleanData");
+         cleanData.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+			@Override
+			public boolean onPreferenceClick(Preference arg0) {
+				MuteLog.Log("Preferences", "Clean data pressed!");
+				
+				AlertDialog.Builder wipeDataDialog = new AlertDialog.Builder(Preferences.this);
+			    wipeDataDialog.setTitle("Wipe Message Data?");
+			    wipeDataDialog.setMessage("This will delete all message data. Your circles will still be saved, but you need to download any new messages.");
+			    wipeDataDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+			    	public void onClick(DialogInterface dialogInterface, int i) {
+			    		 CircleStore store = new CircleStore(cipherSecret,getApplicationContext(),true,false);
+			    		for (Circle c : store) {
+			    			c.deleteAllMessages(true);
+			    		}
+				      }
+			      
+			    });
+			    wipeDataDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+			      public void onClick(DialogInterface dialogInterface, int i) {}
+			    });
+			    wipeDataDialog.create();
+			    wipeDataDialog.show();
+				
+				return true;
+			}
+        	 
+         });
+       
          
          Preference checkMsgIntervalP = (Preference) this.findPreference("checkMsgInterval");
          checkMsgIntervalP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
