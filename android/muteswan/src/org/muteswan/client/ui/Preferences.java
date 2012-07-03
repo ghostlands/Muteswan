@@ -36,6 +36,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 import org.muteswan.client.MuteLog;
 import org.muteswan.client.data.Circle;
@@ -70,9 +71,9 @@ public class Preferences extends PreferenceActivity {
                                                          R.string.n_check_service_enabled,
                                                          Toast.LENGTH_LONG).show();
                                 	     } else {
-                                	    	 Boolean keepSecret = defPrefs.getBoolean("keepsecret", true);
-                                	    	 if (!keepSecret)
-                                	    			 defPrefs.edit().remove("cipherSecret").commit();
+                                	    	 //Boolean keepSecret = defPrefs.getBoolean("keepsecret", true);
+                                	    	 //if (!keepSecret)
+                                	    	 //		 defPrefs.edit().remove("cipherSecret").commit();
                                 	    	 Toast.makeText(getBaseContext(),
                                                      R.string.n_check_service_disabled,
                                                      Toast.LENGTH_LONG).show();
@@ -88,11 +89,14 @@ public class Preferences extends PreferenceActivity {
          useOISafe.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
              public boolean onPreferenceChange(Preference preference, Object pref) {
             	boolean useoisafe = (Boolean) pref;
+            	
         	 	final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         	 	
         	 	if (useoisafe == true) {
+        	 		//defPrefs.edit().putBoolean("useoisafe", false);
         	 		defPrefs.edit().putBoolean("keepsecret", false).commit();
         	 	} else {
+        	 		//defPrefs.edit().putBoolean("useoisafe", true);
         	 		defPrefs.edit().putBoolean("keepsecret", true).commit();
         	 	}
 

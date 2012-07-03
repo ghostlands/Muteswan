@@ -237,24 +237,29 @@ public class Main extends Activity implements Runnable {
 			
 			
 			
-			boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
+			//boolean backgroundMessageCheck = defPrefs.getBoolean("backgroundMessageCheck", false);
 			boolean keepSecret = defPrefs.getBoolean("keepsecret", false);
 			
 			// this means we got the secret from oisafe and it is the same as
 			// currently stored one. this means we are good, and we can remove the
 			// cipherSecret from the preferences. now we are safe.
-			if (!backgroundMessageCheck && !keepSecret
+			if (!keepSecret
 					&& cipherSecret != null && cipherSecret.equals(secret)) {
 			   defPrefs.edit().remove("cipherSecret").commit();
 			   MuteLog.Log("Main", "Cipher secret is synced with oi safe and removed from muteswan.");
+			   MuteLog.Log("Main", "Ciphers old: " + cipherSecret + " new: " + secret);
 			// store the secret if we are supposed to
 			} else if (keepSecret && secret != null) {
 			   defPrefs.edit().putString("cipherSecret",secret).commit();
+				
+			} else if (secret != null && cipherSecret != null && !cipherSecret.equals("secret")) {
+				MuteLog.Log("Main", "Cipher is different, we should reset it. old: " + cipherSecret + " new: " + secret);
+				setSafeSecret();
 			}
 			
 			if (cipherSecret == null) {
 				  cipherSecret = secret;
-				  MuteLog.Log("Main", "Set SQL cipher!!");
+				  MuteLog.Log("Main", "Set cipher!!");
 			}
 			
 		
@@ -344,6 +349,12 @@ public class Main extends Activity implements Runnable {
 		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 		
 		
+
+		boolean firstRun = defPrefs.getBoolean("firstrun", true);
+		if (firstRun) {
+				firstRunInit(defPrefs);
+		}
+		
 		// if we are supposed to use oi safe, get the secret
 		// even if we aren't supposed to use oisafe, if we don't
 		// have a secret in prefs we have no other choice, so try
@@ -353,18 +364,14 @@ public class Main extends Activity implements Runnable {
 	      getSafeSecret();
 		} else if (cipherSecret == null) {
 		  getSafeSecret();
-		  defPrefs.edit().putBoolean("keepsecret", true).commit();
-		} else {
-		  defPrefs.edit().putBoolean("keepsecret", true).commit();
-		}
+		  //defPrefs.edit().putBoolean("keepsecret", true).commit();
+		} //else {
+		  //defPrefs.edit().putBoolean("keepsecret", true).commit();
+		  //}
 		
 		
 		
 		
-		boolean firstRun = defPrefs.getBoolean("firstrun", true);
-		if (firstRun) {
-				firstRunInit(defPrefs);
-		}
 
 		
 
@@ -397,6 +404,18 @@ public class Main extends Activity implements Runnable {
 		if (versionNameString != null)
 			versionName.setText(versionNameString);
 
+		
+		
+		String storedCipherSecret = defPrefs.getString("cipherSecret", null);
+		if (storedCipherSecret == null) {
+			final TextView noStoredSecret = (TextView) findViewById(R.id.noStoredSecret);
+			noStoredSecret.setText("SECURE");
+		} else {
+			final TextView noStoredSecret = (TextView) findViewById(R.id.noStoredSecret);
+			noStoredSecret.setText("INSECURE");
+		}
+		
+		
 
 	}
 

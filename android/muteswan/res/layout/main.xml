@@ -56,6 +56,19 @@
 
     </RelativeLayout>
 
+     <TextView
+     android:id="@+id/noStoredSecret"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text=""
+     android:textSize="12sp"
+   
+     android:layout_alignParentLeft="true"
+     android:layout_alignParentBottom="true"
+     android:textColor="#cccccccc"
+     
+     />
+    
     <TextView
      android:id="@+id/versionName"
      android:layout_width="wrap_content"
