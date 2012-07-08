@@ -38,6 +38,117 @@ type LastMessage struct {
 	LastMessage int `json:"lastMessage"`
 }
 
+type MtsnStore interface {
+	GetMsg(id int) (MsgWrap, error)
+	GetMsgs(top int, bottom int) ([]MsgWrap, error)
+	GetLastMsg() (LastMessage, error)
+	PostMsg(msgw MsgWrap) error
+}
+
+type MongoStore struct {
+	Circle string
+	Db *mgo.Database
+}
+
+type FileStore struct {
+	Circle string
+	Db *mgo.Database
+}
+
+func (ms *MongoStore) GetMsg(id int) (MsgWrap, error) {
+	var mw MsgWrap
+        col := ms.Db.C("C" + ms.Circle)
+
+        err := col.Find(bson.M{"_id": id}).One(&mw)
+        if err != nil {
+                fmt.Printf("Error fetching %s: %s", id, err)
+		return mw, err
+        }
+
+	return mw, nil
+}
+
+func (ms *MongoStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
+	var msgs []MsgWrap
+
+        if bottom > top {
+                return msgs,nil
+        }
+
+        col := ms.Db.C("C" + ms.Circle)
+        msgQuery := col.Find(bson.M{"_id": bson.M{"$gte": bottom, "$lte": top}}).Sort("-_id")
+        err := msgQuery.All(&msgs)
+
+	if err != nil {
+		return msgs, err
+	}
+
+	return msgs,nil
+}
+
+func (ms *MongoStore) GetLastMsg() (LastMessage, error) {
+        var lastMessage LastMessage
+        mostRecent := getCounter(ms.Circle, ms.Db)
+        lastMessage = LastMessage{LastMessage: mostRecent}
+	return lastMessage,nil
+}
+
+func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
+
+        msgw.Id = updateCounter(ms.Circle,ms.Db)
+        msgw.Time = time.Now()
+        msgw.Timestamp = msgw.Time.Format(time.RFC1123)
+        msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
+
+
+        col := ms.Db.C(ms.Circle)
+        err := col.Insert(msgw)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
+        var mw MsgWrap
+        return mw,nil
+}
+
+func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
+        var msgs []MsgWrap
+        return msgs,nil
+}
+
+func (ms *FileStore) GetLastMsg() (LastMessage, error) {
+        var lastMessage LastMessage
+
+        //path := fmt.Sprintf("/home/junger/gowebtest/muteswansrv-hidden/data/%s", ms.Circle)
+        //dir,_ := os.Open(path)
+        //files,_ := dir.Readdirnames(10000)
+        //var mostRecent int
+        //for i := range files {
+        //        id,_ := strconv.Atoi(files[i])
+        //        if id > mostRecent {
+        //                mostRecent = id
+        //        }
+//
+ //       }
+  //      return(mostRecent)
+
+
+
+	return lastMessage,nil
+}
+
+func (ms *FileStore) PostMsg(msgw MsgWrap) error {
+	return nil
+}
+
+
+
 // utility functions
 func updateCounter(id string, d *mgo.Database) int {
 	var counter Counter
@@ -89,22 +200,22 @@ func catchPanic(c *goweb.Context, s *mgo.Session) {
 }
 
 // handler functions
-func PostMsg(c *goweb.Context, d *mgo.Database) {
+func PostMsg(c *goweb.Context, store MtsnStore) {
 	var m Msg
 	var mw MsgWrap
 
-	col := d.C("C" + c.PathParams["hash"])
 	body, _ := ioutil.ReadAll(c.Request.Body)
 	json.Unmarshal(body, &m)
 	mw.Content = m
-	mw.Id = updateCounter(c.PathParams["hash"], d)
-	mw.Time = time.Now()
-	mw.Timestamp = mw.Time.Format(time.RFC1123)
-	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
-	col.Insert(mw)
+	err := store.PostMsg(mw)
+	if err != nil {
+		goweb.AddFormatter(&goweb.JsonFormatter{})
+		c.RespondWithStatus(500)
+		return
+	}
 }
 
-func GetMsgRange(c *goweb.Context, d *mgo.Database) {
+func GetMsgRange(c *goweb.Context, store MtsnStore) {
 	ids := strings.Split(c.PathParams["id"], "-")
 	top, _ := strconv.Atoi(ids[0])
 	bottom, _ := strconv.Atoi(ids[1])
@@ -122,23 +233,25 @@ func GetMsgRange(c *goweb.Context, d *mgo.Database) {
 		return
 	}
 
-	var msgs []MsgWrap
-	col := d.C("C" + c.PathParams["hash"])
-	msgQuery := col.Find(bson.M{"_id": bson.M{"$gte": bottom, "$lte": top}}).Sort("-_id")
-	msgQuery.All(&msgs)
+	msgs,err := store.GetMsgs(top,bottom)
+
+	if err != nil {
+		goweb.AddFormatter(&goweb.JsonFormatter{})
+		c.RespondWithStatus(500)
+		return
+	}
 
 	msgBytes, _ := json.Marshal(msgs)
 	c.ResponseWriter.Header().Set("Content-Type", "application/json")
 	c.ResponseWriter.Write(msgBytes)
 }
 
-func GetOneMsg(c *goweb.Context, d *mgo.Database) {
-	var mw MsgWrap
-	col := d.C("C" + c.PathParams["hash"])
+func GetOneMsg(c *goweb.Context, store MtsnStore) {
 	id, _ := strconv.Atoi(c.PathParams["id"])
-	err := col.Find(bson.M{"_id": id}).One(&mw)
+
+	mw,err := store.GetMsg(id)
+
 	if err != nil {
-		fmt.Printf("Error fetching %s: %s", c.PathParams["hash"], err)
 		goweb.AddFormatter(&goweb.JsonFormatter{})
 		c.RespondWithNotFound()
 		return
@@ -150,22 +263,20 @@ func GetOneMsg(c *goweb.Context, d *mgo.Database) {
 	c.ResponseWriter.Write(msgBytes)
 }
 
-func GetMsg(c *goweb.Context, d *mgo.Database) {
+func GetMsg(c *goweb.Context, store MtsnStore) {
 
 	if strings.Contains(c.PathParams["id"], "-") {
-		GetMsgRange(c, d)
+		GetMsgRange(c, store)
 	} else {
-		GetOneMsg(c, d)
+		GetOneMsg(c, store)
 	}
 
 }
 
-func GetLastMsg(c *goweb.Context, d *mgo.Database) {
+func GetLastMsg(c *goweb.Context, store MtsnStore) {
 
-	mostRecent := getCounter(c.PathParams["hash"], d)
 
-	lastMsg := &LastMessage{LastMessage: mostRecent}
-
+	lastMsg,_ := store.GetLastMsg()
 	b, _ := json.Marshal(lastMsg)
 	c.ResponseWriter.Header().Set("Content-Type", "application/json")
 	c.ResponseWriter.Write(b)
@@ -244,8 +355,11 @@ func main() {
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
+		mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+
+
 		fmt.Printf("GET %s\n", c.Request.URL.String())
-		GetMsg(c, s.DB(db))
+		GetMsg(c, mongoStore)
 	})
 
 	// Get the last message in the circle
@@ -256,8 +370,9 @@ func main() {
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
+		mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
 		fmt.Printf("GET %s\n", c.Request.URL.String())
-		GetLastMsg(c, s.DB(db))
+		GetLastMsg(c, mongoStore)
 	}, goweb.GetMethod)
 
 	// POST a new message to a circle
@@ -268,8 +383,9 @@ func main() {
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
+		mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
 		fmt.Printf("POST %s\n", c.Request.URL.String())
-		PostMsg(c, s.DB(db))
+		PostMsg(c, mongoStore)
 	}, goweb.PostMethod)
 
 	goweb.ListenAndServe(fmt.Sprintf("%s:%d", ip, port))
