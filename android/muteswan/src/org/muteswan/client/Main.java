@@ -169,8 +169,11 @@ public class Main extends Activity implements Runnable {
 		IntentFilter intentFilter = new IntentFilter(Main.TOR_NOT_AVAILABLE);
 		registerReceiver(torNotAvailableReceiver, intentFilter);
 
-		// callSafeGetSecret();
-
+		
+		if (cipherSecret == null) {
+			getSafeSecret();
+		} 
+		
 	}
 
 	public void onDestroy() {
@@ -279,9 +282,10 @@ public class Main extends Activity implements Runnable {
 						"Main",
 						"We did not get a secret back for some reason when setting password, so setting hasGeneratedSecret to false");
 				//finish();
-				alertDialogs.noCipherSecretAvailable(finishButtonHandler);
+				//alertDialogs.noCipherSecretAvailable(finishButtonHandler);
 			} else {
 				defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
+				
 			}
 		} else if (intent != null && intent.getAction().equals(
 				"org.openintents.action.GET_PASSWORD")) {
@@ -293,10 +297,10 @@ public class Main extends Activity implements Runnable {
 		
 		
 		// if we do not have a cipherSecret after all this we are stewed and need to notify the user of that reality.
-		if (cipherSecret == null) {
-			alertDialogs.noCipherSecretAvailable(finishButtonHandler);
+		//if (cipherSecret == null) {
+			//alertDialogs.noCipherSecretAvailable(finishButtonHandler);
 			//finish();
-		}
+		//}
 		
 	}
 
@@ -355,19 +359,7 @@ public class Main extends Activity implements Runnable {
 				firstRunInit(defPrefs);
 		}
 		
-		// if we are supposed to use oi safe, get the secret
-		// even if we aren't supposed to use oisafe, if we don't
-		// have a secret in prefs we have no other choice, so try
-		// to get it. otherwise we just save the secret if we
-		// should
-		if (useoisafe) {
-	      getSafeSecret();
-		} else if (cipherSecret == null) {
-		  getSafeSecret();
-		  //defPrefs.edit().putBoolean("keepsecret", true).commit();
-		} //else {
-		  //defPrefs.edit().putBoolean("keepsecret", true).commit();
-		  //}
+		
 		
 		
 		
@@ -384,6 +376,20 @@ public class Main extends Activity implements Runnable {
 		
 
 		setContentView(R.layout.main);
+		
+		
+		// if we are supposed to use oi safe, get the secret
+		// even if we aren't supposed to use oisafe, if we don't
+		// have a secret in prefs we have no other choice, so try
+		// to get it. otherwise we just save the secret if we
+		// should
+		if (useoisafe) {
+			getSafeSecret();
+		} else if (cipherSecret == null) {
+			getSafeSecret();
+		}
+				
+		
 
 		final ImageView mLatestMessagesButton = (ImageView) findViewById(R.id.mLatestMessages);
 		mLatestMessagesButton.setOnClickListener(mLatestMessages);
