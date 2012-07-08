@@ -172,7 +172,15 @@ public class Main extends Activity implements Runnable {
 		
 		if (cipherSecret == null) {
 			getSafeSecret();
-		} 
+		}
+		
+		SharedPreferences defPrefs = PreferenceManager
+				.getDefaultSharedPreferences(getApplicationContext());
+		String storedCipherSecret = defPrefs.getString("cipherSecret", null);
+		if (storedCipherSecret == null) {
+			final ImageView noStoredSecret = (ImageView) findViewById(R.id.noStoredSecret);
+			noStoredSecret.setImageResource(android.R.drawable.ic_secure);
+		}
 		
 	}
 
@@ -412,14 +420,7 @@ public class Main extends Activity implements Runnable {
 
 		
 		
-		String storedCipherSecret = defPrefs.getString("cipherSecret", null);
-		if (storedCipherSecret == null) {
-			final TextView noStoredSecret = (TextView) findViewById(R.id.noStoredSecret);
-			noStoredSecret.setText("SECURE");
-		} else {
-			final TextView noStoredSecret = (TextView) findViewById(R.id.noStoredSecret);
-			noStoredSecret.setText("INSECURE");
-		}
+		
 		
 		
 

@@ -1153,10 +1153,6 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	}
 	
 	
-	
-	
-	
-	
 
 	@Override
 	public String toString() {
@@ -1168,6 +1164,11 @@ public void deleteAllMessages(boolean closedb) {
 		File msgPath = getStorePath();
 		
 		File[] fileList = msgPath.listFiles();
+		
+		MuteLog.Log("Circle", "msgpath is " + msgPath);
+		if (fileList == null)
+			return;
+		
 		for (int i=0; i<fileList.length;i++) {
 			fileList[i].delete();
 		}
