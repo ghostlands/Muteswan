@@ -14,6 +14,9 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"os"
+	"bufio"
+	"bytes"
 )
 
 // types
@@ -52,7 +55,7 @@ type MongoStore struct {
 
 type FileStore struct {
 	Circle string
-	Db *mgo.Database
+	Datadir string
 }
 
 func (ms *MongoStore) GetMsg(id int) (MsgWrap, error) {
@@ -112,38 +115,94 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
 }
 
+func ReadFileContents(file *os.File) string {
+        reader := bufio.NewReader(file)
+        rawBytes, _ := ioutil.ReadAll(reader)
+        buffer := bytes.NewBuffer(rawBytes)
+        return (buffer.String())
+}
+
+
 func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
-        var mw MsgWrap
+
+        var (
+            file *os.File
+            path string
+            mw MsgWrap
+        )
+        path = fmt.Sprintf("%s/%s/%d", ms.Datadir,ms.Circle,id)
+        file, _ = os.Open(path)
+        stat, _ := file.Stat()
+
+        jsonBytes := []byte(ReadFileContents(file))
+	json.Unmarshal(jsonBytes,&mw.Content)
+	mw.Time = stat.ModTime()
+	mw.Timestamp = mw.Time.Format(time.RFC1123)
+	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
+
         return mw,nil
+
 }
 
 func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
         var msgs []MsgWrap
+
+        if bottom > top {
+             return msgs,nil
+        }
+
+        for i := top; i >= bottom; i-- {
+              var m Msg
+              var mw MsgWrap
+              path := fmt.Sprintf("%s/%s/%d",ms.Datadir,ms.Circle,i)
+              file,err := os.Open(path)
+              if err != nil {
+                  return msgs, nil
+              }
+
+              jsonString := ReadFileContents(file)
+              bytes := []byte(jsonString)
+              err = json.Unmarshal(bytes, &m)
+              mw.Content = m
+
+              stat, _ := file.Stat()
+              mw.Timestamp = stat.ModTime().Format(time.RFC1123)
+              msgs = append(msgs,mw)
+        }
+
         return msgs,nil
 }
 
+
 func (ms *FileStore) GetLastMsg() (LastMessage, error) {
-        var lastMessage LastMessage
 
-        //path := fmt.Sprintf("/home/junger/gowebtest/muteswansrv-hidden/data/%s", ms.Circle)
-        //dir,_ := os.Open(path)
-        //files,_ := dir.Readdirnames(10000)
-        //var mostRecent int
-        //for i := range files {
-        //        id,_ := strconv.Atoi(files[i])
-        //        if id > mostRecent {
-        //                mostRecent = id
-        //        }
-//
- //       }
-  //      return(mostRecent)
+        path := fmt.Sprintf("%s/%s",ms.Datadir, ms.Circle)
+        dir,_ := os.Open(path)
+        files,_ := dir.Readdirnames(10000)
+        var mostRecent int
+        for i := range files {
+                id,_ := strconv.Atoi(files[i])
+                if id > mostRecent {
+                        mostRecent = id
+                }
 
+        }
 
-
-	return lastMessage,nil
+	lastMsg := LastMessage{LastMessage : mostRecent}
+	return lastMsg,nil
 }
 
 func (ms *FileStore) PostMsg(msgw MsgWrap) error {
+
+        mostRecent,_ := ms.GetLastMsg()
+        msgId := mostRecent.LastMessage+1
+        filepath := fmt.Sprintf("%s/%s/%d",ms.Datadir,ms.Circle,msgId)
+        file,_ := os.Create(filepath)
+	msgBytes, _ := json.Marshal(msgw.Content)
+        wr := bufio.NewWriter(file)
+	wr.Write(msgBytes)
+        wr.Flush()
+
 	return nil
 }
 
@@ -323,11 +382,13 @@ func main() {
 		port int
 		ip   string
 		db   string
+		dbtype   string
 		uid  int
 	)
 	flag.IntVar(&port, "port", 80, "Port to bind on.")
 	flag.StringVar(&ip, "ip", "127.0.0.1", "IP to bind to")
 	flag.StringVar(&db, "db", "muteswan", "MongoDB database to use")
+	flag.StringVar(&dbtype, "dbtype", "mongo", "Database method to use, either mongo or file")
 	flag.IntVar(&uid, "uid", 1001, "User to drop privileges")
 	flag.Parse()
 
@@ -335,6 +396,7 @@ func main() {
 	fmt.Printf("IP is %s\n", ip)
 	fmt.Printf("DB is %s\n", db)
 	fmt.Printf("UID is %d\n", uid)
+	fmt.Printf("dbtype is %s\n", dbtype)
 
 	session, err := mgo.Dial("localhost")
 	if err != nil {
@@ -344,7 +406,9 @@ func main() {
 
 	session.SetMode(mgo.Monotonic, true)
 
-	go ExpireMessageLoop(session.DB(db))
+	if dbtype == "mongo" {
+		go ExpireMessageLoop(session.DB(db))
+	}
 
 	// fetch a message, or a message range
 	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200
@@ -355,11 +419,16 @@ func main() {
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
-		mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
 
 
 		fmt.Printf("GET %s\n", c.Request.URL.String())
-		GetMsg(c, mongoStore)
+		if dbtype == "mongo" {
+			mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+			GetMsg(c, mongoStore)
+		} else {
+			fileStore := &FileStore{Circle : c.PathParams["hash"], Datadir : db}
+			GetMsg(c, fileStore)
+		}
 	})
 
 	// Get the last message in the circle
@@ -370,9 +439,14 @@ func main() {
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
-		mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
 		fmt.Printf("GET %s\n", c.Request.URL.String())
-		GetLastMsg(c, mongoStore)
+		if dbtype == "mongo" {
+			mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+			GetLastMsg(c, mongoStore)
+		} else {
+			fileStore := &FileStore{Circle : c.PathParams["hash"], Datadir : db}
+			GetLastMsg(c, fileStore)
+		}
 	}, goweb.GetMethod)
 
 	// POST a new message to a circle
@@ -383,9 +457,14 @@ func main() {
 		dropPrivs(uid)
 
 		validateHash(c.PathParams["hash"])
-		mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
 		fmt.Printf("POST %s\n", c.Request.URL.String())
-		PostMsg(c, mongoStore)
+		if dbtype == "mongo" {
+			mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+			PostMsg(c, mongoStore)
+		} else {
+			fileStore := &FileStore{Circle : c.PathParams["hash"], Datadir : db}
+			PostMsg(c, fileStore)
+		}
 	}, goweb.PostMethod)
 
 	goweb.ListenAndServe(fmt.Sprintf("%s:%d", ip, port))
