@@ -41,6 +41,7 @@ type LastMessage struct {
 	LastMessage int `json:"lastMessage"`
 }
 
+
 type MtsnStore interface {
 	GetMsg(id int) (MsgWrap, error)
 	GetMsgs(top int, bottom int) ([]MsgWrap, error)
@@ -57,6 +58,30 @@ type FileStore struct {
 	Circle string
 	Datadir string
 }
+
+
+// mongodb implementation of MtsnStore
+func (ms *MongoStore) getCounter() int {
+	var counter Counter
+	col := ms.Db.C("counters")
+	err := col.Find(bson.M{"_id": "C" + ms.Circle}).One(&counter)
+	if err != nil {
+		return (0)
+	}
+	return counter.N
+}
+
+func (ms *MongoStore) updateCounter() int {
+	var counter Counter
+	col := ms.Db.C("counters")
+	change := mgo.Change{Update: bson.M{"$inc": bson.M{"n": 1}}, Remove: false, ReturnNew: true, Upsert: true}
+	_,err := col.Find(bson.M{"_id": "C" + ms.Circle}).Apply(change, &counter)
+	if err != nil {
+		panic("Failed to update counter")
+	}
+	return counter.N
+}
+
 
 func (ms *MongoStore) GetMsg(id int) (MsgWrap, error) {
 	var mw MsgWrap
@@ -91,30 +116,36 @@ func (ms *MongoStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
 
 func (ms *MongoStore) GetLastMsg() (LastMessage, error) {
         var lastMessage LastMessage
-        mostRecent := getCounter(ms.Circle, ms.Db)
+        mostRecent := ms.getCounter()
         lastMessage = LastMessage{LastMessage: mostRecent}
 	return lastMessage,nil
 }
 
 func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
-        msgw.Id = updateCounter(ms.Circle,ms.Db)
+        msgw.Id = ms.updateCounter()
         msgw.Time = time.Now()
+	fmt.Printf("new Id %d\n",msgw.Id)
         msgw.Timestamp = msgw.Time.Format(time.RFC1123)
         msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
 
 
-        col := ms.Db.C(ms.Circle)
+        col := ms.Db.C("C"+ms.Circle)
         err := col.Insert(msgw)
 
+
 	if err != nil {
+		fmt.Printf("Error inserting message %s\n", err)
 		return err
 	}
+	fmt.Printf("Posted %s\n", msgw.Content.Message)
 
 	return nil
 
 }
 
+
+// Filestore implementation of MtsnStore
 func ReadFileContents(file *os.File) string {
         reader := bufio.NewReader(file)
         rawBytes, _ := ioutil.ReadAll(reader)
@@ -137,6 +168,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
         jsonBytes := []byte(ReadFileContents(file))
 	json.Unmarshal(jsonBytes,&mw.Content)
 	mw.Time = stat.ModTime()
+	mw.Id = id
 	mw.Timestamp = mw.Time.Format(time.RFC1123)
 	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
@@ -166,7 +198,11 @@ func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
               mw.Content = m
 
               stat, _ := file.Stat()
-              mw.Timestamp = stat.ModTime().Format(time.RFC1123)
+	      mw.Time = stat.ModTime()
+	      mw.Id = i
+	      mw.Timestamp = mw.Time.Format(time.RFC1123)
+	      mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
+
               msgs = append(msgs,mw)
         }
 
@@ -208,30 +244,7 @@ func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 
 
 
-// utility functions
-func updateCounter(id string, d *mgo.Database) int {
-	var counter Counter
-	col := d.C("counters")
-	change := mgo.Change{Update: bson.M{"$inc": bson.M{"n": 1}}, New: true, Upsert: true}
-	err := col.Find(bson.M{"_id": "C" + id}).Modify(change, &counter)
-	if err != nil {
-		panic("Failed to update counter")
-	}
-	fmt.Println(counter.N)
-	return counter.N
-}
-
-func getCounter(id string, d *mgo.Database) int {
-	var counter Counter
-	col := d.C("counters")
-	err := col.Find(bson.M{"_id": "C" + id}).One(&counter)
-	if err != nil {
-		return (0)
-	}
-	fmt.Println(counter.N)
-	return counter.N
-}
-
+// misc functions
 func dropPrivs(uid int) {
 	if syscall.Getuid() == 0 {
 		fmt.Printf("Dropping privileges.")
@@ -263,10 +276,15 @@ func PostMsg(c *goweb.Context, store MtsnStore) {
 	var m Msg
 	var mw MsgWrap
 
-	body, _ := ioutil.ReadAll(c.Request.Body)
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil || len(body) == 0 {
+		goweb.AddFormatter(&goweb.JsonFormatter{})
+		c.RespondWithStatus(500)
+		return
+	}
 	json.Unmarshal(body, &m)
 	mw.Content = m
-	err := store.PostMsg(mw)
+	err = store.PostMsg(mw)
 	if err != nil {
 		goweb.AddFormatter(&goweb.JsonFormatter{})
 		c.RespondWithStatus(500)
