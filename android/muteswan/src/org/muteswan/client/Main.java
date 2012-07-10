@@ -180,6 +180,7 @@ public class Main extends Activity implements Runnable {
 		if (storedCipherSecret == null) {
 			final ImageView noStoredSecret = (ImageView) findViewById(R.id.noStoredSecret);
 			noStoredSecret.setImageResource(android.R.drawable.ic_secure);
+			noStoredSecret.setVisibility(View.VISIBLE);
 		}
 		
 	}

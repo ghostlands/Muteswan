@@ -67,6 +67,7 @@
      android:layout_alignParentLeft="true"
      android:layout_alignParentBottom="true"
      android:textColor="#cccccccc"
+     android:visibility="invisible"
      
      />
     
