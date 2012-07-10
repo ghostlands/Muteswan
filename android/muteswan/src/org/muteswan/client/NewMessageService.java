@@ -188,7 +188,7 @@ public class NewMessageService extends Service {
 		  showPersistentNotification("Muteswan Service", "Muteswan service is polling in the background.",false);
 		  MuteLog.Log("NewMessageService", "Have key.");
 		} else {
-		  showPersistentNotification("Muteswan Service", "Muteswan needs the secret password.",true);
+		  //showPersistentNotification("Muteswan Service", "Muteswan needs the secret password.",true);
 		  stopservice();
   		  stopSelf();
   		  return;
