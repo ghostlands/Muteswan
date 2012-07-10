@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"code.google.com/p/goweb/goweb"
 	"encoding/json"
 	"flag"
@@ -8,15 +10,13 @@ import (
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
+	"os"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
-	"os"
-	"bufio"
-	"bytes"
 )
 
 // types
@@ -41,7 +41,6 @@ type LastMessage struct {
 	LastMessage int `json:"lastMessage"`
 }
 
-
 type MtsnStore interface {
 	GetMsg(id int) (MsgWrap, error)
 	GetMsgs(top int, bottom int) ([]MsgWrap, error)
@@ -51,14 +50,13 @@ type MtsnStore interface {
 
 type MongoStore struct {
 	Circle string
-	Db *mgo.Database
+	Db     *mgo.Database
 }
 
 type FileStore struct {
-	Circle string
+	Circle  string
 	Datadir string
 }
-
 
 // mongodb implementation of MtsnStore
 func (ms *MongoStore) getCounter() int {
@@ -75,23 +73,22 @@ func (ms *MongoStore) updateCounter() int {
 	var counter Counter
 	col := ms.Db.C("counters")
 	change := mgo.Change{Update: bson.M{"$inc": bson.M{"n": 1}}, Remove: false, ReturnNew: true, Upsert: true}
-	_,err := col.Find(bson.M{"_id": "C" + ms.Circle}).Apply(change, &counter)
+	_, err := col.Find(bson.M{"_id": "C" + ms.Circle}).Apply(change, &counter)
 	if err != nil {
 		panic("Failed to update counter")
 	}
 	return counter.N
 }
 
-
 func (ms *MongoStore) GetMsg(id int) (MsgWrap, error) {
 	var mw MsgWrap
-        col := ms.Db.C("C" + ms.Circle)
+	col := ms.Db.C("C" + ms.Circle)
 
-        err := col.Find(bson.M{"_id": id}).One(&mw)
-        if err != nil {
-                fmt.Printf("Error fetching %s: %s", id, err)
+	err := col.Find(bson.M{"_id": id}).One(&mw)
+	if err != nil {
+		fmt.Printf("Error fetching %s: %s", id, err)
 		return mw, err
-        }
+	}
 
 	return mw, nil
 }
@@ -99,40 +96,38 @@ func (ms *MongoStore) GetMsg(id int) (MsgWrap, error) {
 func (ms *MongoStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
 	var msgs []MsgWrap
 
-        if bottom > top {
-                return msgs,nil
-        }
+	if bottom > top {
+		return msgs, nil
+	}
 
-        col := ms.Db.C("C" + ms.Circle)
-        msgQuery := col.Find(bson.M{"_id": bson.M{"$gte": bottom, "$lte": top}}).Sort("-_id")
-        err := msgQuery.All(&msgs)
+	col := ms.Db.C("C" + ms.Circle)
+	msgQuery := col.Find(bson.M{"_id": bson.M{"$gte": bottom, "$lte": top}}).Sort("-_id")
+	err := msgQuery.All(&msgs)
 
 	if err != nil {
 		return msgs, err
 	}
 
-	return msgs,nil
+	return msgs, nil
 }
 
 func (ms *MongoStore) GetLastMsg() (LastMessage, error) {
-        var lastMessage LastMessage
-        mostRecent := ms.getCounter()
-        lastMessage = LastMessage{LastMessage: mostRecent}
-	return lastMessage,nil
+	var lastMessage LastMessage
+	mostRecent := ms.getCounter()
+	lastMessage = LastMessage{LastMessage: mostRecent}
+	return lastMessage, nil
 }
 
 func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
-        msgw.Id = ms.updateCounter()
-        msgw.Time = time.Now()
-	fmt.Printf("new Id %d\n",msgw.Id)
-        msgw.Timestamp = msgw.Time.Format(time.RFC1123)
-        msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
+	msgw.Id = ms.updateCounter()
+	msgw.Time = time.Now()
+	fmt.Printf("new Id %d\n", msgw.Id)
+	msgw.Timestamp = msgw.Time.Format(time.RFC1123)
+	msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
 
-
-        col := ms.Db.C("C"+ms.Circle)
-        err := col.Insert(msgw)
-
+	col := ms.Db.C("C" + ms.Circle)
+	err := col.Insert(msgw)
 
 	if err != nil {
 		fmt.Printf("Error inserting message %s\n", err)
@@ -144,105 +139,100 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
 }
 
-
 // Filestore implementation of MtsnStore
 func ReadFileContents(file *os.File) string {
-        reader := bufio.NewReader(file)
-        rawBytes, _ := ioutil.ReadAll(reader)
-        buffer := bytes.NewBuffer(rawBytes)
-        return (buffer.String())
+	reader := bufio.NewReader(file)
+	rawBytes, _ := ioutil.ReadAll(reader)
+	buffer := bytes.NewBuffer(rawBytes)
+	return (buffer.String())
 }
-
 
 func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 
-        var (
-            file *os.File
-            path string
-            mw MsgWrap
-        )
-        path = fmt.Sprintf("%s/%s/%d", ms.Datadir,ms.Circle,id)
-        file, _ = os.Open(path)
-        stat, _ := file.Stat()
+	var (
+		file *os.File
+		path string
+		mw   MsgWrap
+	)
+	path = fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, id)
+	file, _ = os.Open(path)
+	stat, _ := file.Stat()
 
-        jsonBytes := []byte(ReadFileContents(file))
-	json.Unmarshal(jsonBytes,&mw.Content)
+	jsonBytes := []byte(ReadFileContents(file))
+	json.Unmarshal(jsonBytes, &mw.Content)
 	mw.Time = stat.ModTime()
 	mw.Id = id
 	mw.Timestamp = mw.Time.Format(time.RFC1123)
 	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
-        return mw,nil
+	return mw, nil
 
 }
 
 func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
-        var msgs []MsgWrap
+	var msgs []MsgWrap
 
-        if bottom > top {
-             return msgs,nil
-        }
+	if bottom > top {
+		return msgs, nil
+	}
 
-        for i := top; i >= bottom; i-- {
-              var m Msg
-              var mw MsgWrap
-              path := fmt.Sprintf("%s/%s/%d",ms.Datadir,ms.Circle,i)
-              file,err := os.Open(path)
-              if err != nil {
-                  return msgs, nil
-              }
+	for i := top; i >= bottom; i-- {
+		var m Msg
+		var mw MsgWrap
+		path := fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, i)
+		file, err := os.Open(path)
+		if err != nil {
+			return msgs, nil
+		}
 
-              jsonString := ReadFileContents(file)
-              bytes := []byte(jsonString)
-              err = json.Unmarshal(bytes, &m)
-              mw.Content = m
+		jsonString := ReadFileContents(file)
+		bytes := []byte(jsonString)
+		err = json.Unmarshal(bytes, &m)
+		mw.Content = m
 
-              stat, _ := file.Stat()
-	      mw.Time = stat.ModTime()
-	      mw.Id = i
-	      mw.Timestamp = mw.Time.Format(time.RFC1123)
-	      mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
+		stat, _ := file.Stat()
+		mw.Time = stat.ModTime()
+		mw.Id = i
+		mw.Timestamp = mw.Time.Format(time.RFC1123)
+		mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
-              msgs = append(msgs,mw)
-        }
+		msgs = append(msgs, mw)
+	}
 
-        return msgs,nil
+	return msgs, nil
 }
-
 
 func (ms *FileStore) GetLastMsg() (LastMessage, error) {
 
-        path := fmt.Sprintf("%s/%s",ms.Datadir, ms.Circle)
-        dir,_ := os.Open(path)
-        files,_ := dir.Readdirnames(10000)
-        var mostRecent int
-        for i := range files {
-                id,_ := strconv.Atoi(files[i])
-                if id > mostRecent {
-                        mostRecent = id
-                }
+	path := fmt.Sprintf("%s/%s", ms.Datadir, ms.Circle)
+	dir, _ := os.Open(path)
+	files, _ := dir.Readdirnames(10000)
+	var mostRecent int
+	for i := range files {
+		id, _ := strconv.Atoi(files[i])
+		if id > mostRecent {
+			mostRecent = id
+		}
 
-        }
+	}
 
-	lastMsg := LastMessage{LastMessage : mostRecent}
-	return lastMsg,nil
+	lastMsg := LastMessage{LastMessage: mostRecent}
+	return lastMsg, nil
 }
 
 func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 
-        mostRecent,_ := ms.GetLastMsg()
-        msgId := mostRecent.LastMessage+1
-        filepath := fmt.Sprintf("%s/%s/%d",ms.Datadir,ms.Circle,msgId)
-        file,_ := os.Create(filepath)
+	mostRecent, _ := ms.GetLastMsg()
+	msgId := mostRecent.LastMessage + 1
+	filepath := fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, msgId)
+	file, _ := os.Create(filepath)
 	msgBytes, _ := json.Marshal(msgw.Content)
-        wr := bufio.NewWriter(file)
+	wr := bufio.NewWriter(file)
 	wr.Write(msgBytes)
-        wr.Flush()
+	wr.Flush()
 
 	return nil
 }
-
-
 
 // misc functions
 func dropPrivs(uid int) {
@@ -294,8 +284,13 @@ func PostMsg(c *goweb.Context, store MtsnStore) {
 
 func GetMsgRange(c *goweb.Context, store MtsnStore) {
 	ids := strings.Split(c.PathParams["id"], "-")
-	top, _ := strconv.Atoi(ids[0])
-	bottom, _ := strconv.Atoi(ids[1])
+	top, err := strconv.Atoi(ids[0])
+	bottom, err2 := strconv.Atoi(ids[1])
+	if err != nil || err2 != nil {
+		goweb.AddFormatter(&goweb.JsonFormatter{})
+		c.RespondWithStatus(403)
+		return
+	}
 
 	if bottom > top {
 		goweb.AddFormatter(&goweb.JsonFormatter{})
@@ -310,7 +305,7 @@ func GetMsgRange(c *goweb.Context, store MtsnStore) {
 		return
 	}
 
-	msgs,err := store.GetMsgs(top,bottom)
+	msgs, err := store.GetMsgs(top, bottom)
 
 	if err != nil {
 		goweb.AddFormatter(&goweb.JsonFormatter{})
@@ -326,7 +321,7 @@ func GetMsgRange(c *goweb.Context, store MtsnStore) {
 func GetOneMsg(c *goweb.Context, store MtsnStore) {
 	id, _ := strconv.Atoi(c.PathParams["id"])
 
-	mw,err := store.GetMsg(id)
+	mw, err := store.GetMsg(id)
 
 	if err != nil {
 		goweb.AddFormatter(&goweb.JsonFormatter{})
@@ -352,8 +347,7 @@ func GetMsg(c *goweb.Context, store MtsnStore) {
 
 func GetLastMsg(c *goweb.Context, store MtsnStore) {
 
-
-	lastMsg,_ := store.GetLastMsg()
+	lastMsg, _ := store.GetLastMsg()
 	b, _ := json.Marshal(lastMsg)
 	c.ResponseWriter.Header().Set("Content-Type", "application/json")
 	c.ResponseWriter.Write(b)
@@ -397,11 +391,11 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	var (
-		port int
-		ip   string
-		db   string
-		dbtype   string
-		uid  int
+		port   int
+		ip     string
+		db     string
+		dbtype string
+		uid    int
 	)
 	flag.IntVar(&port, "port", 80, "Port to bind on.")
 	flag.StringVar(&ip, "ip", "127.0.0.1", "IP to bind to")
@@ -438,13 +432,12 @@ func main() {
 
 		validateHash(c.PathParams["hash"])
 
-
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		if dbtype == "mongo" {
-			mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
 			GetMsg(c, mongoStore)
 		} else {
-			fileStore := &FileStore{Circle : c.PathParams["hash"], Datadir : db}
+			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
 			GetMsg(c, fileStore)
 		}
 	})
@@ -459,10 +452,10 @@ func main() {
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		if dbtype == "mongo" {
-			mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
 			GetLastMsg(c, mongoStore)
 		} else {
-			fileStore := &FileStore{Circle : c.PathParams["hash"], Datadir : db}
+			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
 			GetLastMsg(c, fileStore)
 		}
 	}, goweb.GetMethod)
@@ -477,10 +470,10 @@ func main() {
 		validateHash(c.PathParams["hash"])
 		fmt.Printf("POST %s\n", c.Request.URL.String())
 		if dbtype == "mongo" {
-			mongoStore := &MongoStore{Circle : c.PathParams["hash"], Db : s.DB(db)}
+			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
 			PostMsg(c, mongoStore)
 		} else {
-			fileStore := &FileStore{Circle : c.PathParams["hash"], Datadir : db}
+			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
 			PostMsg(c, fileStore)
 		}
 	}, goweb.PostMethod)
