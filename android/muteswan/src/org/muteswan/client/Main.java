@@ -177,11 +177,28 @@ public class Main extends Activity implements Runnable {
 		SharedPreferences defPrefs = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
 		String storedCipherSecret = defPrefs.getString("cipherSecret", null);
-		if (storedCipherSecret == null) {
+		Boolean verbose = defPrefs.getBoolean("verbose",false);
+		if (storedCipherSecret == null && verbose) {
 			final ImageView noStoredSecret = (ImageView) findViewById(R.id.noStoredSecret);
 			noStoredSecret.setImageResource(android.R.drawable.ic_secure);
 			noStoredSecret.setVisibility(View.VISIBLE);
 		}
+		
+		if (verbose) {
+			  PackageInfo pinfo = null;
+			  String versionNameString = null;
+			  try {
+				pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+				versionNameString = pinfo.versionName;
+			  } catch (NameNotFoundException e) {
+				e.printStackTrace();
+			  }
+
+			  final TextView versionName = (TextView) findViewById(R.id.versionName);
+			  if (versionNameString != null)
+				versionName.setText(versionNameString);
+			}
+
 		
 	}
 
@@ -362,6 +379,7 @@ public class Main extends Activity implements Runnable {
 		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 		
 		
+		
 
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
 		if (firstRun) {
@@ -406,20 +424,7 @@ public class Main extends Activity implements Runnable {
 		final ImageView mManageCirclesButton = (ImageView) findViewById(R.id.mManageCircles);
 		mManageCirclesButton.setOnClickListener(mManageCircles);
 
-		PackageInfo pinfo = null;
-		String versionNameString = null;
-		try {
-			pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-			versionNameString = pinfo.versionName;
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		final TextView versionName = (TextView) findViewById(R.id.versionName);
-		if (versionNameString != null)
-			versionName.setText(versionNameString);
-
-		
+				
 		
 		
 		

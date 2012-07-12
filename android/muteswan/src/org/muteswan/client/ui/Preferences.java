@@ -106,7 +106,9 @@ public class Preferences extends PreferenceActivity {
          });
          
          Preference cleanData = (Preference) this.findPreference("cleanData");
-         cleanData.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+         
+         /* uncomment to get clear data
+          * cleanData.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
 			@Override
 			public boolean onPreferenceClick(Preference arg0) {
@@ -134,7 +136,7 @@ public class Preferences extends PreferenceActivity {
 			}
         	 
          });
-       
+         */
          
          Preference checkMsgIntervalP = (Preference) this.findPreference("checkMsgInterval");
          checkMsgIntervalP.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
