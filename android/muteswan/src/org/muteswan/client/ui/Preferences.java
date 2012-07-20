@@ -17,6 +17,7 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
+import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.NewMessageReceiver;
 import org.muteswan.client.R;
 
@@ -30,6 +31,7 @@ import android.preference.PreferenceActivity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -47,8 +49,16 @@ public class Preferences extends PreferenceActivity {
 
 	private Bundle extra;
 	private String cipherSecret;
+	private boolean offerToInstallOISafe = false;
 
 
+	public void onResume() {
+		super.onResume();
+		if (offerToInstallOISafe) {
+			AlertDialogs alertDialogs = new AlertDialogs(Preferences.this);
+	 		alertDialogs.offerToInstallOISafe();
+		}
+	}
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -87,17 +97,38 @@ public class Preferences extends PreferenceActivity {
          
          Preference useOISafe = (Preference) this.findPreference("useoisafe");
          useOISafe.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-             public boolean onPreferenceChange(Preference preference, Object pref) {
+             
+
+			public boolean onPreferenceChange(Preference preference, Object pref) {
             	boolean useoisafe = (Boolean) pref;
             	
         	 	final SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         	 	
         	 	if (useoisafe == true) {
-        	 		//defPrefs.edit().putBoolean("useoisafe", false);
+        	 		
         	 		defPrefs.edit().putBoolean("keepsecret", false).commit();
+        	 		
+        	 		Intent intent = new Intent("org.openintents.action.SET_PASSWORD");
+        			intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
+        			intent.putExtra("org.openintents.extra.PASSWORD", cipherSecret);
+
+        			MuteLog.Log("Preferences", "Calling setsafe secret "); 
+        			
+        			try {
+        			  startActivityForResult(intent,0);
+        			} catch (ActivityNotFoundException e) {
+        				MuteLog.Log("Main", "Activity not found.");
+        				offerToInstallOISafe = true;
+        				
+        			} catch (java.lang.SecurityException e) {
+        				MuteLog.Log("Main", "Security exception " + e); 
+        			}
+        	 		
+        	 		
         	 	} else {
-        	 		//defPrefs.edit().putBoolean("useoisafe", true);
+        	 		
         	 		defPrefs.edit().putBoolean("keepsecret", true).commit();
+        	 		//alertDialogs.
         	 	}
 
 				return true;

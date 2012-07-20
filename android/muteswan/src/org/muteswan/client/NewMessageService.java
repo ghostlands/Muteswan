@@ -715,18 +715,6 @@ public class NewMessageService extends Service {
 				
 				}
 				
-				// 970-960
-				// start - last = 10
-				// msgs.size() = 4
-				// msgSizeDelta = 6
-				//int msgSizeDelta = (start+1 - last) - msgs.size();
-				//if (msgSizeDelta > 0) {
-				//	for (int i=last-1; ((start+1 - i) - msgs.size()) > 0; i++) {
-				//		MuteLog.Log("NewMessageService", "Saving empty message for id " + i);
-				//		circle.saveEmptyMsg(i);
-				//	}
-					
-				//}
 				
 				linkedQueue.remove(circle);
 				return 0;	

@@ -153,6 +153,8 @@ public class Main extends Activity implements Runnable {
 	
 
 	private AlertDialogs alertDialogs;
+	private boolean oiSafeNotInstalled = false;
+	
 
 	public void onPause() {
 		super.onPause();
@@ -170,14 +172,19 @@ public class Main extends Activity implements Runnable {
 		registerReceiver(torNotAvailableReceiver, intentFilter);
 
 		
-		if (cipherSecret == null) {
-			getSafeSecret();
-		}
+		
+		
+		
+		
 		
 		SharedPreferences defPrefs = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
 		String storedCipherSecret = defPrefs.getString("cipherSecret", null);
 		Boolean verbose = defPrefs.getBoolean("verbose",false);
+		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
+		
+		
+		
 		if (storedCipherSecret == null && verbose) {
 			final ImageView noStoredSecret = (ImageView) findViewById(R.id.noStoredSecret);
 			noStoredSecret.setImageResource(android.R.drawable.ic_secure);
@@ -200,6 +207,11 @@ public class Main extends Activity implements Runnable {
 			}
 
 		
+		if (useoisafe && !oiSafeNotInstalled) {
+			MuteLog.Log("Main","About to call getsafesecret");
+			getSafeSecret();
+		}
+		
 	}
 
 	public void onDestroy() {
@@ -213,32 +225,39 @@ public class Main extends Activity implements Runnable {
 	}
 
 	private void getSafeSecret() {
-		//if (cipherSecret == null) {
+		
 		  Intent intent = new Intent("org.openintents.action.GET_PASSWORD");
 		  intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
+		  MuteLog.Log("Main", "Calling getsafe secret ");
+		  
 		  try {
 			  startActivityForResult(intent,0);
 		  } catch (ActivityNotFoundException e) {
-			  alertDialogs.offerToInstallOISafe();
+			  //alertDialogs.offerToInstallOISafe();
+			  oiSafeNotInstalled = true;
 		  } catch (java.lang.SecurityException e) {
-			  //setSafeSecret();
+			  MuteLog.Log("Main", "Security exception " + e); 
 		  }
-		//}
+		
 	}
 
+	
+	
 	private void setSafeSecret() {
 		
 		Intent intent = new Intent("org.openintents.action.SET_PASSWORD");
 		intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
 		intent.putExtra("org.openintents.extra.PASSWORD", cipherSecret);
 
+		MuteLog.Log("Main", "Calling setsafe secret "); 
 		
 		try {
 		  startActivityForResult(intent,0);
 		} catch (ActivityNotFoundException e) {
-		  alertDialogs.offerToInstallOISafe();
+		  //alertDialogs.offerToInstallOISafe();
+			oiSafeNotInstalled = true;
 		} catch (java.lang.SecurityException e) {
-			  
+			MuteLog.Log("Main", "Security exception " + e); 
 		}
 		
 	
@@ -262,7 +281,7 @@ public class Main extends Activity implements Runnable {
 			MuteLog.Log("Main", "Got intent back " + intent.getAction());
 			String secret = intent
 					.getStringExtra("org.openintents.extra.PASSWORD");
-			
+			MuteLog.Log("Main", "Get password success with " + resultCode);
 			
 			
 			
@@ -298,7 +317,7 @@ public class Main extends Activity implements Runnable {
 			defPrefs.edit().putBoolean("hasGeneratedSecret", true).commit();
 		} else if (intent != null && intent.getAction().equals(
 				"org.openintents.action.SET_PASSWORD")) {
-		
+			MuteLog.Log("Main", "Set password success with " + resultCode);
 			String secret = intent
 					.getStringExtra("org.openintents.extra.PASSWORD");
 			if (secret == null) {
@@ -350,9 +369,9 @@ public class Main extends Activity implements Runnable {
 		}
 
 		// fdo we want this?
-		// CircleStore cs = new CircleStore(cipherSecret,this,true,false);
-		// cs.updateStore("dd85381ac8acc1a7", "Feedback",
-		// "circles.muteswan.org");
+		CircleStore cs = new CircleStore(cipherSecret,this,true,false);
+		 cs.updateStore("dd85381ac8acc1a7", "Feedback",
+		 "circles.muteswan.org");
 	}
 	
 	
@@ -377,8 +396,12 @@ public class Main extends Activity implements Runnable {
 		
 	    cipherSecret = defPrefs.getString("cipherSecret", null);
 		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
-		
-		
+	
+		migrate = new MigrateToEncPrefs();
+		if (migrate.needsMigration(getApplicationContext())) {
+		  cipherSecret = Crypto.generateCipherSecret();
+		  defPrefs.edit().putString("cipherSecret", cipherSecret).commit();
+		}
 		
 
 		boolean firstRun = defPrefs.getBoolean("firstrun", true);
@@ -411,8 +434,6 @@ public class Main extends Activity implements Runnable {
 		// to get it. otherwise we just save the secret if we
 		// should
 		if (useoisafe) {
-			getSafeSecret();
-		} else if (cipherSecret == null) {
 			getSafeSecret();
 		}
 				
@@ -624,18 +645,19 @@ public class Main extends Activity implements Runnable {
 	}
 
 	private TorNotAvailableReceiver torNotAvailableReceiver;
+	private MigrateToEncPrefs migrate;
 
 	private boolean migrateDatabase() {
 
-		MigrateToEncPrefs migrate = new MigrateToEncPrefs();
+		
 		if (!migrate.needsMigration(this))
 			return (false);
 
 		// sendBroadcast(new Intent(Main.UPGRADING_DATABASE));
 		alertDialogs.upgradingDatabase.sendEmptyMessage(0);
-		cipherSecret = Crypto.generateCipherSecret();
+		/*cipherSecret = Crypto.generateCipherSecret();
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		defPrefs.edit().putString("cipherSecret", cipherSecret).commit();
+		defPrefs.edit().putString("cipherSecret", cipherSecret).commit();*/
 		
 		SharedPreferences prefs = getSharedPreferences("circles", 0);
 
