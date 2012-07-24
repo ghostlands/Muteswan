@@ -104,6 +104,22 @@ public class Main extends Activity implements Runnable {
 
 		
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		Boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
+		// if we are supposed to use oi safe, get the secret
+		// even if we aren't supposed to use oisafe, if we don't
+		// have a secret in prefs we have no other choice, so try
+		// to get it. otherwise we just save the secret if we
+		// should
+		//if (useoisafe && cipherSecret == null) {
+		//	getSafeSecret();
+		//} else if (useoisafe) {
+		//	setSafeSecret();
+		//}
+		if (useoisafe) {
+			getSafeSecret();
+		}
+		
+		
 		try {
 			while (newMsgService == null || cipherSecret == null) {
 				Thread.currentThread();
@@ -151,9 +167,16 @@ public class Main extends Activity implements Runnable {
 
 	};
 	
+	private Handler getSafeSecretHandler  = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			getSafeSecret();
+		}
+
+	};
+	
 
 	private AlertDialogs alertDialogs;
-	private boolean oiSafeNotInstalled = false;
 	
 
 	public void onPause() {
@@ -207,10 +230,6 @@ public class Main extends Activity implements Runnable {
 			}
 
 		
-		if (useoisafe && !oiSafeNotInstalled) {
-			MuteLog.Log("Main","About to call getsafesecret");
-			getSafeSecret();
-		}
 		
 	}
 
@@ -234,7 +253,7 @@ public class Main extends Activity implements Runnable {
 			  startActivityForResult(intent,0);
 		  } catch (ActivityNotFoundException e) {
 			  //alertDialogs.offerToInstallOISafe();
-			  oiSafeNotInstalled = true;
+			  //oiSafeNotInstalled = true;
 		  } catch (java.lang.SecurityException e) {
 			  MuteLog.Log("Main", "Security exception " + e); 
 		  }
@@ -255,7 +274,7 @@ public class Main extends Activity implements Runnable {
 		  startActivityForResult(intent,0);
 		} catch (ActivityNotFoundException e) {
 		  //alertDialogs.offerToInstallOISafe();
-			oiSafeNotInstalled = true;
+			//oiSafeNotInstalled = true;
 		} catch (java.lang.SecurityException e) {
 			MuteLog.Log("Main", "Security exception " + e); 
 		}
@@ -268,6 +287,7 @@ public class Main extends Activity implements Runnable {
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		SharedPreferences defPrefs = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
+		
 		
 		// this is sort of necessarily complicated. we want to make sure
 		// that unless oisafe certainly has our key we do not delete our
@@ -428,14 +448,7 @@ public class Main extends Activity implements Runnable {
 		setContentView(R.layout.main);
 		
 		
-		// if we are supposed to use oi safe, get the secret
-		// even if we aren't supposed to use oisafe, if we don't
-		// have a secret in prefs we have no other choice, so try
-		// to get it. otherwise we just save the secret if we
-		// should
-		if (useoisafe) {
-			getSafeSecret();
-		}
+		
 				
 		
 

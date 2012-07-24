@@ -112,7 +112,7 @@ public class NewMessageService extends Service {
 		registerReceiver(deletedCircleReceiver, new IntentFilter(CircleList.DELETED_CIRCLE_BROADCAST));
 		registerReceiver(joinedCircleReceiver, new IntentFilter(CircleList.JOINED_CIRCLE_BROADCAST));
 		registerReceiver(createdCircleReceiver, new IntentFilter(CreateCircle.CREATED_CIRCLE_BROADCAST));
-		registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		//registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		init(false);
 		
 	}
@@ -121,7 +121,7 @@ public class NewMessageService extends Service {
 	public void onDestroy() {
 		stopservice();
 		unregisterReceiver(isUserCheckingMessagesReceiver);
-		unregisterReceiver(networkChangeReceiver);
+		//unregisterReceiver(networkChangeReceiver);
 		unregisterReceiver(deletedCircleReceiver);
 		unregisterReceiver(joinedCircleReceiver);
 		unregisterReceiver(createdCircleReceiver);
@@ -230,7 +230,7 @@ public class NewMessageService extends Service {
 			while (cipherSecret == null && count <= 450) {
 				try {
 					Thread.sleep(100);
-					MuteLog.Log("NewMessageService", "cipherSecret is still null.");
+					//MuteLog.Log("NewMessageService", "cipherSecret is still null.");
 					count++;
 				} catch (InterruptedException e) {
 					return null;
@@ -843,7 +843,7 @@ public class NewMessageService extends Service {
 	
 
 	private IsUserCheckingMessagesReceiver isUserCheckingMessagesReceiver = new IsUserCheckingMessagesReceiver();
-	private NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
+	//private NetworkChangeReceiver networkChangeReceiver = new NetworkChangeReceiver();
 	private DeletedCircleReceiver deletedCircleReceiver = new DeletedCircleReceiver();
 	private JoinedCircleReceiver joinedCircleReceiver = new JoinedCircleReceiver();
 	private CreatedCircleReceiver createdCircleReceiver = new CreatedCircleReceiver();
@@ -900,7 +900,7 @@ public class NewMessageService extends Service {
 	    }
 	}
 	
-	private class NetworkChangeReceiver extends BroadcastReceiver {
+	/*private class NetworkChangeReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	MuteLog.Log("NewMessageService", "Network change event!");
@@ -908,7 +908,7 @@ public class NewMessageService extends Service {
 	    	MuteLog.Log("NewMessageService", "extras " + intent.getExtras().describeContents());
 	    	//skipNextCheck = true;
 	    }
-	}
+	}*/
 	
 	
 

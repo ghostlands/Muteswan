@@ -57,6 +57,7 @@ public class Preferences extends PreferenceActivity {
 		if (offerToInstallOISafe) {
 			AlertDialogs alertDialogs = new AlertDialogs(Preferences.this);
 	 		alertDialogs.offerToInstallOISafe();
+	 		offerToInstallOISafe = false;
 		}
 	}
 
@@ -108,26 +109,11 @@ public class Preferences extends PreferenceActivity {
         	 		
         	 		defPrefs.edit().putBoolean("keepsecret", false).commit();
         	 		
-        	 		Intent intent = new Intent("org.openintents.action.SET_PASSWORD");
-        			intent.putExtra("org.openintents.extra.UNIQUE_NAME", "muteswan");
-        			intent.putExtra("org.openintents.extra.PASSWORD", cipherSecret);
-
-        			MuteLog.Log("Preferences", "Calling setsafe secret "); 
-        			
-        			try {
-        			  startActivityForResult(intent,0);
-        			} catch (ActivityNotFoundException e) {
-        				MuteLog.Log("Main", "Activity not found.");
-        				offerToInstallOISafe = true;
-        				
-        			} catch (java.lang.SecurityException e) {
-        				MuteLog.Log("Main", "Security exception " + e); 
-        			}
-        	 		
-        	 		
         	 	} else {
         	 		
+        	 		defPrefs.edit().putString("cipherSecret",cipherSecret).commit();
         	 		defPrefs.edit().putBoolean("keepsecret", true).commit();
+        	 		
         	 		//alertDialogs.
         	 	}
 
