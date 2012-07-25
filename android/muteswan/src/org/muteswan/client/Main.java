@@ -219,6 +219,14 @@ public class Main extends Activity implements Runnable {
 		
 		
 	}
+	
+	private Handler noOISafeInstalledHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			alertDialogs.offerToInstallOISafe();
+		}
+
+	};
 
 	public void onDestroy() {
 
@@ -241,6 +249,7 @@ public class Main extends Activity implements Runnable {
 		  } catch (ActivityNotFoundException e) {
 			  //alertDialogs.offerToInstallOISafe();
 			  //oiSafeNotInstalled = true;
+			  noOISafeInstalledHandler.sendEmptyMessage(0);
 		  } catch (java.lang.SecurityException e) {
 			  MuteLog.Log("Main", "Security exception " + e); 
 		  }
@@ -432,10 +441,7 @@ public class Main extends Activity implements Runnable {
 		
 
 		setContentView(R.layout.main);
-		
-		
-		
-				
+					
 		
 
 		final ImageView mLatestMessagesButton = (ImageView) findViewById(R.id.mLatestMessages);
