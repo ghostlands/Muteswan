@@ -353,12 +353,11 @@ public class LatestMessages extends ListActivity implements Runnable {
 		}
 	
 		
-		if (store.isEmpty()) {
+		if (store == null || store.isEmpty()) {
 			setFooterText(getString(R.string.n_no_circles_to_check));
 			return;
 		}
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
-		
 		
 		newMsgCheckState.clear();
 		

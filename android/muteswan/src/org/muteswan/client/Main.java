@@ -139,6 +139,8 @@ public class Main extends Activity implements Runnable {
 		} catch (InterruptedException e) {
 
 		}
+		
+		
 	}
 
 	@Override
@@ -159,21 +161,7 @@ public class Main extends Activity implements Runnable {
 
 	};
 	
-	private Handler finishButtonHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			finish();
-		}
-
-	};
 	
-	private Handler getSafeSecretHandler  = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			getSafeSecret();
-		}
-
-	};
 	
 
 	private AlertDialogs alertDialogs;
@@ -204,7 +192,6 @@ public class Main extends Activity implements Runnable {
 				.getDefaultSharedPreferences(getApplicationContext());
 		String storedCipherSecret = defPrefs.getString("cipherSecret", null);
 		Boolean verbose = defPrefs.getBoolean("verbose",false);
-		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 		
 		
 		
@@ -415,7 +402,6 @@ public class Main extends Activity implements Runnable {
 		
 		
 	    cipherSecret = defPrefs.getString("cipherSecret", null);
-		boolean useoisafe = defPrefs.getBoolean("useoisafe", false);
 	
 		migrate = new MigrateToEncPrefs();
 		if (migrate.needsMigration(getApplicationContext())) {
