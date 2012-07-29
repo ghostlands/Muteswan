@@ -78,7 +78,7 @@ public class AlertDialogs {
 		
 		AlertDialog.Builder oiSafe = new AlertDialog.Builder(context);
 	    oiSafe.setTitle("Install OI Safe?");
-	    oiSafe.setMessage("Muteswan uses OI Safe to store encryption passwords. OI Safe provides a secure way to store and provide passwords to other applications, like Muteswan. If you don't want to use OI Safe, your circle information will be easily recoverable by someone who has access to your device.");
+	    oiSafe.setMessage("Muteswan can use OI Safe to store encryption passwords. If you don't want to use OI Safe, your circle information will be easily recoverable by someone who has access to your device. If OI Safe is installed after Muteswan, Muteswan may need to be reinstalled or upgraded in order to access OI Safe.");
 	    oiSafe.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	    	Uri uri = Uri.parse(context.getString(R.string.oisafe_market_uri));
