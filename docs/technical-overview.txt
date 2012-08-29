@@ -306,6 +306,14 @@ GET msg, POST msg and GET msg index.
 This daemon is probably not appropriate for large volumes but given the
 simplicity of Muteswan it should be usable to test and develop.
 
+Go Muteswan server
+~~~~~~~~~~~~~~~~~~~~
+
+A more production ready server is also available with the option of file or
+MongoDB based backend storage.
+
+It is super simple and small and easy to compile and run. Thank you Go.
+
 
 Android client
 ~~~~~~~~~~~~~~
