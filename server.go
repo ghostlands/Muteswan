@@ -3,13 +3,12 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"code.google.com/p/goweb/goweb"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"launchpad.net/mgo"
-	"launchpad.net/mgo/bson"
+	//"launchpad.net/mgo"
+	//"launchpad.net/mgo/bson"
 	"os"
 	"regexp"
 	"runtime"
@@ -17,6 +16,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"net/http"
 )
 
 // types
@@ -50,7 +50,7 @@ type MtsnStore interface {
 
 type MongoStore struct {
 	Circle string
-	Db     *mgo.Database
+	//Db     *mgo.Database
 }
 
 type FileStore struct {
@@ -59,6 +59,7 @@ type FileStore struct {
 }
 
 // mongodb implementation of MtsnStore
+/*
 func (ms *MongoStore) getCounter() int {
 	var counter Counter
 	col := ms.Db.C("counters")
@@ -138,6 +139,7 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 	return nil
 
 }
+*/
 
 // Filestore implementation of MtsnStore
 func ReadFileContents(file *os.File) string {
@@ -243,117 +245,100 @@ func dropPrivs(uid int) {
 }
 
 func validateHash(hash string) {
-	match, _ := regexp.MatchString("^\\w{40}$", hash)
-	if !match {
+	matchSha1, _ := regexp.MatchString("^\\w{40}$", hash)
+	matchSha256, _ := regexp.MatchString("^\\w{64}$", hash)
+	if !matchSha1 || !matchSha256 {
 		panic("Invalid hash circle key.")
 	}
 }
 
-func catchPanic(c *goweb.Context, s *mgo.Session) {
-
-	if r := recover(); r != nil {
-		fmt.Printf("%s\n", r)
-		s.Close()
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithError(400)
-		recover()
-	}
-	s.Close()
-}
-
 // handler functions
-func PostMsg(c *goweb.Context, store MtsnStore) {
+func PostMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 	var m Msg
 	var mw MsgWrap
 
-	body, err := ioutil.ReadAll(c.Request.Body)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil || len(body) == 0 {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithStatus(500)
+		http.Error(w,"Empty body.",500)
 		return
 	}
 	json.Unmarshal(body, &m)
 	mw.Content = m
 	err = store.PostMsg(mw)
 	if err != nil {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithStatus(500)
+		http.Error(w,"Failed to post message.",500)
 		return
 	}
 }
 
-func GetMsgRange(c *goweb.Context, store MtsnStore) {
-	ids := strings.Split(c.PathParams["id"], "-")
+func GetMsgRange(w http.ResponseWriter, r *http.Request, id string, store MtsnStore) {
+	ids := strings.Split(id, "-")
 	top, err := strconv.Atoi(ids[0])
 	bottom, err2 := strconv.Atoi(ids[1])
 	if err != nil || err2 != nil {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithStatus(403)
+		http.Error(w,"Invalid msg range",403)
 		return
 	}
 
 	if bottom > top {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithStatus(403)
+		http.Error(w,"Invalid msg range",403)
 		return
 	}
 
 	delta := top - bottom
 	if delta > 30 {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithStatus(403)
+		http.Error(w,"Invalid msg range",403)
 		return
 	}
 
 	msgs, err := store.GetMsgs(top, bottom)
 
 	if err != nil {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithStatus(500)
+		http.Error(w,"Failed to find messages.",500)
 		return
 	}
 
 	msgBytes, _ := json.Marshal(msgs)
-	c.ResponseWriter.Header().Set("Content-Type", "application/json")
-	c.ResponseWriter.Write(msgBytes)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(msgBytes)
 }
 
-func GetOneMsg(c *goweb.Context, store MtsnStore) {
-	id, _ := strconv.Atoi(c.PathParams["id"])
+func GetOneMsg(w http.ResponseWriter, r *http.Request, ids string, store MtsnStore) {
+	id, _ := strconv.Atoi(ids)
 
 	mw, err := store.GetMsg(id)
 
 	if err != nil {
-		goweb.AddFormatter(&goweb.JsonFormatter{})
-		c.RespondWithNotFound()
+		http.NotFound(w,r)
 		return
 	}
 
-	c.ResponseWriter.Header().Set("Last-Modified", mw.Timestamp)
+	w.Header().Set("Last-Modified", mw.Timestamp)
 	msgBytes, _ := json.Marshal(mw.Content)
-	c.ResponseWriter.Header().Set("Content-Type", "application/json")
-	c.ResponseWriter.Write(msgBytes)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(msgBytes)
 }
 
-func GetMsg(c *goweb.Context, store MtsnStore) {
+func GetMsg(w http.ResponseWriter, r *http.Request, ids string, store MtsnStore) {
 
-	if strings.Contains(c.PathParams["id"], "-") {
-		GetMsgRange(c, store)
+	if strings.Contains(ids, "-") {
+		GetMsgRange(w, r, ids, store)
 	} else {
-		GetOneMsg(c, store)
+		GetOneMsg(w, r, ids, store)
 	}
 
 }
 
-func GetLastMsg(c *goweb.Context, store MtsnStore) {
+func GetLastMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 
 	lastMsg, _ := store.GetLastMsg()
 	b, _ := json.Marshal(lastMsg)
-	c.ResponseWriter.Header().Set("Content-Type", "application/json")
-	c.ResponseWriter.Write(b)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
 }
 
 // expire goroutine
+/*
 func ExpireMessageLoop(d *mgo.Database) {
 	for true {
 		fmt.Printf("Searching for expired messages...\n")
@@ -385,6 +370,7 @@ func ExpireMessageLoop(d *mgo.Database) {
 		time.Sleep(time.Hour)
 	}
 }
+*/
 
 func main() {
 
@@ -410,27 +396,78 @@ func main() {
 	fmt.Printf("UID is %d\n", uid)
 	fmt.Printf("dbtype is %s\n", dbtype)
 
+
+	/*
 	session, err := mgo.Dial("localhost")
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
+	*/
 
-	session.SetMode(mgo.Monotonic, true)
+	//session.SetMode(mgo.Monotonic, true)
 
-	if dbtype == "mongo" {
-		go ExpireMessageLoop(session.DB(db))
-	}
+	//if dbtype == "mongo" {
+	//	go ExpireMessageLoop(session.DB(db))
+	//}
 
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		dropPrivs(uid)
+
+		regex := regexp.MustCompile("^/(\\w{40}|\\w{64})/((\\d+-\\d+)|(\\d+))$")
+		urlParts := regex.FindStringSubmatch(r.URL.Path)
+
+
+		fmt.Printf("Got request %s\n",r.URL.Path)
+
+		if urlParts == nil {
+			regex2 := regexp.MustCompile("^/(\\w{40}|\\w{64})$")
+			urlParts2 := regex2.FindStringSubmatch(r.URL.Path)
+
+			if urlParts2 == nil {
+				// return 404
+				http.NotFound(w,r)
+				return
+			}
+
+			if r.Method == "POST" {
+				fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
+				PostMsg(w, r, fileStore)
+			} else if r.Method == "GET" {
+				fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
+				GetLastMsg(w, r, fileStore)
+			}
+
+
+		} else {
+			fileStore := &FileStore{Circle: urlParts[1], Datadir: db}
+			GetMsg(w, r, urlParts[2], fileStore)
+		}
+
+
+		fmt.Printf("Got req: %s",urlParts[0])
+		fmt.Printf("Got hash: %s",urlParts[1])
+		fmt.Printf("Got ids: %s",urlParts[2])
+
+
+		
+			
+
+	})
+
+	/*
 	// fetch a message, or a message range
 	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200
 	// or   GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200-190
-	goweb.MapFunc("/{hash}/{id}", func(c *goweb.Context) {
-		s := session.Copy()
-		defer catchPanic(c, s)
+	http.HandleFunc("/{hash}/{id}", func(w http.ResponseWriter, r *http.Request) {
+		//s := session.Copy()
+		//defer catchPanic(c, s)
 		dropPrivs(uid)
 
-		validateHash(c.PathParams["hash"])
+		if !validateHash(c.PathParams["hash"]) {
+			respBadRequest(c)
+		}
 
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		if dbtype == "mongo" {
@@ -444,12 +481,15 @@ func main() {
 
 	// Get the last message in the circle
 	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d
-	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		s := session.Copy()
-		defer catchPanic(c, s)
+	http.HandleFunc("/{hash}", func(w http.ResponseWriter, r *http.Request) {
+		//s := session.Copy()
+		//defer catchPanic(c, s)
 		dropPrivs(uid)
 
-		validateHash(c.PathParams["hash"])
+		if !validateHash(c.PathParams["hash"]) {
+			respBadRequest(c)
+		}
+
 		fmt.Printf("GET %s\n", c.Request.URL.String())
 		if dbtype == "mongo" {
 			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
@@ -458,16 +498,19 @@ func main() {
 			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
 			GetLastMsg(c, fileStore)
 		}
-	}, goweb.GetMethod)
+	})
 
 	// POST a new message to a circle
 	// e.g. POST /1e7db1c00e4036d9ea426e5875c355184578ab2d
-	goweb.MapFunc("/{hash}", func(c *goweb.Context) {
-		s := session.Copy()
-		defer catchPanic(c, s)
+	http.HandleFunc("/{hash}", func(w http.ResponseWriter, r *http.Request) {
+		//s := session.Copy()
+		//defer catchPanic(c, s)
 		dropPrivs(uid)
 
-		validateHash(c.PathParams["hash"])
+		if !validateHash(c.PathParams["hash"]) {
+			respBadRequest(c)
+		}
+
 		fmt.Printf("POST %s\n", c.Request.URL.String())
 		if dbtype == "mongo" {
 			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
@@ -476,8 +519,12 @@ func main() {
 			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
 			PostMsg(c, fileStore)
 		}
-	}, goweb.PostMethod)
+	})
+	*/
 
-	goweb.ListenAndServe(fmt.Sprintf("%s:%d", ip, port))
+	s := &http.Server{
+                Addr:           fmt.Sprintf("%s:%d",ip,port),
+        }
+	s.ListenAndServe()
 
 }
