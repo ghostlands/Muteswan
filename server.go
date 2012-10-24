@@ -422,11 +422,10 @@ func main() {
 
 
 	session, err := mgo.Dial("localhost")
-	s := session.Copy()
 	if err != nil {
 		panic(err)
 	}
-	defer s.Close()
+	defer session.Close()
 
 	session.SetMode(mgo.Monotonic, true)
 
@@ -440,6 +439,7 @@ func main() {
 
 
 		s := session.Copy()
+		defer s.Close()
 
 		regex := regexp.MustCompile("^/(\\w{40}|\\w{64})/((\\d+-\\d+)|(\\d+))$")
 		urlParts := regex.FindStringSubmatch(r.URL.Path)
@@ -482,72 +482,6 @@ func main() {
 
 
 	})
-
-	/*
-	// fetch a message, or a message range
-	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200
-	// or   GET /1e7db1c00e4036d9ea426e5875c355184578ab2d/200-190
-	http.HandleFunc("/{hash}/{id}", func(w http.ResponseWriter, r *http.Request) {
-		//s := session.Copy()
-		//defer catchPanic(c, s)
-		dropPrivs(uid)
-
-		if !validateHash(c.PathParams["hash"]) {
-			respBadRequest(c)
-		}
-
-		fmt.Printf("GET %s\n", c.Request.URL.String())
-		if dbtype == "mongo" {
-			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
-			GetMsg(c, mongoStore)
-		} else {
-			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
-			GetMsg(c, fileStore)
-		}
-	})
-
-	// Get the last message in the circle
-	// e.g. GET /1e7db1c00e4036d9ea426e5875c355184578ab2d
-	http.HandleFunc("/{hash}", func(w http.ResponseWriter, r *http.Request) {
-		//s := session.Copy()
-		//defer catchPanic(c, s)
-		dropPrivs(uid)
-
-		if !validateHash(c.PathParams["hash"]) {
-			respBadRequest(c)
-		}
-
-		fmt.Printf("GET %s\n", c.Request.URL.String())
-		if dbtype == "mongo" {
-			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
-			GetLastMsg(c, mongoStore)
-		} else {
-			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
-			GetLastMsg(c, fileStore)
-		}
-	})
-
-	// POST a new message to a circle
-	// e.g. POST /1e7db1c00e4036d9ea426e5875c355184578ab2d
-	http.HandleFunc("/{hash}", func(w http.ResponseWriter, r *http.Request) {
-		//s := session.Copy()
-		//defer catchPanic(c, s)
-		dropPrivs(uid)
-
-		if !validateHash(c.PathParams["hash"]) {
-			respBadRequest(c)
-		}
-
-		fmt.Printf("POST %s\n", c.Request.URL.String())
-		if dbtype == "mongo" {
-			mongoStore := &MongoStore{Circle: c.PathParams["hash"], Db: s.DB(db)}
-			PostMsg(c, mongoStore)
-		} else {
-			fileStore := &FileStore{Circle: c.PathParams["hash"], Datadir: db}
-			PostMsg(c, fileStore)
-		}
-	})
-	*/
 
 	httpd := &http.Server{
                 Addr:           fmt.Sprintf("%s:%d",ip,port),
