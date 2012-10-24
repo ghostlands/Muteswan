@@ -7,8 +7,8 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	//"launchpad.net/mgo"
-	//"launchpad.net/mgo/bson"
+	"launchpad.net/mgo"
+	"launchpad.net/mgo/bson"
 	"os"
 	"regexp"
 	"runtime"
@@ -50,7 +50,7 @@ type MtsnStore interface {
 
 type MongoStore struct {
 	Circle string
-	//Db     *mgo.Database
+	Db     *mgo.Database
 }
 
 type FileStore struct {
@@ -59,7 +59,6 @@ type FileStore struct {
 }
 
 // mongodb implementation of MtsnStore
-/*
 func (ms *MongoStore) getCounter() int {
 	var counter Counter
 	col := ms.Db.C("counters")
@@ -85,6 +84,7 @@ func (ms *MongoStore) GetMsg(id int) (MsgWrap, error) {
 	var mw MsgWrap
 	col := ms.Db.C("C" + ms.Circle)
 
+	fmt.Printf("Finding in %d\n",id)
 	err := col.Find(bson.M{"_id": id}).One(&mw)
 	if err != nil {
 		fmt.Printf("Error fetching %s: %s", id, err)
@@ -139,7 +139,6 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 	return nil
 
 }
-*/
 
 // Filestore implementation of MtsnStore
 func ReadFileContents(file *os.File) string {
@@ -252,7 +251,23 @@ func validateHash(hash string) {
 	}
 }
 
+func makeStore( dbtype, db, hash string, s *mgo.Session) MtsnStore {
+
+
+	if dbtype == "mongo" {
+		return &MongoStore{Circle: hash, Db: s.DB(db)}
+	}
+
+	if dbtype == "file" {
+		return &FileStore{Circle: hash, Datadir: db}
+	}
+
+	return nil
+
+}
+
 // handler functions
+////////////////////
 func PostMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 	var m Msg
 	var mw MsgWrap
@@ -262,8 +277,15 @@ func PostMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 		http.Error(w,"Empty body.",500)
 		return
 	}
+
+	fmt.Printf("Body %s\n",body)
 	json.Unmarshal(body, &m)
 	mw.Content = m
+
+	if mw.Content.Message == "" {
+		http.Error(w,"Empty Message content field.", 500)
+	}
+
 	err = store.PostMsg(mw)
 	if err != nil {
 		http.Error(w,"Failed to post message.",500)
@@ -329,6 +351,7 @@ func GetMsg(w http.ResponseWriter, r *http.Request, ids string, store MtsnStore)
 
 }
 
+
 func GetLastMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 
 	lastMsg, _ := store.GetLastMsg()
@@ -336,9 +359,9 @@ func GetLastMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
 }
+///////////////
 
 // expire goroutine
-/*
 func ExpireMessageLoop(d *mgo.Database) {
 	for true {
 		fmt.Printf("Searching for expired messages...\n")
@@ -370,7 +393,8 @@ func ExpireMessageLoop(d *mgo.Database) {
 		time.Sleep(time.Hour)
 	}
 }
-*/
+
+//var session *mgo.Session
 
 func main() {
 
@@ -397,23 +421,25 @@ func main() {
 	fmt.Printf("dbtype is %s\n", dbtype)
 
 
-	/*
 	session, err := mgo.Dial("localhost")
+	s := session.Copy()
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
-	*/
+	defer s.Close()
 
-	//session.SetMode(mgo.Monotonic, true)
+	session.SetMode(mgo.Monotonic, true)
 
-	//if dbtype == "mongo" {
-	//	go ExpireMessageLoop(session.DB(db))
-	//}
+	if dbtype == "mongo" {
+		go ExpireMessageLoop(session.DB(db))
+	}
 
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		dropPrivs(uid)
+
+
+		s := session.Copy()
 
 		regex := regexp.MustCompile("^/(\\w{40}|\\w{64})/((\\d+-\\d+)|(\\d+))$")
 		urlParts := regex.FindStringSubmatch(r.URL.Path)
@@ -431,28 +457,29 @@ func main() {
 				return
 			}
 
+			mtsnStore := makeStore(dbtype,db,urlParts2[1],s)
+
 			if r.Method == "POST" {
-				fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
-				PostMsg(w, r, fileStore)
+				//fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
+				PostMsg(w, r, mtsnStore)
 			} else if r.Method == "GET" {
-				fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
-				GetLastMsg(w, r, fileStore)
+				//fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
+				GetLastMsg(w, r, mtsnStore)
 			}
 
 
 		} else {
-			fileStore := &FileStore{Circle: urlParts[1], Datadir: db}
-			GetMsg(w, r, urlParts[2], fileStore)
+			//fileStore := &FileStore{Circle: urlParts[1], Datadir: db}
+			mtsnStore := makeStore(dbtype,db,urlParts[1],s)
+			GetMsg(w, r, urlParts[2], mtsnStore)
 		}
 
 
-		fmt.Printf("Got req: %s",urlParts[0])
-		fmt.Printf("Got hash: %s",urlParts[1])
-		fmt.Printf("Got ids: %s",urlParts[2])
+		//fmt.Printf("Got req: %s",urlParts[0])
+		//fmt.Printf("Got hash: %s",urlParts[1])
+		//fmt.Printf("Got ids: %s",urlParts[2])
 
 
-		
-			
 
 	})
 
@@ -522,9 +549,9 @@ func main() {
 	})
 	*/
 
-	s := &http.Server{
+	httpd := &http.Server{
                 Addr:           fmt.Sprintf("%s:%d",ip,port),
         }
-	s.ListenAndServe()
+	httpd.ListenAndServe()
 
 }
