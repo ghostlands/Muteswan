@@ -386,7 +386,7 @@ public class Main extends Activity implements Runnable {
 
 		// fdo we want this?
 		CircleStore cs = new CircleStore(cipherSecret,this,true,false);
-		 cs.updateStore("dd85381ac8acc1a7", "Feedback",
+		 cs.updateStore("dd85381ac8acc1a7", null, "Feedback",
 		 "circles.muteswan.org");
 	}
 	
@@ -687,7 +687,7 @@ public class Main extends Activity implements Runnable {
 		for (String[] s : circles) {
 			MuteLog.Log("NewMessageService", "On Migration got: " + s[0]);
 			
-			Circle newCircle = new Circle(cipherSecret, this, s[1], s[0], s[2]);
+			Circle newCircle = new Circle(cipherSecret, this, s[1], null, s[0], s[2]);
 			newCircle.createLastMessage(0);
 			MuteLog.Log("NewMessageService",
 					"full text: " + newCircle.getFullText());

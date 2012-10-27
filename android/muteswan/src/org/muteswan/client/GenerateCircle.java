@@ -3,6 +3,7 @@ package org.muteswan.client;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.UUID;
 
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.CircleList;
@@ -54,7 +55,9 @@ public class GenerateCircle {
     	if (name.length() == 0 || server.length() == 0 || name.length() >= MAX_CIRCNAME_LENGTH)
     		return;
     	
-    	circleFullText = name + "+" + generateKey() + "@" + server;
+    	
+    	
+    	circleFullText = name + "+" + UUID.randomUUID().toString() + "$" + generateKey() + "@" + server;
 		
 	}
 	

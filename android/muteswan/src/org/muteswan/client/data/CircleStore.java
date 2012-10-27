@@ -181,8 +181,8 @@ final public class CircleStore extends LinkedList<Circle> {
 		  addCircleToDb(circle);
 	  }
 	  
-	  public void updateStore(String key, String shortname, String server) {
-		  Circle circle = new Circle(cipherSecret,context,key,shortname,server);
+	  public void updateStore(String key, String guid, String shortname, String server) {
+		  Circle circle = new Circle(cipherSecret,context,key,guid,shortname,server);
 		  for (Circle r : this) {
 			  if (r.getKey().equals(key) && r.getShortname().equals(shortname) && r.getServer().equals(server)) {
 				  return;
