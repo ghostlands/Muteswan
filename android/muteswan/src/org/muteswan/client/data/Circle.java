@@ -83,9 +83,9 @@ public class Circle {
 		
 	final private String shortname;
 	final private String server;
-	final private String guid;
+	final private String uuid;
 	final private String notes = null;
-	final private String guidHash;
+	final private String uuidHash;
 	private MuteswanHttp muteswanHttp;
 
 	
@@ -123,7 +123,7 @@ public class Circle {
 			parsedCircle[3] = fullText.substring(atIndx+1,fullText.length()); //host
 		} else {
 			parsedCircle[0] = fullText.substring(0,plusIndx); // name
-			parsedCircle[1] = fullText.substring(plusIndx+1,sigilIndx); //guid
+			parsedCircle[1] = fullText.substring(plusIndx+1,sigilIndx); //uuid
 			parsedCircle[2] = fullText.substring(sigilIndx+1,atIndx); //key
 			parsedCircle[3] = fullText.substring(atIndx+1,fullText.length()); //host
 		}
@@ -137,7 +137,7 @@ public class Circle {
 		
 		String[] parsedCircle = parseCircle(contents);
 		String name = parsedCircle[0];
-		String guid = parsedCircle[1];
+		String uuid = parsedCircle[1];
 		String key = parsedCircle[2];
 		String srv = parsedCircle[3];
 		
@@ -145,18 +145,18 @@ public class Circle {
 			this.key = null;
 	        this.shortname = null;
 	        this.server = null;
-	        this.guidHash = null;
-	        this.guid = null;
+	        this.uuidHash = null;
+	        this.uuid = null;
 			return;
 		}
 		
 		
 		
 		this.key = key;
-		this.guid = guid;
+		this.uuid = uuid;
 		this.shortname = name;
 		this.server = srv;
-		this.guidHash = guid != null ? Main.genHexHash(guid) : Main.genHexHash(key);
+		this.uuidHash = uuid != null ? Main.genHexHash(uuid) : Main.genHexHash(key);
 		this.context = context;
 		
 		
@@ -205,16 +205,16 @@ public Circle(String secret, Context context, JSONObject jsonObject, MuteswanHtt
 			
 	
 		String name = parsedCircle[0];
-		String guid = parsedCircle[1];
+		String uuid = parsedCircle[1];
 		String key = parsedCircle[2];
 		String srv = parsedCircle[3];
 		
 		if (name == null || key == null || srv == null) {
 			this.key = null;
-			this.guid = null;
+			this.uuid = null;
 	        this.shortname = null;
 	        this.server = null;
-	        this.guidHash = null;
+	        this.uuidHash = null;
 			return;
 		}
 		
@@ -222,9 +222,9 @@ public Circle(String secret, Context context, JSONObject jsonObject, MuteswanHtt
 		
 		this.key = key;
 		this.shortname = name;
-		this.guid = guid;
+		this.uuid = uuid;
 		this.server = srv;
-		this.guidHash = Main.genHexHash(key);
+		this.uuidHash = Main.genHexHash(key);
 		this.context = context;
 		this.muteswanHttp = muteswanHttp;
 		
@@ -273,16 +273,16 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 
 	String name = parsedCircle[0];
-	String guid = parsedCircle[1];
+	String uuid = parsedCircle[1];
 	String key = parsedCircle[2];
 	String srv = parsedCircle[3];
 	
 	if (name == null || key == null || srv == null) {
 		this.key = null;
-		this.guid = null;
+		this.uuid = null;
         this.shortname = null;
         this.server = null;
-        this.guidHash = null;
+        this.uuidHash = null;
 		return;
 	}
 	
@@ -290,9 +290,9 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	
 	this.key = key;
 	this.shortname = name;
-	this.guid = guid;
+	this.uuid = uuid;
 	this.server = srv;
-	this.guidHash = Main.genHexHash(key);
+	this.uuidHash = Main.genHexHash(key);
 	this.context = context;
 	this.muteswanHttp = muteswanHttp;
 	
@@ -312,26 +312,26 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 		String[] parsedCircle = parseCircle(contents);
 		String name = parsedCircle[0];
-		String guid = parsedCircle[1];
+		String uuid = parsedCircle[1];
 		String key = parsedCircle[2];
 		String srv = parsedCircle[3];
 		
 		if (name == null || key == null || srv == null) {
 			this.key = null;
-			this.guid = null;
+			this.uuid = null;
 	        this.shortname = null;
 	        this.server = null;
-	        this.guidHash = null;
+	        this.uuidHash = null;
 			return;
 		}
 		
 		
 		
 		this.key = key;
-		this.guid = guid;
+		this.uuid = uuid;
 		this.shortname = name;
 		this.server = srv;
-		this.guidHash = Main.genHexHash(key);
+		this.uuidHash = Main.genHexHash(key);
 		this.context = context;
 		this.muteswanHttp = muteswanHttp;
 		
@@ -360,16 +360,16 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		return(new File(context.getFilesDir() + "/" + Main.genHexHash(getFullText())));
 	}
 
-	public Circle(String secret, Context context, String key, String guid, String shortname, String server, MuteswanHttp muteswanHttp) {
+	public Circle(String secret, Context context, String key, String uuid, String shortname, String server, MuteswanHttp muteswanHttp) {
 		this.key = key;
-		this.guid = guid;
+		this.uuid = uuid;
 		this.shortname = shortname;
 		this.server = server;
 		this.context = context;
 		
 		
 
-		this.guidHash = Main.genHexHash(key);
+		this.uuidHash = Main.genHexHash(key);
 		
 		
 		
@@ -382,13 +382,13 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	  	initializeDirStore(context.getFilesDir());
 	}
 	
-	public Circle(String secret, Context context, String key, String guid, String shortname, String server) {
+	public Circle(String secret, Context context, String key, String uuid, String shortname, String server) {
 		this.key = key;
-		this.guid = guid;
+		this.uuid = uuid;
 		this.shortname = shortname;
 		this.server = server;
 		this.context = context;
-		this.guidHash = Main.genHexHash(key);
+		this.uuidHash = Main.genHexHash(key);
 		
 
 
@@ -433,7 +433,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	}
 
 	final public String getFullText() {
-		return(getShortname()+"+"+getGuid()+"$"+getKey()+"@"+getServer());
+		return(getShortname()+ "+" + getUuidWithSep() + getKey() + "@" + getServer());
+		
 	}
 	
 	private void setKeylist(String[] keylist) {
@@ -468,11 +469,17 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		return key;
 	}
 	
-	public String getGuid() {
-		return guid;
+	public String getUuid() {
+		if (uuid == null || uuid == "null")
+			return "";
+		return uuid;
 	}
 
-	
+	private String getUuidWithSep() {
+		if (uuid != null && uuid != "null")
+			return(uuid + "$");
+		return("");
+	}
 	
 	
 	
@@ -554,7 +561,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 
 	
 	public MuteswanMessage getMsgFromTor(int id) throws ClientProtocolException, IOException, InterruptedIOException {
-		HttpGet httpGet = new HttpGet("http://" + server + "/" + guidHash + "/" + id);
+		HttpGet httpGet = new HttpGet("http://" + server + "/" + uuidHash + "/" + id);
 		MuteLog.Log("Circle", "Fetching message " + id);
     	HttpResponse resp = muteswanHttp.execute(httpGet);
     	MuteLog.Log("Circle", "Fetched message " + id);
@@ -569,7 +576,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 
 		HashMap<Integer,MuteswanMessage> msgs = new HashMap<Integer,MuteswanMessage>();
 		
-		HttpGet httpGet = new HttpGet("http://" + server + "/" + guidHash + "/" + max + "-" + min);
+		HttpGet httpGet = new HttpGet("http://" + server + "/" + uuidHash + "/" + max + "-" + min);
 		MuteLog.Log("Circle", "Fetching messages " + max + " to " + min);
     	HttpResponse resp = muteswanHttp.execute(httpGet);
 		MuteLog.Log("Circle", "Fetched messages " + max + " to " + min);
@@ -735,7 +742,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	public Integer getLastTorMessageId() {
 	  
 		
-	   HttpGet httpGet = new HttpGet("http://" + server + "/" + guidHash);
+	   HttpGet httpGet = new HttpGet("http://" + server + "/" + uuidHash);
 	   try {
 	    HttpResponse resp = muteswanHttp.execute(httpGet);
 	   
@@ -826,7 +833,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	// return the HTTP code, if IO error returns -1, protocol error -2, -3 key error 
 	public Integer postMsg(JSONObject jsonObj) {
 		
-		HttpPost httpPost = new HttpPost("http://" + server + "/" + guidHash);
+		HttpPost httpPost = new HttpPost("http://" + server + "/" + uuidHash);
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
 		
 		if (getPostPolicy() != null && !getPostPolicy().equals("ANY")) {
@@ -1230,7 +1237,7 @@ public void deleteAllMessages(boolean closedb) {
 	}
 
 	public void updateManifest(JSONObject jsonObj) {
-		HttpPut httpPut = new HttpPut("http://" + server + "/" + guidHash + "/manifest");
+		HttpPut httpPut = new HttpPut("http://" + server + "/" + uuidHash + "/manifest");
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
 		httpPut.setEntity(entity);
 		
@@ -1248,7 +1255,7 @@ public void deleteAllMessages(boolean closedb) {
 	}
 	
 	public void updateManifest(JSONObject jsonObj, String signature) {
-		HttpPut httpPut = new HttpPut("http://" + server + "/" + guidHash + "/manifest");
+		HttpPut httpPut = new HttpPut("http://" + server + "/" + uuidHash + "/manifest");
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
 		httpPut.setHeader("Signature",signature);
 		httpPut.setEntity(entity);
@@ -1267,7 +1274,7 @@ public void deleteAllMessages(boolean closedb) {
 	}
 
 	public void downloadManifest() {
-			HttpGet httpGet = new HttpGet("http://" + server + "/" + guidHash + "/manifest");
+			HttpGet httpGet = new HttpGet("http://" + server + "/" + uuidHash + "/manifest");
 			MuteLog.Log("Circle", "Downloading manifest for " + getShortname());
 	    	try {
 				HttpResponse resp = muteswanHttp.execute(httpGet);
