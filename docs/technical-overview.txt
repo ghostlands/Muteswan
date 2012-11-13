@@ -35,7 +35,7 @@ is accessible only to other Tor clients and the server does not know the
 identity of the request nor does the client know the identity of the hidden
 service serving the response. A very simple RESTful protocol is used to post,
 get and discover new messages. Messages are encrypted using AES and accessible
-by URL using a SHA1 hash of the AES key.
+by URL using a SHA1 hash of the UUID associated with the circle.
 
 
 Intentions, Assumptions and Goals
@@ -108,13 +108,15 @@ Circles are the only organizational unit in Muteswan. They are composed of three
 elements:
 
 	key: a 24-bit AES key,e.g, dba4fe6ef22b494d
+	uuid: a RFC4122 UUID use in URL
 	server: a tor hidden service address, e.g., tckwndlytrphlpyo.onion
 	shortname: name of the circle, without spaces, e.g., testsite
 
 
-Circles are usually represented in text form with a '+' separating the name from the key and an '@' separating the key from the server:
+Circles are represented in text form with a '+' separating the name from the
+UUID, a '$' separating the key and an '@' delimiting the server:
 
-testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion
+testsite+4830a37e-2d27-11e2-b81b-5cff350faff3$dba4fe6ef22b494d@tckwndlytrphlpyo.onion
 
 
 
@@ -184,9 +186,9 @@ Message Encryption
 
 Muteswan uses standard AES CBC symmetric key cryptography. Every message is
 encrypted with the circle key before it is sent. It is posted to the server based
-on a SHA1 hash of the circle key. The AES cryptography provides protection from
-anyone who has access to the actual tor hidden service as well as a certain
-level of protection if an Muteswan server is compromised.
+on a SHA1 hash of the circle UUID. The AES cryptography provides protection
+from anyone who has access to the actual tor hidden service as well as a
+certain level of protection if an Muteswan server is compromised.
 
 AES is currently used because it is secure and widely supported. The actual
 cryptographic algorithm is not material and perhaps changing out or selecting
