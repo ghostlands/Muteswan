@@ -1,0 +1,16 @@
+---
+layout: default
+title: A simple instant message client for Android that uses Tor.
+---
+
+  <img src="{{ site.baseurl }}/images/phone.png" />    
+h2. Anonymous friends<br />trusted face-to-face.
+
+Create secure social networks using shared QR codes. Share them with whomever you trust, face-to-face.
+
+<a id="downloadbutton" href="http://muteswan.org/releases/0.5-release-4.apk" title="Download App">Download App</a>
+
+<a href="https://play.google.com/store/apps/details?id=org.muteswan.client&hl=e"><img src="{{ site.baseurl }}/images/get_it_on_play_logo_large.png" id="gplaybutton" alt="Available in Google Play" /></a>
+																                                  
+
+

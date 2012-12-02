@@ -5,7 +5,6 @@ title: How it Works
 
 h1(entry-title). How it Works
 
-<div class="entry-content">
 
 Muteswan uses the Tor network to help make your communication anonymous.  Tor bounces your internet communication through a set of relays before sending it on to its destination.  Someone monitoring your traffic only sees your connection to the Tor network.  They do not see with whom you are communicating.
 
@@ -22,4 +21,3 @@ h1. The Fine Print
 
 We should be very clear that muteswan is experimental and we cannot yet vouch for its security.
 
-</div>
