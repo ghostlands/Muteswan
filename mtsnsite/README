@@ -1,0 +1,6 @@
+
+This is a static Muteswan site in Jekyll.
+
+'gem install jekyll' and then run 'jekyll' to generate. Check _config.yml to
+set base url.
+
