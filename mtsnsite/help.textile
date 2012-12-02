@@ -1,0 +1,59 @@
+---
+layout: default
+title: Help
+---
+	
+h1(entry-title). Help
+
+h1. Installation
+
+Muteswan requires two other Android apps: <a href="https://play.google.com/store/apps/details?id=org.torproject.android">Orbot</a> and <a href="https://play.google.com/store/apps/details?id=com.google.zxing.client.android">Barcode Scanner</a>.
+
+Optionally, you may also install <a href="https://play.google.com/store/apps/details?id=org.openintents.safe">OI Safe</a>, which allows you to require a password to start Muteswan and protects your keys if your phone is lost, stolen, or confiscated.  If you do wish to use OI Safe, you will need to enable this in Muteswan settings.
+
+You can install Muteswan from the Google Play store or download the market release directly from us.  To install directly, you will need to enable installation of non-market apps in Settings > Security.
+
+
+h1. Create a Circle
+
+To create a circle, use the New Circle button on the Circles screen.  You must give your circle a name.  The name does not need to be unique.
+
+h1. Share a Circle
+
+To share a circle, use the Share button on the Circles screen.  Muteswan will display the QR code for your shared circle.  Your friend joins the circle by scanning the QR code using the Join Circle button.
+
+h1. Join a Circle
+
+To join a circle, use the Join Circle button and scan the QR code for the circle you wish to join.
+
+h1. Post a Message
+
+To post a message, use the Post button on the Posts screen.  Write your message, select the circles to which you want to send your message, and press Send.
+To reply to a message, long press the message on the Posts screen and select Reply.
+To repost a message, long press the message on the Posts screen and select Repost.
+
+h1. Settings
+
+h3. New Message Service
+
+To have Muteswan periodically check for new messages, enable the New Message Service.  You can set how often Muteswan will check for new messages with the Check Interval setting.
+
+h3. Custom Server
+
+By default, Muteswan will use a pre-configured server.  If you want to use your own server, you can enter it here.  If it is a public server, it will look something like circles.muteswan.org.  If it is a Tor hidden service, it will look something like kpvz7ki2v5agwt35.onion.
+
+h3. Use Public Server
+
+When enabled, Muteswan will use the public server circles.muteswan.org instead of a Tor hidden service.  Sending and receiving messages will be faster, as you use fewer relays within the Tor network.  However, it is less secure as your messages leave the Tor network and may be analyzed by an exit node.
+
+h3. Allow Manual Joining
+
+When enabled, you can join circles by manually entering in a circle key.  This is the code which is normally expressed as a QR code.  This is useful if you want to use Muteswan on a device without a camera.  It is a potential security risk, however, if only because you might be more inclined to write down the key.
+
+h3. Verbose
+
+When enabled, Muteswan will display additional information when loading or sending posts.
+
+h3. Use OA Safe
+
+OI Safe is a separate Android app which will encrypt your passwords and private data.  You can have Muteswan require the OI Safe master password.  This is useful if your phone is lost, stolen, or confiscated.
