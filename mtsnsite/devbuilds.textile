@@ -15,7 +15,7 @@ To install Muteswan directly:
 
 Muteswan also requires <a href="https://www.torproject.org/docs/android.html.en">Orbot (Tor client for Android)</a> and Barcode Scanner. Muteswan will offer to install these dependencies from the market if they are not installed on your device so you don&#8217;t need to worry about installing them individually.
 
-If you are interested in seeing how Muteswan works or would like to run your own Muteswan server check out: <br />&nbsp;&nbsp;<a href="http://muteswan.org/docs/">http://muteswan.org/docs/</a>. 
+If you are interested in seeing how Muteswan works or would like to run your own Muteswan server check out: <br />&nbsp;&nbsp;<a href="{{ site.baseurl }}/technical-overview.html">tech overview/</a>.
 If you are interested in contributing or viewing the source you can check it out with:
 
 <pre>git clone http://muteswan.org/git muteswan</pre>

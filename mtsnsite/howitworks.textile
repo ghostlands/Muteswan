@@ -15,7 +15,7 @@ Messages in muteswan are encrypted.  Each circle of messages has a key in the fo
 
 h1. Technical Specification
 
-For detailed information about the muteswan client, server, and messaging protocol, <a href="http://muteswan.org/docs/">read the technical overview</a>.
+For detailed information about the muteswan client, server, and messaging protocol, <a href="{{ site.baseurl}}/technical-overview.html">read the technical overview</a>.
 
 h1. The Fine Print
 
