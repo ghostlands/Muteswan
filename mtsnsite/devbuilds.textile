@@ -4,7 +4,9 @@ title: Dev Builds
 ---
 h1(entry-title). Dev Builds
 
+<div class="entry-content">
 You can test the latest versions of Muteswan without downloading the app from Google Play. If you have already installed Muteswan from Google Play, you will need to uninstall the app before you install a development version. Your Android device needs to allow installation of apps that are not on the market. This is a simple toggle in the Applications menu of the main Settings.
+</div>
 
 
 To install Muteswan directly:
