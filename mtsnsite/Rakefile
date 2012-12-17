@@ -1,0 +1,5 @@
+task :default do
+	sh "asciidoc ../docs/technical-overview.txt"
+	sh "cp ../docs/technical-overview.html ."
+	sh "jekyll"
+end
