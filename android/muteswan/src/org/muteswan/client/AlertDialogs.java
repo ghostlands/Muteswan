@@ -1,6 +1,7 @@
 package org.muteswan.client;
 
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -29,6 +30,8 @@ public class AlertDialogs {
 		}
 
 	};
+	private Builder writeNFC;
+	private Builder beamNFC;
 	
 	public boolean getUseOISafe() {
 		return useOISafe;
@@ -66,6 +69,41 @@ public class AlertDialogs {
 	  
 	    noCipherAvailable.create();
 	    noCipherAvailable.show();
+	}
+	
+	public void readyToWriteNFCTag() {
+		writeNFC = new AlertDialog.Builder(context);
+	    writeNFC.setTitle("Ready to Write NFC Tag");
+	    writeNFC.setMessage("You should now be ready to write the NFC tag. Click button below to stop tag detection.");
+	    writeNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	        
+	      }
+	    });
+	  
+	    writeNFC.create();
+	    writeNFC.show();
+	}
+	
+	public void updateWriteNFCMessage(final String msg) {
+		writeNFC.setMessage(msg);
+	}
+	
+	public void readyToBeamNFC() {
+		beamNFC = new AlertDialog.Builder(context);
+		beamNFC.setTitle("Ready to Beam NFC Tag");
+		beamNFC.setMessage("You should now be beaming the NFC to another device. Click the button below to stop tag detection.");
+		beamNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {
+		        
+		      }
+		});
+		beamNFC.create();
+		beamNFC.show();
+	}
+	
+	public void updateBeamNFCMessage(final String msg) {
+		beamNFC.setMessage(msg);
 	}
 	
 	public void offerToInstallOISafe() {

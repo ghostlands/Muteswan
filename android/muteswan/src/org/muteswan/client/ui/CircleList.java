@@ -17,6 +17,8 @@ along with Muteswan.  If not, see <http://www.gnu.org/licenses/>.
 */
 package org.muteswan.client.ui;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -35,13 +37,21 @@ import org.muteswan.client.data.IdentityStore;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -103,6 +113,10 @@ public class CircleList extends ListActivity {
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
+		if (currentlyBeaming) {
+			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+		}
+		
     	store = new CircleStore(cipherSecret,this,true,false);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
@@ -131,9 +145,11 @@ public class CircleList extends ListActivity {
     };
 	private AlertDialogs alertDialogs;
 	private boolean shareManually;
+	private boolean useNFC;
 	private Button addCircle;
 	private Button createCircle;
 	private String cipherSecret;
+	private NfcAdapter nfcAdapter;
 	
 	
 	
@@ -162,6 +178,11 @@ public class CircleList extends ListActivity {
         
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         shareManually = defPrefs.getBoolean("allowManualJoining", false);
+        useNFC = defPrefs.getBoolean("useNFC", false);
+        
+        if (useNFC) {
+        	nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        }
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         //RelativeLayout circleListButtons = (RelativeLayout) findViewById(R.id.circlelistButtons);
@@ -565,7 +586,48 @@ public class CircleList extends ListActivity {
     	     return;
     	 }
      };
+	private boolean currentlyWritingTag = false;
+	private Integer selectedCirclePos;
+	private boolean currentlyBeaming = false;
      
+	
+	public void onNewIntent(Intent intent) {
+		
+		if (currentlyWritingTag) {
+			currentlyWritingTag = false;
+			
+			NdefMessage ndefMsg = createNdefMessage(circleList[selectedCirclePos].getFullText());
+			Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+			
+			Ndef ndef = Ndef.get(tag);
+			// assume we can't format now, just write shit
+			if (ndef != null) {
+				try {
+					ndef.writeNdefMessage(ndefMsg);
+					alertDialogs.updateWriteNFCMessage("Successfully wrote circle data!");
+				} catch (IOException e) {
+					MuteLog.Log("CircleList","IO exception writing ndef message.");
+				} catch (FormatException e) {
+					MuteLog.Log("CircleList", "Tag is not formatted and we can't handle formatting yet.");
+				}
+			}
+		}
+	}
+	
+	private NdefMessage createNdefMessage(String circleText) {
+		byte[] mimeBytes;
+		try {
+			mimeBytes = "application/muteswan.circle".getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return null;
+		}
+		
+		NdefRecord rec = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,mimeBytes,new byte[0], 
+				circleList[selectedCirclePos].getFullText().getBytes());
+		return new NdefMessage(new NdefRecord[] {rec});
+		
+	}
+	
 	
 	private void deleteCircle(int position) {
 		CircleStore store = new CircleStore(cipherSecret,getApplicationContext());
@@ -604,15 +666,45 @@ public class CircleList extends ListActivity {
 	}
 	
 	private void shareCircle(Integer position) {
-		Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-		intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
-		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-		intent.putExtra("ENCODE_SHOW_CONTENTS", true);
-        try {
+		if (!useNFC) {
+		  Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+		  intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
+		  intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+		  intent.putExtra("ENCODE_SHOW_CONTENTS", true);
+          try {
 	        startActivityForResult(intent, 0);
-	    } catch (ActivityNotFoundException e) {
+	      } catch (ActivityNotFoundException e) {
 	       	alertDialogs.offerToInstallBarcodeScanner();
-	    }
+	      }
+		} else {
+			
+			//currentlyWritingTag = true;
+			currentlyBeaming = true;
+			selectedCirclePos = position;
+			
+			//PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+			//		new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+			
+			//IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+			//IntentFilter[] filters = new IntentFilter[] { tagDetected };
+			
+			//IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+			//IntentFilter[] filters = new IntentFilter[] { beamDetected };
+			
+			//nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
+			//alertDialogs.readyToWriteNFCTag();
+			
+			
+			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+			alertDialogs.readyToBeamNFC();
+		}
+	}
+	
+	public void onPause() {
+		if (currentlyBeaming) {
+		  nfcAdapter.disableForegroundNdefPush(this);
+		}
+		super.onPause();
 	}
 
 	private void showMsgList(Integer position) {

@@ -41,6 +41,8 @@ import org.muteswan.client.ui.Preferences;
 import org.muteswan.client.ui.WriteMsg;
 import org.torproject.android.service.ITorService;
 
+import android.nfc.NfcAdapter;
+
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -436,6 +438,7 @@ public class Main extends Activity implements Runnable {
 		Thread thread = new Thread(this);
 		thread.start();
 
+		
 		
 
 		
