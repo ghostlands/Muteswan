@@ -32,6 +32,7 @@ public class AlertDialogs {
 	};
 	private Builder writeNFC;
 	private Builder beamNFC;
+	private Builder receiveNFC;
 	
 	public boolean getUseOISafe() {
 		return useOISafe;
@@ -100,6 +101,19 @@ public class AlertDialogs {
 		});
 		beamNFC.create();
 		beamNFC.show();
+	}
+	
+	public void readyToReceiveNFC() {
+		receiveNFC = new AlertDialog.Builder(context);
+		receiveNFC.setTitle("Ready to Receive NFC Beam");
+		receiveNFC.setMessage("You should be ready to receive NFC beams. Click the button below to stop beam detection.");
+		receiveNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {
+		        
+		      }
+		});
+		receiveNFC.create();
+		receiveNFC.show();
 	}
 	
 	public void updateBeamNFCMessage(final String msg) {

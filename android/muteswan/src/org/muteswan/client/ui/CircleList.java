@@ -53,7 +53,10 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Parcelable;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -117,15 +120,24 @@ public class CircleList extends ListActivity {
 			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
 		}
 		
+		if (currentlyReceivingBeam) {
+			Intent intent = getIntent();
+			Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+			NdefMessage msg = (NdefMessage) rawMsgs[0];
+			String newCircle = new String(msg.getRecords()[0].getPayload());
+			store.updateStore(newCircle);
+			
+		}
+		
     	store = new CircleStore(cipherSecret,this,true,false);
         circleList = getArray();
         //listAdapter = new ArrayAdapter<Circle>(this,
         //        android.R.layout.simple_list_item_1, circleList);
         listAdapter = new CircleListAdapter();
-          setListAdapter(listAdapter);
+        setListAdapter(listAdapter);
           
-          Arrays.sort(circleList, comparatorCircles);
-		  listAdapter.notifyDataSetChanged();
+        Arrays.sort(circleList, comparatorCircles);
+		listAdapter.notifyDataSetChanged();
 	}
 	
 	public View.OnClickListener postClicked = new View.OnClickListener() {
@@ -493,15 +505,47 @@ public class CircleList extends ListActivity {
 	private Button.OnClickListener addCircleListener  = new Button.OnClickListener() {
         public void onClick( View v ) {
         	
-        	Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-	        try {
-	           startActivityForResult(intent, 0);
-	        } catch (ActivityNotFoundException e) {
-	        	alertDialogs.offerToInstallBarcodeScanner();
-	        }
+        	
+        	if (!useNFC) {
+        		Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+        		intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+        		try {
+        			startActivityForResult(intent, 0);
+        		} catch (ActivityNotFoundException e) {
+        			alertDialogs.offerToInstallBarcodeScanner();
+        		}
+        	} else {
+        		currentlyReceivingBeam = true;
+        		handleJoinNFC.sendEmptyMessage(0);
+        	}
 	        
          }
+     };
+     
+     private void joinNFC() {
+    	PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+					new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+			
+		IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+		IntentFilter[] tagFilters = new IntentFilter[] { tagDetected };
+			
+		IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+		IntentFilter[] beamFilters = new IntentFilter[] { beamDetected };
+			
+		nfcAdapter.enableForegroundDispatch(this, pendingIntent, tagFilters, null);
+		nfcAdapter.enableForegroundDispatch(this, pendingIntent, beamFilters, null);
+		
+			
+			
+		//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+		alertDialogs.readyToReceiveNFC();
+     }
+     final Handler handleJoinNFC = new Handler() {
+     	@Override
+     	public void handleMessage(Message msg) {
+     		joinNFC();
+     		
+     	}
      };
 
 
@@ -589,6 +633,7 @@ public class CircleList extends ListActivity {
 	private boolean currentlyWritingTag = false;
 	private Integer selectedCirclePos;
 	private boolean currentlyBeaming = false;
+	private boolean currentlyReceivingBeam = false;
      
 	
 	public void onNewIntent(Intent intent) {
@@ -682,20 +727,21 @@ public class CircleList extends ListActivity {
 			currentlyBeaming = true;
 			selectedCirclePos = position;
 			
-			//PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-			//		new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+					new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 			
-			//IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
-			//IntentFilter[] filters = new IntentFilter[] { tagDetected };
+			IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+			IntentFilter[] tagFilters = new IntentFilter[] { tagDetected };
 			
-			//IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-			//IntentFilter[] filters = new IntentFilter[] { beamDetected };
+			IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+			IntentFilter[] beamFilters = new IntentFilter[] { beamDetected };
 			
-			//nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
+			nfcAdapter.enableForegroundDispatch(this, pendingIntent, tagFilters, null);
+			nfcAdapter.enableForegroundDispatch(this, pendingIntent, beamFilters, null);
 			//alertDialogs.readyToWriteNFCTag();
 			
 			
-			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+			//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
 			alertDialogs.readyToBeamNFC();
 		}
 	}
