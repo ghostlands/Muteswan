@@ -120,10 +120,11 @@ public class CircleList extends ListActivity {
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
-		if (currentlyBeaming) {
-			MuteLog.Log("CircleList", "Inside currently beaming.");
-			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
-		}
+		//if (currentlyBeaming) {
+		//	MuteLog.Log("CircleList", "Inside currently beaming.");
+		//	//nfcAdapter.disableForegroundNdefPush(this);
+		//	nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+		//}
 		
 		
 		
@@ -577,7 +578,35 @@ public class CircleList extends ListActivity {
      		
      	}
      };
+     
+     final Handler doneBeamingNFC = new Handler() {
+      	@Override
+      	public void handleMessage(Message msg) {
+      		cleanupSendingNFC();
+      		
+      	}
+      };
+      
+      final Handler doneReceivingNFC = new Handler() {
+        	@Override
+        	public void handleMessage(Message msg) {
+        		cleanupReceivingNFC();
+        		
+        	}
+        };
 
+        
+     private void cleanupReceivingNFC() {
+    	 currentlyReceivingBeam = false;
+   	     nfcAdapter.disableForegroundNdefPush(this);
+ 		 nfcAdapter.disableForegroundDispatch(this);
+     }
+     
+     private void cleanupSendingNFC() {
+    	 currentlyBeaming = false;
+   	     nfcAdapter.disableForegroundNdefPush(this);
+ 		 nfcAdapter.disableForegroundDispatch(this);
+     }
 
      private void addCircleManuallyDialog() {
         	 AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
@@ -672,7 +701,7 @@ public class CircleList extends ListActivity {
 		beamNFC.setMessage("You should now be beaming the NFC to another device. Click the button below to stop tag detection.");
 		beamNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
 		      public void onClick(DialogInterface dialogInterface, int i) {
-		    	  currentlyBeaming = false;
+		    	  doneBeamingNFC.sendEmptyMessage(0);
 		      }
 		});
 		beamNFC.create();
@@ -685,7 +714,8 @@ public class CircleList extends ListActivity {
 		receiveNFC.setMessage("You should be ready to receive NFC beams. Click the button below to stop beam detection.");
 		receiveNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
 		      public void onClick(DialogInterface dialogInterface, int i) {
-		    	  currentlyReceivingBeam = false;
+		    	  doneReceivingNFC.sendEmptyMessage(0);
+		    	 
 		      }
 		});
 		receiveNFC.create();
@@ -823,19 +853,19 @@ public class CircleList extends ListActivity {
 			//alertDialogs.readyToWriteNFCTag();
 			
 			
-			//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
 			readyToBeamNFC();
 		}
 	}
 	
 	public void onPause() {
-		if (currentlyBeaming) {
+		//if (currentlyBeaming) {
 		  nfcAdapter.disableForegroundNdefPush(this);
-		}
+		//}
 		
-		if (currentlyReceivingBeam) {
-			nfcAdapter.disableForegroundDispatch(this);
-		}
+		//if (currentlyReceivingBeam) {
+		  nfcAdapter.disableForegroundDispatch(this);
+		//}
 		super.onPause();
 	}
 
