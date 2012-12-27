@@ -741,7 +741,7 @@ public class CircleList extends ListActivity {
 	
 	public void readyToReceiveNFC() {
 		receiveNFC = new AlertDialog.Builder(this);
-		receiveNFC.setTitle("Ready to Receive NFC Beam");
+		receiveNFC.setTitle("Ready to Receive NFC Data");
 		receiveNFC.setMessage("You should be ready to receive NFC data. Click the button below to stop NFC detection.");
 		receiveNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
 		      public void onClick(DialogInterface dialogInterface, int i) {
@@ -941,19 +941,15 @@ public class CircleList extends ListActivity {
 	       	alertDialogs.offerToInstallBarcodeScanner();
 	      }
 		} else {
-		
 			showShareSelection(position);
 		}
 	}
 	
 	public void onPause() {
-		//if (currentlyBeaming) {
+		if (useNFC) {
 		  nfcAdapter.disableForegroundNdefPush(this);
-		//}
-		
-		//if (currentlyReceivingBeam) {
 		  nfcAdapter.disableForegroundDispatch(this);
-		//}
+		}
 		super.onPause();
 	}
 
