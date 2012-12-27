@@ -30,7 +30,7 @@ public class AlertDialogs {
 		}
 
 	};
-	private Builder writeNFC;
+	
 	private Builder beamNFC;
 	private Builder receiveNFC;
 	
@@ -72,7 +72,7 @@ public class AlertDialogs {
 	    noCipherAvailable.show();
 	}
 	
-	public void readyToWriteNFCTag() {
+/*	public void readyToWriteNFCTag() {
 		writeNFC = new AlertDialog.Builder(context);
 	    writeNFC.setTitle("Ready to Write NFC Tag");
 	    writeNFC.setMessage("You should now be ready to write the NFC tag. Click button below to stop tag detection.");
@@ -85,10 +85,7 @@ public class AlertDialogs {
 	    writeNFC.create();
 	    writeNFC.show();
 	}
-	
-	public void updateWriteNFCMessage(final String msg) {
-		writeNFC.setMessage(msg);
-	}
+*/
 	
 	public void readyToBeamNFC() {
 		beamNFC = new AlertDialog.Builder(context);

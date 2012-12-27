@@ -111,7 +111,7 @@ public class CircleList extends ListActivity {
 	private Builder writeNFC;
 	private Builder beamNFC;
 	private Builder receiveNFC;
-	private Builder shareSelection;
+	//private Builder shareSelection;
 	
 	
 	@Override
@@ -120,11 +120,12 @@ public class CircleList extends ListActivity {
 		
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 		
-		//if (currentlyBeaming) {
+		if (currentlyBeaming) {
+			beamNFCDlg.dismiss();
 		//	MuteLog.Log("CircleList", "Inside currently beaming.");
 		//	//nfcAdapter.disableForegroundNdefPush(this);
 		//	nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
-		//}
+		}
 		
 		
 		
@@ -723,10 +724,13 @@ public class CircleList extends ListActivity {
 	private Integer selectedCirclePos;
 	private boolean currentlyBeaming = false;
 	private boolean currentlyReceivingNFC = false;
+	private AlertDialog writeNFCDlg;
+	private AlertDialog beamNFCDlg;
+	private AlertDialog receiveNFCDlg;
 	
      
 	
-	public void readyToBeamNFC() {
+	private void readyToBeamNFC() {
 		beamNFC = new AlertDialog.Builder(this);
 		beamNFC.setTitle("Ready to Beam NFC Tag");
 		beamNFC.setMessage("You should now be beaming the NFC to another device. Click the button below to stop.");
@@ -736,7 +740,20 @@ public class CircleList extends ListActivity {
 		      }
 		});
 		beamNFC.create();
-		beamNFC.show();
+		beamNFCDlg = beamNFC.show();
+	}
+	
+	private void readyToWriteNFC() {
+		writeNFC = new AlertDialog.Builder(this);
+		writeNFC.setTitle("Ready to Write to NFC Tag");
+		writeNFC.setMessage("You should now be ready to write to an NFC tag. Press OK to stop.");
+		writeNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+		      public void onClick(DialogInterface dialogInterface, int i) {
+		    	  doneBeamingNFC.sendEmptyMessage(0);
+		      }
+		});
+		writeNFC.create();
+		writeNFCDlg = writeNFC.show();
 	}
 	
 	public void readyToReceiveNFC() {
@@ -750,7 +767,7 @@ public class CircleList extends ListActivity {
 		      }
 		});
 		receiveNFC.create();
-		receiveNFC.show();
+		receiveNFCDlg = receiveNFC.show();
 	}
 	
 	
@@ -770,7 +787,8 @@ public class CircleList extends ListActivity {
 				try {
 					ndef.connect();
 					ndef.writeNdefMessage(ndefMsg);
-					alertDialogs.updateWriteNFCMessage("Successfully wrote circle data!");
+					writeNFCDlg.dismiss();
+					//alertDialogs.updateWriteNFCMessage("Successfully wrote circle data!");
 				} catch (IOException e) {
 					MuteLog.Log("CircleList","IO exception writing ndef message.");
 				} catch (FormatException e) {
@@ -787,6 +805,7 @@ public class CircleList extends ListActivity {
 			   String newCircle = new String(msg.getRecords()[0].getPayload());
 			   MuteLog.Log("CircleList","New circle: " + newCircle);
 			   store.updateStore(newCircle);
+			   receiveNFCDlg.dismiss();
 			} else {
 				MuteLog.Log("CircleList", "rawMsgs is null");
 			} 
@@ -890,8 +909,8 @@ public class CircleList extends ListActivity {
 		
 		
 		nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
-		alertDialogs.readyToWriteNFCTag();
-		
+		//alertDialogs.readyToWriteNFCTag();
+		readyToWriteNFC();
 		
 		//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
 		//readyToBeamNFC();
