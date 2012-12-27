@@ -111,7 +111,7 @@ public class CircleList extends ListActivity {
 	private Builder writeNFC;
 	private Builder beamNFC;
 	private Builder receiveNFC;
-	
+	private Builder shareSelection;
 	
 	
 	@Override
@@ -531,7 +531,9 @@ public class CircleList extends ListActivity {
 	}
 
 	private Button.OnClickListener addCircleListener  = new Button.OnClickListener() {
-        public void onClick( View v ) {
+        
+
+		public void onClick( View v ) {
         	
         	
         	if (!useNFC) {
@@ -543,8 +545,11 @@ public class CircleList extends ListActivity {
         			alertDialogs.offerToInstallBarcodeScanner();
         		}
         	} else {
-        		currentlyReceivingBeam = true;
+        		currentlyReceivingNFC = true;
         		handleJoinNFC.sendEmptyMessage(0);
+        		
+        		//currentlyReadingTag = true;
+        		//handleReadingTag.sendEmptyMessage(0);
         	}
 	        
          }
@@ -571,6 +576,29 @@ public class CircleList extends ListActivity {
 		//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
 		readyToReceiveNFC();
      }
+     
+     private void joinNFCTag() {
+     	PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+ 					new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+ 			
+ 		IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+ 		IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
+ 		IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+ 		//IntentFilter[] tagFilters = new IntentFilter[] { tagDetected };
+ 			
+ 	
+ 		
+ 		IntentFilter[] filters = new IntentFilter[] { beamDetected, tagDetected, techDetected };
+ 			
+ 		//nfcAdapter.enableForegroundDispatch(this, pendingIntent, tagFilters, null);
+ 		nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
+ 		
+ 			
+ 			
+ 		//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+ 		readyToReceiveNFC();
+      }
+     
      final Handler handleJoinNFC = new Handler() {
      	@Override
      	public void handleMessage(Message msg) {
@@ -578,6 +606,8 @@ public class CircleList extends ListActivity {
      		
      	}
      };
+     
+    
      
      final Handler doneBeamingNFC = new Handler() {
       	@Override
@@ -597,7 +627,7 @@ public class CircleList extends ListActivity {
 
         
      private void cleanupReceivingNFC() {
-    	 currentlyReceivingBeam = false;
+    	 currentlyReceivingNFC = false;
    	     nfcAdapter.disableForegroundNdefPush(this);
  		 nfcAdapter.disableForegroundDispatch(this);
      }
@@ -692,13 +722,14 @@ public class CircleList extends ListActivity {
 	private boolean currentlyWritingTag = false;
 	private Integer selectedCirclePos;
 	private boolean currentlyBeaming = false;
-	private boolean currentlyReceivingBeam = false;
+	private boolean currentlyReceivingNFC = false;
+	
      
 	
 	public void readyToBeamNFC() {
 		beamNFC = new AlertDialog.Builder(this);
 		beamNFC.setTitle("Ready to Beam NFC Tag");
-		beamNFC.setMessage("You should now be beaming the NFC to another device. Click the button below to stop tag detection.");
+		beamNFC.setMessage("You should now be beaming the NFC to another device. Click the button below to stop.");
 		beamNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
 		      public void onClick(DialogInterface dialogInterface, int i) {
 		    	  doneBeamingNFC.sendEmptyMessage(0);
@@ -711,7 +742,7 @@ public class CircleList extends ListActivity {
 	public void readyToReceiveNFC() {
 		receiveNFC = new AlertDialog.Builder(this);
 		receiveNFC.setTitle("Ready to Receive NFC Beam");
-		receiveNFC.setMessage("You should be ready to receive NFC beams. Click the button below to stop beam detection.");
+		receiveNFC.setMessage("You should be ready to receive NFC data. Click the button below to stop NFC detection.");
 		receiveNFC.setPositiveButton("Done", new DialogInterface.OnClickListener() {
 		      public void onClick(DialogInterface dialogInterface, int i) {
 		    	  doneReceivingNFC.sendEmptyMessage(0);
@@ -737,6 +768,7 @@ public class CircleList extends ListActivity {
 			// assume we can't format now, just write shit
 			if (ndef != null) {
 				try {
+					ndef.connect();
 					ndef.writeNdefMessage(ndefMsg);
 					alertDialogs.updateWriteNFCMessage("Successfully wrote circle data!");
 				} catch (IOException e) {
@@ -747,7 +779,7 @@ public class CircleList extends ListActivity {
 			}
 		}
 		
-		if (this.currentlyReceivingBeam) {
+		if (currentlyReceivingNFC) {
 		
 			Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 			if (rawMsgs != null) {
@@ -759,6 +791,8 @@ public class CircleList extends ListActivity {
 				MuteLog.Log("CircleList", "rawMsgs is null");
 			} 
 		}
+		
+		
 		
 		
 		
@@ -815,6 +849,86 @@ public class CircleList extends ListActivity {
 		startActivity(intent);
 	}
 	
+	
+	private void showShareSelection(final int position) {
+		final CharSequence[] items = {"Write to an NFC tag", "Beam to an Android device"};
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Select method to share");
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int item) {
+		       if (item == 0) {
+		    	   shareWriteNFCTag(position);
+		       } else if (item == 1) {
+		    	   shareBeamNFC(position);
+		       }
+		    }
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+	}
+	
+	private void shareWriteNFCTag(int position) {
+
+		currentlyWritingTag = true;
+		//currentlyBeaming = true;
+		selectedCirclePos = position;
+		
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		
+		
+		IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+		IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
+		IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+		
+			
+	
+		
+		IntentFilter[] filters = new IntentFilter[] { beamDetected, tagDetected, techDetected };
+		
+		
+		
+		
+		nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
+		alertDialogs.readyToWriteNFCTag();
+		
+		
+		//nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+		//readyToBeamNFC();
+	
+	}
+	
+	private void shareBeamNFC(int position) {
+
+		//currentlyWritingTag = true;
+		currentlyBeaming = true;
+		selectedCirclePos = position;
+		
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		
+		
+		IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+		IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
+		IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+		
+			
+	
+		
+		IntentFilter[] filters = new IntentFilter[] { beamDetected, tagDetected, techDetected };
+		
+		
+		
+		
+		nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
+		//alertDialogs.readyToWriteNFCTag();
+		
+		
+		nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
+		readyToBeamNFC();
+		
+	}
+	
 	private void shareCircle(Integer position) {
 		if (!useNFC) {
 		  Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
@@ -827,34 +941,8 @@ public class CircleList extends ListActivity {
 	       	alertDialogs.offerToInstallBarcodeScanner();
 	      }
 		} else {
-			
-			//currentlyWritingTag = true;
-			currentlyBeaming = true;
-			selectedCirclePos = position;
-			
-			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-					new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-			
-			
-			IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
-			IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-			IntentFilter beamDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-			//IntentFilter[] tagFilters = new IntentFilter[] { tagDetected };
-				
 		
-			
-			IntentFilter[] filters = new IntentFilter[] { beamDetected, tagDetected, techDetected };
-			
-			
-			
-			
-			nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
-			
-			//alertDialogs.readyToWriteNFCTag();
-			
-			
-			nfcAdapter.enableForegroundNdefPush(this, createNdefMessage(circleList[selectedCirclePos].getFullText()));
-			readyToBeamNFC();
+			showShareSelection(position);
 		}
 	}
 	
