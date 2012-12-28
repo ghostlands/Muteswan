@@ -791,6 +791,19 @@ public class CircleList extends ListActivity {
 					//alertDialogs.updateWriteNFCMessage("Successfully wrote circle data!");
 				} catch (IOException e) {
 					MuteLog.Log("CircleList","IO exception writing ndef message.");
+					writeNFCDlg.dismiss();
+					Builder errorWriting = new AlertDialog.Builder(this);
+					errorWriting.setTitle("Error writing to tag");
+					errorWriting.setMessage("Sorry, the circle was not written to the tag. It may be too large.");
+					errorWriting.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+					      public void onClick(DialogInterface dialogInterface, int i) {
+					    	  
+					      }
+					});
+					errorWriting.create();
+					errorWriting.show();
+					
+					//Toast.makeText(this, "Failed to write to tag. Circle may be too large for tag.", 5);
 				} catch (FormatException e) {
 					MuteLog.Log("CircleList", "Tag is not formatted and we can't handle formatting yet.");
 				}
