@@ -186,7 +186,7 @@ public class CircleList extends ListActivity {
     };
 	private AlertDialogs alertDialogs;
 	private boolean shareManually;
-	private boolean useNFC;
+	//private boolean useNFC;
 	private Button addCircle;
 	private Button createCircle;
 	private String cipherSecret;
@@ -219,11 +219,12 @@ public class CircleList extends ListActivity {
         
         SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         shareManually = defPrefs.getBoolean("allowManualJoining", false);
-        useNFC = defPrefs.getBoolean("useNFC", false);
+        //NFCFIX
+        //useNFC = defPrefs.getBoolean("useNFC", false);
         
-        if (useNFC) {
-        	nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        }
+        //if (useNFC) {
+        	//nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        //}
         
         TextView txt = (TextView) findViewById(R.id.android_circlelistprompt);
         //RelativeLayout circleListButtons = (RelativeLayout) findViewById(R.id.circlelistButtons);
@@ -360,7 +361,9 @@ public class CircleList extends ListActivity {
 		    		
 		    		
 		    		AlertDialog.Builder builder = new AlertDialog.Builder(CircleList.this);
-		    		builder.setMessage(R.string.q_delete_circle)
+		    		
+		    		builder.setMessage(getString(R.string.delete_circle_ask_notif_prefix) + circleList[position].getShortname() + getString(R.string.delete_circle_ask_notif_suffix))
+		    		//builder.setMessage(R.string.q_delete_circle)
 		    		       .setCancelable(false)
 		    		       .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 		    		           public void onClick(DialogInterface dialog, int id) {
@@ -536,22 +539,8 @@ public class CircleList extends ListActivity {
 
 		public void onClick( View v ) {
         	
+			showJoinSelection();
         	
-        	if (!useNFC) {
-        		Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-        		intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-        		try {
-        			startActivityForResult(intent, 0);
-        		} catch (ActivityNotFoundException e) {
-        			alertDialogs.offerToInstallBarcodeScanner();
-        		}
-        	} else {
-        		currentlyReceivingNFC = true;
-        		handleJoinNFC.sendEmptyMessage(0);
-        		
-        		//currentlyReadingTag = true;
-        		//handleReadingTag.sendEmptyMessage(0);
-        	}
 	        
          }
      };
@@ -635,6 +624,7 @@ public class CircleList extends ListActivity {
      
      private void cleanupSendingNFC() {
     	 currentlyBeaming = false;
+    	 currentlyWritingTag = false;
    	     nfcAdapter.disableForegroundNdefPush(this);
  		 nfcAdapter.disableForegroundDispatch(this);
      }
@@ -815,9 +805,12 @@ public class CircleList extends ListActivity {
 			Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 			if (rawMsgs != null) {
 			   NdefMessage msg = (NdefMessage) rawMsgs[0];
-			   String newCircle = new String(msg.getRecords()[0].getPayload());
-			   MuteLog.Log("CircleList","New circle: " + newCircle);
-			   store.updateStore(newCircle);
+			   String circleData = new String(msg.getRecords()[0].getPayload());
+			   MuteLog.Log("CircleList","New circle: " + circleData);
+			   store.updateStore(circleData);
+			   
+			   String circleKey = Main.genHexHash(circleData);
+			   newCircle = store.asHashMap().get(circleKey).getShortname();
 			   receiveNFCDlg.dismiss();
 			} else {
 				MuteLog.Log("CircleList", "rawMsgs is null");
@@ -882,15 +875,52 @@ public class CircleList extends ListActivity {
 	}
 	
 	
-	private void showShareSelection(final int position) {
-		final CharSequence[] items = {"Write to an NFC tag", "Beam to an Android device"};
+	private void showJoinSelection() {
+		final CharSequence[] items = {"Scan QR Code","Use NFC"};
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Select method to share");
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 		    public void onClick(DialogInterface dialog, int item) {
 		       if (item == 0) {
-		    	   shareWriteNFCTag(position);
+		    	   Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+	        	   intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+	        	   try {
+	        		 startActivityForResult(intent, 0);
+	        	   } catch (ActivityNotFoundException e) {
+	        	   	 alertDialogs.offerToInstallBarcodeScanner();
+	        	   }
 		       } else if (item == 1) {
+		    	   nfcAdapter = NfcAdapter.getDefaultAdapter(getApplicationContext());
+		    	   currentlyReceivingNFC = true;
+	        	   handleJoinNFC.sendEmptyMessage(0);
+		       }
+		    }
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+	}
+	
+	private void showShareSelection(final int position) {
+		final CharSequence[] items = {"Share with QR Code","Write to an NFC tag", "Beam to an Android device"};
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Select method to share");
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int item) {
+		       if (item == 0) {
+		    	   Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
+		 		  intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
+		 		  intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+		 		  intent.putExtra("ENCODE_SHOW_CONTENTS", true);
+		           try {
+		 	        startActivityForResult(intent, 0);
+		 	      } catch (ActivityNotFoundException e) {
+		 	       	alertDialogs.offerToInstallBarcodeScanner();
+		 	      }
+		       } else if (item == 1) {
+		    	   nfcAdapter = NfcAdapter.getDefaultAdapter(getApplicationContext());
+		    	   shareWriteNFCTag(position);
+		       } else if (item == 2) {
+		    	   nfcAdapter = NfcAdapter.getDefaultAdapter(getApplicationContext());
 		    	   shareBeamNFC(position);
 		       }
 		    }
@@ -962,23 +992,11 @@ public class CircleList extends ListActivity {
 	}
 	
 	private void shareCircle(Integer position) {
-		if (!useNFC) {
-		  Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
-		  intent.putExtra("ENCODE_DATA",circleList[position].getFullText());
-		  intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-		  intent.putExtra("ENCODE_SHOW_CONTENTS", true);
-          try {
-	        startActivityForResult(intent, 0);
-	      } catch (ActivityNotFoundException e) {
-	       	alertDialogs.offerToInstallBarcodeScanner();
-	      }
-		} else {
 			showShareSelection(position);
-		}
 	}
 	
 	public void onPause() {
-		if (useNFC) {
+		if (nfcAdapter != null) {
 		  nfcAdapter.disableForegroundNdefPush(this);
 		  nfcAdapter.disableForegroundDispatch(this);
 		}

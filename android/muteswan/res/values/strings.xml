@@ -48,6 +48,8 @@
      <string name="create_circle_confirm_yes">Create</string>
      <string name="deleted_circle_notif_prefix">"Deleted circle "</string>
      <string name="delete_circle_notif_suffix">" from saved keys."</string>
+     <string name="delete_circle_ask_notif_prefix">"Delete circle "</string>
+     <string name="delete_circle_ask_notif_suffix">" from saved keys?"</string>
      <string name="n_no_circles_to_check">You don\'t have any circles yet, so you can\'t check for messages. Please join or create a new circle first.</string>
      <string name="reldate_one_second">one second</string>
      <string name="n_checking_for_new_messages">: checking for new messages.</string>

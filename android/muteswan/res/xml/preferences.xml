@@ -32,7 +32,7 @@
 
 <PreferenceCategory android:title="Security">
 <CheckBoxPreference android:title="Use OI Safe" android:summary="Store password information in OI Safe. This is the recommended way to protect your circle information if your phone is lost or stolen." android:key="useoisafe"></CheckBoxPreference>
-<CheckBoxPreference android:title="Use NFC" android:summary="When sharing, use NFC." android:key="useNFC"></CheckBoxPreference>
+<!--  <CheckBoxPreference android:title="Use NFC" android:summary="When sharing, use NFC." android:key="useNFC"></CheckBoxPreference> -->
 
   <CheckBoxPreference android:title="256 bit Circles" android:summary="Generate 256 bit circles." android:key="use256bit"/> 
 </PreferenceCategory>
