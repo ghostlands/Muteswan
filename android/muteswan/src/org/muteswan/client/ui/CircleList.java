@@ -413,7 +413,7 @@ public class CircleList extends ListActivity {
 			 layout.setOnClickListener(circleClicked);
 			 
 			
-			 Button shareCircleButton = (Button) layout.findViewById(R.id.circleListShare);
+			 ImageView shareCircleButton = (ImageView) layout.findViewById(R.id.circleListShare);
 			 ImageView deleteCircleButton = (ImageView) layout.findViewById(R.id.circleListDelete);
 			 if (action == ANY) {
 			 

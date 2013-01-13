@@ -28,18 +28,29 @@
             android:adjustViewBounds="true"
             android:src="@drawable/deletecircle"
             android:text="Delete" />
+        
+       <ImageView
+            android:id="@+id/circleListShare"
+     		android:layout_width="wrap_content"
+            android:layout_height="40sp"
+            android:layout_alignParentLeft="true"
+            android:paddingRight="13sp"
+            android:paddingLeft="13sp"
+            android:text="Share"
+            android:textSize="13sp" 
+            android:src="@android:drawable/ic_menu_share"
+            />
 
-        <Button
+       <!--  <Button
             android:id="@+id/circleListShare"
             android:layout_width="wrap_content"
-            android:layout_height="30sp"
+            android:layout_height="40sp"
             android:layout_alignParentLeft="true"
-            android:paddingRight="12sp"
-            android:paddingLeft="12sp"
+            android:paddingRight="13sp"
+            android:paddingLeft="13sp"
             android:text="Share"
-            android:background="@drawable/circlelistbuttons"
             android:textSize="13sp" 
-            android:textColor="#111111" />
+            android:textColor="#8e8e8e" /> -->
 
         <TextView
             android:id="@+id/android_circleListName"
