@@ -824,16 +824,26 @@ public class CircleList extends ListActivity {
 	}
 	
 	private NdefMessage createNdefMessage(String circleText) {
+		/*
 		byte[] mimeBytes;
 		try {
 			mimeBytes = "application/muteswan.circle".getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			return null;
 		}
+
+		// Example with proper API
+		//NdefRecord ndefRec = NdefRecord.createApplicationRecord("com.example.android.beam")};
 		
 		NdefRecord rec = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,mimeBytes,new byte[0], 
 				circleList[selectedCirclePos].getFullText().getBytes());
-		return new NdefMessage(new NdefRecord[] {rec});
+		*/
+		
+		// adding an app record hard core style
+		NdefRecord appRec = new NdefRecord(NdefRecord.TNF_EXTERNAL_TYPE,"android.com:pkg".getBytes(),new byte[0],"org.muteswan.client".getBytes());
+		NdefRecord rec = new NdefRecord(NdefRecord.TNF_EXTERNAL_TYPE,"muteswan.org:C".getBytes(),new byte[0],circleList[selectedCirclePos].getFullText().getBytes());
+		//
+		return new NdefMessage(new NdefRecord[] {rec, appRec});
 		
 	}
 	
