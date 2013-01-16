@@ -128,7 +128,7 @@ desire to distribute QR codes openly if the intention was to attract a large
 amount of users to a circle.
 
 AES Key
-~~~~~~~
++++++++
 
 The AES key can be represented in two ways. A 16 character string, e.g.,
 "dba4fe6ef22b494d", used as the AES key. This is the weakest key format but it
@@ -139,7 +139,7 @@ A 256-bit AES can be base 64 encoded. For example:
 Entropy garden+e8b6be57-c34b-41f7-ae18-042589d8e93c$ChuTIyvKfBO7IJSxzikvJbX2AnFeQPV03yyyKoqPsgw=@tckwndlytrphlpyo.onion
 
 UUID
-~~~~
+++++
 
 If no UUID is present, for example:
   testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion
