@@ -107,18 +107,16 @@ Circles
 Circles are the only organizational unit in Muteswan. They are composed of three
 elements:
 
-	key: a 24-bit AES key,e.g, dba4fe6ef22b494d
+	key: a string used for the AES key, e.g, dba4fe6ef22b494d
 	uuid: a RFC4122 UUID use in URL
 	server: a tor hidden service address, e.g., tckwndlytrphlpyo.onion
-	shortname: name of the circle, without spaces, e.g., testsite
+	shortname: name of the circle, e.g., testsite
 
 
 Circles are represented in text form with a '+' separating the name from the
 UUID, a '$' separating the key and an '@' delimiting the server:
 
 testsite+4830a37e-2d27-11e2-b81b-5cff350faff3$dba4fe6ef22b494d@tckwndlytrphlpyo.onion
-
-
 
 Since Muteswan uses symmetric keys, accessing a circle simply involves knowing the
 key and the server. Consequently, the text representation of a circle should
@@ -129,6 +127,25 @@ no reason to transfer them. It should be mentioned that perhaps one would
 desire to distribute QR codes openly if the intention was to attract a large
 amount of users to a circle.
 
+AES Key
+~~~~~~~
+
+The AES key can be represented in two ways. A 16 character string, e.g.,
+"dba4fe6ef22b494d", used as the AES key. This is the weakest key format but it
+is convenient and takes up the least amount of space.
+
+A 256-bit AES can be base 64 encoded. For example:
+
+Entropy garden+e8b6be57-c34b-41f7-ae18-042589d8e93c$ChuTIyvKfBO7IJSxzikvJbX2AnFeQPV03yyyKoqPsgw=@tckwndlytrphlpyo.onion
+
+UUID
+~~~~
+
+If no UUID is present, for example:
+  testsite+dba4fe6ef22b494d@tckwndlytrphlpyo.onion
+the client will hash the key to derive the URL used to GET new messages. This
+is another trade off between convenience and security. Including a UUID takes
+up more space but protects the secret better.
 
 
 
@@ -260,7 +277,7 @@ GET msg range
 ^^^^^^^^^^^^^
 
 Fetching a message range is also possible and reduces latency.  For example,
-the request t o fetch message 56 to 53 from the 'testsite' circle would be:
+the request to fetch message 3 to 2 from the 'testsite' circle would be:
 ---------------------------------------------------------
 GET /b975d0e342802b65b3703ff9cf3a378533d980b9/3-2 HTTP/1.1
 Host: tckwndlytrphlpyo.onion
