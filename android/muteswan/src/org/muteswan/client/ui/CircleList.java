@@ -124,6 +124,9 @@ public class CircleList extends ListActivity {
 			// createNdefMessage(circleList[selectedCirclePos].getFullText()));
 		}
 
+		extra = getIntent().getExtras();
+		
+		
 		/*
 		 * if (currentlyReceivingBeam) { MuteLog.Log("CircleList",
 		 * "Inside receiving beaming."); Intent intent = getIntent();
@@ -532,30 +535,6 @@ public class CircleList extends ListActivity {
 		readyToReceiveNFC();
 	}
 
-	private void joinNFCTag() {
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-				new Intent(this, getClass())
-						.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
-		IntentFilter tagDetected = new IntentFilter(
-				NfcAdapter.ACTION_TAG_DISCOVERED);
-		IntentFilter techDetected = new IntentFilter(
-				NfcAdapter.ACTION_TECH_DISCOVERED);
-		IntentFilter beamDetected = new IntentFilter(
-				NfcAdapter.ACTION_NDEF_DISCOVERED);
-		// IntentFilter[] tagFilters = new IntentFilter[] { tagDetected };
-
-		IntentFilter[] filters = new IntentFilter[] { beamDetected,
-				tagDetected, techDetected };
-
-		// nfcAdapter.enableForegroundDispatch(this, pendingIntent, tagFilters,
-		// null);
-		nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
-
-		// nfcAdapter.enableForegroundNdefPush(this,
-		// createNdefMessage(circleList[selectedCirclePos].getFullText()));
-		readyToReceiveNFC();
-	}
 
 	final Handler handleJoinNFC = new Handler() {
 		@Override

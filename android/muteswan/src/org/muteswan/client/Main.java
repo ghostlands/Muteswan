@@ -41,16 +41,19 @@ import org.muteswan.client.ui.Preferences;
 import org.muteswan.client.ui.WriteMsg;
 import org.torproject.android.service.ITorService;
 
+import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -65,6 +68,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -167,6 +171,7 @@ public class Main extends Activity implements Runnable {
 	
 
 	private AlertDialogs alertDialogs;
+	private String justAdded;
 	
 
 	public void onPause() {
@@ -176,7 +181,7 @@ public class Main extends Activity implements Runnable {
 
 	}
 	
-	
+
 	public void onResume() {
 		super.onResume();
 
@@ -186,7 +191,42 @@ public class Main extends Activity implements Runnable {
 		registerReceiver(torNotAvailableReceiver, intentFilter);
 
 		
-		
+		Parcelable[] rawMsgs = getIntent().getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+		if (rawMsgs != null) {
+			NdefMessage msg = (NdefMessage) rawMsgs[0];
+			String circleData = new String(msg.getRecords()[0].getPayload());
+			
+			if (justAdded == null || !justAdded.equals(circleData)) {
+			
+			  MuteLog.Log("CircleList", "New circle: " + circleData);
+			  CircleStore store = new CircleStore(cipherSecret, this, true, false);
+			  store.updateStore(circleData);
+			  String circleKey = Main.genHexHash(circleData);
+			  final String newCircleName = store.asHashMap().get(circleKey).getShortname();
+			  
+			
+			  justAdded = circleData;
+			
+			  
+			   Builder addedCircle = new AlertDialog.Builder(this);
+			   addedCircle.setTitle("Joined Circle!");
+			   addedCircle
+					.setMessage("You just joined: " + newCircleName);
+			   addedCircle.setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(
+								DialogInterface dialogInterface, int i) {
+								showCirclesWithJoin(newCircleName);
+						}
+					});
+			    addedCircle.create();
+			    addedCircle.show();
+			    
+			}
+			
+		} else {
+			MuteLog.Log("Main", "Did NOT get circle info!! ");
+		}
 		
 		
 		
@@ -546,6 +586,16 @@ public class Main extends Activity implements Runnable {
 		Intent intent = new Intent(this, CircleList.class);
 		intent.putExtra("action", action);
 		intent.putExtra("secret", cipherSecret);
+
+		startActivity(intent);
+		return;
+	}
+	
+	private void showCirclesWithJoin(String newCircle) {
+		Intent intent = new Intent(this, CircleList.class);
+		intent.putExtra("action", CircleList.ANY);
+		intent.putExtra("secret", cipherSecret);
+		intent.putExtra("newCircle", newCircle);
 
 		startActivity(intent);
 		return;
