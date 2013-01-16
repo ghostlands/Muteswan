@@ -175,7 +175,8 @@ public class Main extends Activity implements Runnable {
 			unregisterReceiver(torNotAvailableReceiver);
 
 	}
-
+	
+	
 	public void onResume() {
 		super.onResume();
 
@@ -184,7 +185,6 @@ public class Main extends Activity implements Runnable {
 		IntentFilter intentFilter = new IntentFilter(Main.TOR_NOT_AVAILABLE);
 		registerReceiver(torNotAvailableReceiver, intentFilter);
 
-		
 		
 		
 		
