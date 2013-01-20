@@ -793,11 +793,19 @@ public class CircleList extends ListActivity {
 				NdefMessage msg = (NdefMessage) rawMsgs[0];
 				String circleData = new String(msg.getRecords()[0].getPayload());
 				MuteLog.Log("CircleList", "New circle: " + circleData);
-				store.updateStore(circleData);
-
-				String circleKey = Main.genHexHash(circleData);
-				newCircle = store.asHashMap().get(circleKey).getShortname();
-				receiveNFCDlg.dismiss();
+				Circle circle = new Circle(cipherSecret,
+						getApplicationContext(), circleData);
+				if (!store.containsShortname(circle.getShortname())) {
+				   store.updateStore(circleData);
+				   String circleKey = Main.genHexHash(circleData);
+				   newCircle = store.asHashMap().get(circleKey).getShortname();
+				   receiveNFCDlg.dismiss();
+				} else {
+					receiveNFCDlg.dismiss();
+					alertDialogs.duplicateShortName();
+					
+				}
+					
 			} else {
 				MuteLog.Log("CircleList", "rawMsgs is null");
 			}
@@ -1072,15 +1080,19 @@ public class CircleList extends ListActivity {
 						getApplicationContext(), true, false);
 				Circle circle = new Circle(cipherSecret,
 						getApplicationContext(), contents);
-				store.updateStore(contents);
+				if (!store.containsShortname(circle.getShortname())) {
+				  store.updateStore(contents);
 
-				Intent joinCircleIntent = new Intent(
+				  Intent joinCircleIntent = new Intent(
 						CircleList.JOINED_CIRCLE_BROADCAST);
-				joinCircleIntent.putExtra("circle",
+				  joinCircleIntent.putExtra("circle",
 						Main.genHexHash(circle.getFullText()));
-				sendBroadcast(joinCircleIntent);
+				  sendBroadcast(joinCircleIntent);
 
-				newCircle = circle.getShortname();
+				  newCircle = circle.getShortname();
+				} else {
+					alertDialogs.duplicateShortName();
+				}
 
 				// IDENTITY
 			} else {

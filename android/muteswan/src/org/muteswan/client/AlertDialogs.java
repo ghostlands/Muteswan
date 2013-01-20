@@ -227,6 +227,22 @@ public class AlertDialogs {
 	      noTorDialog.create();
 	      noTorDialog.show();
 		}
+
+
+		public void duplicateShortName() {
+			AlertDialog.Builder dupShortName = new AlertDialog.Builder(context);
+	        dupShortName.setTitle("Duplicate Circle name");
+	        dupShortName.setMessage("You already have a circle of the same name. Refusing to add to circle store.");
+	        dupShortName.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+	      public void onClick(DialogInterface dialogInterface, int i) {
+	      
+	       }
+	      });
+	     
+	      dupShortName.create();
+	      dupShortName.show();
+			
+		}
 		
 
 }

@@ -198,29 +198,38 @@ public class Main extends Activity implements Runnable {
 			
 			if (justAdded == null || !justAdded.equals(circleData)) {
 			
-			  MuteLog.Log("CircleList", "New circle: " + circleData);
+				
+			  
+			  Circle circle = new Circle(cipherSecret,
+						getApplicationContext(), circleData);
 			  CircleStore store = new CircleStore(cipherSecret, this, true, false);
-			  store.updateStore(circleData);
-			  String circleKey = Main.genHexHash(circleData);
-			  final String newCircleName = store.asHashMap().get(circleKey).getShortname();
+			  if (!store.containsShortname(circle.getShortname())) {
+			     MuteLog.Log("CircleList", "New circle: " + circleData);
 			  
+			     store.updateStore(circleData);
+			     //String circleKey = Main.genHexHash(circleData);
+			     //final String newCircleName = store.asHashMap().get(circleKey).getShortname();
+			     final String newCircleName = circle.getShortname();
 			
-			  justAdded = circleData;
+			     justAdded = circleData;
 			
 			  
-			   Builder addedCircle = new AlertDialog.Builder(this);
-			   addedCircle.setTitle("Joined Circle!");
-			   addedCircle
+			     Builder addedCircle = new AlertDialog.Builder(this);
+			     addedCircle.setTitle("Joined Circle!");
+			     addedCircle
 					.setMessage("You just joined: " + newCircleName);
-			   addedCircle.setPositiveButton("OK",
+			     addedCircle.setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(
 								DialogInterface dialogInterface, int i) {
 								showCirclesWithJoin(newCircleName);
 						}
 					});
-			    addedCircle.create();
-			    addedCircle.show();
+			      addedCircle.create();
+			      addedCircle.show();
+			  } else {
+				  alertDialogs.duplicateShortName();
+			  }
 			    
 			}
 			

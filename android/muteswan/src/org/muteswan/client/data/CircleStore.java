@@ -217,6 +217,16 @@ final public class CircleStore extends LinkedList<Circle> {
 		  
 	  }
 
+	public boolean containsShortname(String shortname) {
+		for (Circle r : this) {
+			if (r.getShortname().contains(shortname)) {
+				return true;
+			}
+		}
+		return false;
+		
+	}
+
 	
 	  
 	
