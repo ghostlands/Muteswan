@@ -5,6 +5,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.UUID;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.CreateCircle;
@@ -25,6 +28,7 @@ public class GenerateCircle {
 	private Context ctx;
 	private String name;
 	private String cipherSecret;
+	private boolean noUuid;
 
 	public GenerateCircle(String secret, Context ctx, String name) {
  
@@ -37,6 +41,7 @@ public class GenerateCircle {
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 	    customServer = defPrefs.getString("customCircleServer", "");
 	    usePublicServer = defPrefs.getBoolean("usePublicServer", false);
+	    noUuid = defPrefs.getBoolean("noUuid", false);
 	    
 	  
 	    // figure out which server to use
@@ -56,8 +61,11 @@ public class GenerateCircle {
     		return;
     	
     	
-    	
-    	circleFullText = name + "+" + UUID.randomUUID().toString() + "$" + generateKey() + "@" + server;
+    	if (noUuid) {
+    		circleFullText = name + "+" + generateKey() + "@" + server;
+    	} else {
+    		circleFullText = name + "+" + UUID.randomUUID().toString() + "$" + generateKey() + "@" + server;
+    	}
 		
 	}
 	
@@ -79,7 +87,7 @@ public class GenerateCircle {
 	}
 
 	private String generateKey() {
-		String genKeyStr;
+		String genKeyStr = "";
 	       
 		SecureRandom sr = null;
 		try {
@@ -91,29 +99,66 @@ public class GenerateCircle {
 		
 		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 		Boolean use256bit = defPrefs.getBoolean("use256bit", false);
+		Boolean useLowEnc = defPrefs.getBoolean("useLowEnc",false);
 		
-		if (!use256bit) {
-			/*** 128 (48 bit really) keys ***/
-			sr.generateSeed(24);
-			genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
-			return genKeyStr;
-			
-		} else {
+		
+		
+		// if configured to use 256 bit, we do
+		if (use256bit) {
 		
 			/**** 256 bit keys ***/
-			sr.generateSeed(256);		
-			genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
-			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
-			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
-			// it seems like this isn't always encoding right??
-			while (!genKeyStr.substring(genKeyStr.length()-1, genKeyStr.length()).equals("=")) {
-				 MuteLog.Log("GenerateCircle", "Key length: wtf did not have = " + genKeyStr);
-				 sr.generateSeed(256);
-				 genKeyStr = Base64.encodeBytes(new BigInteger(256,sr).toByteArray());
+			KeyGenerator keyGenerator;
+			try {
+				keyGenerator = KeyGenerator.getInstance("AES");
+				keyGenerator.init(256);
+				SecretKey key = keyGenerator.generateKey();
+				genKeyStr = Base64.encodeBytes(key.getEncoded());
+				MuteLog.Log("GenerateCircle","Using 256bit enryption!");
+				MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
+				MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
+				return genKeyStr;
+				
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 
 			return genKeyStr;
 		}
+		
+		// if configured to use low encryption we do
+		if (useLowEnc) {
+			/*** 128 (but less key space) keys ***/
+			sr.generateSeed(24);
+			genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
+			MuteLog.Log("GenerateCircle","Low Encryption!");
+			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
+			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
+			return genKeyStr;
+		}
+	
+		// fall through to default
+		/**** 128 bit keys ***/
+		KeyGenerator keyGenerator;
+		try {
+			keyGenerator = KeyGenerator.getInstance("AES");
+			keyGenerator.init(128);
+			SecretKey key = keyGenerator.generateKey();
+			genKeyStr = Base64.encodeBytes(key.getEncoded());
+			MuteLog.Log("GenerateCircle","Default 128bit enryption!");
+			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr);
+			MuteLog.Log("GenerateCircle", "Key length: " + genKeyStr.getBytes().length);
+			
+			
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+
+		return genKeyStr;
+		
 	}
 
 
