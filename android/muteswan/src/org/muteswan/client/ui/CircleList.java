@@ -116,6 +116,8 @@ public class CircleList extends ListActivity {
 
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
 
+		
+		
 		if (currentlyBeaming) {
 			beamNFCDlg.dismiss();
 			// MuteLog.Log("CircleList", "Inside currently beaming.");
@@ -195,6 +197,8 @@ public class CircleList extends ListActivity {
 		initialText = extra.getString("initialText");
 		cipherSecret = extra.getString("secret");
 
+		nfcAdapter = getNFCAdapter();
+		
 		MuteLog.Log("CircleList", "Before CircleStore constructor.");
 		store = new CircleStore(cipherSecret, this, true, false);
 		MuteLog.Log("CircleList", "After CircleStore constructor.");
@@ -872,24 +876,52 @@ public class CircleList extends ListActivity {
 		startActivity(intent);
 	}
 
+	private NfcAdapter getNFCAdapter() {
+		try {
+			NfcAdapter nfc = NfcAdapter
+					.getDefaultAdapter(getApplicationContext());
+			return nfc;
+		} catch (java.lang.NoClassDefFoundError e) {
+			MuteLog.Log("CircleList", "NFC is not supported in in this verion of Android.");
+			return null;
+		}
+	}
+	
+	private void startScan() {
+		Intent intent = new Intent(
+				"com.google.zxing.client.android.SCAN");
+		intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+		try {
+			startActivityForResult(intent, 0);
+		} catch (ActivityNotFoundException e) {
+			alertDialogs.offerToInstallBarcodeScanner();
+		}
+	}
+	
 	private void showJoinSelection() {
+		
+		
+		if (nfcAdapter == null) {
+			startScan();
+			return;
+		}
+		
 		final CharSequence[] items = { "Scan QR Code", "Use NFC" };
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Select method to share");
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
 				if (item == 0) {
-					Intent intent = new Intent(
-							"com.google.zxing.client.android.SCAN");
-					intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-					try {
-						startActivityForResult(intent, 0);
-					} catch (ActivityNotFoundException e) {
-						alertDialogs.offerToInstallBarcodeScanner();
-					}
+					startScan();
 				} else if (item == 1) {
-					nfcAdapter = NfcAdapter
+					try {
+						nfcAdapter = NfcAdapter
 							.getDefaultAdapter(getApplicationContext());
+					} catch (java.lang.NoClassDefFoundError e) {
+						MuteLog.Log("CircleList", "NFC not supported!");
+						
+						return;
+					}
 					currentlyReceivingNFC = true;
 					handleJoinNFC.sendEmptyMessage(0);
 				}
@@ -899,7 +931,27 @@ public class CircleList extends ListActivity {
 		alert.show();
 	}
 
+	private void showQRCode(int position) {
+		Intent intent = new Intent(
+				"com.google.zxing.client.android.ENCODE");
+		intent.putExtra("ENCODE_DATA",
+				circleList[position].getFullText());
+		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
+		intent.putExtra("ENCODE_SHOW_CONTENTS", true);
+		try {
+			startActivityForResult(intent, 0);
+		} catch (ActivityNotFoundException e) {
+			alertDialogs.offerToInstallBarcodeScanner();
+		}
+	}
+	
 	private void showShareSelection(final int position) {
+		
+		if (nfcAdapter == null) {
+			showQRCode(position);
+			return;
+		}
+		
 		final CharSequence[] items = { "Share with QR Code",
 				"Write to an NFC tag", "Beam to an Android device" };
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -907,17 +959,7 @@ public class CircleList extends ListActivity {
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
 				if (item == 0) {
-					Intent intent = new Intent(
-							"com.google.zxing.client.android.ENCODE");
-					intent.putExtra("ENCODE_DATA",
-							circleList[position].getFullText());
-					intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
-					intent.putExtra("ENCODE_SHOW_CONTENTS", true);
-					try {
-						startActivityForResult(intent, 0);
-					} catch (ActivityNotFoundException e) {
-						alertDialogs.offerToInstallBarcodeScanner();
-					}
+					showQRCode(position);
 				} else if (item == 1) {
 					nfcAdapter = NfcAdapter
 							.getDefaultAdapter(getApplicationContext());
