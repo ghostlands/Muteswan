@@ -228,7 +228,7 @@ public class Main extends Activity implements Runnable {
 			      addedCircle.create();
 			      addedCircle.show();
 			  } else {
-				  alertDialogs.duplicateShortName();
+				  alertDialogs.duplicateShortName(circle.getShortname());
 			  }
 			    
 			}

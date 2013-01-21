@@ -229,10 +229,10 @@ public class AlertDialogs {
 		}
 
 
-		public void duplicateShortName() {
+		public void duplicateShortName(String circleName) {
 			AlertDialog.Builder dupShortName = new AlertDialog.Builder(context);
-	        dupShortName.setTitle("Duplicate Circle name");
-	        dupShortName.setMessage("You already have a circle of the same name. Refusing to add to circle store.");
+	        dupShortName.setTitle("Duplicate circle name: " + circleName);
+	        dupShortName.setMessage("Failed to join circle: you already have a circle of the same name: " + circleName + ".");
 	        dupShortName.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	      public void onClick(DialogInterface dialogInterface, int i) {
 	      

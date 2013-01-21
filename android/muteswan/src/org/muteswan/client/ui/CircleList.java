@@ -802,7 +802,7 @@ public class CircleList extends ListActivity {
 				   receiveNFCDlg.dismiss();
 				} else {
 					receiveNFCDlg.dismiss();
-					alertDialogs.duplicateShortName();
+					alertDialogs.duplicateShortName(circle.getShortname());
 					
 				}
 					
@@ -1091,7 +1091,7 @@ public class CircleList extends ListActivity {
 
 				  newCircle = circle.getShortname();
 				} else {
-					alertDialogs.duplicateShortName();
+					alertDialogs.duplicateShortName(newCircle);
 				}
 
 				// IDENTITY
