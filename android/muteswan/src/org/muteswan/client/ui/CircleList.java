@@ -54,6 +54,7 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
+import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -726,6 +727,25 @@ public class CircleList extends ListActivity {
 		receiveNFCDlg = receiveNFC.show();
 	}
 
+	private boolean writeNdefMessage(Ndef ndef, NdefMessage ndefMsg) {
+		
+		try {
+			ndef.connect();
+			ndef.writeNdefMessage(ndefMsg);
+		} catch (IOException e) {
+			MuteLog.Log("CircleList", "Failed to write ndef message!");
+			e.printStackTrace();
+			return false;
+		} catch (FormatException e) {
+			MuteLog.Log("CircleList", "Message isn't formated...why didn't we already?");
+			e.printStackTrace();
+			return false;
+		}
+		
+		
+		return true;
+	}
+	
 	public void onNewIntent(Intent intent) {
 
 		MuteLog.Log("CircleList", "On New intent...");
@@ -735,53 +755,58 @@ public class CircleList extends ListActivity {
 			NdefMessage ndefMsg = createNdefMessage(circleList[selectedCirclePos]
 					.getFullText(),true);
 			Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
 			Ndef ndef = Ndef.get(tag);
-			// assume we can't format now, just write shit
+			
+			
+			
+			
 			if (ndef != null) {
-				try {
-					ndef.connect();
-					ndef.writeNdefMessage(ndefMsg);
+				
+				// ndefMsg contains the Android AAR (launches Market/Muteswan)
+				if (writeNdefMessage(ndef,ndefMsg)) {
 					writeNFCDlg.dismiss();
-					// alertDialogs.updateWriteNFCMessage("Successfully wrote circle data!");
-				} catch (IOException e) {
-					try {
-						ndefMsg = createNdefMessage(circleList[selectedCirclePos]
-								.getFullText(),false);
-						//ndef.connect();
-						ndef.writeNdefMessage(ndefMsg);
+				// the AAR may be too big, lets try without it
+				} else {
+					ndefMsg = createNdefMessage(circleList[selectedCirclePos]
+							.getFullText(),false);
+					if (writeNdefMessage(ndef,ndefMsg)) {
 						writeNFCDlg.dismiss();
-					} catch (IOException ex) {
-					 MuteLog.Log("CircleList",
+					} else {
+						MuteLog.Log("CircleList",
 							"IO exception writing ndef message.");
-					 writeNFCDlg.dismiss();
-					 Builder errorWriting = new AlertDialog.Builder(this);
-					 errorWriting.setTitle("Error writing to tag");
-					 errorWriting
+					    writeNFCDlg.dismiss();
+					    Builder errorWriting = new AlertDialog.Builder(this);
+					    errorWriting.setTitle("Error writing to tag");
+					    errorWriting
 							.setMessage("Sorry, the circle was not written to the tag. It may be too large.");
-					 errorWriting.setPositiveButton("Done",
+					    errorWriting.setPositiveButton("Done",
 							new DialogInterface.OnClickListener() {
 								public void onClick(
 										DialogInterface dialogInterface, int i) {
 
 								}
 							});
-					  errorWriting.create();
-					  errorWriting.show();
-					} catch (FormatException ex) {
-						// hah should be unreachable
-						MuteLog.Log("CircleList",
-								"Tag is not formatted and we can't handle formatting yet.");
-						e.printStackTrace();
-					}
-
-					// Toast.makeText(this,
-					// "Failed to write to tag. Circle may be too large for tag.",
-					// 5);
-				} catch (FormatException e) {
-					MuteLog.Log("CircleList",
-							"Tag is not formatted and we can't handle formatting yet.");
+					    errorWriting.create();
+					    errorWriting.show();
+					} 
 				}
+				
+			} else {
+			  
+			  MuteLog.Log("CircleList", "Ndef is null, probably not formatted.");
+			  NdefFormatable ndefF = NdefFormatable.get(tag);
+			  try {
+				ndefF.connect();
+				ndefF.format(ndefMsg);
+				writeNFCDlg.dismiss();
+			  } catch (IOException e) {
+				MuteLog.Log("CircleList", "IO exception formatting.");
+				e.printStackTrace();
+			  } catch (FormatException e) {
+				MuteLog.Log("CircleList", "Format exception formatting!");
+				e.printStackTrace();
+			  }
+			
 			}
 		}
 
