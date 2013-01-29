@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Dev Builds
+title: Builds and Source
 ---
-h1(entry-title). Dev Builds
+h1(entry-title). Latest builds and source code
 
 <div class="entry-content">
 You can test the latest versions of Muteswan without downloading the app from Google Play. If you have already installed Muteswan from Google Play, you will need to uninstall the app before you install a development version. Your Android device needs to allow installation of apps that are not on the market. This is a simple toggle in the Applications menu of the main Settings.
@@ -17,8 +17,14 @@ To install Muteswan directly:
 
 Muteswan also requires <a href="https://www.torproject.org/docs/android.html.en">Orbot (Tor client for Android)</a> and Barcode Scanner. Muteswan will offer to install these dependencies from the market if they are not installed on your device so you don&#8217;t need to worry about installing them individually.
 
-If you are interested in seeing how Muteswan works or would like to run your own Muteswan server check out: <br />&nbsp;&nbsp;<a href="{{ site.baseurl }}/technical-overview.html">tech overview/</a>.
-If you are interested in contributing or viewing the source you can check it out with:
+h1(entry-title). Tech/protocol overview
+
+If you are interested in seeing how Muteswan works or would like to run your own Muteswan server check out the <a href="{{ site.baseurl }}/technical-overview.html">technical overview/ page</a> which contains details on how the protocol and server work.
+
+
+h1(entry-title). Source code
+
+The source is available in git at:
 
 <pre>git clone http://muteswan.org/git muteswan</pre>
 
