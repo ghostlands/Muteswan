@@ -7,8 +7,8 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"launchpad.net/mgo"
-	"launchpad.net/mgo/bson"
+	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 	"os"
 	"regexp"
 	"runtime"
@@ -206,7 +206,13 @@ func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
 func (ms *FileStore) GetLastMsg() (LastMessage, error) {
 
 	path := fmt.Sprintf("%s/%s", ms.Datadir, ms.Circle)
-	dir, _ := os.Open(path)
+	dir, err := os.Open(path)
+
+	if err != nil {
+		lastMsg := LastMessage{LastMessage: 0}
+		return lastMsg, nil
+	}
+
 	files, _ := dir.Readdirnames(10000)
 	var mostRecent int
 	for i := range files {
@@ -226,6 +232,17 @@ func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 	mostRecent, _ := ms.GetLastMsg()
 	msgId := mostRecent.LastMessage + 1
 	filepath := fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, msgId)
+	circledir := fmt.Sprintf("%s/%s", ms.Datadir, ms.Circle)
+	fmt.Printf("Using dir: %s\n",circledir)
+
+	_,err := os.Stat(circledir)
+	if err != nil {
+		err = os.Mkdir(circledir,0700)
+		if err != nil {
+			return err
+		}
+	}
+
 	file, _ := os.Create(filepath)
 	msgBytes, _ := json.Marshal(msgw.Content)
 	wr := bufio.NewWriter(file)
@@ -421,15 +438,15 @@ func main() {
 	fmt.Printf("dbtype is %s\n", dbtype)
 
 
-	session, err := mgo.Dial("localhost")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
-	session.SetMode(mgo.Monotonic, true)
+	var session *mgo.Session
 
 	if dbtype == "mongo" {
+		session, err := mgo.Dial("localhost")
+		if err != nil {
+			panic(err)
+		}
+		defer session.Close()
+		session.SetMode(mgo.Monotonic, true)
 		go ExpireMessageLoop(session.DB(db))
 	}
 
@@ -438,8 +455,11 @@ func main() {
 		dropPrivs(uid)
 
 
-		s := session.Copy()
-		defer s.Close()
+		var s *mgo.Session;
+		if dbtype == "mongo" {
+			s := session.Copy()
+			defer s.Close()
+		}
 
 		regex := regexp.MustCompile("^/(\\w{40}|\\w{64})/((\\d+-\\d+)|(\\d+))$")
 		urlParts := regex.FindStringSubmatch(r.URL.Path)
