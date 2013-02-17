@@ -224,7 +224,7 @@ public Circle(String secret, Context context, JSONObject jsonObject, MuteswanHtt
 		this.shortname = name;
 		this.uuid = uuid;
 		this.server = srv;
-		this.uuidHash = Main.genHexHash(key);
+		this.uuidHash = uuid != null ? Main.genHexHash(uuid) : Main.genHexHash(key);
 		this.context = context;
 		this.muteswanHttp = muteswanHttp;
 		
@@ -292,7 +292,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	this.shortname = name;
 	this.uuid = uuid;
 	this.server = srv;
-	this.uuidHash = Main.genHexHash(key);
+	this.uuidHash = uuid != null ? Main.genHexHash(uuid) : Main.genHexHash(key);
 	this.context = context;
 	this.muteswanHttp = muteswanHttp;
 	
@@ -331,7 +331,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		this.uuid = uuid;
 		this.shortname = name;
 		this.server = srv;
-		this.uuidHash = Main.genHexHash(key);
+		this.uuidHash = uuid != null ? Main.genHexHash(uuid) : Main.genHexHash(key);
 		this.context = context;
 		this.muteswanHttp = muteswanHttp;
 		
@@ -369,7 +369,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		
 		
 
-		this.uuidHash = Main.genHexHash(key);
+		this.uuidHash = uuid != null ? Main.genHexHash(uuid) : Main.genHexHash(key);
 		
 		
 		
@@ -388,7 +388,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		this.shortname = shortname;
 		this.server = server;
 		this.context = context;
-		this.uuidHash = Main.genHexHash(key);
+		this.uuidHash = uuid != null ? Main.genHexHash(uuid) : Main.genHexHash(key);
+		
 		
 
 

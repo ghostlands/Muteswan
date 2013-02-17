@@ -51,14 +51,11 @@ type Circle struct {
 
 func (circle *Circle) getUrlHash() string {
 	h := sha1.New()
-	//if circle.Uuid == "" {
-		//rawdata,_ := base64.StdEncoding.DecodeString(circle.Key)
-		//io.WriteString(h, string(rawdata))
+	if circle.Uuid == "" {
 		io.WriteString(h, circle.Key)
-		//io.WriteString(h, circle.Uuid)
-	//} else {
-	//	io.WriteString(h, circle.Uuid)
-	//}
+	} else {
+		io.WriteString(h, circle.Uuid)
+	}
 	return(fmt.Sprintf("%x", h.Sum(nil)))
 }
 
