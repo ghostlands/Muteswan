@@ -158,6 +158,8 @@ func main() {
 		r,err = httpClient.Get(fmt.Sprintf("http://%s/%s",circle.Server,circle.getUrlHash()))
 	} else if cmdString == "read" {
 		r,err = httpClient.Get(fmt.Sprintf("http://%s/%s/%s",circle.Server,circle.getUrlHash(),arg1String))
+		lastModified := r.Header.Get("Last-Modified")
+		fmt.Printf("Date: %s\n",lastModified)
 	} else if cmdString == "post" {
 		var msg Msg
 
