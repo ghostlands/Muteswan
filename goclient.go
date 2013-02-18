@@ -17,7 +17,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"bytes"
-	"os"
 )
 
 // types
@@ -126,8 +125,8 @@ func newCircle(circleString string) *Circle {
 		parsedCircle[3] = circleString[atIndx+1:len(circleString)]
 	}
 
-	fmt.Printf("Key %s\n", parsedCircle[2])
-	fmt.Printf("Uuid %s\n", parsedCircle[1])
+	//fmt.Printf("Key %s\n", parsedCircle[2])
+	//fmt.Printf("Uuid %s\n", parsedCircle[1])
 	circle = &Circle{Shortname: parsedCircle[0], Server: parsedCircle[3], Uuid: parsedCircle[1], Key: parsedCircle[2]}
 	return circle
 }
@@ -144,7 +143,7 @@ func main() {
 	flag.StringVar(&arg1String, "arg1", "1", "First argument")
 	flag.Parse()
 
-	fmt.Printf("ARg1: %s\n", os.Args[0])
+	//fmt.Printf("ARg1: %s\n", os.Args[0])
 
 	dialSocksProxy := socks.DialSocksProxy(socks.SOCKS4A, "127.0.0.1:9050")
 	tr := &http.Transport{Dial: dialSocksProxy}
@@ -154,7 +153,7 @@ func main() {
 
 	var r *http.Response
 	var err error
-	fmt.Printf("Hash: %s\n", circle.getUrlHash())
+	//fmt.Printf("Hash: %s\n", circle.getUrlHash())
 	if cmdString == "last" {
 		r,err = httpClient.Get(fmt.Sprintf("http://%s/%s",circle.Server,circle.getUrlHash()))
 	} else if cmdString == "read" {
@@ -165,11 +164,11 @@ func main() {
 		c,_ := aes.NewCipher(circle.getKeyData())
 		ivBytes := msg.genIVData()
 		encrypter := cipher.NewCBCEncrypter(c, ivBytes)
-		fmt.Printf("Iv data is: %s\n",msg.Iv)
+		//fmt.Printf("Iv data is: %s\n",msg.Iv)
 
-		fmt.Printf("Key len: %d\n",len(circle.getKeyData()))
-		fmt.Printf("Iv len: %d\n",len(ivBytes))
-		fmt.Printf("Input len: %d\n",len([]byte(arg1String)))
+		//fmt.Printf("Key len: %d\n",len(circle.getKeyData()))
+		//fmt.Printf("Iv len: %d\n",len(ivBytes))
+		//fmt.Printf("Input len: %d\n",len([]byte(arg1String)))
 
 		enctext := make([]byte, len(pkcs5pad([]byte(arg1String),16)))
 		encrypter.CryptBlocks(enctext, pkcs5pad([]byte(arg1String),16))
@@ -200,8 +199,8 @@ func main() {
 	if cmdString == "read" {
 		json.Unmarshal(bytes,&msg)
 
-		fmt.Printf("Msg: %s\n", msg.Message)
-		fmt.Printf("Iv: %s\n", msg.Iv)
+		//fmt.Printf("Msg: %s\n", msg.Message)
+		//fmt.Printf("Iv: %s\n", msg.Iv)
 
 		rawdata,_ := base64.StdEncoding.DecodeString(msg.Message)
 		b := rawdata
@@ -209,9 +208,7 @@ func main() {
 		decrypter := cipher.NewCBCDecrypter(c, msg.getIVData())
 		plaintext := make([]byte, len(b))
 		decrypter.CryptBlocks(plaintext, b)
-		fmt.Printf("Plaintext: %s\n",string(plaintext))
-	} else if cmdString == "post" {
-		fmt.Printf("Post Message\n")
+		fmt.Printf("%s\n",string(plaintext))
 	} else {
 		fmt.Printf("%s\n",bytes)
 	}
