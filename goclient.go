@@ -17,6 +17,8 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"bytes"
+	"os"
+	"bufio"
 )
 
 // types
@@ -131,6 +133,18 @@ func newCircle(circleString string) *Circle {
 	return circle
 }
 
+
+/*
+func dumpData (one, two []byte) {
+	for i,k := range two {
+		fmt.Printf("%d: %b\n", i,k)
+	}
+	for i,k := range one {
+		fmt.Printf("%d: %b\n", i,k)
+	}
+}
+*/
+
 func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -151,8 +165,21 @@ func main() {
 
 	circle := newCircle(circleString)
 
-	var r *http.Response
 	var err error
+	var stdin io.Reader
+
+	if arg1String == "-" {
+	   stdin = bufio.NewReader(os.Stdin)
+	   b,err := ioutil.ReadAll(stdin)
+	   if err != nil {
+		fmt.Printf("Failed to read stdin data.\n")
+		return
+	   }
+	   //fmt.Printf("bytes %s\n",string(b))
+	   arg1String = string(b)
+	}
+
+	var r *http.Response
 	//fmt.Printf("Hash: %s\n", circle.getUrlHash())
 	if cmdString == "last" {
 		r,err = httpClient.Get(fmt.Sprintf("http://%s/%s",circle.Server,circle.getUrlHash()))
