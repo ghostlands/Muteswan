@@ -185,6 +185,9 @@ func main() {
 		r,err = httpClient.Get(fmt.Sprintf("http://%s/%s",circle.Server,circle.getUrlHash()))
 	} else if cmdString == "read" {
 		r,err = httpClient.Get(fmt.Sprintf("http://%s/%s/%s",circle.Server,circle.getUrlHash(),arg1String))
+		if err != nil {
+			panic(fmt.Sprintf("Failed to download: %s\n", err))
+		}
 		lastModified := r.Header.Get("Last-Modified")
 		fmt.Printf("Date: %s\n",lastModified)
 	} else if cmdString == "post" {
