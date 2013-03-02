@@ -96,6 +96,8 @@ public class Preferences extends PreferenceActivity {
                          });
          
          
+        
+         
          Preference useOISafe = (Preference) this.findPreference("useoisafe");
          useOISafe.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
              
@@ -117,10 +119,16 @@ public class Preferences extends PreferenceActivity {
         	 		//alertDialogs.
         	 	}
 
+        	 	
+        	 	
 				return true;
             	 
              }
          });
+         
+        
+         
+         
          
          Preference cleanData = (Preference) this.findPreference("cleanData");
          

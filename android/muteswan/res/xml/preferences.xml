@@ -34,9 +34,10 @@
 <CheckBoxPreference android:title="Use OI Safe" android:summary="Store password information in OI Safe. This is the recommended way to protect your circle information if your phone is lost or stolen." android:key="useoisafe"></CheckBoxPreference>
 <!--  <CheckBoxPreference android:title="Use NFC" android:summary="When sharing, use NFC." android:key="useNFC"></CheckBoxPreference> -->
 
-  <CheckBoxPreference android:title="256 bit Circles" android:summary="Generate 256 bit circles." android:key="use256bit"/>
-  <CheckBoxPreference android:title="Use low encryption." android:summary="" android:key="useLowEnc"/>
-  <CheckBoxPreference android:title="Do not use UUID." android:summary="" android:key="noUuid"/>
+
+   <ListPreference android:title="Circle Strength" android:key="cryptoLevel" android:entries="@array/cryptolevelentries" android:summary="Crypto levels to use when creating circles." android:entryValues="@array/cryptolevelvalues"></ListPreference>
+   
+ 
 </PreferenceCategory>
 
 

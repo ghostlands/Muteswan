@@ -40,4 +40,16 @@
  <item>50 messages</item>
 </string-array>
 
+<string-array name="cryptolevelentries">
+  <item>Low</item>
+  <item>Medium</item>
+  <item>High</item>
+</string-array>
+
+<string-array name="cryptolevelvalues">
+  <item>low</item>
+  <item>med</item>
+  <item>high</item>
+</string-array>
+
 </resources>

@@ -28,7 +28,8 @@ public class GenerateCircle {
 	private Context ctx;
 	private String name;
 	private String cipherSecret;
-	private boolean noUuid;
+	
+	private String cryptoLevel;
 
 	public GenerateCircle(String secret, Context ctx, String name) {
  
@@ -38,10 +39,12 @@ public class GenerateCircle {
 		this.name = name;
 		this.cipherSecret = secret;
 		
-		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+	    SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 	    customServer = defPrefs.getString("customCircleServer", "");
 	    usePublicServer = defPrefs.getBoolean("usePublicServer", false);
-	    noUuid = defPrefs.getBoolean("noUuid", false);
+	    cryptoLevel = defPrefs.getString("cryptoLevel", "med");
+	    
+	   
 	    
 	  
 	    // figure out which server to use
@@ -60,11 +63,12 @@ public class GenerateCircle {
     	if (name.length() == 0 || server.length() == 0 || name.length() >= MAX_CIRCNAME_LENGTH)
     		return;
     	
-    	
-    	if (noUuid) {
-    		circleFullText = name + "+" + generateKey() + "@" + server;
-    	} else {
-    		circleFullText = name + "+" + UUID.randomUUID().toString() + "$" + generateKey() + "@" + server;
+    	if (cryptoLevel.equals("low")) {
+    		circleFullText = name + "+" + generateKey(USE_LOWENC) + "@" + server;
+    	} else if (cryptoLevel.equals("med")) {
+    		circleFullText = name + "+" + UUID.randomUUID().toString() + "$" + generateKey(USE_128BIT) + "@" + server;
+    	} else if (cryptoLevel.equals("high")) {
+    		circleFullText = name + "+" + UUID.randomUUID().toString() + "$" + generateKey(USE_256BIT) + "@" + server;
     	}
 		
 	}
@@ -86,7 +90,12 @@ public class GenerateCircle {
         //ctx.startActivity(circleListIntent);
 	}
 
-	private String generateKey() {
+	
+	static int USE_256BIT = 256;
+	static int USE_LOWENC = 16;
+	static int USE_128BIT = 128;
+	
+	private String generateKey(int encType) {
 		String genKeyStr = "";
 	       
 		SecureRandom sr = null;
@@ -97,14 +106,11 @@ public class GenerateCircle {
 		}
 		
 		
-		SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-		Boolean use256bit = defPrefs.getBoolean("use256bit", false);
-		Boolean useLowEnc = defPrefs.getBoolean("useLowEnc",false);
-		
+			
 		
 		
 		// if configured to use 256 bit, we do
-		if (use256bit) {
+		if (encType == USE_256BIT) {
 		
 			/**** 256 bit keys ***/
 			KeyGenerator keyGenerator;
@@ -127,7 +133,7 @@ public class GenerateCircle {
 		}
 		
 		// if configured to use low encryption we do
-		if (useLowEnc) {
+		if (encType == USE_LOWENC) {
 			/*** 128 (but less key space) keys ***/
 			sr.generateSeed(24);
 			genKeyStr = new BigInteger(130,sr).toString(32).substring(0,16);
