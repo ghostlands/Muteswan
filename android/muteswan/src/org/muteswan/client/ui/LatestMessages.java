@@ -765,14 +765,19 @@ public class LatestMessages extends ListActivity implements Runnable {
 	protected Builder alertDialog;
 	
 
-	final Handler dismissDialog = new Handler() {
+	final Handler finishMessageChecks = new Handler() {
 		
 		
 		
         @Override
         public void handleMessage(Message msg) {
+        	  final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
+        	
         	  if (gettingMsgsDialog != null)
         	    gettingMsgsDialog.dismiss();
+        	  
+        	 
+        	  
         	  if (spinneyIcon != null) {
         		  
         		  boolean allFailed = true;
@@ -793,7 +798,7 @@ public class LatestMessages extends ListActivity implements Runnable {
         		  }
         		  
         		 
-        		  final ImageView refreshButton = (ImageView) findViewById(R.id.checkingMessagesIcon);
+        		  
         		  if (allFailed == true) {
         			  alertDialog = getAllFailedAlertDialog();
         			  spinneyIcon.setImageResource(R.drawable.refresh_red);
@@ -807,6 +812,12 @@ public class LatestMessages extends ListActivity implements Runnable {
         			  refreshButton.setOnClickListener(refreshClicked);
         		  }
         		
+        		  
+        		  if (msg.what == 1) {
+            		  spinneyIcon.setImageResource(R.drawable.refresh_yellow);
+        			  alertDialog = getSomeFailedAlertDialog();
+        			  refreshButton.setOnClickListener(showAlertDialog);
+            	  }
         		  
         		  if (!getFooterText().equals("")) {
            				setFooterText(getString(R.string.n_no_message_in_circle));
@@ -835,7 +846,7 @@ public class LatestMessages extends ListActivity implements Runnable {
     	
     	String alertMessage = getString(R.string.n_some_message_checks_failed);
     	for (String status : newMsgCheckResults.keySet()) {
-    		if (newMsgCheckResults.get(status).equals("failed")) {
+    		if (newMsgCheckResults.get(status).equals("failed") || newMsgCheckResults.get(status).equals("starting")) {
     			// FIXME string painting
     			alertMessage = alertMessage + " " + circleMap.get(status).getShortname() + "\n";
     		}
@@ -970,6 +981,15 @@ public class LatestMessages extends ListActivity implements Runnable {
     	}
     };
     
+    final Handler setSpinneySomeFailed = new Handler() {
+    	
+    	@Override
+    	public void handleMessage(Message msg) {
+    		spinneyIcon.setImageResource(R.drawable.refresh_yellow);
+    		spinneyIcon.setAnimation(null);
+    	}
+    };
+    
     final Handler startSpinningHandler = new Handler() {
     	
     	@Override
@@ -1025,6 +1045,9 @@ final Handler stopSpinningHandler = new Handler() {
 		
 		
 		MuteLog.Log("LatestMessages","updateLatestMessages circle " + r.getShortname());
+		long delta = (System.currentTimeMillis()/1000) - previousRefreshTime;
+		MuteLog.Log("LatestMessages", "Time in updateLatestMessages: " + delta);
+		
 		
 		if (Thread.currentThread().isInterrupted()) {
 			MuteLog.Log("LatestMessages", "Interrupted 0.5 " + Thread.currentThread().toString());
@@ -1153,6 +1176,8 @@ final Handler stopSpinningHandler = new Handler() {
 	public ArrayList<MuteswanMessage> getLatestMessages(
 			ArrayList<MuteswanMessage> msgs, String circleHash, Integer first,
 			Integer last) {
+		long delta = (System.currentTimeMillis()/1000) - previousRefreshTime;
+		MuteLog.Log("LatestMessages", "Time before getLatestmessages: " + delta);
 		updateLatestMessages(msgs, store.asHashMap().get(circleHash), first, last);
 		return (msgs);
 	}
@@ -1195,6 +1220,7 @@ final Handler stopSpinningHandler = new Handler() {
 		// get the latest message counts
 		if (circleExtra == null) {
 			for (Circle r : store) {
+				//BOOK
 				oldThreads.add(getLastestMessageCountFromTor(r));
 			
 			}
@@ -1203,6 +1229,8 @@ final Handler stopSpinningHandler = new Handler() {
 			 oldThreads.add(getLastestMessageCountFromTor(circle));
 		}
 		
+		
+		// could timeout here
 		while (newMsgCheckState.isEmpty()) {
 		  try {
 			    MuteLog.Log("LatestMessages", "Waiting for first population of check messages.");
@@ -1214,9 +1242,27 @@ final Handler stopSpinningHandler = new Handler() {
 			  }
 		}
 		
+		// could timeout here
 		boolean stillWorking = true;
+		int count = 0;
 		while (stillWorking) {
 		
+			//BOOK
+			count++;
+			if (count >= 130) {
+				stillWorking = false;
+				MuteLog.Log("LatestMessages", "Timeout, count is 130, bailing out. " + Thread.currentThread().toString());
+				long delta = (System.currentTimeMillis()/1000) - previousRefreshTime;
+				MuteLog.Log("LatestMessages", "Time in getLatestMessages: " + delta);
+				
+				finishMessageChecks.sendEmptyMessage(1);
+				refreshing = false;	
+				newMsgCheckState.clear();
+				sortMessageList.sendEmptyMessage(0);
+				return(msgs);
+				//spinneyIcon.setImageResource(R.drawable.refresh_yellow);
+				//continue;
+			}
 			
 			if (Thread.currentThread().isInterrupted()) {
     			MuteLog.Log("LatestMessages", "Interrupted 2 " + Thread.currentThread().toString());
@@ -1272,7 +1318,7 @@ final Handler stopSpinningHandler = new Handler() {
 	
 		
 		
-		dismissDialog.sendEmptyMessage(0);
+		finishMessageChecks.sendEmptyMessage(0);
 		newMsgCheckState.clear();
 		
 		sortMessageList.sendEmptyMessage(0);
@@ -1345,6 +1391,10 @@ final Handler stopSpinningHandler = new Handler() {
         Thread nThread = new Thread() {
         	
 			public void run() {
+				
+				long timeDelta = (System.currentTimeMillis()/1000) - previousRefreshTime;
+				MuteLog.Log("LatestMessages", "Time in getLastestMessageCountFromTor: " + timeDelta);
+				
         		if (Thread.currentThread().isInterrupted()) {
         			MuteLog.Log("LatestMessages", "Thread interrupted!");
         			return;
@@ -1377,7 +1427,8 @@ final Handler stopSpinningHandler = new Handler() {
 					// on slow devices this may not be initialized yet
 					while (msgService == null) {
 							 try {
-								Thread.currentThread().sleep(50);
+								Thread.currentThread();
+								Thread.sleep(50);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
@@ -1419,7 +1470,7 @@ final Handler stopSpinningHandler = new Handler() {
         			
         			if (prevLastMsgId == null)
         				prevLastMsgId = 0;
-        			//BOOK
+        			
         			
         			Integer delta = lastMsg - prevLastMsgId;
         			Message m2 = Message.obtain();
