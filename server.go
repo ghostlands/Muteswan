@@ -446,7 +446,8 @@ func main() {
 	fmt.Printf("Server name: %s\n", servername)
 
 
-	var session *mgo.Session
+	//var session *mgo.Session
+	var sess *mgo.Session
 
 	if dbtype == "mongo" {
 		session, err := mgo.Dial("localhost")
@@ -454,8 +455,10 @@ func main() {
 			panic(err)
 		}
 		defer session.Close()
-		session.SetMode(mgo.Monotonic, true)
 		go ExpireMessageLoop(session.DB(db))
+		session.SetMode(mgo.Monotonic, true)
+
+		sess = session.Copy()
 	}
 
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
@@ -470,7 +473,7 @@ func main() {
 
 		var s *mgo.Session;
 		if dbtype == "mongo" {
-			s := session.Copy()
+			s = sess.Copy()
 			defer s.Close()
 		}
 
