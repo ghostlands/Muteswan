@@ -128,7 +128,7 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 	msgw.Id = ms.updateCounter()
 	msgw.Time = time.Now()
 	fmt.Printf("new Id %d\n", msgw.Id)
-	msgw.Timestamp = msgw.Time.Format(time.RFC1123)
+	msgw.Timestamp = msgw.Time.UTC().Format(time.RFC1123)
 	msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
 
 	col := ms.Db.C("C" + ms.Circle)
