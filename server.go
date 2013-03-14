@@ -25,6 +25,10 @@ type Msg struct {
 	Message string `json:"message"`
 }
 
+type ServerInfo struct {
+	Name string
+}
+
 type MsgWrap struct {
 	Content   Msg       `json:"content"`
 	Timestamp string    `json:"timestamp"`
@@ -422,20 +426,24 @@ func main() {
 		ip     string
 		db     string
 		dbtype string
+		servername string
 		uid    int
 	)
 	flag.IntVar(&port, "port", 80, "Port to bind on.")
 	flag.StringVar(&ip, "ip", "127.0.0.1", "IP to bind to")
 	flag.StringVar(&db, "db", "muteswan", "MongoDB database to use")
 	flag.StringVar(&dbtype, "dbtype", "mongo", "Database method to use, either mongo or file")
+	flag.StringVar(&servername, "name", "defaultname", "Server name")
 	flag.IntVar(&uid, "uid", 1001, "User to drop privileges")
 	flag.Parse()
 
-	fmt.Printf("Port is %d\n", port)
-	fmt.Printf("IP is %s\n", ip)
-	fmt.Printf("DB is %s\n", db)
-	fmt.Printf("UID is %d\n", uid)
-	fmt.Printf("dbtype is %s\n", dbtype)
+	fmt.Print("Muteswan server\n")
+	fmt.Printf("HTTP Port: %d\n", port)
+	fmt.Printf("IP: %s\n", ip)
+	fmt.Printf("DB name: %s\n", db)
+	fmt.Printf("UID: %d\n", uid)
+	fmt.Printf("dbtype: %s\n", dbtype)
+	fmt.Printf("Server name: %s\n", servername)
 
 
 	var session *mgo.Session
@@ -450,6 +458,11 @@ func main() {
 		go ExpireMessageLoop(session.DB(db))
 	}
 
+	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
+		si := &ServerInfo{Name: servername}
+		infoBytes, _ := json.Marshal(si)
+		w.Write(infoBytes)
+	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		dropPrivs(uid)
