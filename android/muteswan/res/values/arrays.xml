@@ -41,9 +41,9 @@
 </string-array>
 
 <string-array name="cryptolevelentries">
-  <item>Low</item>
-  <item>Medium</item>
-  <item>High</item>
+  <item>Low (most compact)</item>
+  <item>Medium (128 bit AES)</item>
+  <item>High (256 bit AES)</item>
 </string-array>
 
 <string-array name="cryptolevelvalues">
