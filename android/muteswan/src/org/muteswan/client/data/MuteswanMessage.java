@@ -165,8 +165,12 @@ public class MuteswanMessage {
 				"yyyy-MM-dd HH:mm:ss");
 		  try {
 			this.dateObj = df.parse(date);
+			
 		  } catch (ParseException e) {
-			e.printStackTrace();
+			Date dt = new Date();
+			this.dateObj = dt;
+			return(dt);
+			//e.printStackTrace();
 		  }
 		}
 		return(dateObj);

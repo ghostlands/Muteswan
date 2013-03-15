@@ -755,9 +755,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 					spinneyIcon.setImageResource(R.drawable.refresh_yellow);
 				}
 				
-				if (gettingMsgsDialog != null) {
-					gettingMsgsDialog.setMessage(circleMap.get(b.getString("circle")).getShortname() + getString(R.string.n_checking_for_new_messages));
-				}
+				
 			}
 			
 		}
@@ -1275,6 +1273,24 @@ final Handler stopSpinningHandler = new Handler() {
 			}
 			
 			String[] circleNewMsgs = popFirstDoneMsgCheck();
+			if (gettingMsgsDialog != null) {
+				
+				StringBuilder paintBrush = new StringBuilder();
+				
+				for (String circle : newMsgCheckState.keySet()) {
+					
+					paintBrush.append(circleMap.get(circle).getShortname() + "\n");
+					//paintBrush = paintBrush + circleMap.get(circle).getShortname() + ": " + newMsgCheckState.get(circle) + "\n";
+					
+				}
+				//gettingMsgsDialog.setMessage(getString(R.string.n_checking_for_new_messages) + paintBrush);
+				Message m = new Message();
+				Bundle b = new Bundle();
+				b.putString("txt", paintBrush.toString());
+				m.setData(b);
+				updateDialogText.sendMessage(m);
+				
+			}
 			
 			if (Thread.currentThread().isInterrupted())
 				return(null);
@@ -1337,8 +1353,8 @@ final Handler stopSpinningHandler = new Handler() {
 		for (String key : newMsgCheckState.keySet()) {
 			String circle = key;
 			String delta = newMsgCheckState.get(key).toString();
-			//MuteLog.Log("LatestMessages", "popFirstDoneMsgCheck circle is " + key + " and delta is " + delta);
-			if (delta != null &&  newMsgCheckState.get(key) != -1) {
+			MuteLog.Log("LatestMessages", "popFirstDoneMsgCheck circle is " + circleMap.get(key).getShortname() + key + " and delta is " + delta);
+			if (newMsgCheckState.get(key) != -1) {
 				newMsgCheckState.remove(key);
 				
 				retVal[0] = circle;
@@ -1346,6 +1362,7 @@ final Handler stopSpinningHandler = new Handler() {
 				return retVal;
 				//return(circle);
 			}
+			//MuteLog.Log("LatestMessages","popFirstDonMsgCheck DID NOT REMOVE." + circleMap.get(key).getShortname());
 		}
 		
 		return(null);

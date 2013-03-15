@@ -436,9 +436,9 @@ public class Main extends Activity implements Runnable {
 		}
 
 		// fdo we want this?
-		CircleStore cs = new CircleStore(cipherSecret,this,true,false);
-		 cs.updateStore("dd85381ac8acc1a7", null, "Feedback",
-		 "circles.muteswan.org");
+		//CircleStore cs = new CircleStore(cipherSecret,this,true,false);
+		// cs.updateStore("dd85381ac8acc1a7", null, "Feedback",
+		// "circles.muteswan.org");
 	}
 	
 	

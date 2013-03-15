@@ -646,7 +646,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	        date = df.format(d);
 		} catch (ParseException e) {
 			MuteLog.Log("Circle", "Parse error parsing " + dateIn + " with " + e.toString());
-			return(null);
+			return(dateIn);
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 		}
@@ -779,7 +779,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (IOException e) {
-		MuteLog.Log("Circle", "IKF IO exception");
+		MuteLog.Log("Circle", "IO exception: " + e);
 		return (-2);
 	} 
 	
