@@ -28,5 +28,3 @@ The source is available in git at:
 
 <pre>git clone http://muteswan.org/git muteswan</pre>
 
-If you would like write access please email junger at muteswan org.
-
