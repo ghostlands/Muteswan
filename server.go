@@ -168,7 +168,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 	json.Unmarshal(jsonBytes, &mw.Content)
 	mw.Time = stat.ModTime()
 	mw.Id = id
-	mw.Timestamp = mw.Time.Format(time.RFC1123)
+	mw.Timestamp = mw.Time.UTC().Format(time.RFC1123)
 	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
 	return mw, nil
@@ -199,7 +199,7 @@ func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
 		stat, _ := file.Stat()
 		mw.Time = stat.ModTime()
 		mw.Id = i
-		mw.Timestamp = mw.Time.Format(time.RFC1123)
+		mw.Timestamp = mw.Time.UTC().Format(time.RFC1123)
 		mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
 		msgs = append(msgs, mw)
