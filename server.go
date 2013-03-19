@@ -160,7 +160,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 		path string
 		mw   MsgWrap
 	)
-	path = fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, id)
+	path = fmt.Sprintf("%s\\%s\\%d", ms.Datadir, ms.Circle, id)
 	file, _ = os.Open(path)
 	stat, _ := file.Stat()
 
@@ -168,7 +168,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 	json.Unmarshal(jsonBytes, &mw.Content)
 	mw.Time = stat.ModTime()
 	mw.Id = id
-	mw.Timestamp = mw.Time.Format(time.RFC1123)
+	mw.Timestamp = mw.Time.UTC().Format(time.RFC1123)
 	mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
 	return mw, nil
@@ -199,7 +199,7 @@ func (ms *FileStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
 		stat, _ := file.Stat()
 		mw.Time = stat.ModTime()
 		mw.Id = i
-		mw.Timestamp = mw.Time.Format(time.RFC1123)
+		mw.Timestamp = mw.Time.UTC().Format(time.RFC1123)
 		mw.Timestamp = strings.Replace(mw.Timestamp, "UTC", "GMT", -1)
 
 		msgs = append(msgs, mw)
@@ -240,7 +240,7 @@ func (ms *FileStore) updateCounter() (int) {
 
 func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 
-	circledir := fmt.Sprintf("%s/%s", ms.Datadir, ms.Circle)
+	circledir := fmt.Sprintf("%s\\%s", ms.Datadir, ms.Circle)
 	fmt.Printf("Using dir: %s\n",circledir)
 
 	_,err := os.Stat(circledir)
@@ -277,7 +277,7 @@ func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 func dropPrivs(uid int) {
 	if syscall.Getuid() == 0 {
 		fmt.Printf("Dropping privileges.")
-		syscall.Setuid(uid)
+		//syscall.Setuid(uid)
 	}
 }
 
