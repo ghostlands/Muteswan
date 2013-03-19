@@ -60,6 +60,7 @@ type MongoStore struct {
 type FileStore struct {
 	Circle  string
 	Datadir string
+	Lock chan int
 }
 
 // mongodb implementation of MtsnStore
@@ -231,27 +232,43 @@ func (ms *FileStore) GetLastMsg() (LastMessage, error) {
 	return lastMsg, nil
 }
 
+func (ms *FileStore) updateCounter() (int) {
+	lastMsg,_ := ms.GetLastMsg()
+	return lastMsg.LastMessage + 1
+}
+
+
 func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 
-	mostRecent, _ := ms.GetLastMsg()
-	msgId := mostRecent.LastMessage + 1
-	filepath := fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, msgId)
 	circledir := fmt.Sprintf("%s/%s", ms.Datadir, ms.Circle)
 	fmt.Printf("Using dir: %s\n",circledir)
 
 	_,err := os.Stat(circledir)
 	if err != nil {
+		fmt.Printf("Error stating dr: %s\n",err)
 		err = os.Mkdir(circledir,0700)
 		if err != nil {
 			return err
 		}
 	}
 
-	file, _ := os.Create(filepath)
-	msgBytes, _ := json.Marshal(msgw.Content)
-	wr := bufio.NewWriter(file)
-	wr.Write(msgBytes)
-	wr.Flush()
+	fmt.Printf("Acquiring Lock...\n")
+	lock := <- ms.Lock
+	fmt.Printf("Got lock %d\n", lock)
+	if lock == 0 {
+		msgId := ms.updateCounter();
+
+		filepath := fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, msgId)
+		file, _ := os.Create(filepath)
+		msgBytes, _ := json.Marshal(msgw.Content)
+		wr := bufio.NewWriter(file)
+		wr.Write(msgBytes)
+		wr.Flush()
+		file.Close()
+		fmt.Printf("Releasing lock\n")
+		go Unlock(ms.Lock)
+	}
+
 
 	return nil
 }
@@ -272,7 +289,7 @@ func validateHash(hash string) {
 	}
 }
 
-func makeStore( dbtype, db, hash string, s *mgo.Session) MtsnStore {
+func makeStore( dbtype, db, hash string, s *mgo.Session, lock chan int) MtsnStore {
 
 
 	if dbtype == "mongo" {
@@ -280,7 +297,7 @@ func makeStore( dbtype, db, hash string, s *mgo.Session) MtsnStore {
 	}
 
 	if dbtype == "file" {
-		return &FileStore{Circle: hash, Datadir: db}
+		return &FileStore{Circle: hash, Datadir: db, Lock: lock}
 	}
 
 	return nil
@@ -415,6 +432,10 @@ func ExpireMessageLoop(d *mgo.Database) {
 	}
 }
 
+func Unlock(lock chan int) {
+	lock <- 0
+}
+
 //var session *mgo.Session
 
 func main() {
@@ -461,6 +482,9 @@ func main() {
 		sess = session.Copy()
 	}
 
+	lock := make(chan int)
+	go Unlock(lock)
+
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
 		si := &ServerInfo{Name: servername}
 		infoBytes, _ := json.Marshal(si)
@@ -492,8 +516,7 @@ func main() {
 				http.NotFound(w,r)
 				return
 			}
-
-			mtsnStore := makeStore(dbtype,db,urlParts2[1],s)
+			mtsnStore := makeStore(dbtype,db,urlParts2[1],s,lock)
 
 			if r.Method == "POST" {
 				//fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
@@ -506,7 +529,7 @@ func main() {
 
 		} else {
 			//fileStore := &FileStore{Circle: urlParts[1], Datadir: db}
-			mtsnStore := makeStore(dbtype,db,urlParts[1],s)
+			mtsnStore := makeStore(dbtype,db,urlParts[1],s,lock)
 			GetMsg(w, r, urlParts[2], mtsnStore)
 		}
 
