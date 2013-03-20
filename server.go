@@ -14,7 +14,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 	"net/http"
 )
@@ -160,7 +159,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 		path string
 		mw   MsgWrap
 	)
-	path = fmt.Sprintf("%s\\%s\\%d", ms.Datadir, ms.Circle, id)
+	path = fmt.Sprintf("%s%s%s%s%d", ms.Datadir, os.PathSeparator, ms.Circle, os.PathSeparator, id)
 	file, _ = os.Open(path)
 	stat, _ := file.Stat()
 
@@ -240,7 +239,7 @@ func (ms *FileStore) updateCounter() (int) {
 
 func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 
-	circledir := fmt.Sprintf("%s\\%s", ms.Datadir, ms.Circle)
+	circledir := fmt.Sprintf("%s%s%s", ms.Datadir, os.PathSeparator, ms.Circle)
 	fmt.Printf("Using dir: %s\n",circledir)
 
 	_,err := os.Stat(circledir)
@@ -274,12 +273,14 @@ func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 }
 
 // misc functions
+/*
 func dropPrivs(uid int) {
 	if syscall.Getuid() == 0 {
 		fmt.Printf("Dropping privileges.")
-		//syscall.Setuid(uid)
+		syscall.Setuid(uid)
 	}
 }
+*/
 
 func validateHash(hash string) {
 	matchSha1, _ := regexp.MatchString("^\\w{40}$", hash)
@@ -448,21 +449,18 @@ func main() {
 		db     string
 		dbtype string
 		servername string
-		uid    int
 	)
 	flag.IntVar(&port, "port", 80, "Port to bind on.")
 	flag.StringVar(&ip, "ip", "127.0.0.1", "IP to bind to")
 	flag.StringVar(&db, "db", "muteswan", "MongoDB database to use")
 	flag.StringVar(&dbtype, "dbtype", "mongo", "Database method to use, either mongo or file")
 	flag.StringVar(&servername, "name", "defaultname", "Server name")
-	flag.IntVar(&uid, "uid", 1001, "User to drop privileges")
 	flag.Parse()
 
 	fmt.Print("Muteswan server\n")
 	fmt.Printf("HTTP Port: %d\n", port)
 	fmt.Printf("IP: %s\n", ip)
 	fmt.Printf("DB name: %s\n", db)
-	fmt.Printf("UID: %d\n", uid)
 	fmt.Printf("dbtype: %s\n", dbtype)
 	fmt.Printf("Server name: %s\n", servername)
 
@@ -492,7 +490,7 @@ func main() {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		dropPrivs(uid)
+		//dropPrivs(uid)
 
 
 		var s *mgo.Session;
