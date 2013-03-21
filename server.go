@@ -159,7 +159,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 		path string
 		mw   MsgWrap
 	)
-	path = fmt.Sprintf("%s%s%s%s%d", ms.Datadir, os.PathSeparator, ms.Circle, os.PathSeparator, id)
+	path = fmt.Sprintf("%s%s%s%s%d", ms.Datadir, string(os.PathSeparator), ms.Circle, os.PathSeparator, id)
 	file, _ = os.Open(path)
 	stat, _ := file.Stat()
 
@@ -239,7 +239,7 @@ func (ms *FileStore) updateCounter() (int) {
 
 func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 
-	circledir := fmt.Sprintf("%s%s%s", ms.Datadir, os.PathSeparator, ms.Circle)
+	circledir := fmt.Sprintf("%s%s%s", ms.Datadir, string(os.PathSeparator), ms.Circle)
 	fmt.Printf("Using dir: %s\n",circledir)
 
 	_,err := os.Stat(circledir)
@@ -258,7 +258,12 @@ func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 		msgId := ms.updateCounter();
 
 		filepath := fmt.Sprintf("%s/%s/%d", ms.Datadir, ms.Circle, msgId)
-		file, _ := os.Create(filepath)
+		file, err := os.Create(filepath)
+		if err != nil {
+			go Unlock(ms.Lock)
+			fmt.Printf("Failed to write to %s\n", filepath)
+			return err
+		}
 		msgBytes, _ := json.Marshal(msgw.Content)
 		wr := bufio.NewWriter(file)
 		wr.Write(msgBytes)
