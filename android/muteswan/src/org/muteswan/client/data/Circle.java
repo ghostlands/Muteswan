@@ -520,7 +520,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 	
 	
 	
-	private String getFileContents(File file) {
+	public static String getFileContents(File file) {
 		StringBuilder text = new StringBuilder();
 
 		if (!file.exists())
@@ -541,7 +541,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		return(text.toString());
 	}
 	
-	private boolean writeFileContent(File file, String data) {
+	public static boolean writeFileContent(File file, String data) {
 		
 
 		try {
@@ -1169,7 +1169,7 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 			jsonObj = new JSONObject(msgContent);
 			jsonObj.put("msgdate", date);
 			
-			
+		
 			File msgPath = new File(getStorePath() + "/" + id);
 			MuteLog.Log("Circle","Saving message " + id + " with content " + msgContent + " and path " + msgPath);
 			writeFileContent(msgPath,jsonObj.toString());
@@ -1180,7 +1180,8 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 			
 			//MuteLog.Log("Circle", "Wrote message to file " + msgPath);
 		} catch (JSONException e) {
-			
+			MuteLog.Log("Circle", "Failed to save message: " + id + " exception: " + e);
+			return;
 		}
 		
 		

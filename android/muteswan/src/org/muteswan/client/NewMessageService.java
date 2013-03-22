@@ -33,10 +33,13 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.MigrateToEncPrefs;
 import org.muteswan.client.data.MuteswanMessage;
+import org.muteswan.client.data.MuteswanServer;
+import org.muteswan.client.data.ServerList;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.CreateCircle;
 import org.muteswan.client.ui.LatestMessages;
@@ -173,9 +176,14 @@ public class NewMessageService extends Service {
 		
 		
 		circleStore = new CircleStore(cipherSecret,getApplicationContext(),true,false,muteswanHttp);
+		
 	 	for (Circle r : circleStore) {
 			  MuteLog.Log("MuteswanService", "Circle " + r.getShortname() + " registered.");
 			  registerPoll(r);
+			  
+			  
+			 
+			  
 	 	}
 	}
 
@@ -248,7 +256,14 @@ public class NewMessageService extends Service {
 			initCircleStore();
 			
 			
-			
+			// sync the server list just in case
+			ServerList serverList = new ServerList();
+			serverList.init(getApplicationContext());
+			for (Circle r : circleStore) {
+			  MuteswanServer server = new MuteswanServer();
+			  server.init(r.getServer() ,new JSONObject());
+			  serverList.addServer(server);
+			}
 			
 			if (backgroundMessageCheck) 
 			   runPoll();
