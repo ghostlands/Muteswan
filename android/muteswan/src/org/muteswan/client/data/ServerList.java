@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.muteswan.client.Main;
+import org.muteswan.client.MuteLog;
 
 import android.content.Context;
 
@@ -37,6 +38,19 @@ public class ServerList extends LinkedList<MuteswanServer> {
 		
 	}
 	
+	public MuteswanServer[] getArray() {
+		MuteswanServer[] array = new MuteswanServer[this.size()];
+		
+		
+		int indx = 0;
+		for (MuteswanServer s : this) {
+			array[indx] = s;
+			indx++;
+		}
+		
+		return(array);
+	}
+	
 	public boolean addServer(MuteswanServer server) {
 		
 		JSONObject jsonObj = new JSONObject();
@@ -57,6 +71,7 @@ public class ServerList extends LinkedList<MuteswanServer> {
 	}
 	
 	private File getStorePath() {
+		
 		return(new File(context.getFilesDir() + "/servers"));
 	}
 }

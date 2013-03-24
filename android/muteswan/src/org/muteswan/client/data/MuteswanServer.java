@@ -30,6 +30,10 @@ public class MuteswanServer {
 		return hostname;
 	}
 	
+	public String toString() {
+		return serverInfo.getName() + " (" + getHostname() + ")";
+	}
+	
 	public void init(String server, JSONObject jsonObj) {
 		this.hostname = server;
 		serverInfo = new ServerInfo();

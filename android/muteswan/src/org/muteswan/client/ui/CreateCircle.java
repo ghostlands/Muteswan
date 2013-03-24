@@ -72,8 +72,8 @@ public class CreateCircle extends Activity implements Runnable {
 	    	   newCircleServerPrompt.setVisibility(View.GONE);
 	       }
 	       
-	       usePublicServer = defPrefs.getBoolean("usePublicServer", true);
-	       MuteLog.Log("CreateCircle","Use public server is: " + usePublicServer);
+	       //usePublicServer = defPrefs.getBoolean("usePublicServer", true);
+	       //MuteLog.Log("CreateCircle","Use public server is: " + usePublicServer);
 	    
 	       
 	       final ImageView titleBarImage = (ImageView) findViewById(R.id.titlebarImage);
@@ -115,11 +115,11 @@ public class CreateCircle extends Activity implements Runnable {
 	    	
 	    	String server = serverView.getText().toString();
 	    
-	    	if (!usePublicServer && server.equals("")) {
+	    	//if (!usePublicServer && server.equals("")) {
 	    		server = getString(R.string.defaulthiddencircleserver);
-	    	} else if (usePublicServer && server.equals("")) {
-	    		server = getString(R.string.defaultcircleserver);
-	    	}
+	    	//} else if (usePublicServer && server.equals("")) {
+	    	//	server = getString(R.string.defaultcircleserver);
+	    	//}
 	    	
 	    	if (name.length() == 0 || server.length() == 0)
 	    		return;

@@ -35,6 +35,8 @@ import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.Identity;
 import org.muteswan.client.data.IdentityStore;
+import org.muteswan.client.data.MuteswanServer;
+import org.muteswan.client.data.ServerList;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -74,6 +76,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -81,6 +84,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -628,13 +632,25 @@ public class CircleList extends ListActivity {
 	private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
 		public void onClick(View v) {
 
+			
+			final ServerList serverList = new ServerList();
+			serverList.init(getApplicationContext());
+			
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					CircleList.this);
 			LayoutInflater factory = LayoutInflater.from(CircleList.this);
-			final View textEntryView = factory.inflate(R.layout.alertedittext,
+			final View textEntryView = factory.inflate(R.layout.circlecreate,
 					null);
-			final EditText alertEditText = (EditText) textEntryView
-					.findViewById(R.id.alertEditText);
+			final EditText circleNameEditText = (EditText) textEntryView
+					.findViewById(R.id.circleName);
+			final Spinner createCircleServer = (Spinner) textEntryView.findViewById(R.id.createCircleServer);
+			
+			
+			ArrayAdapter<MuteswanServer> serverListAdapter = new ArrayAdapter<MuteswanServer>(getApplicationContext(),
+			 android.R.layout.simple_list_item_1, serverList.getArray());
+			createCircleServer.setAdapter(serverListAdapter);
+			
+			
 
 			builder.setMessage(R.string.t_new_circle_name)
 					.setCancelable(false)
@@ -644,20 +660,24 @@ public class CircleList extends ListActivity {
 								public void onClick(DialogInterface dialog,
 										int id) {
 
+									
+									MuteswanServer selectedMuteswanServer = (MuteswanServer) createCircleServer.getSelectedItem();
 									GenerateCircle genCircle = new GenerateCircle(
 											cipherSecret,
 											getApplicationContext(),
-											alertEditText.getText().toString());
+											circleNameEditText.getText().toString(),
+											selectedMuteswanServer.getHostname());
 
 									genCircle.saveCircle();
 									genCircle.broadcastCreate();
+									//BOOK
 									onResume();
 
 									// Intent intent = new
 									// Intent(getApplicationContext(),CircleList.class);
 									// startActivity(intent);
 
-									newCircle = alertEditText.getText()
+									newCircle = circleNameEditText.getText()
 											.toString();
 									onResume();
 								}

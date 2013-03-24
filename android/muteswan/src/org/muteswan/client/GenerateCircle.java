@@ -23,7 +23,7 @@ public class GenerateCircle {
 
 	private static final int MAX_CIRCNAME_LENGTH = 50;
 	private String customServer;
-	private boolean usePublicServer;
+	//private boolean usePublicServer;
 	private String circleFullText;
 	private Context ctx;
 	private String name;
@@ -31,34 +31,18 @@ public class GenerateCircle {
 	
 	private String cryptoLevel;
 
-	public GenerateCircle(String secret, Context ctx, String name) {
+	public GenerateCircle(String secret, Context ctx, String name, String server) {
  
-		String server;
 		
 		this.ctx = ctx;
 		this.name = name;
 		this.cipherSecret = secret;
 		
 	    SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-	    customServer = defPrefs.getString("customCircleServer", "");
-	    usePublicServer = defPrefs.getBoolean("usePublicServer", false);
+	   
 	    cryptoLevel = defPrefs.getString("cryptoLevel", "med");
 	    
-	   
-	    
-	  
-	    // figure out which server to use
-	    if (usePublicServer) {
-	    	server = ctx.getString(R.string.defaultcircleserver);
-		} else {
-			server = ctx.getString(R.string.defaulthiddencircleserver);
-		}
-	    
-	    
-	    // if they have custom, stomp on it
-	    if (customServer.length() != 0) {
-	    	server = customServer;
-	    }
+	     
 	    
     	if (name.length() == 0 || server.length() == 0 || name.length() >= MAX_CIRCNAME_LENGTH)
     		return;

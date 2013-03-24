@@ -15,7 +15,7 @@
 	            android:title="Custom Server"
 	            android:summary="Specify your own Muteswan server used when creating circles."
 	            />
-<CheckBoxPreference android:title="Use public server" android:summary="Use the public default server, circles.muteswan.org. Faster, less secure." android:key="usePublicServer"></CheckBoxPreference>
+<!--  <CheckBoxPreference android:title="Use public server" android:summary="Use the public default server, circles.muteswan.org. Faster, less secure." android:key="usePublicServer"></CheckBoxPreference> -->
 <CheckBoxPreference android:title="Allow Manual Joining" android:summary="Joins circles by entering circle text directly. Note: potential security risk." android:key="allowManualJoining"></CheckBoxPreference>
 
 <!--  uncomment to allow message data clearing -->
