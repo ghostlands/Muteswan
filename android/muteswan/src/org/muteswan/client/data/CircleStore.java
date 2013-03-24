@@ -25,6 +25,7 @@ import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -229,6 +230,23 @@ final public class CircleStore extends LinkedList<Circle> {
 
 	
 	  
+	public Set<String> getUniqServers() {
+		HashMap<String,String> map = new HashMap<String,String>();
+	
+		
+		
+		CIRCLE: for (Circle r : this) {
+			for (String s : map.keySet()) {
+				if (s.equals(r.getServer())) {
+					continue CIRCLE;
+				}
+			}
+			
+			map.put(r.getServer(), "");
+		}
+		
+		return map.keySet();
+	}
 	
 
 	

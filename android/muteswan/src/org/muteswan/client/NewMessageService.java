@@ -31,7 +31,10 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.muteswan.client.data.Circle;
@@ -259,10 +262,34 @@ public class NewMessageService extends Service {
 			// sync the server list just in case
 			ServerList serverList = new ServerList();
 			serverList.init(getApplicationContext());
-			for (Circle r : circleStore) {
+			
+			
+			//for (int i = 0; i <= uniqServers.length; i++) {
+			//for (Circle r : circleStore) {
+			for (String serverName : circleStore.getUniqServers()) {
 			  MuteswanServer server = new MuteswanServer();
-			  server.init(r.getServer() ,new JSONObject());
-			  serverList.addServer(server);
+			  
+			  String httpGetLine = "http://" + serverName + "/info";
+			  MuteLog.Log("NewMessageService","Fetching " + httpGetLine);
+			  HttpGet httpGet = new HttpGet(httpGetLine);
+			  
+			  
+		      try {
+				HttpResponse resp = muteswanHttp.execute(httpGet);
+				String jsonString = EntityUtils.toString(resp.getEntity());
+				server.init(serverName, new JSONObject(jsonString));
+				serverList.addServer(server);
+			  } catch (ClientProtocolException e) {
+				MuteLog.Log("NewMessageService", "Error protocol exception info from tor: " + httpGetLine);
+				e.printStackTrace();
+			  } catch (IOException e) {
+				MuteLog.Log("NewMessageService", "Error IO exception fetching info from tor: " + httpGetLine);
+				e.printStackTrace();
+			  } catch (JSONException e) {
+				MuteLog.Log("NewMessageService", "Error JSON exception fetching info from tor: " + httpGetLine);
+				e.printStackTrace();
+			  }
+			
 			}
 			
 			if (backgroundMessageCheck) 
