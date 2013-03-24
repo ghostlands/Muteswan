@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 
+import org.json.JSONObject;
 import org.muteswan.client.AlertDialogs;
 import org.muteswan.client.GenerateCircle;
 import org.muteswan.client.IMessageService;
@@ -1139,7 +1140,31 @@ public class CircleList extends ListActivity {
 					alertDialogs.duplicateShortName(newCircle);
 				}
 
-				// IDENTITY
+				
+			// just a server
+			} else if (contents.endsWith(".onion")) {
+				String srvName = contents;
+				if (contents.contains("http://")) {
+					srvName = contents.replace("http://", "");
+				}
+				
+				ServerList serverList = new ServerList();
+				serverList.init(getApplicationContext());
+				MuteswanServer server = new MuteswanServer();
+				server.init(srvName, new JSONObject());
+				serverList.addServer(server);
+				
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						CircleList.this);
+
+				builder.setMessage("Added server: " + srvName);
+				AlertDialog alert = builder.create();
+				alert.show();
+				
+				
+				
+				// IDENTITY - not used....
 			} else {
 				String[] parts = contents.split(":");
 				Identity identity = new Identity(parts[0], parts[1], parts[2]);
