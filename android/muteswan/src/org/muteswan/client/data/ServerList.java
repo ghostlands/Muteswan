@@ -70,7 +70,7 @@ public class ServerList extends LinkedList<MuteswanServer> {
 		return true;
 	}
 	
-	private File getStorePath() {
+	public File getStorePath() {
 		
 		return(new File(context.getFilesDir() + "/servers"));
 	}
