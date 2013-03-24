@@ -633,7 +633,7 @@ public class CircleList extends ListActivity {
 	private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
 		public void onClick(View v) {
 
-			
+			//BOOK
 			final ServerList serverList = new ServerList();
 			serverList.init(getApplicationContext());
 			
@@ -642,14 +642,19 @@ public class CircleList extends ListActivity {
 			LayoutInflater factory = LayoutInflater.from(CircleList.this);
 			final View textEntryView = factory.inflate(R.layout.circlecreate,
 					null);
+			
 			final EditText circleNameEditText = (EditText) textEntryView
 					.findViewById(R.id.circleName);
 			final Spinner createCircleServer = (Spinner) textEntryView.findViewById(R.id.createCircleServer);
 			
+			//createCircleServer.setBackgroundColor(android.R.color.background_dark);
+			
+			
 			
 			ArrayAdapter<MuteswanServer> serverListAdapter = new ArrayAdapter<MuteswanServer>(getApplicationContext(),
-			 android.R.layout.simple_list_item_1, serverList.getArray());
+			 android.R.layout.simple_spinner_item, serverList.getArray());
 			createCircleServer.setAdapter(serverListAdapter);
+			
 			
 			
 
@@ -1007,33 +1012,51 @@ public class CircleList extends ListActivity {
 	private void showShareSelection(final int position) {
 		
 		if (nfcAdapter == null) {
-			showQRCode(position,false);
+			//showQRCode(position,false);
+			final CharSequence[] items = { "Share with QR Code",
+					"Share Server ONLY with QR Code" };
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Select method to share");
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					if (item == 0) {
+						showQRCode(position,false);
+					} else if (item == 1) {
+						showQRCode(position,true);
+					}
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
+			return;
+		} else {
+			final CharSequence[] items = { "Share with QR Code",
+					"Write to an NFC tag", "Beam to an Android device", "Share Server ONLY with QR Code" };
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Select method to share");
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					if (item == 0) {
+						showQRCode(position,false);
+					} else if (item == 1) {
+						nfcAdapter = NfcAdapter
+								.getDefaultAdapter(getApplicationContext());
+						shareWriteNFCTag(position);
+					} else if (item == 2) {
+						nfcAdapter = NfcAdapter
+								.getDefaultAdapter(getApplicationContext());
+						shareBeamNFC(position);
+					} else if (item == 3) {
+						showQRCode(position,true);
+					}
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
 			return;
 		}
 		
-		final CharSequence[] items = { "Share with QR Code",
-				"Write to an NFC tag", "Beam to an Android device", "Share Server ONLY with QR Code" };
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Select method to share");
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int item) {
-				if (item == 0) {
-					showQRCode(position,false);
-				} else if (item == 1) {
-					nfcAdapter = NfcAdapter
-							.getDefaultAdapter(getApplicationContext());
-					shareWriteNFCTag(position);
-				} else if (item == 2) {
-					nfcAdapter = NfcAdapter
-							.getDefaultAdapter(getApplicationContext());
-					shareBeamNFC(position);
-				} else if (item == 3) {
-					showQRCode(position,true);
-				}
-			}
-		});
-		AlertDialog alert = builder.create();
-		alert.show();
+		
 	}
 
 	private void shareWriteNFCTag(int position) {
