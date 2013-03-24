@@ -985,11 +985,16 @@ public class CircleList extends ListActivity {
 		alert.show();
 	}
 
-	private void showQRCode(int position) {
+	private void showQRCode(int position, boolean serverOnly) {
 		Intent intent = new Intent(
 				"com.google.zxing.client.android.ENCODE");
-		intent.putExtra("ENCODE_DATA",
+		if (!serverOnly) {
+		  intent.putExtra("ENCODE_DATA",
 				circleList[position].getFullText());
+		} else {
+			intent.putExtra("ENCODE_DATA",
+					circleList[position].getServer());
+		}
 		intent.putExtra("ENCODE_TYPE", "TEXT_TYPE");
 		intent.putExtra("ENCODE_SHOW_CONTENTS", true);
 		try {
@@ -1002,18 +1007,18 @@ public class CircleList extends ListActivity {
 	private void showShareSelection(final int position) {
 		
 		if (nfcAdapter == null) {
-			showQRCode(position);
+			showQRCode(position,false);
 			return;
 		}
 		
 		final CharSequence[] items = { "Share with QR Code",
-				"Write to an NFC tag", "Beam to an Android device" };
+				"Write to an NFC tag", "Beam to an Android device", "Share Server ONLY with QR Code" };
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Select method to share");
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
 				if (item == 0) {
-					showQRCode(position);
+					showQRCode(position,false);
 				} else if (item == 1) {
 					nfcAdapter = NfcAdapter
 							.getDefaultAdapter(getApplicationContext());
@@ -1022,6 +1027,8 @@ public class CircleList extends ListActivity {
 					nfcAdapter = NfcAdapter
 							.getDefaultAdapter(getApplicationContext());
 					shareBeamNFC(position);
+				} else if (item == 3) {
+					showQRCode(position,true);
 				}
 			}
 		});
