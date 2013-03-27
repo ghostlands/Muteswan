@@ -159,7 +159,7 @@ func (ms *FileStore) GetMsg(id int) (MsgWrap, error) {
 		path string
 		mw   MsgWrap
 	)
-	path = fmt.Sprintf("%s%s%s%s%d", ms.Datadir, string(os.PathSeparator), ms.Circle, os.PathSeparator, id)
+	path = fmt.Sprintf("%s%s%s%s%d", ms.Datadir, string(os.PathSeparator), ms.Circle, string(os.PathSeparator), id)
 	file, _ = os.Open(path)
 	stat, _ := file.Stat()
 
