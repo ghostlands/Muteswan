@@ -652,13 +652,13 @@ public class CircleList extends ListActivity {
 			
 			
 			ArrayAdapter<MuteswanServer> serverListAdapter = new ArrayAdapter<MuteswanServer>(getApplicationContext(),
-			 android.R.layout.simple_spinner_item, serverList.getArray());
+			 android.R.layout.select_dialog_singlechoice, serverList.getArray());
 			createCircleServer.setAdapter(serverListAdapter);
 			
 			
 			
 
-			builder.setMessage(R.string.t_new_circle_name)
+			builder.setMessage(R.string.t_create_circle)
 					.setCancelable(false)
 					.setView(textEntryView)
 					.setPositiveButton(R.string.create_circle_confirm_yes,

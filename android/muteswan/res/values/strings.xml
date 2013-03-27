@@ -44,7 +44,7 @@
      <string name="t_join_circle_manually">Join Circle Manually</string>
      <string name="add_circle_confirm_yes">Add</string>
      <string name="add_circle_confirm_cancel">Cancel</string>
-     <string name="t_new_circle_name">New Circle Name</string>
+     <string name="t_create_circle">Create Circle</string>
      <string name="create_circle_confirm_yes">Create</string>
      <string name="deleted_circle_notif_prefix">"Deleted circle "</string>
      <string name="delete_circle_notif_suffix">" from saved keys."</string>
@@ -78,5 +78,6 @@
      <string name="error_muteswan_failed_check_content">The latest messages could not be checked. Please ensure Orbot is working.</string>
      <string name="menu_repost">Repost</string>
      <string name="menu_reply">Reply</string>
+     <string name="server_spinner_prompt">Server:</string>
     
 </resources>
