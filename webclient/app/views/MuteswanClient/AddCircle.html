@@ -1,0 +1,13 @@
+{{set . "title" "Add Circle"}}
+{{template "header.html" .}}
+
+
+<p>
+<form method="POST" action="/AddCircle">
+Circle Full Text: <input type="input" name="circle" size="100"/><br>
+<input type="submit" value="Submit"/>
+</form>
+</p>
+
+{{template "footer.html" .}}
+

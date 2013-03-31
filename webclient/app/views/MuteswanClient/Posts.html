@@ -1,0 +1,33 @@
+{{set . "title" "Posts"}}
+{{template "header.html" .}}
+
+
+<p>Name: {{.mtsnCircle.Shortname}}</p>
+<p>Server: {{.mtsnCircle.Server}}</p>
+<p>Uuid: {{.mtsnCircle.Uuid}}</p>
+
+<!-- <p>Last message: {{.lastMsg.LastMessage}}</p>
+<p>Lower bound: {{.lowBound}}</p>
+-->
+
+
+
+<hr/>
+<p>Post Message</p>
+<form method="POST" action="/PostMsg">
+<textarea cols="120" rows="5" name="msgContent">
+</textarea><br>
+<input type="hidden" value="{{.mtsnCircle.FullText}}" name="circle"/>
+<input type="submit" value="Post"/>
+</form>
+
+<hr>
+<p>Messages</p>
+{{range .newMsgs}} 
+ <div>{{.Id}}: {{.Content.Message}}</div>
+{{end}}
+ <!-- {{range .}}<li>{{.}}</li>{{end}} -->
+
+
+{{template "footer.html" .}}
+
