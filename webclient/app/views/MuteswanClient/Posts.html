@@ -24,7 +24,7 @@
 <hr>
 <p>Messages</p>
 {{range .newMsgs}} 
- <div>{{.Id}}: {{.Content.Message}}</div>
+ <div>{{.Timestamp}} ({{.Id}})<br> &nbsp;&nbsp;{{.Content.Message}}</div>
 {{end}}
  <!-- {{range .}}<li>{{.}}</li>{{end}} -->
 

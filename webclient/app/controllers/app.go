@@ -118,6 +118,7 @@ func decryptMsgs (msgs []MsgWrap, circle *Circle) []MsgWrap {
 	newMsgs := make([]MsgWrap,len(msgs))
 	for i := range msgs {
 		newMsgs[i] = msgs[i]
+		fmt.Printf("Message id: %d\n", msgs[i].Id)
 		newMsgs[i].Content.Message = msgs[i].Content.getPlaintextMessage(circle)
 		fmt.Printf("Got message: %s\n",newMsgs[i].Content.Message)
 	}
@@ -126,11 +127,15 @@ func decryptMsgs (msgs []MsgWrap, circle *Circle) []MsgWrap {
 
 func (msg *Msg) getPlaintextMessage(circle *Circle) string {
 	rawdata,_ := base64.StdEncoding.DecodeString(msg.Message)
-	b := rawdata
 	c,_ := aes.NewCipher(circle.getKeyData())
 	decrypter := cipher.NewCBCDecrypter(c,msg.getIVData())
-	plaintext := make([]byte,len(b))
-	decrypter.CryptBlocks(plaintext,b)
+	plaintext := make([]byte,len(rawdata))
+
+	fmt.Printf("rawdata: %s\n",msg.Message)
+	fmt.Printf("plaintext len: %d\n", len(plaintext))
+	fmt.Printf("rawdata len: %d\n", len(rawdata))
+	fmt.Printf("iv data: %s\n", msg.getIVData())
+	decrypter.CryptBlocks(plaintext,rawdata)
 	return string(plaintext)
 }
 
