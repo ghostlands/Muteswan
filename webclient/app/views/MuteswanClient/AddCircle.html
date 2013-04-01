@@ -75,7 +75,7 @@ function read(a)
 	
 function load()
 {
-	initCanvas(640,480);
+	initCanvas(320,240);
 	qrcode.callback = read;
 	qrcode.decode("meqrthumb.png");
 }
@@ -129,27 +129,20 @@ function initCanvas(ww,hh)
 
 </script>
 
-    <div class="container">
+<form method="POST" action="/AddCircle">
+Circle Full Text: <input type="input" id="circle" name="circle" size="100"/><br>
+<input type="submit" value="Create Circle"/>
+</form>
+
 	
-  	<object  id="iembedflash" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" width="320" height="240">
+<object  id="iembedflash" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" width="320" height="240">
   		<param name="movie" value="camcanvas.swf" />
   		<param name="quality" value="high" />
 		<param name="allowScriptAccess" value="always" />
   		<embed  allowScriptAccess="always"  id="embedflash" src="/public/jsqrcode/src/camcanvas.swf" quality="high" width="320" height="240" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" mayscript="true"  />
-    </object>
-	
-    </div>
-<button onclick="captureToCanvas()">Capture</button><br>
-<canvas id="qr-canvas" width="640" height="480"></canvas>
-
-
-<p>
-Manual<br>
-<form method="POST" action="/AddCircle">
-Circle Full Text: <input type="input" id="circle" name="circle" size="100"/><br>
-<input type="submit" value="Submit"/>
-</form>
-</p>
+</object>
+<button onclick="captureToCanvas()">Scan for Circle</button>
+<canvas id="qr-canvas" width="320" height="240"></canvas>
 
 <script>
 	load();
