@@ -16,6 +16,12 @@ func (t ApplicationTest) TestThatIndexPageWorks() {
 	t.AssertContentType("text/html")
 }
 
+func (t ApplicationTest) TestGetCircleList() {
+	t.Get("/CircleList")
+	t.AssertOk()
+	t.AssertContentType("text/html")
+}
+
 func (t ApplicationTest) After() {
 	println("Tear down")
 }

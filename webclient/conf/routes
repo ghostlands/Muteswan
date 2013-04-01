@@ -5,8 +5,8 @@
 GET     /                                       MuteswanClient.Index
 GET     /CircleList                             MuteswanClient.CircleList
 GET     /Posts                             	MuteswanClient.Posts
-GET     /AddCircle                             	MuteswanClient.AddCircle
-POST     /AddCircle                            	MuteswanClient.AddCircle
+GET     /JoinCircle                            	MuteswanClient.JoinCircle
+POST     /JoinCircle                           	MuteswanClient.JoinCircle
 POST     /PostMsg                            	MuteswanClient.PostMsg
 
 # Ignore favicon requests
