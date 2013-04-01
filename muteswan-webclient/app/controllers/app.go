@@ -20,6 +20,8 @@ import (
 	"errors"
 	"bytes"
 	"net/url"
+	"github.com/qpliu/qrencode-go/qrencode"
+	"image/png"
 )
 
 
@@ -52,6 +54,7 @@ type Circle struct {
         Uuid string
         Key string
         FullText string
+	rawKeyData []byte
 }
 
 func (circle *Circle) getUrlHash() string {
@@ -94,6 +97,10 @@ func (circle *Circle) SaveCircle() error {
 }
 
 func (circle *Circle) getKeyData() []byte {
+	if len(circle.rawKeyData) != 0 {
+		return circle.rawKeyData
+	}
+
         var keyData []byte
         if len(circle.Key) != 16 {
                 keyData,_ = base64.StdEncoding.DecodeString(circle.Key)
@@ -101,6 +108,8 @@ func (circle *Circle) getKeyData() []byte {
                 keyData = []byte(circle.Key)
         }
 
+
+	circle.rawKeyData = keyData
         return keyData
 }
 
@@ -306,6 +315,7 @@ func (c MuteswanClient) CircleList() revel.Result {
 			return c.RenderError(err)
 		}
 		bytes := ReadFileContents(file)
+		defer file.Close()
 
 		var circle Circle
 		err = json.Unmarshal(bytes,&circle)
@@ -332,6 +342,7 @@ func ReadFileContents(file *os.File) []byte {
 func (c MuteswanClient) Posts(circle string) revel.Result {
 
 
+
 	if circle == "" {
 		return c.Redirect(MuteswanClient.Index)
 	}
@@ -347,6 +358,22 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
 	}
 
 	fmt.Printf("Got circle: %s\n", circle)
+	bitgrid,err := qrencode.Encode(mtsnCircle.FullText,qrencode.ECLevelQ)
+	if err != nil {
+		fmt.Printf("Failed to encode qrcode: %s",err)
+		return c.Render()
+	}
+
+
+	//FIXME: what do we do here for revel?
+	goPath := os.Getenv("GOPATH")
+	imageDir := goPath + "/src/muteswan-webclient/public/images"
+	f,err := os.Create(imageDir + "/circle" + mtsnCircle.getUrlHash() + ".png")
+	if err != nil {
+		return c.RenderError(errors.New("Could not render QR code."))
+	}
+	defer f.Close()
+	png.Encode(f,bitgrid.Image(6))
 
 	r,err := httpClient.Get(fmt.Sprintf("http://%s/%s",mtsnCircle.Server,mtsnCircle.getUrlHash()))
 	if err != nil {
@@ -387,6 +414,9 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
 	json.Unmarshal(bytes,&msgs)
 
 	newMsgs := decryptMsgs(msgs,mtsnCircle)
-	return c.Render(mtsnCircle,lastMsg,lowBound,newMsgs)
+	urlHash := mtsnCircle.getUrlHash()
+	keylen := len(mtsnCircle.Key)
+	rawkeylen := len(mtsnCircle.getKeyData())
+	return c.Render(mtsnCircle,lastMsg,lowBound,newMsgs,urlHash,keylen,rawkeylen)
 }
 
