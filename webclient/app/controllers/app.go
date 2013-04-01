@@ -245,7 +245,7 @@ func (c MuteswanClient) PostMsg(circle, msgContent string) revel.Result {
 	return c.Redirect("/Posts?circle=%s",url.QueryEscape(mtsnCircle.FullText))
 }
 
-func (c MuteswanClient) AddCircle(circle string) revel.Result {
+func (c MuteswanClient) JoinCircle(circle string) revel.Result {
 
 	if circle == "" {
 		return c.Render()

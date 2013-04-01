@@ -1,4 +1,4 @@
-{{set . "title" "Add Circle"}}
+{{set . "title" "Join Circle"}}
 {{template "header.html" .}}
 
 <script type="text/javascript" src="/public/jsqrcode/src/grid.js"></script>
@@ -129,7 +129,7 @@ function initCanvas(ww,hh)
 
 </script>
 
-<form method="POST" action="/AddCircle">
+<form method="POST" action="/JoinCircle">
 Circle Full Text: <input type="input" id="circle" name="circle" size="100"/><br>
 <input type="submit" value="Create Circle"/>
 </form>
@@ -141,8 +141,8 @@ Circle Full Text: <input type="input" id="circle" name="circle" size="100"/><br>
 		<param name="allowScriptAccess" value="always" />
   		<embed  allowScriptAccess="always"  id="embedflash" src="/public/jsqrcode/src/camcanvas.swf" quality="high" width="320" height="240" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" mayscript="true"  />
 </object>
+<canvas id="qr-canvas" width="320" height="240"></canvas><br>
 <button onclick="captureToCanvas()">Scan for Circle</button>
-<canvas id="qr-canvas" width="320" height="240"></canvas>
 
 <script>
 	load();
