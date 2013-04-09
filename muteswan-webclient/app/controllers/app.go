@@ -222,7 +222,7 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
         }
 	json.Unmarshal(bytes,&msgs)
 
-	newMsgs := mtsnclient.DecryptMsgs(msgs,mtsnCircle)
+	newMsgs := mtsnCircle.DecryptMsgs(msgs)
 	urlHash := mtsnCircle.GetUrlHash()
 	keylen := len(mtsnCircle.Key)
 	rawkeylen := len(mtsnCircle.GetKeyData())
