@@ -9,11 +9,8 @@ import (
 	"encoding/base64"
 	"net/http"
 	"encoding/json"
-	"crypto/aes"
 	"os"
-	"crypto/cipher"
 	"bufio"
-	"errors"
 	"bytes"
 	"net/url"
 	"github.com/qpliu/qrencode-go/qrencode"
@@ -41,11 +38,7 @@ func (c MuteswanClient) PostMsg(circle, msgContent string) revel.Result {
 	}
 
 	var msg mtsnclient.Msg
-	ciph,_ := aes.NewCipher(mtsnCircle.GetKeyData())
-	ivBytes := msg.GenIVData()
-        encrypter := cipher.NewCBCEncrypter(ciph, ivBytes)
-	enctext := make([]byte, len(mtsnclient.Pkcs5pad([]byte(msgContent),16)))
-	encrypter.CryptBlocks(enctext, mtsnclient.Pkcs5pad([]byte(msgContent),16))
+	enctext := msg.EncryptMessage(mtsnCircle,msgContent)
 	msg.Message = base64.StdEncoding.EncodeToString(enctext)
 	msgBytes,_ := json.Marshal(msg)
 	r := bytes.NewReader(msgBytes)
@@ -79,24 +72,34 @@ func (c MuteswanClient) JoinCircle(circle string) revel.Result {
 	return c.Redirect(MuteswanClient.CircleList)
 }
 
+func createDirs(dirs []string) error {
+
+
+	for i := range dirs {
+	  err := os.MkdirAll(dirs[i],0700)
+	  if err != nil {
+		fmt.Printf("Error creating: %s\n", dirs[i])
+		return err
+	  }
+	}
+
+
+	return nil
+}
+
 func (c MuteswanClient) CircleList() revel.Result {
 
-	// pull this from the revel config somehow FIXME
+	// FIXME: what do we do here? how to manage properly?
 	dataDir := "."
 	circlesDir := dataDir + "/circles"
 	msgsDir := dataDir + "/msgs"
+	imgsDir := dataDir + "/images"
+	dirs := []string{ circlesDir, msgsDir, imgsDir }
 
-	err1 := os.MkdirAll(circlesDir,0700)
-	err2 := os.MkdirAll(msgsDir,0700)
-
-	if err1 != nil {
-		fmt.Printf("Error creating: %s\n", circlesDir)
-		return c.RenderError(err1)
-	}
-
-	if err2 != nil {
-		fmt.Printf("Error creating: %s\n", msgsDir)
-		return c.RenderError(err2)
+	err := createDirs(dirs);
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return c.RenderError(err)
 	}
 
 	dir,err := os.Open(circlesDir)
@@ -175,11 +178,11 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
 
 
 	//FIXME: what do we do here for revel?
-	goPath := os.Getenv("GOPATH")
-	imageDir := goPath + "/src/muteswan-webclient/public/images"
+	dataDir := "."
+	imageDir := dataDir + "/images"
 	f,err := os.Create(imageDir + "/circle" + mtsnCircle.GetUrlHash() + ".png")
 	if err != nil {
-		return c.RenderError(errors.New("Could not render QR code."))
+		return c.RenderError(err);
 	}
 	defer f.Close()
 	png.Encode(f,bitgrid.Image(6))

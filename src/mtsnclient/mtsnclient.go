@@ -161,6 +161,16 @@ func (msg *Msg) getPlaintextMessage(circle *Circle) string {
 	return string(plaintext)
 }
 
+// Returns raw encoded bytes.
+func (msg *Msg) EncryptMessage(circle *Circle, msgContent string) []byte {
+        ciph,_ := aes.NewCipher(circle.GetKeyData())
+        ivBytes := msg.GenIVData()
+        encrypter := cipher.NewCBCEncrypter(ciph, ivBytes)
+        enctext := make([]byte, len(Pkcs5pad([]byte(msgContent),16)))
+        encrypter.CryptBlocks(enctext, Pkcs5pad([]byte(msgContent),16))
+	return enctext
+}
+
 // Generates 16 bytes of random data used for the IV
 func (msg *Msg) GenIVData() []byte {
 	rb := make([]byte, 16)
