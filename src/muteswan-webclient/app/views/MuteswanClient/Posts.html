@@ -1,0 +1,38 @@
+{{set . "title" "Posts"}}
+{{template "header.html" .}}
+
+
+<p>Name: {{.mtsnCircle.Shortname}}</p>
+<p>Server: {{.mtsnCircle.Server}}</p>
+<p>Uuid: {{.mtsnCircle.Uuid}}</p>
+<p>Key: {{.mtsnCircle.Key}}</p>
+<p>Key length: {{.keylen}}</p>
+<p>Raw key length: {{.rawkeylen}}</p>
+
+<!-- <p>Last message: {{.lastMsg.LastMessage}}</p>
+<p>Lower bound: {{.lowBound}}</p>
+-->
+QR Code:<br>
+<img src="/public/images/circle{{.urlHash}}.png"/>
+
+
+
+<hr/>
+<p>Post Message</p>
+<form method="POST" action="/PostMsg">
+<textarea cols="120" rows="5" name="msgContent">
+</textarea><br>
+<input type="hidden" value="{{.mtsnCircle.FullText}}" name="circle"/>
+<input type="submit" value="Post"/>
+</form>
+
+<hr>
+<p>Messages</p>
+{{range .newMsgs}} 
+ <div>{{.Timestamp}} ({{.Id}})<br> &nbsp;&nbsp;<pre>{{.Content.Message}}</pre></div>
+{{end}}
+ <!-- {{range .}}<li>{{.}}</li>{{end}} -->
+
+
+{{template "footer.html" .}}
+

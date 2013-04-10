@@ -1,0 +1,15 @@
+{{set . "title" "Home"}}
+{{template "header.html" .}}
+
+
+<a href="/JoinCircle">Create Circle</a> | <a href="/JoinCircle">Join Circle</a>
+<h3>Circles</h3>
+
+
+{{range .circles}}
+ <div><a href="/Posts?circle={{.FullText}}">{{.Shortname}}</a></div>
+{{end}}
+
+
+{{template "footer.html" .}}
+

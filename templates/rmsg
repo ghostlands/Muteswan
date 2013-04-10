@@ -1,9 +1,0 @@
-<html>
- <head></head>
-<body>
- <h2>Message [% msgid %] for [% keyhash %]</h2>
-
- [% msg %]
-
-</body>
-</html>
