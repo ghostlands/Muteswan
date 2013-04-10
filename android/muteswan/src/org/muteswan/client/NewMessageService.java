@@ -662,6 +662,8 @@ public class NewMessageService extends Service {
 
 		
 
+		
+		
 		public void refreshLatest() {
 			MuteLog.Log("MuteswanService", "runPoll() called.");
 			//AsyncTask runPoll = new RunPoll();

@@ -1013,8 +1013,8 @@ public class CircleList extends ListActivity {
 		
 		if (nfcAdapter == null) {
 			//showQRCode(position,false);
-			final CharSequence[] items = { "Share with QR Code",
-					"Share Server ONLY with QR Code" };
+			final CharSequence[] items = { "Share with QR Code"
+					 };
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Select method to share");
 			builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -1031,7 +1031,7 @@ public class CircleList extends ListActivity {
 			return;
 		} else {
 			final CharSequence[] items = { "Share with QR Code",
-					"Write to an NFC tag", "Beam to an Android device", "Share Server ONLY with QR Code" };
+					"Write to an NFC tag", "Beam to an Android device",};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Select method to share");
 			builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -1178,6 +1178,8 @@ public class CircleList extends ListActivity {
 					srvName = contents.replace("http://", "");
 				}
 				
+				//BOOK
+				
 				ServerList serverList = new ServerList();
 				serverList.init(getApplicationContext());
 				MuteswanServer server = new MuteswanServer();
@@ -1189,6 +1191,7 @@ public class CircleList extends ListActivity {
 						CircleList.this);
 
 				builder.setMessage("Added server: " + srvName);
+				
 				AlertDialog alert = builder.create();
 				alert.show();
 				
