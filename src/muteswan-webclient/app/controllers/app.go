@@ -74,7 +74,7 @@ func (c MuteswanClient) JoinCircle(circle string) revel.Result {
 		return c.RenderError(err)
 	}
 
-	mtsnCircle.SaveCircle()
+	mtsnCircle.SaveCircle(".")
 
 	return c.Redirect(MuteswanClient.CircleList)
 }
@@ -82,7 +82,7 @@ func (c MuteswanClient) JoinCircle(circle string) revel.Result {
 func (c MuteswanClient) CircleList() revel.Result {
 
 	// pull this from the revel config somehow FIXME
-	dataDir := "/tmp/muteswan-client-data"
+	dataDir := "."
 	circlesDir := dataDir + "/circles"
 	msgsDir := dataDir + "/msgs"
 

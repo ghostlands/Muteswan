@@ -77,9 +77,8 @@ func (circle *Circle) GetFullText() string {
 	return ""
 }
 
-// Saves circle data to the hard coded path in this method. What should we
-// really do here?
-func (circle *Circle) SaveCircle() error {
+// Saves circle data to the provided path
+func (circle *Circle) SaveCircle(dir string) error {
 
 	bytes, err := json.Marshal(circle)
 	if err != nil {
@@ -87,8 +86,7 @@ func (circle *Circle) SaveCircle() error {
 	}
 
 	// pull this from the revel config somehow FIXME
-	dataDir := "/tmp/muteswan-client-data"
-	circlesDir := dataDir + "/circles"
+	circlesDir := dir + "/circles"
 	err = ioutil.WriteFile(circlesDir+"/"+circle.GetUrlHash(), bytes, 0400)
 
 	if err != nil {
