@@ -121,6 +121,10 @@ public class CircleList extends ListActivity {
 		super.onResume();
 
 		sendBroadcast(new Intent(LatestMessages.CHECKING_MESSAGES));
+		
+		// bind to service
+		Intent serviceIntent = new Intent(this,NewMessageService.class);
+		bindService(serviceIntent,msgServiceConn,Context.BIND_AUTO_CREATE);
 
 		
 		
@@ -708,6 +712,7 @@ public class CircleList extends ListActivity {
 	private AlertDialog writeNFCDlg;
 	private AlertDialog beamNFCDlg;
 	private AlertDialog receiveNFCDlg;
+	protected IMessageService msgService;
 
 	private void readyToBeamNFC() {
 		beamNFC = new AlertDialog.Builder(this);
@@ -1166,6 +1171,12 @@ public class CircleList extends ListActivity {
 				  sendBroadcast(joinCircleIntent);
 
 				  newCircle = circle.getShortname();
+				  
+				   try {
+						msgService.updateServerList();
+				   } catch (RemoteException e) {
+						MuteLog.Log("CircleList", "Failed to update server list: " + e);
+				   }
 				} else {
 					alertDialogs.duplicateShortName(newCircle);
 				}
@@ -1178,8 +1189,6 @@ public class CircleList extends ListActivity {
 					srvName = contents.replace("http://", "");
 				}
 				
-				//BOOK
-				
 				ServerList serverList = new ServerList();
 				serverList.init(getApplicationContext());
 				MuteswanServer server = new MuteswanServer();
@@ -1191,6 +1200,16 @@ public class CircleList extends ListActivity {
 						CircleList.this);
 
 				builder.setMessage("Added server: " + srvName);
+				builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,
+							int id) {
+							try {
+								msgService.updateServerList();
+							} catch (RemoteException e) {
+								MuteLog.Log("CircleList", "Failed to update server list: " + e);
+							}
+					}
+				});
 				
 				AlertDialog alert = builder.create();
 				alert.show();
@@ -1210,4 +1229,35 @@ public class CircleList extends ListActivity {
 
 	}
 
+	
+	public void onDestroy() {
+		super.onDestroy();
+		
+		if (msgService != null) {
+			unbindService(msgServiceConn);
+		}
+	}
+	
+	private ServiceConnection msgServiceConn = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className,
+             IBinder service) {
+     	msgService = IMessageService.Stub.asInterface(service);
+     	try {
+				msgService.setSkipNextCheck(true);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+     	MuteLog.Log("LatestMessages", "onServiceConnected called.");
+     	if (msgService == null) {
+     		Log.e("LatestMessages", "msgService is null ");
+     	}
+
+     }
+
+     public void onServiceDisconnected(ComponentName className) {
+        msgService = null;
+     }
+  };
+	
+	
 }

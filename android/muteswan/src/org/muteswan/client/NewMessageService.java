@@ -262,79 +262,85 @@ public class NewMessageService extends Service {
 			
 			
 			// sync the server list
-			syncUniqServers();
-		    updateServerList();
+			_syncUniqServers();
+		    _updateServerList();
 			
 			if (backgroundMessageCheck) 
 			   runPoll();
 			return null;
 		}
 
-		private void syncUniqServers() {
-			ServerList serverList = new ServerList();
-			serverList.init(getApplicationContext());
-			
-			for (String serverName : circleStore.getUniqServers()) {
-				File dir = serverList.getStorePath();
-				File f = new File(dir.toString() + "/" + serverName);
-				if (f.exists()) 
-					continue;
-				
-				
-			    MuteswanServer server = new MuteswanServer();
-				server.init(serverName, new JSONObject());
-				serverList.addServer(server);
-			}
-		 }
 		
-		 private void updateServerList() {
-				ServerList serverList = new ServerList();
-				ServerList nsl = (ServerList) serverList.clone();
-				serverList.init(getApplicationContext());
-				nsl.init(getApplicationContext());
-				
-				for (MuteswanServer srv : serverList) {
-				
-				  String serverName = srv.getHostname();  
-				  File dir = serverList.getStorePath();
-				  File f = new File(dir.toString() + "/" + serverName);
-				 
-				  long curTime = (System.currentTimeMillis()/1000);
-				  MuteLog.Log("NewMessageService","Curtime: " + curTime);
-				  MuteLog.Log("NewMessageService","LastModified: " + (f.lastModified()/1000));
-				  
-				  // 60 seconds modification
-				  if ((f.lastModified()/1000) - curTime >= 60) {
-					  continue;
-				  }
-				  
-				  String httpGetLine = "http://" + serverName + "/info";
-				  MuteLog.Log("NewMessageService","Fetching " + httpGetLine);
-				  HttpGet httpGet = new HttpGet(httpGetLine);
-				  
-				  
-			      try {
-					HttpResponse resp = muteswanHttp.execute(httpGet);
-					String jsonString = EntityUtils.toString(resp.getEntity());
-					srv.init(serverName, new JSONObject(jsonString));
-					nsl.addServer(srv);
-				  } catch (ClientProtocolException e) {
-					MuteLog.Log("NewMessageService", "Error protocol exception info from tor: " + httpGetLine);
-					e.printStackTrace();
-				  } catch (IOException e) {
-					MuteLog.Log("NewMessageService", "Error IO exception fetching info from tor: " + httpGetLine);
-					e.printStackTrace();
-				  } catch (JSONException e) {
-					MuteLog.Log("NewMessageService", "Error JSON exception fetching info from tor: " + httpGetLine);
-					e.printStackTrace();
-				  }
-				
-			}
-			
-		}
+		
+
 
 	}
-
+	
+	private void _syncUniqServers() {
+		ServerList serverList = new ServerList();
+		serverList.init(getApplicationContext());
+		
+		for (String serverName : circleStore.getUniqServers()) {
+			File dir = serverList.getStorePath();
+			File f = new File(dir.toString() + "/" + serverName);
+			if (f.exists()) 
+				continue;
+			
+			
+		    MuteswanServer server = new MuteswanServer();
+			server.init(serverName, new JSONObject());
+			serverList.addServer(server);
+		}
+	 }
+	
+	 private void _updateServerList() {
+		 
+		 
+			ServerList serverList = new ServerList();
+			ServerList nsl = (ServerList) serverList.clone();
+			serverList.init(getApplicationContext());
+			nsl.init(getApplicationContext());
+			
+			for (MuteswanServer srv : serverList) {
+			
+			  String serverName = srv.getHostname();  
+			  File dir = serverList.getStorePath();
+			  File f = new File(dir.toString() + "/" + serverName);
+			 
+			  long curTime = (System.currentTimeMillis()/1000);
+			  MuteLog.Log("NewMessageService","Curtime: " + curTime);
+			  MuteLog.Log("NewMessageService","LastModified: " + (f.lastModified()/1000));
+			  
+			  // one hour sync time
+			  if ((f.lastModified()/1000) - curTime >= 3600) {
+				  continue;
+			  }
+			  
+			  String httpGetLine = "http://" + serverName + "/info";
+			  MuteLog.Log("NewMessageService","Fetching " + httpGetLine);
+			  HttpGet httpGet = new HttpGet(httpGetLine);
+			  
+			  
+		      try {
+				HttpResponse resp = muteswanHttp.execute(httpGet);
+				String jsonString = EntityUtils.toString(resp.getEntity());
+				srv.init(serverName, new JSONObject(jsonString));
+				nsl.addServer(srv);
+			  } catch (ClientProtocolException e) {
+				MuteLog.Log("NewMessageService", "Error protocol exception info from tor: " + httpGetLine);
+				e.printStackTrace();
+			  } catch (IOException e) {
+				MuteLog.Log("NewMessageService", "Error IO exception fetching info from tor: " + httpGetLine);
+				e.printStackTrace();
+			  } catch (JSONException e) {
+				MuteLog.Log("NewMessageService", "Error JSON exception fetching info from tor: " + httpGetLine);
+				e.printStackTrace();
+			  }
+			
+		}
+		
+	}
+	
 
 	
 	private void showNotification(CharSequence title, CharSequence content) {
@@ -662,6 +668,17 @@ public class NewMessageService extends Service {
 
 		
 
+		public void updateServerList() {
+			// run a tor check
+			 final Thread updateServerListThread = new Thread() {
+				 public void run() {
+					 _syncUniqServers();
+					 _updateServerList();
+				 }
+			 };
+			 updateServerListThread.start();
+			
+		}
 		
 		
 		public void refreshLatest() {
