@@ -29,7 +29,7 @@
      	 android:background="@drawable/titlebarbuttons"
 	     android:textStyle="bold"
 	     android:textColor="#ffffffff"
-	     android:text="New Circle" />
+	     android:text="Create" />
 	  </LinearLayout>
 	    
       <LinearLayout  android:layout_weight="1" 
@@ -47,7 +47,7 @@
      	 android:background="@drawable/titlebarbuttons"
 	     android:textStyle="bold"
 	     android:textColor="#ffffff"
-	     android:text="Join Circle" />
+	     android:text="Join" />
        </LinearLayout>
 	     
     

@@ -31,7 +31,11 @@ public class MuteswanServer {
 	}
 	
 	public String toString() {
-		return serverInfo.getName() + " (" + getHostname() + ")";
+		if (serverInfo.getName() != "" && !serverInfo.getName().equals("defaultname")) {
+			return serverInfo.getName();
+		} else {
+			return serverInfo.getName() + " (" + getHostname() + ")";
+		} 
 	}
 	
 	public void init(String server, JSONObject jsonObj) {

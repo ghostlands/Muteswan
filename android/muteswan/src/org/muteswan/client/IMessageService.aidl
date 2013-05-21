@@ -19,7 +19,7 @@ interface IMessageService {
   int downloadMsgRangeFromTor(String circleHash, int start, int last);
   void updateLastMessage(String circleHash, int lastMsg);
   
-  void updateServerList();
+  void updateServerList(boolean force);
   
   
   

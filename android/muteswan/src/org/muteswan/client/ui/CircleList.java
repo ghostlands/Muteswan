@@ -637,7 +637,7 @@ public class CircleList extends ListActivity {
 	private Button.OnClickListener createCircleListener = new Button.OnClickListener() {
 		public void onClick(View v) {
 
-			//BOOK
+			
 			final ServerList serverList = new ServerList();
 			serverList.init(getApplicationContext());
 			
@@ -655,8 +655,9 @@ public class CircleList extends ListActivity {
 			
 			
 			
+			
 			ArrayAdapter<MuteswanServer> serverListAdapter = new ArrayAdapter<MuteswanServer>(getApplicationContext(),
-			 android.R.layout.select_dialog_singlechoice, serverList.getArray());
+			 android.R.layout.simple_spinner_item, serverList.getArray());
 			createCircleServer.setAdapter(serverListAdapter);
 			
 			
@@ -1173,7 +1174,7 @@ public class CircleList extends ListActivity {
 				  newCircle = circle.getShortname();
 				  
 				   try {
-						msgService.updateServerList();
+						msgService.updateServerList(true);
 				   } catch (RemoteException e) {
 						MuteLog.Log("CircleList", "Failed to update server list: " + e);
 				   }
@@ -1204,7 +1205,7 @@ public class CircleList extends ListActivity {
 					public void onClick(DialogInterface dialog,
 							int id) {
 							try {
-								msgService.updateServerList();
+								msgService.updateServerList(true);
 							} catch (RemoteException e) {
 								MuteLog.Log("CircleList", "Failed to update server list: " + e);
 							}

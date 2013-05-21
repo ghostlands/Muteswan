@@ -263,7 +263,7 @@ public class NewMessageService extends Service {
 			
 			// sync the server list
 			_syncUniqServers();
-		    _updateServerList();
+		    _updateServerList(false);
 			
 			if (backgroundMessageCheck) 
 			   runPoll();
@@ -293,7 +293,8 @@ public class NewMessageService extends Service {
 		}
 	 }
 	
-	 private void _updateServerList() {
+	
+	 private void _updateServerList(Boolean force) {
 		 
 		 
 			ServerList serverList = new ServerList();
@@ -312,7 +313,7 @@ public class NewMessageService extends Service {
 			  MuteLog.Log("NewMessageService","LastModified: " + (f.lastModified()/1000));
 			  
 			  // one hour sync time
-			  if ((f.lastModified()/1000) - curTime >= 3600) {
+			  if (!force && (f.lastModified()/1000) - curTime >= 3600) {
 				  continue;
 			  }
 			  
@@ -668,12 +669,12 @@ public class NewMessageService extends Service {
 
 		
 
-		public void updateServerList() {
+		public void updateServerList(final boolean force) {
 			// run a tor check
 			 final Thread updateServerListThread = new Thread() {
 				 public void run() {
 					 _syncUniqServers();
-					 _updateServerList();
+					 _updateServerList(force);
 				 }
 			 };
 			 updateServerListThread.start();
