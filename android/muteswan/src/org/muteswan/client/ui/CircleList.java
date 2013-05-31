@@ -652,12 +652,14 @@ public class CircleList extends ListActivity {
 			final Spinner createCircleServer = (Spinner) textEntryView.findViewById(R.id.createCircleServer);
 			
 			//createCircleServer.setBackgroundColor(android.R.color.background_dark);
+
 			
 			
 			
 			
 			ArrayAdapter<MuteswanServer> serverListAdapter = new ArrayAdapter<MuteswanServer>(getApplicationContext(),
-			 android.R.layout.simple_spinner_item, serverList.getArray());
+					//android.R.layout.simple_spinner_dropdown_item, serverList.getArray());
+					R.layout.serverlistspinner, serverList.getArray());
 			createCircleServer.setAdapter(serverListAdapter);
 			
 			
