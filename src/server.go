@@ -487,10 +487,13 @@ func main() {
 
 	lock := make(chan int)
 	go Unlock(lock)
+	regex := regexp.MustCompile("^/(\\w{40}|\\w{64})/((\\d+-\\d+)|(\\d+))$")
+	regex2 := regexp.MustCompile("^/(\\w{40}|\\w{64})$")
 
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
 		si := &ServerInfo{Name: servername}
 		infoBytes, _ := json.Marshal(si)
+		fmt.Println("Got server info", servername)
 		w.Write(infoBytes)
 	})
 
@@ -504,14 +507,15 @@ func main() {
 			defer s.Close()
 		}
 
-		regex := regexp.MustCompile("^/(\\w{40}|\\w{64})/((\\d+-\\d+)|(\\d+))$")
 		urlParts := regex.FindStringSubmatch(r.URL.Path)
 
 
-		fmt.Printf("Got request %s\n",r.URL.Path)
+		//memstats := new(runtime.MemStats)
+		//runtime.ReadMemStats(memstats)
+		//fmt.Printf("Mem: %d\n", memstats.Alloc)
+		fmt.Println("Got request",r.URL.Path)
 
 		if urlParts == nil {
-			regex2 := regexp.MustCompile("^/(\\w{40}|\\w{64})$")
 			urlParts2 := regex2.FindStringSubmatch(r.URL.Path)
 
 			if urlParts2 == nil {
