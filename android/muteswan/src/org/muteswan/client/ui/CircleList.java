@@ -971,9 +971,9 @@ public class CircleList extends ListActivity {
 			return;
 		}
 		
-		final CharSequence[] items = { "Scan QR Code", "Use NFC" };
+		final CharSequence[] items = { "Scan QR Code", "NFC" };
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Select method to share");
+		builder.setTitle("Join circle");
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
 				if (item == 0) {
@@ -1022,7 +1022,8 @@ public class CircleList extends ListActivity {
 			final CharSequence[] items = { "Share with QR Code"
 					 };
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Select method to share");
+			
+			builder.setTitle("Share " + circleList[position].getShortname());
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					if (item == 0) {
@@ -1039,7 +1040,8 @@ public class CircleList extends ListActivity {
 			final CharSequence[] items = { "Share with QR Code",
 					"Write to an NFC tag", "Beam to an Android device",};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Select method to share");
+			builder.setTitle("Share " + circleList[position].getShortname());
+			
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					if (item == 0) {
