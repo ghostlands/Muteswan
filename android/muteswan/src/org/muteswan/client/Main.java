@@ -445,7 +445,11 @@ public class Main extends Activity implements Runnable {
 		ServerList serverList = new ServerList();
 		serverList.init(getApplicationContext());
 		MuteswanServer server = new MuteswanServer();
-		server.init("tckwndlytrphlpyo.onion", new JSONObject());
+		try {
+			server.init("tckwndlytrphlpyo.onion", new JSONObject().put("Name", "Sample Server"));
+		} catch (JSONException e) {
+			return;
+		}
 		serverList.addServer(server);
 		
 	}
