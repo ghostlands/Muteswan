@@ -34,6 +34,8 @@ import org.json.JSONObject;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.data.MigrateToEncPrefs;
+import org.muteswan.client.data.MuteswanServer;
+import org.muteswan.client.data.ServerList;
 import org.muteswan.client.ui.CircleList;
 import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
@@ -439,6 +441,13 @@ public class Main extends Activity implements Runnable {
 		//CircleStore cs = new CircleStore(cipherSecret,this,true,false);
 		// cs.updateStore("dd85381ac8acc1a7", null, "Feedback",
 		// "circles.muteswan.org");
+		
+		ServerList serverList = new ServerList();
+		serverList.init(getApplicationContext());
+		MuteswanServer server = new MuteswanServer();
+		server.init("tckwndlytrphlpyo.onion", new JSONObject());
+		serverList.addServer(server);
+		
 	}
 	
 	
