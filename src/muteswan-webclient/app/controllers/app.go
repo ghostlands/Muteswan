@@ -93,7 +93,7 @@ func (c MuteswanClient) CircleList() revel.Result {
 	dataDir := "."
 	circlesDir := dataDir + "/circles"
 	msgsDir := dataDir + "/msgs"
-	imgsDir := dataDir + "/images"
+	imgsDir := dataDir + "/muteswan-webclient/public/images"
 	dirs := []string{ circlesDir, msgsDir, imgsDir }
 
 	err := createDirs(dirs);
@@ -179,8 +179,9 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
 
 	//FIXME: what do we do here for revel?
 	dataDir := "."
-	imageDir := dataDir + "/images"
+	imageDir := dataDir + "/muteswan-webclient/public/images"
 	f,err := os.Create(imageDir + "/circle" + mtsnCircle.GetUrlHash() + ".png")
+	fmt.Println("Creating " + imageDir + "/circle" + mtsnCircle.GetUrlHash() + ".png")
 	if err != nil {
 		return c.RenderError(err);
 	}
@@ -195,7 +196,7 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
 
 	bytes,err := ioutil.ReadAll(r.Body)
         if err != nil {
-                fmt.Sprintf("Error: %s\n",err)
+                fmt.Printf("Error: %s\n",err)
 		return c.Render()
         }
 
