@@ -36,19 +36,11 @@ h1. Settings
 
 h3. New Message Service
 
-To have Muteswan periodically check for new messages, enable the New Message Service.  You can set how often Muteswan will check for new messages with the Check Interval setting.
-
-h3. Custom Server
-
-By default, Muteswan will use a pre-configured server.  If you want to use your own server, you can enter it here.  If it is a public server, it will look something like circles.muteswan.org.  If it is a Tor hidden service, it will look something like kpvz7ki2v5agwt35.onion.
-
-h3. Use Public Server
-
-When enabled, Muteswan will use the public server circles.muteswan.org instead of a Tor hidden service.  Sending and receiving messages will be faster, as you use fewer relays within the Tor network.  However, it is less secure as your messages leave the Tor network and may be analyzed by an exit node.
+To have Muteswan periodically check for new messages, enable the New Message Service.  You can set how often Muteswan will check for new messages with the Check Interval setting. Keep in mind that Muteswan uses Tor and periodically checking WILL result in decreased battery time.
 
 h3. Allow Manual Joining
 
-When enabled, you can join circles by manually entering in a circle key.  This is the code which is normally expressed as a QR code.  This is useful if you want to use Muteswan on a device without a camera.  It is a potential security risk, however, if only because you might be more inclined to write down the key.
+When enabled, you can join circles by manually entering in a circle key.  This is the code which is normally expressed as a QR code.  This is useful if you want to use Muteswan on a device without a camera.  It is a potential security risk, however, if only because you might be more inclined to write down the key. To manually enter a Circle, hit the settings button in the Circles section of the app.
 
 h3. Verbose
 
