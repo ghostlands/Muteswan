@@ -975,7 +975,7 @@ public class CircleList extends ListActivity {
 		
 		final CharSequence[] items = { "Scan QR Code", "NFC" };
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Join circle");
+		builder.setTitle("Join");
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
 				if (item == 0) {

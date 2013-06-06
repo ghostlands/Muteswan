@@ -312,8 +312,8 @@ public class NewMessageService extends Service {
 			  MuteLog.Log("NewMessageService","Curtime: " + curTime);
 			  MuteLog.Log("NewMessageService","LastModified: " + (f.lastModified()/1000));
 			  
-			  // one hour sync time
-			  if (!force && (f.lastModified()/1000) - curTime >= 3600) {
+			  // 120 seconds between sync
+			  if (!force && (f.lastModified()/1000) - curTime >= 120) {
 				  continue;
 			  }
 			  
