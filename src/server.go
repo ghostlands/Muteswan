@@ -403,6 +403,11 @@ func GetLastMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
 }
+
+func ErrorMaxContent(w http.ResponseWriter) {
+	http.Error(w,"Content too big.",413)
+	return
+}
 ///////////////
 
 // expire goroutine
@@ -470,6 +475,10 @@ func main() {
 	fmt.Printf("Server name: %s\n", servername)
 
 
+	// maximum conent length
+	var maxContentLength int64
+	maxContentLength = 16384
+
 	//var session *mgo.Session
 	var sess *mgo.Session
 
@@ -500,6 +509,11 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		//dropPrivs(uid)
 
+
+		if r.ContentLength > maxContentLength {
+			ErrorMaxContent(w)
+			return
+		}
 
 		var s *mgo.Session;
 		if dbtype == "mongo" {
