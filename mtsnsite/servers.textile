@@ -20,3 +20,55 @@ Running your own Muteswan server is relatively straightforward. It involves thre
 # Configure a Tor hidden node
 # Run the server using a file or MongoDB backed datastore
 
+h3. Compiling the server
+
+The Muteswan server is written in Go which makes it very easy to compile and
+deploy on a variety of platforms. The server supports Windows and Linux and has
+been run on Intel and ARM chipsets.
+
+# Download the Go compiler: <a href="http://code.google.com/p/go/downloads/list">http://code.google.com/p/go/downloads/list</a>
+# Downoad the Muteswan source code:
+<code>git clone http://muteswan.org/git muteswan</code>
+# Set your GOPATH to where you downloaded the source, e.g.:
+<code>export GOPATH=$HOME/muteswan</code>
+# Go into the src dir:
+<code>cd $GOPATH/src</code>
+# Get the dependencies:
+<code>go get labix.org/v2/mgo</code>
+and
+<code>go get labix.org/v2/mgo/bson</code>
+# Compile the server:
+<code>go build -o muteswan-server server.go</code>
+
+h3. Configuring a Tor hidden service
+
+Installing a hidden service is documented here: <a href="https://www.torproject.org/docs/tor-hidden-service.html.en">https://www.torproject.org/docs/tor-hidden-service.html.en</a>
+
+Ensure that the hidden service configuration is pointing to the same local port
+that the Muteswan server is running. The Muteswan server will default to port
+8080, which is also what the Tor documentation references: 
+<pre>
+HiddenServiceDir /Library/Tor/var/lib/tor/hidden_service/
+HiddenServicePort 80 127.0.0.1:8080
+</pre>
+
+h3. Running the Muteswan server
+
+To install the server, simply copy it to a location of your choice such as <code>/usr/local/sbin</code>
+
+The Muteswan server currently supports two backend database types: a file based
+backend and a MongoDB backend. The Muteswan server currently assumes that the
+MongoDB is running on the same host as the server.
+
+To run the server using the file backend:
+<code>/usr/local/sbin/muteswan-server -dbtype=file -db=/path/to/muteswan-server/db -name=ServerName</code>
+
+To run the server using the MongoDB backend:
+<code>/usr/local/sbin/muteswan-server -dbtype=mongo -db=muteswan -name=ServerName</code>
+
+You should run the Muteswan server on a non-privileged port, such as 8080, the
+default. To override this use the --port cmdline flag.
+
+Logging will occur to standard output.
+
+h3. Publish your hidden server as a QRcode and start creating circles!

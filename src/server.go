@@ -460,7 +460,7 @@ func main() {
 		dbtype string
 		servername string
 	)
-	flag.IntVar(&port, "port", 80, "Port to bind on.")
+	flag.IntVar(&port, "port", 8080, "Port to bind on.")
 	flag.StringVar(&ip, "ip", "127.0.0.1", "IP to bind to")
 	flag.StringVar(&db, "db", "muteswan", "MongoDB database to use")
 	flag.StringVar(&dbtype, "dbtype", "mongo", "Database method to use, either mongo or file")
