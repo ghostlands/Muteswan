@@ -108,7 +108,7 @@ Circles are the only organizational unit in Muteswan. They are composed of three
 elements:
 
 	key: a string used for the AES key, e.g, dba4fe6ef22b494d
-	uuid: a RFC4122 UUID use in URL
+	uuid: a RFC4122 UUID used in URL
 	server: a tor hidden service address, e.g., tckwndlytrphlpyo.onion
 	shortname: name of the circle, e.g., testsite
 
@@ -123,9 +123,8 @@ key and the server. Consequently, the text representation of a circle should
 never be displayed and the key should be treated as any cryptographic secret.
 Muteswan circles are intended to be shared in person, typically via QR code.
 The circles should be trivial to communicate via QR code but there should be
-no reason to transfer them. It should be mentioned that perhaps one would
-desire to distribute QR codes openly if the intention was to attract a large
-amount of users to a circle.
+no reason to transfer them in another method. Of course, how people distribute
+circles is up to the members of the circle.
 
 AES Key
 +++++++
@@ -134,7 +133,7 @@ The AES key can be represented in two ways. A 16 character string, e.g.,
 "dba4fe6ef22b494d", used as the AES key. This is the weakest key format but it
 is convenient and takes up the least amount of space.
 
-A 256-bit AES can be base 64 encoded. For example:
+A 256bit or 128bit AES key can be base 64 encoded. For example:
 
 Entropy garden+e8b6be57-c34b-41f7-ae18-042589d8e93c$ChuTIyvKfBO7IJSxzikvJbX2AnFeQPV03yyyKoqPsgw=@tckwndlytrphlpyo.onion
 
@@ -234,6 +233,7 @@ URL Scheme
 |GET msg|http://host/sha1hash/msgnum| http://tckwndlytrphlpyo.onion/f573fe7d4a34186b00bcab2b38e52122afe04d83/53  | BASE64 encoded msg 
 |GET msg range|http://host/sha1hash/msghigh-msglow| http://tckwndlytrphlpyo.onion/f573fe7d4a34186b00bcab2b38e52122afe04d83/53-50  | BASE64 encoded msgs in JSON array 
 |GET last message|http://host/sha1hash| http://tckwndlytrphlpyo.onion/f573fe7d4a34186b00bcab2b38e52122afe04d83  | JSON key 'lastMessage' holds message id latest message 
+|GET info|http://host/info| http://tckwndlytrphlpyo.onion/info  | JSON key 'Name' holds the name of the server. This info JSON may be extended in the future.
 |=======
 
 POST msg
@@ -307,6 +307,18 @@ JSON key 'lastMessage'. Since all messages are sequential and immutable, it
 implies that message 1 through Last-Message are available.
 
 
+GET info
+^^^^^^^^
+
+Fetches the server metadata. Currently this provides the name of the server:
+------------------------------------------------------
+GET /info HTTP/1.1
+Host: tckwndlytrphlpyo.onion
+Connection: Keep-Alive
+
+{"Name": "Sample Server"}
+------------------------------------------------------
+
 Implementations
 ---------------
 
@@ -315,23 +327,16 @@ implementations to proof-of-concept the project. Please keep in mind that all
 of the implementations below assumes a Tor SOCKS proxy server is running on
 localhost at port 9050.
 
-Perl Muteswan server
-~~~~~~~~~~~~~~~~~~~~
+Source is available at:
+  http://muteswan.org/git
 
-A simple operational Muteswan server written in perl using HTTP::Daemon is
-available. It is very simple and implements the three required functionalities:
-GET msg, POST msg and GET msg index.
+Muteswan server
+~~~~~~~~~~~~~~~
 
-This daemon is probably not appropriate for large volumes but given the
-simplicity of Muteswan it should be usable to test and develop.
+A small Muteswan server implemented in Go(lang) is available with the option of
+file or MongoDB based backend storage.
 
-Go Muteswan server
-~~~~~~~~~~~~~~~~~~~~
-
-A more production ready server is also available with the option of file or
-MongoDB based backend storage.
-
-It is super simple and small and easy to compile and run. Thank you Go.
+It is simple to install and run.
 
 
 Android client
@@ -358,5 +363,5 @@ and Orbot. Orbot is the official Tor port for Android. Barcode Scanner is used
 to offload QR code generation and scanning.
 
 To try out the latest version of the Muteswan Android client:
-  http://muteswan.org/public/?page_id=38
+  http://muteswan.org/
 

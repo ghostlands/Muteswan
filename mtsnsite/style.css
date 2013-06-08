@@ -74,7 +74,7 @@ body {
 }
 #page {
 	margin: 0 auto 6% auto;
-	max-width: 1000px;
+	max-width: 1200px;
 }
 #branding hgroup {
 	margin: 0 7.6%;
@@ -555,7 +555,6 @@ a:hover {
 	margin-right: 0;
 }
 #access ul {
-	float: right;
 	font-size: 18px;
 	font-family: Helvetica, sans-serif;
 	list-style: none;

@@ -1,0 +1,22 @@
+---
+layout: default
+title: Running your own server
+---
+
+h1(entry-title). Muteswan Servers
+
+Muteswan servers run behind Tor hidden nodes. There is a sample server
+available but folks are encouraged to stand up their own servers for themselves
+or their community.
+
+The sample server is built into the Android Muteswan client but please
+understand this should only be used to experiment with Muteswan.
+
+h3(entry-title). Running your own server
+
+Running your own Muteswan server is relatively straightforward. It involves three main steps:
+
+# Compile or download the server for your platform
+# Configure a Tor hidden node
+# Run the server using a file or MongoDB backed datastore
+
