@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 	"net/http"
+	"io"
 )
 
 // types
@@ -316,18 +317,29 @@ func PostMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 	var m Msg
 	var mw MsgWrap
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil || len(body) == 0 {
+	body := make([]byte,r.ContentLength)
+	_, err := io.ReadFull(r.Body,body)
+	if err != nil {
+		http.Error(w,"Error reading stream.",500)
+		return
+	}
+
+	if len(body) == 0 {
 		http.Error(w,"Empty body.",500)
 		return
 	}
 
 	fmt.Printf("Body %s\n",body)
-	json.Unmarshal(body, &m)
+	err = json.Unmarshal(body, &m)
+	if err != nil {
+		http.Error(w,"Failed to parse JSON.", 500)
+		return
+	}
 	mw.Content = m
 
 	if mw.Content.Message == "" {
 		http.Error(w,"Empty Message content field.", 500)
+		return
 	}
 
 	err = store.PostMsg(mw)
@@ -405,7 +417,7 @@ func GetLastMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 }
 
 func ErrorMaxContent(w http.ResponseWriter) {
-	http.Error(w,"Content too big.",413)
+	http.Error(w,"Content too large.",413)
 	return
 }
 ///////////////
