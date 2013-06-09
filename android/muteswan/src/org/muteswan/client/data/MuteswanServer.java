@@ -2,6 +2,7 @@ package org.muteswan.client.data;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.muteswan.client.MuteLog;
 
 public class MuteswanServer {
 
@@ -31,7 +32,8 @@ public class MuteswanServer {
 	}
 	
 	public String toString() {
-		if (serverInfo.getName() != null && serverInfo.getName() != "" && !serverInfo.getName().equals("defaultname")) {
+		
+		if (serverInfo.getName() != null && !serverInfo.getName().equals("") && !serverInfo.getName().equals("defaultname")) {
 			return serverInfo.getName();
 		} else {
 			return serverInfo.getName() + " (" + getHostname() + ")";
