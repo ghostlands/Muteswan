@@ -17,6 +17,8 @@ import (
 	"time"
 	"net/http"
 	"io"
+	"github.com/qpliu/qrencode-go/qrencode"
+	"image/png"
 )
 
 // types
@@ -416,6 +418,15 @@ func GetLastMsg(w http.ResponseWriter, r *http.Request, store MtsnStore) {
 	w.Write(b)
 }
 
+
+func genQRCode(data string) (*qrencode.BitGrid,error) {
+   bitgrid,err := qrencode.Encode(data,qrencode.ECLevelQ)
+   if err != nil {
+	return bitgrid,err
+   }
+   return bitgrid,nil
+}
+
 func ErrorMaxContent(w http.ResponseWriter) {
 	http.Error(w,"Content too large.",413)
 	return
@@ -516,6 +527,17 @@ func main() {
 		infoBytes, _ := json.Marshal(si)
 		fmt.Println("Got server info", servername)
 		w.Write(infoBytes)
+	})
+
+	http.HandleFunc("/qrcode", func(w http.ResponseWriter, r *http.Request) {
+		qrcodeData,err := genQRCode(r.Host)
+		if err != nil {
+			http.Error(w,"Error generating QR code.",500)
+			return
+		}
+		w.Header().Set("Content-Type", "image/png")
+		png.Encode(w,qrcodeData.Image(6))
+
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
