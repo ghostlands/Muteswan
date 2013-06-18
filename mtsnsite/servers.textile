@@ -71,4 +71,9 @@ default. To override this use the --port cmdline flag.
 
 Logging will occur to standard output.
 
-h3. Publish your hidden server as a QRcode and start creating circles!
+h3. Publish your hidden server as a QRcode and start creating circles.
+
+The server will generate a qrcode:
+  <code>http://hiddennodeaddr.onion/qrcode</code>
+you can scan it with Muteswan (use the Join button).
+
