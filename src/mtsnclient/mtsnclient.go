@@ -136,7 +136,7 @@ func (circle *Circle) DecryptMsgs(msgs []MsgWrap) []MsgWrap {
 		newMsgs[i] = msgs[i]
 		fmt.Printf("Message id: %d\n", msgs[i].Id)
 		newMsgs[i].Content.Message = msgs[i].Content.getPlaintextMessage(circle)
-		fmt.Printf("Got message: %s\n", newMsgs[i].Content.Message)
+		//fmt.Printf("Got message: %s\n", newMsgs[i].Content.Message)
 	}
 	return newMsgs
 }
@@ -153,10 +153,10 @@ func (msg *Msg) getPlaintextMessage(circle *Circle) string {
 	decrypter := cipher.NewCBCDecrypter(c, msg.GetIVData())
 	plaintext := make([]byte, len(rawdata))
 
-	fmt.Printf("rawdata: %s\n", msg.Message)
-	fmt.Printf("plaintext len: %d\n", len(plaintext))
-	fmt.Printf("rawdata len: %d\n", len(rawdata))
-	fmt.Printf("iv data: %d\n", msg.GetIVData())
+	//fmt.Printf("rawdata: %s\n", msg.Message)
+	//fmt.Printf("plaintext len: %d\n", len(plaintext))
+	//fmt.Printf("rawdata len: %d\n", len(rawdata))
+	//fmt.Printf("iv data: %d\n", msg.GetIVData())
 	decrypter.CryptBlocks(plaintext, rawdata)
 	return string(plaintext)
 }
