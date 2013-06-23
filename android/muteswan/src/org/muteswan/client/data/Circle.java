@@ -837,124 +837,6 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		HttpPost httpPost = new HttpPost("http://" + server + "/" + uuidHash);
 		ByteArrayEntity entity = new ByteArrayEntity(jsonObj.toString().getBytes());
 		
-		if (getPostPolicy() != null && !getPostPolicy().equals("ANY")) {
-			if (getPostPolicy().equals("AUTHKEY")) {
-				MuteLog.Log("Circle", "AUTHKEY Adding Signature header for " + getShortname());
-				Signature sig = null;
-				try {
-					sig = Signature.getInstance("MD5WithRSA");
-				} catch (NoSuchAlgorithmException e1) {
-					// TODO Auto-generated catch block
-					//e1.printStackTrace();
-					return(-3);
-				}
-				IdentityStore idStore = new IdentityStore(context);
-				RSAPrivateKey rsaPrivKey = null;
-				for (Identity id : idStore) {
-					if (id.publicKeyEnc.equals(getAuthKey())) {
-						try {
-							rsaPrivKey = id.getPrivateKey();
-						} catch (NoSuchAlgorithmException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (InvalidKeySpecException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						break;
-					}
-				}
-				
-				if (rsaPrivKey == null) {
-					Log.e("Circle", "Could not find appropriate identity for " + getShortname() + " in idstore.");
-					return(-3);
-				}
-				
-				   
-				try {
-					sig.initSign(rsaPrivKey);
-					sig.update(jsonObj.toString().getBytes());
-					//sig.update("some random sign data".getBytes("UTF8"));
-					byte[] sigBytes = sig.sign();
-					httpPost.setHeader("Signature",Base64.encodeBytes(sigBytes));
-				} catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SignatureException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				
-				//circle.updateManifest(jsonObj,Base64.encodeBytes(sigBytes));
-			} else if (getPostPolicy().equals("KEYLIST")) {
-				MuteLog.Log("Circle", "KEYLIST Adding Signature header for " + getShortname());
-				Signature sig = null;
-				try {
-					sig = Signature.getInstance("MD5WithRSA");
-				} catch (NoSuchAlgorithmException e1) {
-					// TODO Auto-generated catch block
-					//e1.printStackTrace();
-					return(-3);
-				}
-				
-				IdentityStore idStore = new IdentityStore(context);
-				RSAPrivateKey rsaPrivKey = null;
-				KEYS: for (String key : keylist) {
-					for (Identity id : idStore) {
-					  if (key.equals(id.publicKeyEnc) && id.privateKeyEnc != null) {
-						  MuteLog.Log("Circle", "Found identity " + id.getName());
-						  try {
-
-							rsaPrivKey = id.getPrivateKey();
-
-						} catch (NoSuchAlgorithmException e) {
-							e.printStackTrace();
-							Log.e("Circle", "NoSuchAlgorithmException getting private key.");
-						} catch (InvalidKeySpecException e) {
-							// TODO Auto-generated catch block
-							Log.e("Circle", "InvalidKeySpecException getting private key.");
-
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							Log.e("Circle", "IOException getting private key.");
-
-						}
-						  break KEYS;
-					  }
-				 }
-				}
-				
-				if (rsaPrivKey == null) {
-					Log.e("Circle", "Could not find appropriate identity for " + getShortname() + " in idstore.");
-					return(-3);
-				}
-				
-
-				try {
-					sig.initSign(rsaPrivKey);
-					sig.update(jsonObj.toString().getBytes());
-					//sig.update("some random sign data".getBytes("UTF8"));
-					
-					byte[] sigBytes = sig.sign();
-
-					httpPost.setHeader("Signature",Base64.encodeBytes(sigBytes));
-				} catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-					MuteLog.Log("Circle", "Invalid key posting.");
-				} catch (SignatureException e) {
-					// TODO Auto-generated catch block
-					MuteLog.Log("Circle", "Signature exception posting.");
-				}
-				
-			
-		  }
-		}
-		
 		
 		httpPost.setEntity(entity);
 		
@@ -987,56 +869,16 @@ public Circle(String secret, Context context, JSONObject jsonObject) {
 		}
 		byte[] encData = crypto.encrypt();
 		byte[] ivData = crypto.getIVData();
-		MuteLog.Log("Circle", "iv data: " + ivData.toString());
+		
 		
 		String base64EncData = Base64.encodeBytes(encData);
 		String base64IVData = Base64.encodeBytes(ivData);
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("message", base64EncData);
 		jsonObj.put("iv", base64IVData);
+		MuteLog.Log("Circle", "iv data: " + base64IVData);
 		
 		return(postMsg(jsonObj));
-	}
-	
-	public Integer postMsg(String msg, Identity[] identities) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, JSONException, InvalidKeyException, SignatureException, InvalidKeySpecException, IOException {
-		Crypto crypto = new Crypto(getKey().getBytes(), msg.getBytes());
-		byte[] encData = crypto.encrypt();
-		
-		String base64EncData = Base64.encodeBytes(encData);
-		JSONObject jsonObj = new JSONObject();
-		jsonObj.put("message", base64EncData);
-		
-		JSONArray jsonArray = new JSONArray();
-		
-		
-		
-		for (int i=0; i<identities.length; i++) {
-		    Signature sig = Signature.getInstance("MD5WithRSA");
-		    
-		    if (identities[i] == null) {
-		    	MuteLog.Log("Circle", "Wtf, identities is null\n");
-		    	break;
-		    }
-		    
-		    MuteLog.Log("Circle", "Signing with " + identities[i].getName() + "\n");
-		
-		    RSAPrivateKey rsaPrivKey = identities[i].getPrivateKey();
-		   
-			sig.initSign(rsaPrivKey);
-			sig.update(msg.getBytes("UTF8"));
-			byte[] sigBytes = sig.sign();
-			
-			String sigLine = identities[i].pubKeyHash + ":" + Base64.encodeBytes(sigBytes);
-			Crypto cryptoEnc = new Crypto(key.getBytes(),sigLine.getBytes("UTF8"));
-			byte[] sigData = cryptoEnc.encrypt();
-			jsonArray.put(Base64.encodeBytes(sigData));
-		}
-		
-		jsonObj.put("signatures", jsonArray);
-		
-		
-		return(postMsg(jsonObj));
-		
 	}
 	
 	public boolean msgExists(Integer id) {

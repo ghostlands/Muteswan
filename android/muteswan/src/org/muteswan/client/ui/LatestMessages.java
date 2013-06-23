@@ -38,7 +38,6 @@ import org.muteswan.client.Main;
 import org.muteswan.client.TorStatus;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.data.IdentityStore;
 import org.muteswan.client.data.MuteswanMessage;
 
 import android.app.AlertDialog;
@@ -91,7 +90,7 @@ public class LatestMessages extends ListActivity implements Runnable {
 	final ArrayList<MuteswanMessage> messageList = new ArrayList<MuteswanMessage>();
 	private ArrayList<MuteswanMessage> msgBucket = new ArrayList<MuteswanMessage>();
 	HashMap<String,Circle> circleMap;
-	IdentityStore idStore;
+	
 	private LatestMessagesListAdapter listAdapter;
 	private int messageViewCount;
 	HashMap<View, AlertDialog> moreButtons;

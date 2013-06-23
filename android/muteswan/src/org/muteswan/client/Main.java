@@ -37,7 +37,6 @@ import org.muteswan.client.data.MigrateToEncPrefs;
 import org.muteswan.client.data.MuteswanServer;
 import org.muteswan.client.data.ServerList;
 import org.muteswan.client.ui.CircleList;
-import org.muteswan.client.ui.IdentityList;
 import org.muteswan.client.ui.LatestMessages;
 import org.muteswan.client.ui.Preferences;
 import org.muteswan.client.ui.WriteMsg;
@@ -556,16 +555,8 @@ public class Main extends Activity implements Runnable {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
-		// if (item.toString().equals("Create Circle")) {
-		// startActivity(new Intent(this, CreateCircle.class));
-		// return true;
-		if (item.toString().equals("Identities")) {
-			startActivity(new Intent(this, IdentityList.class));
-			return true;
-			// } else if (item.toString().equals("Create Identity")) {
-			// startActivity(new Intent(this,GenerateIdentity.class));
-			// return true;
-		} else if (item.toString().equals("Share Muteswan")) {
+	
+		if (item.toString().equals("Share Muteswan")) {
 			Intent intent = new Intent("com.google.zxing.client.android.ENCODE");
 			intent.putExtra("ENCODE_DATA",
 					"market://search?q=pname:org.muteswan.client");

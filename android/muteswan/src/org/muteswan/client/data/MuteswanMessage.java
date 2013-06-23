@@ -50,10 +50,7 @@ public class MuteswanMessage {
 	private Integer id;
 	Crypto cryptoDec;
 	
-	// FIXME: define max signatures per message
-	public String[] signatures = new String[50];
 	
-	private LinkedList<Identity> validSigs;
 	private Date dateObj;
 	private String base64Msg;
 	private String rawJSON;
@@ -76,7 +73,7 @@ public class MuteswanMessage {
 		this.circle = circle;
 		this.msgData = msg;
 		this.id = id;
-		this.signatures = signatures;
+		
 		this.rawMsg = rawMsg;
 	}
 	
@@ -128,9 +125,6 @@ public class MuteswanMessage {
 		this.id = id;
 	}
 	
-	public String getFirstSignature() {
-		return(signatures[0]);
-	}
 	
 	public String getMsg() {
 		return msgData;
@@ -176,88 +170,14 @@ public class MuteswanMessage {
 		return(dateObj);
 	}
 
-	public void addValidSig(Identity identity) {
-		if (validSigs == null) {
-			validSigs = new LinkedList<Identity>();
-		}
-		validSigs.add(identity);
-	}
-	
-	public Identity getFirstValidSig() {
-		if (validSigs != null) {
-		  return(validSigs.getFirst());
-		} else {
-			return(null);
-		}
-	}
 	
 	
-	public LinkedList<Identity> verifySignatures(IdentityStore idStore) {
-		//MuteLog.Log("Message", "In verifySignatures");
-		
-		Signature sig;
-		try {
-			sig = Signature.getInstance("MD5WithRSA");
-		} catch (NoSuchAlgorithmException e1) {
-			return(null);
-		}
-		
-		
-		for (int i=0; i<signatures.length; i++) {
-			if (signatures[i] == null)
-				break;
-			
-			String[] signComponents = signatures[i].split(":");
-			for (Identity identity : idStore) {
-				if (identity.pubKeyHash.equals(signComponents[0])) {
-					//MuteLog.Log("Message", "checking identity " + identity.getName() + " hash " + identity.pubKeyHash);
-					
-					
-					try {
-						//MuteLog.Log("Message", "signComponents[0]:" + signComponents[0]);
-						//MuteLog.Log("Message", "signComponents[1]:" + signComponents[1]);
-
-						
-						byte[] sigBytes = Base64.decode(signComponents[1]);
-						sig.initVerify(identity.getPublicKey());
-					    sig.update(getMsg().getBytes("UTF8"));
-					    if (sig.verify(sigBytes)) {
-							addValidSig(identity);
-							MuteLog.Log("Message", "Verified identity " + identity.getName());
-					      } else {
-					    	MuteLog.Log("Message", "Failed to verify signature.");
-					      }
-					} catch (IOException e) {
-						e.printStackTrace();
-					} catch (SignatureException e) {
-						e.printStackTrace();
-					} catch (InvalidKeyException e) {
-						e.printStackTrace();
-					} catch (NoSuchAlgorithmException e) {
-						e.printStackTrace();
-					} catch (InvalidKeySpecException e) {
-						e.printStackTrace();
-					}
-				  
-						
-					
-				}
-			}
-			
-			
-		}
-		
 	
-		return(validSigs);
-	}
 
 	public Circle getCircle() {
 		return circle;
 	}
 	
-	public LinkedList<Identity> getValidSigs() {
-		return(validSigs);
-	}
 
 	public String getId() {
 		if (id != null) {

@@ -34,8 +34,7 @@ import org.muteswan.client.R;
 import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
+
 import org.muteswan.client.data.MuteswanServer;
 import org.muteswan.client.data.ServerList;
 
@@ -93,6 +92,7 @@ public class CircleList extends ListActivity {
 
 	public static final String DELETED_CIRCLE_BROADCAST = "DELETEDCIRCLE";
 	public static final String JOINED_CIRCLE_BROADCAST = "JOINEDCIRCLE";
+	public static final String CREATED_CIRCLE_BROADCAST = "CREATEDCIRCLE";
 	public static int SHARE = 0;
 	public static int READ = 1;
 	public static int WRITE = 2;
@@ -929,19 +929,6 @@ public class CircleList extends ListActivity {
 		startActivity(intent);
 	}
 
-	@SuppressWarnings("unused")
-	private void viewCircle(Integer position) {
-		Intent intent = new Intent(getApplicationContext(), ViewCircle.class);
-		intent.putExtra("circle", circleList[position].getFullText());
-		startActivity(intent);
-	}
-
-	@SuppressWarnings("unused")
-	private void editCircle(Integer position) {
-		Intent intent = new Intent(getApplicationContext(), EditCircle.class);
-		intent.putExtra("circle", circleList[position].getFullText());
-		startActivity(intent);
-	}
 
 	private NfcAdapter getNFCAdapter() {
 		try {
@@ -1221,13 +1208,6 @@ public class CircleList extends ListActivity {
 				
 				
 				
-				// IDENTITY - not used....
-			} else {
-				String[] parts = contents.split(":");
-				Identity identity = new Identity(parts[0], parts[1], parts[2]);
-				IdentityStore idStore = new IdentityStore(
-						getApplicationContext());
-				idStore.addToDb(identity);
 			}
 
 		}

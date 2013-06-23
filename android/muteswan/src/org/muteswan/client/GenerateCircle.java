@@ -10,7 +10,6 @@ import javax.crypto.SecretKey;
 
 import org.muteswan.client.data.CircleStore;
 import org.muteswan.client.ui.CircleList;
-import org.muteswan.client.ui.CreateCircle;
 
 import android.content.Context;
 import android.content.Intent;
@@ -64,7 +63,9 @@ public class GenerateCircle {
 	}
 	
 	public void broadcastCreate() {
-        Intent createdCircleIntent = new Intent(CreateCircle.CREATED_CIRCLE_BROADCAST);
+		
+		// does this leak a hash circle content to the rest of the android apps?
+        Intent createdCircleIntent = new Intent(CircleList.CREATED_CIRCLE_BROADCAST);
         createdCircleIntent.putExtra("circle", Main.genHexHash(circleFullText));
         ctx.sendBroadcast(createdCircleIntent);
         

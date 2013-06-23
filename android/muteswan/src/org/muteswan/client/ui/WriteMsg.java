@@ -27,8 +27,6 @@ import org.muteswan.client.R;
 import org.muteswan.client.Main;
 import org.muteswan.client.data.Circle;
 import org.muteswan.client.data.CircleStore;
-import org.muteswan.client.data.Identity;
-import org.muteswan.client.data.IdentityStore;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -65,7 +63,7 @@ public class WriteMsg extends ListActivity {
 	Circle circle;
 	boolean[] signSelections;
 	CharSequence[] signIdentities;
-	Identity[] identities;
+	
 	String initialText;
 	
 	
@@ -159,16 +157,6 @@ public class WriteMsg extends ListActivity {
 	         prompt.setText("Post to " + circle.getShortname());
 	       
 	       
-	       IdentityStore idStore = new IdentityStore(getApplicationContext());
-	       identities = idStore.asArray(true);
-	       signIdentities = new CharSequence[identities.length];
-	       for (int i=0; i<identities.length;i++) {
-	    	   signIdentities[i] = identities[i].getName();
-	       }
-	       signSelections = new boolean[signIdentities.length];
-	       for(int i=0; i<signSelections.length; i++) {
-	    	   signSelections[i] = false;
-	       }
 	       
 	      
 	       postButton = (Button) findViewById(R.id.submitMsg);

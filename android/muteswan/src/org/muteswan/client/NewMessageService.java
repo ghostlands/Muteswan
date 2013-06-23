@@ -44,7 +44,7 @@ import org.muteswan.client.data.MuteswanMessage;
 import org.muteswan.client.data.MuteswanServer;
 import org.muteswan.client.data.ServerList;
 import org.muteswan.client.ui.CircleList;
-import org.muteswan.client.ui.CreateCircle;
+
 import org.muteswan.client.ui.LatestMessages;
 
 import android.app.Notification;
@@ -117,7 +117,7 @@ public class NewMessageService extends Service {
 		registerReceiver(isUserCheckingMessagesReceiver, new IntentFilter(LatestMessages.CHECKING_MESSAGES));
 		registerReceiver(deletedCircleReceiver, new IntentFilter(CircleList.DELETED_CIRCLE_BROADCAST));
 		registerReceiver(joinedCircleReceiver, new IntentFilter(CircleList.JOINED_CIRCLE_BROADCAST));
-		registerReceiver(createdCircleReceiver, new IntentFilter(CreateCircle.CREATED_CIRCLE_BROADCAST));
+		registerReceiver(createdCircleReceiver, new IntentFilter(CircleList.CREATED_CIRCLE_BROADCAST));
 		//registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		init(false);
 		
