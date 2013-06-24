@@ -87,6 +87,17 @@ func createDirs(dirs []string) error {
 	return nil
 }
 
+type QRCode string
+
+func (r QRCode) Apply(req *revel.Request, resp *revel.Response) {
+
+	bitgrid,_ := qrencode.Encode(string(r),qrencode.ECLevelQ)
+	//resp.Header().Set("Content-type", "image/png")
+	resp.WriteHeader(http.StatusOK, "image/png")
+	png.Encode(resp.Out,bitgrid.Image(6))
+	//resp.Out.Write([]byte(r))
+}
+
 func (c MuteswanClient) CircleList() revel.Result {
 
 	// FIXME: what do we do here? how to manage properly?
@@ -150,6 +161,15 @@ func ReadFileContents(file *os.File) []byte {
 	return rawBytes
 }
 
+func (c MuteswanClient) Genqrcode(txt string) revel.Result {
+	if txt == "" {
+		return c.Redirect(MuteswanClient.Index)
+	}
+
+
+	return QRCode(txt)
+
+}
 
 func (c MuteswanClient) Posts(circle string) revel.Result {
 
@@ -170,24 +190,6 @@ func (c MuteswanClient) Posts(circle string) revel.Result {
 	}
 
 	fmt.Printf("Got circle: %s\n", circle)
-	bitgrid,err := qrencode.Encode(mtsnCircle.FullText,qrencode.ECLevelQ)
-	if err != nil {
-		fmt.Printf("Failed to encode qrcode: %s",err)
-		return c.Render()
-	}
-
-
-	//FIXME: what do we do here for revel?
-	dataDir := "."
-	imageDir := dataDir + "/muteswan-webclient/public/images"
-	f,err := os.Create(imageDir + "/circle" + mtsnCircle.GetUrlHash() + ".png")
-	fmt.Println("Creating " + imageDir + "/circle" + mtsnCircle.GetUrlHash() + ".png")
-	if err != nil {
-		return c.RenderError(err);
-	}
-	defer f.Close()
-	png.Encode(f,bitgrid.Image(6))
-
 	r,err := httpClient.Get(fmt.Sprintf("http://%s/%s",mtsnCircle.Server,mtsnCircle.GetUrlHash()))
 	if err != nil {
                 fmt.Printf("Error: %s\n",err)

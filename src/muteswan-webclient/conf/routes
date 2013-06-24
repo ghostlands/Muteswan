@@ -8,6 +8,7 @@ GET     /Posts                             	MuteswanClient.Posts
 GET     /JoinCircle                            	MuteswanClient.JoinCircle
 POST     /JoinCircle                           	MuteswanClient.JoinCircle
 POST     /PostMsg                            	MuteswanClient.PostMsg
+GET     /Genqrcode                            	MuteswanClient.Genqrcode
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
