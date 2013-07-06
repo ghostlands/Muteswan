@@ -19,7 +19,10 @@ import (
 	"io"
 	"github.com/qpliu/qrencode-go/qrencode"
 	"image/png"
+ tiedot	"loveoneanother.at/tiedot/db"
+	"errors"
 )
+
 
 // types
 type Msg struct {
@@ -47,11 +50,21 @@ type LastMessage struct {
 	LastMessage int `json:"lastMessage"`
 }
 
+type TiedotLastMessage struct {
+	LastMessage int `json:"lastMessage"`
+	Last string `json:"last"`
+}
+
 type MtsnStore interface {
 	GetMsg(id int) (MsgWrap, error)
 	GetMsgs(top int, bottom int) ([]MsgWrap, error)
 	GetLastMsg() (LastMessage, error)
 	PostMsg(msgw MsgWrap) error
+}
+
+type TiedotStore struct {
+	Circle  string
+	Db	*tiedot.DB
 }
 
 type MongoStore struct {
@@ -146,6 +159,157 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 	return nil
 
 }
+
+// tiedot implementation of MtsnStore
+func (ts *TiedotStore) updateCounter() int {
+	if err := ts.Db.Create(ts.Circle); err != nil {
+		fmt.Printf("Database creation failed: %s\n", err)
+	}
+	circleCol := ts.Db.Use(ts.Circle)
+
+	result := make(map[uint64]bool)
+	var query interface{}
+	json.Unmarshal([]byte(`["=", {"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
+	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
+              panic(err)
+        }
+
+	if len(result) == 0 {
+		fmt.Println("We got no last message object back - creating one.")
+		lm := TiedotLastMessage{LastMessage: 1, Last: "message"}
+		//lm := LastMessage{LastMessage: 1}
+		//json.Unmarshal([]byte(`{ "lastMessage": 0, "last": "message" }`),&lm)
+		_, err := circleCol.Insert(&lm)
+		if err != nil {
+			fmt.Printf("Failed to insert last message: %s\n", err)
+			panic("Failed to insert last message.")
+		}
+		return 1
+	} else {
+		fmt.Println("Got last message object...")
+		lm := &TiedotLastMessage{LastMessage: 0, Last: "message"}
+		var lastid uint64
+		for lastid, _ = range result {
+		    break
+		}
+
+		circleCol.Read(lastid,lm)
+		lm.Last = "message"
+		lm.LastMessage = lm.LastMessage + 1
+		_, err := circleCol.Update(lastid,lm)
+		if err != nil {
+			fmt.Printf("Failed to update the last message record.")
+			panic("Failed to update the last message record.")
+		}
+		fmt.Printf("Last message is: %d\n", lm.LastMessage)
+		return lm.LastMessage
+	}
+
+
+}
+
+func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
+	msgw.Id = ts.updateCounter()
+	msgw.Time = time.Now()
+	msgw.Timestamp = msgw.Time.UTC().Format(time.RFC1123)
+	msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
+
+
+	if err := ts.Db.Create(ts.Circle); err != nil {
+		fmt.Printf("Error posting message with tiedot backend: %s\n", err)
+		//return err
+	}
+
+
+	circleCol := ts.Db.Use(ts.Circle)
+	id,err := circleCol.Insert(msgw)
+	fmt.Printf("Received msgw: %v\n",msgw)
+	if err != nil {
+		fmt.Printf("Failed to use tiedot db %s\n",ts.Circle)
+		return err
+	}
+	fmt.Printf("Got new tiedot id: %d\n",id)
+
+	return nil
+}
+
+func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
+	circleCol := ts.Db.Use(ts.Circle)
+
+	result := make(map[uint64]bool)
+	var query interface{}
+	json.Unmarshal([]byte(`["=", {"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
+	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
+              panic(err)
+        }
+
+	fmt.Println("Got last message object...")
+	lm := &LastMessage{LastMessage: 0}
+	var lastid uint64
+	for lastid, _ = range result {
+	    break
+	}
+
+	circleCol.Read(lastid,lm)
+	fmt.Printf("Last message is: %d\n", lm.LastMessage)
+	return *lm,nil
+
+}
+
+func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
+	circleCol := ts.Db.Use(ts.Circle)
+	var msgw MsgWrap
+	//msgw := MsgWrap{}
+
+	result := make(map[uint64]bool)
+	var query interface{}
+	queryStr := `["=", {"eq": ` + strconv.Itoa(id) + `, "limit": 1, "in": ["Id"]}]`
+	fmt.Println("query string " + queryStr)
+	json.Unmarshal([]byte(queryStr),&query)
+	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
+		fmt.Printf("Error querying circle %d\n",id)
+		return msgw,err
+	}
+
+	var mid uint64
+	for mid,_ = range result {
+		break
+	}
+
+	if mid == 0 {
+		return msgw,errors.New("Could not find message id " + string(mid))
+	}
+
+	fmt.Printf("Returning mid %d\n", mid)
+	err := circleCol.Read(mid,&msgw)
+	if err != nil {
+		fmt.Printf("Failed to read %d due to %s\n", mid, err)
+		return msgw,err
+	}
+	fmt.Printf("Got message content: %v\n",msgw)
+
+	return msgw,nil
+
+}
+
+func (ts *TiedotStore) GetMsgs(top int, bottom int) ([]MsgWrap, error) {
+
+	var msgs []MsgWrap
+
+	for i := top; i >= bottom; i-- {
+		fmt.Printf("Fetching msg %d\n",i)
+		mw,err := ts.GetMsg(i)
+		if err != nil {
+			return msgs,err
+		}
+
+		msgs = append(msgs,mw)
+	}
+
+	return msgs,nil
+
+}
+
 
 // Filestore implementation of MtsnStore
 func ReadFileContents(file *os.File) string {
@@ -307,6 +471,14 @@ func makeStore( dbtype, db, hash string, s *mgo.Session, lock chan int) MtsnStor
 
 	if dbtype == "file" {
 		return &FileStore{Circle: hash, Datadir: db, Lock: lock}
+	}
+
+	if dbtype == "tiedot" {
+		tdb,err := tiedot.OpenDB(db)
+		if err != nil {
+			fmt.Printf("Failed to open tiedot db: %s\n",db)
+		}
+		return &TiedotStore{Circle: hash, Db: tdb}
 	}
 
 	return nil
