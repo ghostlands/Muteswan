@@ -65,6 +65,7 @@ type MtsnStore interface {
 type TiedotStore struct {
 	Circle  string
 	Db	*tiedot.DB
+	Lock chan int
 }
 
 type MongoStore struct {
@@ -162,10 +163,10 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
 // tiedot implementation of MtsnStore
 func (ts *TiedotStore) updateCounter() int {
+	circleCol := ts.Db.Use(ts.Circle)
 	if err := ts.Db.Create(ts.Circle); err != nil {
 		fmt.Printf("Database creation failed: %s\n", err)
 	}
-	circleCol := ts.Db.Use(ts.Circle)
 
 	result := make(map[uint64]bool)
 	var query interface{}
@@ -209,27 +210,35 @@ func (ts *TiedotStore) updateCounter() int {
 }
 
 func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
-	msgw.Id = ts.updateCounter()
-	msgw.Time = time.Now()
-	msgw.Timestamp = msgw.Time.UTC().Format(time.RFC1123)
-	msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
-
-
+	lock := <- ts.Lock
 	if err := ts.Db.Create(ts.Circle); err != nil {
+		fmt.Printf("Database creation failed: %s\n", err)
+	}
+
+	if lock == 0 {
+	  msgw.Id = ts.updateCounter()
+	  msgw.Time = time.Now()
+	  msgw.Timestamp = msgw.Time.UTC().Format(time.RFC1123)
+	  msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
+
+
+	  if err := ts.Db.Create(ts.Circle); err != nil {
 		fmt.Printf("Error posting message with tiedot backend: %s\n", err)
 		//return err
-	}
+	  }
 
 
-	circleCol := ts.Db.Use(ts.Circle)
-	id,err := circleCol.Insert(msgw)
-	fmt.Printf("Received msgw: %v\n",msgw)
-	if err != nil {
+	  circleCol := ts.Db.Use(ts.Circle)
+	  id,err := circleCol.Insert(msgw)
+	  fmt.Printf("Received msgw: %v\n",msgw)
+	  if err != nil {
 		fmt.Printf("Failed to use tiedot db %s\n",ts.Circle)
 		return err
-	}
-	fmt.Printf("Got new tiedot id: %d\n",id)
+	  }
+	  fmt.Printf("Got new tiedot id: %d\n",id)
 
+	  go Unlock(ts.Lock)
+	}
 	return nil
 }
 
@@ -462,7 +471,7 @@ func validateHash(hash string) {
 	}
 }
 
-func makeStore( dbtype, db, hash string, s *mgo.Session, lock chan int) MtsnStore {
+func makeStore( dbtype, db, hash string, s *mgo.Session, tdb *tiedot.DB, lock chan int) MtsnStore {
 
 
 	if dbtype == "mongo" {
@@ -474,11 +483,7 @@ func makeStore( dbtype, db, hash string, s *mgo.Session, lock chan int) MtsnStor
 	}
 
 	if dbtype == "tiedot" {
-		tdb,err := tiedot.OpenDB(db)
-		if err != nil {
-			fmt.Printf("Failed to open tiedot db: %s\n",db)
-		}
-		return &TiedotStore{Circle: hash, Db: tdb}
+		return &TiedotStore{Circle: hash, Db: tdb, Lock: lock}
 	}
 
 	return nil
@@ -676,6 +681,7 @@ func main() {
 
 	//var session *mgo.Session
 	var sess *mgo.Session
+	var tdb *tiedot.DB
 
 	if dbtype == "mongo" {
 		session, err := mgo.Dial("localhost")
@@ -687,6 +693,12 @@ func main() {
 		session.SetMode(mgo.Monotonic, true)
 
 		sess = session.Copy()
+	} else if dbtype == "tiedot" {
+		var err error
+		tdb,err = tiedot.OpenDB(db)
+		if err != nil {
+			fmt.Printf("Failed to open tiedot db: %s\n",db)
+		}
 	}
 
 	lock := make(chan int)
@@ -743,7 +755,7 @@ func main() {
 				http.NotFound(w,r)
 				return
 			}
-			mtsnStore := makeStore(dbtype,db,urlParts2[1],s,lock)
+			mtsnStore := makeStore(dbtype,db,urlParts2[1],s,tdb,lock)
 
 			if r.Method == "POST" {
 				//fileStore := &FileStore{Circle: urlParts2[1], Datadir: db}
@@ -756,7 +768,7 @@ func main() {
 
 		} else {
 			//fileStore := &FileStore{Circle: urlParts[1], Datadir: db}
-			mtsnStore := makeStore(dbtype,db,urlParts[1],s,lock)
+			mtsnStore := makeStore(dbtype,db,urlParts[1],s,tdb,lock)
 			GetMsg(w, r, urlParts[2], mtsnStore)
 		}
 
