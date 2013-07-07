@@ -161,12 +161,16 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
 }
 
+
 // tiedot implementation of MtsnStore
 func (ts *TiedotStore) updateCounter() int {
+	ts.Db.Create(ts.Circle)
+
 	circleCol := ts.Db.Use(ts.Circle)
-	if err := ts.Db.Create(ts.Circle); err != nil {
-		fmt.Printf("Database creation failed: %s\n", err)
-	}
+	circleCol.Index([]string{"Id"})
+	//if err := circleCol.Index([]string{"Id"}); err != nil {
+	//	fmt.Printf("Index already added.")
+        //}
 
 	result := make(map[uint64]bool)
 	var query interface{}
@@ -177,10 +181,11 @@ func (ts *TiedotStore) updateCounter() int {
 
 	if len(result) == 0 {
 		fmt.Println("We got no last message object back - creating one.")
-		lm := TiedotLastMessage{LastMessage: 1, Last: "message"}
+		//lm := TiedotLastMessage{LastMessage: 1, Last: "message"}
 		//lm := LastMessage{LastMessage: 1}
-		//json.Unmarshal([]byte(`{ "lastMessage": 0, "last": "message" }`),&lm)
-		_, err := circleCol.Insert(&lm)
+		var lm interface{}
+		json.Unmarshal([]byte(`{ "lastMessage": 1, "last": "message" }`),&lm)
+		_, err := circleCol.Insert(lm)
 		if err != nil {
 			fmt.Printf("Failed to insert last message: %s\n", err)
 			panic("Failed to insert last message.")
@@ -195,9 +200,15 @@ func (ts *TiedotStore) updateCounter() int {
 		}
 
 		circleCol.Read(lastid,lm)
-		lm.Last = "message"
-		lm.LastMessage = lm.LastMessage + 1
-		_, err := circleCol.Update(lastid,lm)
+
+		var insrtLm interface{}
+		jsonStr := fmt.Sprintf(`{ "lastMessage": %d, "last": "message" }`,lm.LastMessage + 1)
+		json.Unmarshal([]byte(jsonStr),&insrtLm)
+
+
+		//lm.Last = "message"
+		//lm.LastMessage = lm.LastMessage + 1
+		_, err := circleCol.Update(lastid,insrtLm)
 		if err != nil {
 			fmt.Printf("Failed to update the last message record.")
 			panic("Failed to update the last message record.")
@@ -210,27 +221,32 @@ func (ts *TiedotStore) updateCounter() int {
 }
 
 func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
+	ts.Db.Create(ts.Circle)
 	lock := <- ts.Lock
-	if err := ts.Db.Create(ts.Circle); err != nil {
-		fmt.Printf("Database creation failed: %s\n", err)
-	}
 
 	if lock == 0 {
 	  msgw.Id = ts.updateCounter()
 	  msgw.Time = time.Now()
 	  msgw.Timestamp = msgw.Time.UTC().Format(time.RFC1123)
 	  msgw.Timestamp = strings.Replace(msgw.Timestamp, "UTC", "GMT", -1)
+	  fmt.Printf("Received msgw: %v\n",msgw)
 
 
-	  if err := ts.Db.Create(ts.Circle); err != nil {
-		fmt.Printf("Error posting message with tiedot backend: %s\n", err)
-		//return err
+	  var insrtMsgw interface{}
+	  bytes,err := json.Marshal(&msgw)
+	  if err != nil {
+		fmt.Printf("Failed to marshal: %s\n",err)
+		return err
 	  }
-
+	  err = json.Unmarshal(bytes,&insrtMsgw)
+	  if err != nil {
+		fmt.Printf("Failed to unmarshal: %s\n",err)
+		return err
+	  }
+	  fmt.Printf("arg: %v\n", insrtMsgw)
 
 	  circleCol := ts.Db.Use(ts.Circle)
-	  id,err := circleCol.Insert(msgw)
-	  fmt.Printf("Received msgw: %v\n",msgw)
+	  id,err := circleCol.Insert(insrtMsgw)
 	  if err != nil {
 		fmt.Printf("Failed to use tiedot db %s\n",ts.Circle)
 		return err
@@ -243,6 +259,7 @@ func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
 }
 
 func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
+	ts.Db.Create(ts.Circle)
 	circleCol := ts.Db.Use(ts.Circle)
 
 	result := make(map[uint64]bool)
@@ -266,9 +283,9 @@ func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
 }
 
 func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
+	ts.Db.Create(ts.Circle)
 	circleCol := ts.Db.Use(ts.Circle)
 	var msgw MsgWrap
-	//msgw := MsgWrap{}
 
 	result := make(map[uint64]bool)
 	var query interface{}
@@ -453,15 +470,6 @@ func (ms *FileStore) PostMsg(msgw MsgWrap) error {
 	return nil
 }
 
-// misc functions
-/*
-func dropPrivs(uid int) {
-	if syscall.Getuid() == 0 {
-		fmt.Printf("Dropping privileges.")
-		syscall.Setuid(uid)
-	}
-}
-*/
 
 func validateHash(hash string) {
 	matchSha1, _ := regexp.MatchString("^\\w{40}$", hash)
