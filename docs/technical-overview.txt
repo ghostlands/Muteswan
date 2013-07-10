@@ -29,13 +29,13 @@ with no else enables private and trusted communication. In other cases,
 identity protection is paramount but access to the circle may be more
 widespread.
 
-Muteswan uses Tor to anonymize messages sent to the server. Most Muteswan
-servers are hosted using Tor hidden nodes. A hidden service on the Tor network
-is accessible only to other Tor clients and the server does not know the
-identity of the request nor does the client know the identity of the hidden
-service serving the response. A very simple RESTful protocol is used to post,
-get and discover new messages. Messages are encrypted using AES and accessible
-by URL using a SHA1 hash of the UUID associated with the circle.
+Muteswan uses Tor to anonymize messages sent to the server. Muteswan servers
+are hosted using Tor hidden nodes. A hidden service on the Tor network is
+accessible only to other Tor clients and the server does not know the identity
+of the request nor does the client know the identity of the hidden service
+serving the response. A very simple RESTful protocol is used to post, get and
+discover new messages. Messages are encrypted using AES and accessible by URL
+using a SHA1 hash of the UUID associated with the circle.
 
 
 Intentions, Assumptions and Goals
@@ -81,6 +81,7 @@ access to the messages on a given circle.
 
 A client/server protocol was built on top of HTTP using RESTful principles.
 Clients can:
+
 	- get a single message, 
 
 	- discover the latest message,
@@ -234,6 +235,7 @@ URL Scheme
 |GET msg range|http://host/sha1hash/msghigh-msglow| http://tckwndlytrphlpyo.onion/f573fe7d4a34186b00bcab2b38e52122afe04d83/53-50  | BASE64 encoded msgs in JSON array 
 |GET last message|http://host/sha1hash| http://tckwndlytrphlpyo.onion/f573fe7d4a34186b00bcab2b38e52122afe04d83  | JSON key 'lastMessage' holds message id latest message 
 |GET info|http://host/info| http://tckwndlytrphlpyo.onion/info  | JSON key 'Name' holds the name of the server. This info JSON may be extended in the future.
+|GET qrcode|http://host/qrcode| http://tckwndlytrphlpyo.onion/qrcode  | Generates a QRCode of the hidden node for easy import to a phone
 |=======
 
 POST msg
