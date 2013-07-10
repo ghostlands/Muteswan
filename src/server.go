@@ -50,11 +50,6 @@ type LastMessage struct {
 	LastMessage int `json:"lastMessage"`
 }
 
-type TiedotLastMessage struct {
-	LastMessage int `json:"lastMessage"`
-	Last string `json:"last"`
-}
-
 type MtsnStore interface {
 	GetMsg(id int) (MsgWrap, error)
 	GetMsgs(top int, bottom int) ([]MsgWrap, error)
@@ -163,14 +158,27 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
 
 // tiedot implementation of MtsnStore
+func (ts *TiedotStore) createDB() {
+	_, err := os.Stat(ts.Db.Dir + "/" + ts.Circle)
+	if err == nil {
+		return
+	}
+
+	if os.IsNotExist(err) {
+	  ts.Db.Create(ts.Circle)
+	  circleCol := ts.Db.Use(ts.Circle)
+	  circleCol.Index([]string{"Id"})
+	  fmt.Printf("Created DB.")
+	} else {
+	  panic(fmt.Sprintf("Error creating DB dir: %s",err))
+	}
+}
+
+
 func (ts *TiedotStore) updateCounter() int {
-	ts.Db.Create(ts.Circle)
+	ts.createDB()
 
 	circleCol := ts.Db.Use(ts.Circle)
-	circleCol.Index([]string{"Id"})
-	//if err := circleCol.Index([]string{"Id"}); err != nil {
-	//	fmt.Printf("Index already added.")
-        //}
 
 	result := make(map[uint64]bool)
 	var query interface{}
@@ -193,7 +201,7 @@ func (ts *TiedotStore) updateCounter() int {
 		return 1
 	} else {
 		fmt.Println("Got last message object...")
-		lm := &TiedotLastMessage{LastMessage: 0, Last: "message"}
+		lm := &LastMessage{LastMessage: 0}
 		var lastid uint64
 		for lastid, _ = range result {
 		    break
@@ -221,7 +229,7 @@ func (ts *TiedotStore) updateCounter() int {
 }
 
 func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
-	ts.Db.Create(ts.Circle)
+	ts.createDB()
 	lock := <- ts.Lock
 
 	if lock == 0 {
@@ -259,7 +267,7 @@ func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
 }
 
 func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
-	ts.Db.Create(ts.Circle)
+	ts.createDB()
 	circleCol := ts.Db.Use(ts.Circle)
 
 	result := make(map[uint64]bool)
@@ -283,7 +291,7 @@ func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
 }
 
 func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
-	ts.Db.Create(ts.Circle)
+	ts.createDB()
 	circleCol := ts.Db.Use(ts.Circle)
 	var msgw MsgWrap
 
