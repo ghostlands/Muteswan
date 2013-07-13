@@ -281,12 +281,11 @@ GET msg range
 Fetching a message range is also possible and reduces latency.  For example,
 the request to fetch message 3 to 2 from the 'testsite' circle would be:
 ---------------------------------------------------------
-GET /b975d0e342802b65b3703ff9cf3a378533d980b9/3-2 HTTP/1.1
+GET /b975d0e342802b65b3703ff9cf3a378533d980b9/2-1 HTTP/1.1
 Host: tckwndlytrphlpyo.onion
 Connection: Keep-Alive
 
-[{"timestamp":"Sun, 05 Feb 2012 19:47:17 GMT","content":{"iv":"1IKItlFJCaR+681OQbvSHg==","message":"qmsspIzFxmi1yfslzbG80A=="}},
-{"timestamp":"Sun, 05 Feb 2012 19:46:55 GMT","content":{"iv":"VL6RsetTnL+bF3740Fua6Q==","message":"E2/INXzPyRY2nBfFxFAPhg=="}}]
+[{"content":{"iv":"OYt0ENQGejnFqcEboXQ6XA==","message":"1wt630PxKrE17BxTESl8Rg=="},"timestamp":"Sat, 13 Jul 2013 22:12:18 GMT","Id":2},{"content":{"iv":"5ypw/UYfGMSBUl2hoh2E4Q==","message":"uLqfL3S0G9R9FDn+ni1aPw=="},"timestamp":"Sat, 13 Jul 2013 22:12:08 GMT","Id":1}]
 ---------------------------------------------------------
 
 
