@@ -210,7 +210,8 @@ func (ts *TiedotStore) updateCounter() int {
 		circleCol.Read(lastid,lm)
 
 		var insrtLm interface{}
-		jsonStr := fmt.Sprintf(`{ "lastMessage": %d, "last": "message" }`,lm.LastMessage + 1)
+		lm.LastMessage = lm.LastMessage + 1
+		jsonStr := fmt.Sprintf(`{ "lastMessage": %d, "last": "message" }`,lm.LastMessage)
 		json.Unmarshal([]byte(jsonStr),&insrtLm)
 
 
