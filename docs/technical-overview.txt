@@ -48,6 +48,7 @@ without some overall frame to help contextualize the impetus and goals of the
 project.
 
 Muteswan rests on a few operating assumptions and requirements:
+
 	- Trust and identity do not need to be closely related. Circles of people
 who share a community of trust can manage that trust in person, face to face.
 Muteswan should facilitate this where it is possible.
@@ -66,9 +67,9 @@ The goal of the Muteswan project is to create an experimental communication
 tool that is embedded in the social and geographic space of its users. The
 dissemination of information and trust networks, though anonymous, may perhaps
 map more closely to real world social relations and thus provide some level of
-trust. This (perhaps limited) level of trust is augmented with the protection
-of message senders/receivers. Together these two properties - limited but
-existent trust and very little individual risk - are desirable.
+trust. This (perhaps limited) level of trust is augmented with anonymity of
+of message senders/receivers.
+
 
 
 Protocol Overview
@@ -319,6 +320,11 @@ Connection: Keep-Alive
 
 {"Name": "Sample Server"}
 ------------------------------------------------------
+
+GET qrcode
+^^^^^^^^^^
+
+Returns a PNG image of the server in the form of a QRCode. This is useful if you know the address of a Muteswan server and want to add it easily with a phone.
 
 Implementations
 ---------------
