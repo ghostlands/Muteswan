@@ -180,7 +180,7 @@ func (ts *TiedotStore) updateCounter() int {
 
 	circleCol := ts.Db.Use(ts.Circle)
 
-	result := make(map[uint64]bool)
+	result := make(map[uint64]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["=", {"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
 	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
@@ -271,7 +271,7 @@ func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
 	ts.createDB()
 	circleCol := ts.Db.Use(ts.Circle)
 
-	result := make(map[uint64]bool)
+	result := make(map[uint64]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["=", {"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
 	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
@@ -296,7 +296,7 @@ func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
 	circleCol := ts.Db.Use(ts.Circle)
 	var msgw MsgWrap
 
-	result := make(map[uint64]bool)
+	result := make(map[uint64]struct{})
 	var query interface{}
 	queryStr := `["=", {"eq": ` + strconv.Itoa(id) + `, "limit": 1, "in": ["Id"]}]`
 	fmt.Println("query string " + queryStr)
