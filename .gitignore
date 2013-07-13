@@ -1,2 +1,12 @@
 R.java
 *.class
+.*swp
+*/muteswan/bin*
+*/muteswan/gen*
+*/muteswan/target*
+*/bin
+technical-overview.html
+goclient
+server
+_site
+circles

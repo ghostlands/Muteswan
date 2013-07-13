@@ -33,10 +33,6 @@ been run on Intel and ARM chipsets.
 <code>export GOPATH=$HOME/muteswan</code>
 # Go into the src dir:
 <code>cd $GOPATH/src</code>
-# Get the dependencies:
-<code>go get labix.org/v2/mgo</code>
-and
-<code>go get labix.org/v2/mgo/bson</code>
 # Compile the server:
 <code>go build -o muteswan-server server.go</code>
 
