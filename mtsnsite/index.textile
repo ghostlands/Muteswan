@@ -14,4 +14,4 @@ Create secure social networks using shared QR codes. Share them with whomever yo
 
 <br/>
 
-Muteswan is an experimental short messaging tool built on Tor to facilitate secure and/or anonymous communication.
+<span id="disclaimer">Muteswan is an experimental short messaging tool built on Tor to facilitate trusted as well as anonymous collective communication. We are looking for technical review, volunteers and other folks interested in such a project. Please understand this is an experimental tool both socially and technically and has not been vetted in real-life situations.</span>

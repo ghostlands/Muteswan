@@ -97,6 +97,11 @@ body {
 	width: 18.8%;
 }
 
+
+#disclaimer {
+	font-weight: bold;
+}
+
 /* Singular */
 .singular #primary {
 	margin: 0;
