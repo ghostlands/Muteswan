@@ -19,7 +19,7 @@ import (
 	"io"
 	"github.com/qpliu/qrencode-go/qrencode"
 	"image/png"
- tiedot	"loveoneanother.at/tiedot/db"
+ tiedot "github.com/HouzuoGuo/tiedot/db"
 	"errors"
 )
 
@@ -159,19 +159,16 @@ func (ms *MongoStore) PostMsg(msgw MsgWrap) error {
 
 // tiedot implementation of MtsnStore
 func (ts *TiedotStore) createDB() {
-	_, err := os.Stat(ts.Db.Dir + "/" + ts.Circle)
-	if err == nil {
-		return
+
+	err := ts.Db.Create(ts.Circle)
+	if err != nil {
+		circleCol := ts.Db.Use(ts.Circle)
+		circleCol.Index([]string{"Id"})
+		fmt.Printf("Created DB.")
+	} else {
+		fmt.Printf("DB %s already exists\n",ts.Circle)
 	}
 
-	if os.IsNotExist(err) {
-	  ts.Db.Create(ts.Circle)
-	  circleCol := ts.Db.Use(ts.Circle)
-	  circleCol.Index([]string{"Id"})
-	  fmt.Printf("Created DB.")
-	} else {
-	  panic(fmt.Sprintf("Error creating DB dir: %s",err))
-	}
 }
 
 
@@ -179,10 +176,11 @@ func (ts *TiedotStore) updateCounter() int {
 	ts.createDB()
 
 	circleCol := ts.Db.Use(ts.Circle)
+	//circleCol.Index([]string{"last"});
 
-	result := make(map[uint64]struct{})
+	result := make(map[int]struct{})
 	var query interface{}
-	json.Unmarshal([]byte(`["=", {"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
+	json.Unmarshal([]byte(`[{"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
 	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
               panic(err)
         }
@@ -191,7 +189,7 @@ func (ts *TiedotStore) updateCounter() int {
 		fmt.Println("We got no last message object back - creating one.")
 		//lm := TiedotLastMessage{LastMessage: 1, Last: "message"}
 		//lm := LastMessage{LastMessage: 1}
-		var lm interface{}
+		var lm map[string]interface{}
 		json.Unmarshal([]byte(`{ "lastMessage": 1, "last": "message" }`),&lm)
 		_, err := circleCol.Insert(lm)
 		if err != nil {
@@ -201,25 +199,41 @@ func (ts *TiedotStore) updateCounter() int {
 		return 1
 	} else {
 		fmt.Println("Got last message object...")
-		lm := &LastMessage{LastMessage: 0}
-		var lastid uint64
+		lm := LastMessage{LastMessage: 0}
+
+		var lastid int
 		for lastid, _ = range result {
 		    break
 		}
 
-		circleCol.Read(lastid,lm)
+		var intf map[string]interface{}
+		intf,err := circleCol.Read(lastid)
+		if err != nil {
+			fmt.Println("Failed to read %d\n", lastid)
+		}
 
-		var insrtLm interface{}
+		lastmsg := int(intf["lastMessage"].(float64))
+		lm.LastMessage = lastmsg
+
+		/*
+		lm,err := ts.GetLastMsg()
+		if err != nil {
+			fmt.Println("Failed to get last message: ", err)
+		}
+		*/
+
+		var insrtLm map[string]interface{}
 		lm.LastMessage = lm.LastMessage + 1
 		jsonStr := fmt.Sprintf(`{ "lastMessage": %d, "last": "message" }`,lm.LastMessage)
+		fmt.Println("JSON ", jsonStr)
 		json.Unmarshal([]byte(jsonStr),&insrtLm)
 
 
 		//lm.Last = "message"
 		//lm.LastMessage = lm.LastMessage + 1
-		_, err := circleCol.Update(lastid,insrtLm)
+		err = circleCol.Update(lastid,insrtLm)
 		if err != nil {
-			fmt.Printf("Failed to update the last message record.")
+			fmt.Printf("Failed to update the last message record: %s", err)
 			panic("Failed to update the last message record.")
 		}
 		fmt.Printf("Last message is: %d\n", lm.LastMessage)
@@ -241,7 +255,7 @@ func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
 	  fmt.Printf("Received msgw: %v\n",msgw)
 
 
-	  var insrtMsgw interface{}
+	  var insrtMsgw map[string]interface{}
 	  bytes,err := json.Marshal(&msgw)
 	  if err != nil {
 		fmt.Printf("Failed to marshal: %s\n",err)
@@ -255,6 +269,8 @@ func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
 	  fmt.Printf("arg: %v\n", insrtMsgw)
 
 	  circleCol := ts.Db.Use(ts.Circle)
+	  //var insrt map[string]interface{}
+	  //insrt["update"] = insrtMsgw
 	  id,err := circleCol.Insert(insrtMsgw)
 	  if err != nil {
 		fmt.Printf("Failed to use tiedot db %s\n",ts.Circle)
@@ -270,22 +286,40 @@ func (ts *TiedotStore) PostMsg(msgw MsgWrap) error {
 func (ts *TiedotStore) GetLastMsg() (LastMessage, error) {
 	ts.createDB()
 	circleCol := ts.Db.Use(ts.Circle)
+	circleCol.Index([]string{"last"});
 
-	result := make(map[uint64]struct{})
+	result := make(map[int]struct{})
 	var query interface{}
-	json.Unmarshal([]byte(`["=", {"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
+	json.Unmarshal([]byte(`[{"eq": "message", "limit": 1, "in": ["last"]}]`), &query)
 	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
               panic(err)
         }
 
 	fmt.Println("Got last message object...")
 	lm := &LastMessage{LastMessage: 0}
-	var lastid uint64
+	var lastid int
 	for lastid, _ = range result {
 	    break
 	}
 
-	circleCol.Read(lastid,lm)
+	var intf map[string]interface{}
+	intf,err := circleCol.Read(lastid)
+	//fmt.Println("lastid ", lastid)
+	//for m := range intf {
+		//lm = intf[m].(*LastMessage)
+	//	fmt.Println(m)
+	//	fmt.Println(intf)
+	//}
+	if err != nil {
+		fmt.Println("Failed read lastid: ", err)
+	}
+
+	if _,ok := intf["lastMessage"]; !ok {
+		fmt.Println("lastMessage is nil")
+		lm.LastMessage = 0
+	} else {
+		lm.LastMessage = int(intf["lastMessage"].(float64))
+	}
 	fmt.Printf("Last message is: %d\n", lm.LastMessage)
 	return *lm,nil
 
@@ -295,10 +329,11 @@ func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
 	ts.createDB()
 	circleCol := ts.Db.Use(ts.Circle)
 	var msgw MsgWrap
+	var msg Msg
 
-	result := make(map[uint64]struct{})
+	result := make(map[int]struct{})
 	var query interface{}
-	queryStr := `["=", {"eq": ` + strconv.Itoa(id) + `, "limit": 1, "in": ["Id"]}]`
+	queryStr := `[{"eq": ` + strconv.Itoa(id) + `, "limit": 1, "in": ["Id"]}]`
 	fmt.Println("query string " + queryStr)
 	json.Unmarshal([]byte(queryStr),&query)
 	if err := tiedot.EvalQuery(query, circleCol, &result); err != nil {
@@ -306,7 +341,7 @@ func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
 		return msgw,err
 	}
 
-	var mid uint64
+	var mid int
 	for mid,_ = range result {
 		break
 	}
@@ -316,11 +351,20 @@ func (ts *TiedotStore) GetMsg(id int) (MsgWrap, error) {
 	}
 
 	fmt.Printf("Returning mid %d\n", mid)
-	err := circleCol.Read(mid,&msgw)
+	var intf map[string]interface{}
+	intf,err := circleCol.Read(mid)
+	//msgw = intf.(MsgWrap)
+	fmt.Println(intf)
 	if err != nil {
 		fmt.Printf("Failed to read %d due to %s\n", mid, err)
 		return msgw,err
 	}
+	intf2 := intf["content"].(map[string]interface{})
+	msg.Iv = intf2["iv"].(string)
+	msg.Message = intf2["message"].(string)
+	msgw.Id = int(intf["Id"].(float64))
+	msgw.Timestamp = intf["timestamp"].(string)
+	msgw.Content = msg
 	fmt.Printf("Got message content: %v\n",msgw)
 
 	return msgw,nil
